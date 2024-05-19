@@ -1,7 +1,7 @@
 import { ref, reactive } from 'vue'
 import router from '../router/router'
 import axios from 'axios';
-const orgAuthStore = reactive({
+const loginAuthStore = reactive({
     apiBase: 'http://localhost:8000',
     isAuthenticated: localStorage.getItem('auth') == 1,
     user: JSON.parse(localStorage.getItem('user')),
@@ -20,13 +20,13 @@ const orgAuthStore = reactive({
             request.body = JSON.stringify(params);
         }
 
-        const res = await fetch(orgAuthStore.apiBase + endPoint, request);
+        const res = await fetch(loginAuthStore.apiBase + endPoint, request);
 
         const response = await res.json();
         return response;
     },
     async fetchProtectedApi(endPoint = "", params = {}, requestType = "GET") {
-        const token = orgAuthStore.getUserToken()
+        const token = loginAuthStore.getUserToken()
         let request = {
             method: requestType.toUpperCase(),
             headers: {
@@ -41,15 +41,15 @@ const orgAuthStore = reactive({
             request.body = JSON.stringify(params);
         }
 
-        const res = await fetch(orgAuthStore.apiBase + endPoint, request);
+        const res = await fetch(loginAuthStore.apiBase + endPoint, request);
 
         const response = await res.json();
         return response;
     },
     async uploadProtectedApi(endPoint = "", params = {}) {
-        const token = orgAuthStore.getUserToken()
+        const token = loginAuthStore.getUserToken()
 
-        const res = await axios.post(orgAuthStore.apiBase + endPoint, params, {
+        const res = await axios.post(loginAuthStore.apiBase + endPoint, params, {
             headers: {
                 "Access-Control-Allow-Origin": "*",
                 "Content-Type": "multipart/form-data",
@@ -61,40 +61,41 @@ const orgAuthStore = reactive({
         return response;
     },
     authenticate(username, password) {
-        orgAuthStore.fetchPublicApi('/api/login', { email: username, password }, 'POST')
+        loginAuthStore.fetchPublicApi('/api/login', { email: username, password: password }, 'POST')
             .then(res => {
                 if (res.status) {
-                    orgAuthStore.isAuthenticated = true
-                    orgAuthStore.user = res.data
+                    loginAuthStore.isAuthenticated = true
+                    loginAuthStore.user = res.data
                     localStorage.setItem('auth', 1)
                     localStorage.setItem('user', JSON.stringify(res.data))
 
-                    if ('admin' == res.data.type) {
-                        router.push('/admin')
-                    } else {
+                    if ('1' == res.data.type) {
+                        router.push('/individual-dashboard')
+                    } else if ('2' == res.data.type){
+                        router.push('/org-dashboard')
+                    } else if ('3' == res.data.type){
+                        router.push('/org-dashboard')
+                        
+                    }else {
                         router.push('/')
                     }
                 }
+                
             });
     },
-    orgRegister(org_name, email, password) {
-        orgAuthStore.fetchPublicApi('/api/org_register', { org_name: org_name, email: email, password: password }, 'POST')
-            .then(res => {
-                if (res.status) {
-                    orgAuthStore.errors = null;
-                    router.push('/login');
-                } else {
-                    orgAuthStore.errors = res.errors;
-                }
-            });
+    logout() {
+        loginAuthStore.isAuthenticated = false
+        loginAuthStore.user = {}
+        localStorage.setItem('auth', 0)
+        localStorage.setItem('user', '{}')
+        router.push('/login')
     },
-    
     getUserToken() {
-        return orgAuthStore.user.accessToken;
+        return loginAuthStore.user.accessToken;
     },
     getUserType() {
-        return orgAuthStore.user.type;
+        return loginAuthStore.user.type;
     }
 })
 
-export { orgAuthStore }
+export { loginAuthStore }

@@ -79,7 +79,15 @@ const loginAuthStore = reactive({
                         router.push('/')
                     }
                 }
+                
             });
+    },
+    logout() {
+        loginAuthStore.isAuthenticated = false
+        loginAuthStore.user = {}
+        localStorage.setItem('auth', 0)
+        localStorage.setItem('user', '{}')
+        router.push('/login')
     },
     getUserToken() {
         return loginAuthStore.user.accessToken;

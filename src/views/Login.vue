@@ -1,4 +1,4 @@
-//create home component
+<!-- Home Component -->
 <script setup>
 import { ref } from 'vue'
 import { loginAuthStore } from '../store/loginLogoutStore';
@@ -11,53 +11,54 @@ const password = ref('')
 
 </script>
 <template>
-    <p class="mt-10">
-    <section class="">
-        <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto lg:py-0">
-            <div class="w-full bg-white rounded-lg shadow md:mt-0 sm:max-w-md xl:p-0 ">
-                <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-                    <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl ">
-                        Sign in to your account
-                    </h1>
-                    <div class="space-y-4 md:space-y-6" action="#">
-                        <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-900 ">Email</label>
-                            <input v-model="username"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                                placeholder="username" required="">
-                        </div>
-                        <div>
-                            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 ">Password</label>
-                            <input v-model="password" type="password" name="password" id="password"
-                                placeholder="••••••••"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                                required="">
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-start">
-                                <div class="flex items-center h-5">
-                                    <input id="remember" aria-describedby="remember" type="checkbox"
-                                        class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300"
-                                        required="">
-                                </div>
-                                <div class="ml-3 text-sm">
-                                    <label for="remember" class="text-gray-500 ">Remember me</label>
-                                </div>
-                            </div>
-                            <router-link to="/register" class="text-sm font-medium text-primary-600 hover:underline">Create new account</router-link>
-                        </div>
-                        <p class="text-right">
-                            <button @click="loginAuth.authenticate(username, password)"
-                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                <span>Login</span>
-                            </button>
-                        </p>
-                    </div>
-                </div>
+  <div class="d-flex flex-column align-items-center justify-content-center mt-5 px-3">
+    <div class="w-100 bg-white rounded-lg shadow-lg sm:max-w-md p-4">
+      <div class="p-4 space-y-4">
+        <h1 class="text-xl fw-bold leading-tight text-center text-dark">
+          Sign in to your account
+        </h1>
+        <div class="space-y-4">
+          <div>
+            <label for="username" class="form-label">Email</label>
+            <input v-model="username"
+                   id="username"
+                   type="text"
+                   class="form-control"
+                   placeholder="Username"
+                   required>
+          </div>
+          <div>
+            <label for="password" class="form-label">Password</label>
+            <input v-model="password"
+                   type="password"
+                   id="password"
+                   class="form-control"
+                   placeholder="••••••••"
+                   required>
+          </div>
+          <div class="">
+            <div class="form-check">
+              <input id="remember"
+                     type="checkbox"
+                     class="form-check-input"
+                     required>
+              <label for="remember" class="form-check-label">Remember me</label>
             </div>
+          </div>
+          <div class="text-center">
+            <router-link to="/register" class="text-primary fw-bold text-decoration-underline">Create new account</router-link>
+            <br><br>
+            <button @click="loginAuth.authenticate(username, password)"
+                    class="btn btn-primary">
+              Login
+            </button>
+          </div>
         </div>
-    </section>
-    </p>
+      </div>
+    </div>
+  </div>
 </template>
 
-<style></style>
+<style>
+/* Add any custom styles here if necessary */
+</style>
