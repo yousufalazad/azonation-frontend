@@ -72,10 +72,10 @@ const loginAuthStore = reactive({
                     if ('1' == res.data.type) {
                         router.push('/individual-dashboard')
                     } else if ('2' == res.data.type){
-                        router.push('/org-dashboard')
-                    } else if ('3' == res.data.type){
-                        router.push('/org-dashboard')
-                    }else {
+                        //router.push('/org-dashboard')
+                        // Pass res.data.id to org dashboard
+                        router.push({ name: 'org-dashboard', params: { id: res.data.id }})
+                    } else {
                         router.push('/')
                     }
                 }

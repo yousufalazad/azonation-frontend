@@ -60,23 +60,6 @@ const orgAuthStore = reactive({
         const response = await res.data;
         return response;
     },
-    authenticate(username, password) {
-        orgAuthStore.fetchPublicApi('/api/login', { email: username, password }, 'POST')
-            .then(res => {
-                if (res.status) {
-                    orgAuthStore.isAuthenticated = true
-                    orgAuthStore.user = res.data
-                    localStorage.setItem('auth', 1)
-                    localStorage.setItem('user', JSON.stringify(res.data))
-
-                    if ('admin' == res.data.type) {
-                        router.push('/admin')
-                    } else {
-                        router.push('/')
-                    }
-                }
-            });
-    },
     orgRegister(org_name, email, password) {
         orgAuthStore.fetchPublicApi('/api/org_register', { org_name: org_name, email: email, password: password }, 'POST')
             .then(res => {
@@ -88,13 +71,28 @@ const orgAuthStore = reactive({
                 }
             });
     },
-    
-    getUserToken() {
-        return orgAuthStore.user.accessToken;
-    },
-    getUserType() {
-        return orgAuthStore.user.type;
-    }
+    // orgDetails(orgId) {
+    //     orgAuthStore.fetchPublicApi('/api/organisation', { orgId: id }, 'GET')
+    //         .then(res => {
+                
+    //             if (res.status) {
+    //                 const response = await res.data;
+    //                 return response;
+    //             } 
+
+    //         });
+    // },
+    //from chatGPT
+    // async orgDetails(orgId) {
+    //     try {
+    //         const response = await fetch(`${orgAuthStore.apiBase}/api/organisation/${orgId}`);
+    //         const data = await response.json();
+    //         return data;
+    //     } catch (error) {
+    //         console.error("Error fetching org details:", error);
+    //         return null;
+    //     }
+    // }
 })
 
 export { orgAuthStore }
