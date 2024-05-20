@@ -4,8 +4,10 @@ import { computed } from 'vue';
 import { loginAuthStore } from "./store/loginLogoutStore";
 
 const auth = loginAuthStore;
-
 const UserType = computed(() => auth.user?.type);
+//const UserName = computed(() => auth.user?.org_name);
+//const IndividualUserName = computed(() => auth.user?.full_name);
+
 </script>
 
 <template>

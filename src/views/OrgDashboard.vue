@@ -1,14 +1,18 @@
-<template>
-  <div class="org_dashboard">
-      <h1>Org Dashboard page</h1>
-      <h3>Hello (name here)</h3>
-  </div>
-</template>
+<!-- App.vue -->
+<script setup>
+import { computed } from 'vue';
+import { loginAuthStore } from "../store/loginLogoutStore";
 
-<script>
+const auth = loginAuthStore;
+const UserType = computed(() => auth.user?.type);
 
 </script>
 
-<style>
+<template>
+  <h1>Org Dasboard Data:</h1>
+  <p>
+    User type for Organization: <span>{{ UserType }}</span>
+  </p>
+</template>
 
-</style>
+<style></style>
