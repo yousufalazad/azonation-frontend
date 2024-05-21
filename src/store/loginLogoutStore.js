@@ -99,7 +99,8 @@ const loginAuthStore = reactive({
     console.log("user_id", id);
 
     this.fetchPublicApi(`/api/organisation_data/${id}`, {}, "GET")
-      .then((res) => {
+    //loginAuthStore.fetchPublicApi("/api/organisation_data",{ id: id },"GET")
+          .then((res) => {
         if (res.status) {
           console.log("Organisation Data:", res.data);
         } else {
