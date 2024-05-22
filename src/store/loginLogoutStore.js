@@ -6,6 +6,8 @@ const loginAuthStore = reactive({
   apiBase: "http://localhost:8000",
   isAuthenticated: localStorage.getItem("auth") == 1,
   user: JSON.parse(localStorage.getItem("user")),
+  org: JSON.parse(localStorage.getItem("org")),
+  individual: JSON.parse(localStorage.getItem("individual")),
   errors: null,
   async fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
     let request = {
@@ -93,7 +95,18 @@ const loginAuthStore = reactive({
   },
 
   individualData(id){
-    console.log('user_id',id);
+    console.log("user_id", id);
+
+    this.fetchPublicApi(`/api/individual_data/${id}`, {}, "GET")
+      .then((res) => {
+        if (res.status) {
+          this.individual = res.data;
+          localStorage.setItem("individual", JSON.stringify(res.data));
+          console.log("Individual Data:", res.data);
+        } else {
+          this.errors = res.message;
+        }
+      })
   },
   orgData(id) {
     console.log("user_id", id);
@@ -101,15 +114,13 @@ const loginAuthStore = reactive({
     this.fetchPublicApi(`/api/organisation_data/${id}`, {}, "GET")
       .then((res) => {
         if (res.status) {
+          this.org = res.data;
+          localStorage.setItem("org", JSON.stringify(res.data));
           console.log("Organisation Data:", res.data);
         } else {
           this.errors = res.message;
         }
       })
-      .catch((error) => {
-        console.error("Organisation Data Fetch Error:", error);
-        this.errors = error;
-      });
   },
 
 //   orgData(id){
