@@ -9,6 +9,7 @@ const loginAuthStore = reactive({
   org: JSON.parse(localStorage.getItem("org")),
   individual: JSON.parse(localStorage.getItem("individual")),
   errors: null,
+  
   async fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
     let request = {
       method: requestType.toUpperCase(),
@@ -19,108 +20,69 @@ const loginAuthStore = reactive({
       },
     };
 
-    if (
-      requestType.toUpperCase() == "POST" ||
-      "PUT" == requestType.toUpperCase()
-    ) {
+    if (requestType.toUpperCase() === "POST" || requestType.toUpperCase() === "PUT") {
       request.body = JSON.stringify(params);
     }
 
-    const res = await fetch(loginAuthStore.apiBase + endPoint, request);
-
-    const response = await res.json();
-    return response;
-  },
-  async fetchProtectedApi(endPoint = "", params = {}, requestType = "GET") {
-    const token = loginAuthStore.getUserToken();
-    let request = {
-      method: requestType.toUpperCase(),
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        Accept: "application/vnd.api+json",
-        "Content-Type": "application/vnd.api+json",
-        Authorization: `Bearer ${token}`,
-      },
-    };
-
-    if (
-      requestType.toUpperCase() == "POST" ||
-      "PUT" == requestType.toUpperCase()
-    ) {
-      request.body = JSON.stringify(params);
+    try {
+      const res = await fetch(this.apiBase + endPoint, request);
+      const response = await res.json();
+      return response;
+    } catch (error) {
+      console.error("Error fetching public API:", error);
+      throw new Error("API request failed");
     }
-
-    const res = await fetch(loginAuthStore.apiBase + endPoint, request);
-
-    const response = await res.json();
-    return response;
   },
-  async uploadProtectedApi(endPoint = "", params = {}) {
-    const token = loginAuthStore.getUserToken();
+  
+  async authenticate(username, password) {
+    try {
+      const res = await this.fetchPublicApi("/api/login", { email: username, password: password }, "POST");
+      if (res.status) {
+        this.isAuthenticated = true;
+        this.user = res.data;
+        localStorage.setItem("auth", 1);
+        localStorage.setItem("user", JSON.stringify(res.data));
 
-    const res = await axios.post(loginAuthStore.apiBase + endPoint, params, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    const response = await res.data;
-    return response;
-  },
-  authenticate(username, password) {
-    loginAuthStore.fetchPublicApi("/api/login",{ email: username, password: password },"POST")
-      .then((res) => {
-        if (res.status) {
-          loginAuthStore.isAuthenticated = true;
-          loginAuthStore.user = res.data;
-          localStorage.setItem("auth", 1);
-          localStorage.setItem("user", JSON.stringify(res.data));
-
-          if ("1" == res.data.type) {
-            this.individualData(res.data.user_id)
-            router.push({ name: "individual-dashboard" });
-            
-          } else if ("2" == res.data.type) {
-            //router.push('/org-dashboard')
-            this.orgData(res.data.user_id)
-            router.push({ name: "org-dashboard" });
-            
-          } else {
-            router.push("/");
-          }
+        if ("1" == res.data.type) {
+          this.individualData(res.data.user_id);
+          router.push({ name: "individual-dashboard" });
+          
+        } else if ("2" == res.data.type) {
+          await this.orgData(res.data.user_id);
+          router.push({ name: "org-dashboard" });
+          
+        } else {
+          router.push("/");
         }
-      });
+      } else {
+        this.errors = res.message;
+        console.error("Authentication failed:", res.message);
+      }
+    } catch (error) {
+      console.error("Error during authentication:", error);
+      this.errors = error.message;
+    }
   },
 
   individualData(id){
-    console.log("user_id", id);
-
-    this.fetchPublicApi(`/api/individual_data/${id}`, {}, "GET")
-      .then((res) => {
-        if (res.status) {
-          this.individual = res.data;
-          localStorage.setItem("individual", JSON.stringify(res.data));
-          console.log("Individual Data:", res.data);
-        } else {
-          this.errors = res.message;
-        }
-      })
+    console.log('user_id',id);
   },
-  orgData(id) {
-    console.log("user_id", id);
+  
+  async orgData(id) {
+    console.log("Fetching organization data for user_id", id);
 
     this.fetchPublicApi(`/api/organisation_data/${id}`, {}, "GET")
       .then((res) => {
         if (res.status) {
-          this.org = res.data;
-          localStorage.setItem("org", JSON.stringify(res.data));
           console.log("Organisation Data:", res.data);
         } else {
           this.errors = res.message;
         }
       })
+      .catch((error) => {
+        console.error("Organisation Data Fetch Error:", error);
+        this.errors = error;
+      });
   },
 
 //   orgData(id){
@@ -142,17 +104,13 @@ const loginAuthStore = reactive({
 //       }
  // },
   logout() {
-    loginAuthStore.isAuthenticated = false;
-    loginAuthStore.user = {};
+    this.isAuthenticated = false;
+    this.user = {};
+    this.org = {};
     localStorage.setItem("auth", 0);
     localStorage.setItem("user", "{}");
+    localStorage.setItem("org", "{}");
     router.push("/login");
-  },
-  getUserToken() {
-    return loginAuthStore.user.accessToken;
-  },
-  getUserType() {
-    return loginAuthStore.user.type;
   },
 });
 
