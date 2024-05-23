@@ -125,24 +125,7 @@ const loginAuthStore = reactive({
       })
   },
 
-//   orgData(id){
-//     console.log('user_id', id);
 
-//     try {
-//         loginAuthStore.fetchPublicApi("/api/organisation_data/",{ id: id },"GET")
-//         .then((res) => {
-//         if (res.status) {
-//           console.log('Organisation Data:', res.data);
-//           // Handle the organisation data as needed
-//         } else {
-//           this.errors = res.message;
-//         }
-//         });
-//       } catch (error) {
-//         console.error("Organisation Data Fetch Error:", error);
-//         this.errors = error;
-//       }
- // },
   logout() {
     loginAuthStore.isAuthenticated = false;
     loginAuthStore.user = {};

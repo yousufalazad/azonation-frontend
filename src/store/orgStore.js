@@ -71,28 +71,6 @@ const orgAuthStore = reactive({
                 }
             });
     },
-    // orgDetails(orgId) {
-    //     orgAuthStore.fetchPublicApi('/api/organisation', { orgId: id }, 'GET')
-    //         .then(res => {
-                
-    //             if (res.status) {
-    //                 const response = await res.data;
-    //                 return response;
-    //             } 
-
-    //         });
-    // },
-    //from chatGPT
-    // async orgDetails(orgId) {
-    //     try {
-    //         const response = await fetch(`${orgAuthStore.apiBase}/api/organisation/${orgId}`);
-    //         const data = await response.json();
-    //         return data;
-    //     } catch (error) {
-    //         console.error("Error fetching org details:", error);
-    //         return null;
-    //     }
-    // }
 })
 
 export { orgAuthStore }

@@ -45,6 +45,9 @@ const UserType = computed(() => auth.user?.type);
                   <li class="nav-item">
                     <router-link class="nav-link" to="/org-dashboard">Organization Dashboard2</router-link>
                   </li>
+                  <li class="nav-item">
+                    <router-link class="nav-link" to="/org-member-list">Org Member List</router-link>
+                  </li>
                 </ul>
               </li>
               <li class="nav-item">

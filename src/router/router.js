@@ -4,6 +4,7 @@ import OrgRegister from '../views/OrgRegister.vue'
 import IndividualRegister from '../views/individualRegister.vue'
 import IndividualDashboard from '../views/IndividualDashboard.vue'
 import OrgDashboard from '../views/OrgDashboard.vue'
+import OrgMemberList from '../views/orgMemberList.vue'
 import Login from '../views/Login.vue'
 
 const router = createRouter({
@@ -33,6 +34,11 @@ const router = createRouter({
       path: '/org-dashboard',
       name: 'org-dashboard',
       component: OrgDashboard
+    },
+    {
+      path: '/org-member-list',
+      name: 'org-member-list',
+      component: OrgMemberList
     },
     {
       path: '/login',
