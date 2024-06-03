@@ -1,9 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/Home.vue'
 import OrgRegister from '../views/OrgRegister.vue'
-import IndividualRegister from '../views/individualRegister.vue'
 import IndividualDashboard from '../views/IndividualDashboard.vue'
+import IndividualRegister from '../views/IndividualRegister.vue'
 import OrgDashboard from '../views/OrgDashboard.vue'
+import OrgProfileUpdate from '../views/OrgProfileUpdate.vue'
+import AddMember from '../views/AddMember.vue'
 import OrgMemberList from '../views/orgMemberList.vue'
 import Login from '../views/Login.vue'
 
@@ -33,7 +35,24 @@ const router = createRouter({
     {
       path: '/org-dashboard',
       name: 'org-dashboard',
-      component: OrgDashboard
+      component: OrgDashboard,
+      children: [
+        {
+          path: 'org-profile-update',
+          name: 'org-profile-update',
+          component: OrgProfileUpdate
+        },
+        {
+          path: 'add-member',
+          name: 'add-member',
+          component: AddMember
+        },
+        {
+          path: 'org-member-list',
+          name: 'org-member-list',
+          component: OrgMemberList
+        }
+      ]
     },
     {
       path: '/org-member-list',
