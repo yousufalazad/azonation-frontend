@@ -31,18 +31,26 @@ onMounted(fetchMemberList);
       <table class="table table-striped">
         <thead>
           <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Full Name</th>
-            <th scope="col">User ID</th>
+            <th scope="col">Sl</th>
+            <th scope="col">ID Number</th>
+            <th scope="col">Name</th>
             <th scope="col">Azon ID</th>
+            <th scope="col">Individual ID</th>
+            <th scope="col">Joining Date</th>
+            <th scope="col">Membership Type</th>
+            <th scope="col">End Date</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="member in memberList" :key="member.id">
             <td>{{ member.id }}</td>
+            <td>{{ member.existing_org_membership_id_number }}</td>
             <td>{{ member.individual.full_name }}</td>
             <td>{{ member.individual.azon_id }}</td>
             <td>{{ member.individual.id }}</td>
+            <td>{{ member.joining_date }}</td>
+            <td>{{ member.membership_type }}</td>
+            <td>{{ member.end_date }}</td>
           </tr>
         </tbody>
       </table>
