@@ -1,7 +1,7 @@
 <!-- Sidebar.vue -->
 <template>
     <div class="sidebar">
-      <router-link to="/org-dashboard/profile" class="menu-item">Profile Update</router-link>
+      <router-link to="/org-dashboard/org-profile-update" class="menu-item">Profile Update</router-link>
       <router-link to="/org-dashboard/add-member" class="menu-item">Add Member</router-link>
       <router-link to="/org-dashboard/org-member-list" class="menu-item">Member List</router-link>
     </div>

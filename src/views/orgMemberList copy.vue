@@ -1,60 +1,56 @@
-<!-- OrgMemberList.vue -->
+<!-- AddMember.vue -->
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import { loginAuthStore } from "../store/loginLogoutStore";
 
 const memberList = ref([]);
-const orgId = loginAuthStore.org.id;
+const orgId = loginAuthStore.org.id; // Assuming the org ID is stored in the logged-in user
 
 const fetchMemberList = async () => {
   try {
+    console.log(orgId);
     const response = await loginAuthStore.fetchProtectedApi(`/api/org-members-list/${orgId}`, {}, 'GET');
     if (response.status) {
       memberList.value = response.data;
+      console.log("data");
     } else {
       memberList.value = [];
     }
   } catch (error) {
-    console.error("Error fetching member list:", error);
+    console.error("Error searching individuals:", error);
     memberList.value = [];
   }
 };
 
 onMounted(fetchMemberList);
+
 </script>
 
 <template>
-  <div class="org-member-list">
-    <h2>Member List</h2>
-    <div v-if="memberList.length">
-      <table class="table table-striped">
+  <div class="add-member container">
+    <h2 class="mb-4 text-center">Member List</h2>
+    <div v-if="memberList.length" class="results-container">
+      <table>
         <thead>
           <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Full Name</th>
-            <th scope="col">User ID</th>
-            <th scope="col">Azon ID</th>
+            <th>Sl</th>
+            <th>Name</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="member in memberList" :key="member.id">
             <td>{{ member.id }}</td>
             <td>{{ member.individual.full_name }}</td>
-            <td>{{ member.individual.azon_id }}</td>
-            <td>{{ member.individual.id }}</td>
+            <!-- <td>{{ member.individual.full_name }}</td> -->
           </tr>
         </tbody>
       </table>
     </div>
     <div v-else>
-      <p>No members found</p>
+      <p>No results found</p>
     </div>
   </div>
 </template>
 
-<style scoped>
-.org-member-list {
-  padding: 20px;
-}
-</style>
+<style scoped></style>

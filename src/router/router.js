@@ -55,11 +55,6 @@ const router = createRouter({
       ]
     },
     {
-      path: '/org-member-list',
-      name: 'org-member-list',
-      component: OrgMemberList
-    },
-    {
       path: '/login',
       name: 'login',
       component: Login
