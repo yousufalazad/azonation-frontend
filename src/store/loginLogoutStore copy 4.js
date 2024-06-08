@@ -1,7 +1,8 @@
-import { reactive } from "vue";
+//loginLogoutStore.js
+
+import { ref, reactive } from "vue";
 import router from "../router/router";
-import axios from 'axios';
-import Swal from "sweetalert2";
+import axios from "axios";
 
 const loginAuthStore = reactive({
   apiBase: "http://localhost:8000",
@@ -22,12 +23,13 @@ const loginAuthStore = reactive({
 
     if (
       requestType.toUpperCase() == "POST" ||
-      requestType.toUpperCase() == "PUT"
+      "PUT" == requestType.toUpperCase()
     ) {
       request.body = JSON.stringify(params);
     }
 
     const res = await fetch(loginAuthStore.apiBase + endPoint, request);
+
     const response = await res.json();
     return response;
   },
@@ -45,12 +47,13 @@ const loginAuthStore = reactive({
 
     if (
       requestType.toUpperCase() == "POST" ||
-      requestType.toUpperCase() == "PUT"
+      "PUT" == requestType.toUpperCase()
     ) {
       request.body = JSON.stringify(params);
     }
 
     const res = await fetch(loginAuthStore.apiBase + endPoint, request);
+
     const response = await res.json();
     return response;
   },
@@ -68,6 +71,7 @@ const loginAuthStore = reactive({
   //   const response = await res.data;
   //   return response;
   // },
+
   async uploadProtectedApi(endPoint = "", params = {}) {
     const token = loginAuthStore.getUserToken();
 
@@ -80,13 +84,9 @@ const loginAuthStore = reactive({
 
     return res.data;
   },
+
   authenticate(username, password) {
-    loginAuthStore
-      .fetchPublicApi(
-        "/api/login",
-        { email: username, password: password },
-        "POST"
-      )
+    loginAuthStore.fetchPublicApi("/api/login",{ email: username, password: password },"POST")
       .then((res) => {
         if (res.status) {
           loginAuthStore.isAuthenticated = true;
@@ -95,90 +95,65 @@ const loginAuthStore = reactive({
           localStorage.setItem("user", JSON.stringify(res.data));
 
           if ("1" == res.data.type) {
-            this.individualData(res.data.user_id);
+            this.individualData(res.data.user_id)
             router.push({ name: "individual-dashboard" });
+            
           } else if ("2" == res.data.type) {
-            this.orgData(res.data.user_id);
+            //router.push('/org-dashboard')
+            this.orgData(res.data.user_id)
             router.push({ name: "org-dashboard" });
+            
           } else {
             router.push("/");
           }
-
-          Swal.fire({
-            icon: "success",
-            title: "Login Successful",
-            text: "You have successfully logged in.",
-            timer: 2000,
-            timerProgressBar: true,
-            showConfirmButton: false,
-          });
-        } else {
-          // Handle login errors here
-          loginAuthStore.errors = res.errors;
-          Swal.fire({
-            icon: "error",
-            title: "Login Failed",
-            text: res.errors ? res.errors.join(", ") : "Unknown error",
-          });
         }
       });
   },
-  individualData(id) {
+
+  individualData(id){
     console.log("user_id", id);
-    this.fetchPublicApi(`/api/individual_data/${id}`, {}, "GET").then((res) => {
-      if (res.status) {
-        this.individual = res.data;
-        localStorage.setItem("individual", JSON.stringify(res.data));
-        console.log("Individual Data:", res.data);
-      } else {
-        this.errors = res.message;
-      }
-    });
+
+    this.fetchPublicApi(`/api/individual_data/${id}`, {}, "GET")
+      .then((res) => {
+        if (res.status) {
+          this.individual = res.data;
+          localStorage.setItem("individual", JSON.stringify(res.data));
+          console.log("Individual Data:", res.data);
+        } else {
+          this.errors = res.message;
+        }
+      })
   },
   orgData(id) {
     console.log("user_id", id);
-    this.fetchPublicApi(`/api/organisation_data/${id}`, {}, "GET").then((res) => {
-      if (res.status) {
-        this.org = res.data;
-        localStorage.setItem("org", JSON.stringify(res.data));
-        console.log("Organisation Data:", res.data);
-      } else {
-        this.errors = res.message;
-      }
-    });
+
+    this.fetchPublicApi(`/api/organisation_data/${id}`, {}, "GET")
+      .then((res) => {
+        if (res.status) {
+          this.org = res.data;
+          localStorage.setItem("org", JSON.stringify(res.data));
+          console.log("Organisation Data:", res.data);
+        } else {
+          this.errors = res.message;
+        }
+      })
   },
+
+
   logout() {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "You will be logged out.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, log out!",
-      cancelButtonText: "Cancel",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        loginAuthStore.isAuthenticated = false;
-        loginAuthStore.user = {};
-        localStorage.setItem("auth", 0);
-        localStorage.setItem("user", "{}");
-        router.push("/login");
-        Swal.fire({
-          icon: "success",
-          title: "Logged Out",
-          text: "You have been logged out successfully.",
-          timer: 2000,
-          timerProgressBar: true,
-          showConfirmButton: false,
-        });
-      }
-    });
+    loginAuthStore.isAuthenticated = false;
+    loginAuthStore.user = {};
+    localStorage.setItem("auth", 0);
+    localStorage.setItem("user", "{}");
+    router.push("/login");
   },
   getUserToken() {
-    return loginAuthStore.user?.accessToken;
+    return loginAuthStore.user.accessToken;
   },
   getUserType() {
-    return loginAuthStore.user?.type;
+    return loginAuthStore.user.type;
   },
 });
 
 export { loginAuthStore };
+

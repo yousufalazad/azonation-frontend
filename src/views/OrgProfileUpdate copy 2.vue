@@ -28,10 +28,11 @@ const updateOrganisationDetails = async () => {
     if (selectedImage.value) {
         const formData = new FormData();
         formData.append('image', selectedImage.value);
+
         try {
-            const logoResponse = await loginAuthStore.uploadProtectedApi(`/api/organisation/logo/${orgId}`, formData);
+            const logoResponse = await loginAuthStore.uploadProtectedApi(`/api/org_logo/${orgId}`, formData);
             if (logoResponse.status) {
-                Swal.fire('Success', 'Logo save successfully', 'success');
+                Swal.fire('Success', 'Logo updated successfully', 'success');
                 logoPath.value = logoResponse.data.image;
             } else {
                 Swal.fire('Error', 'Failed to update logo', 'error');
@@ -54,7 +55,9 @@ onMounted(fetchLogo);
             <input type="file" id="logo" @change="handleImageUpload" class="form-control">
         </div>
         <div class="mb-3" v-if="logoPath">
+            <!-- <img :src="logoPath" alt="Organization Logo" class="img-thumbnail"> -->
             <img :src="`${baseURL}${logoPath}`" alt="Organization Logo" class="img-thumbnail">
+
         </div>
         <button @click="updateOrganisationDetails" class="btn btn-primary">Update</button>
     </div>
