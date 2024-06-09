@@ -74,12 +74,7 @@ const router = createRouter({
           path: 'org-member-list',
           name: 'org-member-list',
           component: OrgMemberList
-        },
-        // {
-        //   path: 'create-meeting',
-        //   name: 'org-member-list',
-        //   component: OrgMemberList
-        // }
+        }
       ]
     },
     {
