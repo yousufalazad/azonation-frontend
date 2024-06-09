@@ -4,7 +4,6 @@ import axios from 'axios';
 const individualAuthStore = reactive({
     apiBase: 'http://localhost:8000',
     isAuthenticated: localStorage.getItem('auth') == 1,
-    //user: JSON.parse(localStorage.getItem('user')),
     errors: null,
     async fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
         let request = {
@@ -60,23 +59,6 @@ const individualAuthStore = reactive({
         const response = await res.data;
         return response;
     },
-    authenticate(username, password) {
-        individualAuthStore.fetchPublicApi('/api/login', { email: username, password }, 'POST')
-            .then(res => {
-                if (res.status) {
-                    individualAuthStore.isAuthenticated = true
-                    individualAuthStore.user = res.data
-                    localStorage.setItem('auth', 1)
-                    localStorage.setItem('user', JSON.stringify(res.data))
-
-                    if ('admin' == res.data.type) {
-                        router.push('/admin')
-                    } else {
-                        router.push('/')
-                    }
-                }
-            });
-    },
     individualRegister(full_name, email, password) {
         individualAuthStore.fetchPublicApi('/api/individual_register', { full_name, email: email, password: password }, 'POST')
             .then(res => {
@@ -87,13 +69,6 @@ const individualAuthStore = reactive({
                     individualAuthStore.errors = res.errors;
                 }
             });
-    },
-    logout() {
-        individualAuthStore.isAuthenticated = false
-        individualAuthStore.user = {}
-        localStorage.setItem('auth', 0)
-        localStorage.setItem('user', '{}')
-        router.push('/login')
     },
     getUserToken() {
         return individualAuthStore.user.accessToken;

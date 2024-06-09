@@ -1,16 +1,26 @@
+<!-- Individual Dashboard.vue -->
+<script setup>
+import IndividualSidebar from './IndividualSidebar.vue';
+import { loginAuthStore } from "../store/loginLogoutStore";
+const auth = loginAuthStore;
+</script>
+
 <template>
-    <div class="individual_dashboard">
-      <h1>Individual Dashboard page</h1>
+  <div class="individual-layout">
+    <IndividualSidebar v-if="auth.isAuthenticated && auth.user?.type == 1" />
+    <div class="content-area">
+      <router-view />
     </div>
-  </template>
-  
-  <style>
-  /* @media (min-width: 1024px) {
-    .individual_dashboard {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-    }
-  } */
-  </style>
-  
+  </div>
+</template>
+
+<style scoped>
+.individual-layout {
+  display: flex;
+}
+.content-area {
+  margin-left: 220px;
+  padding: 20px;
+  flex-grow: 1;
+}
+</style>

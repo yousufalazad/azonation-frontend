@@ -4,7 +4,6 @@ import axios from 'axios';
 const orgMemberListAuthStore = reactive({
     apiBase: 'http://localhost:8000',
     isAuthenticated: localStorage.getItem('auth') == 1,
-    user: JSON.parse(localStorage.getItem('user')),
     errors: null,
     async fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
         let request = {

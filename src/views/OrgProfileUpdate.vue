@@ -24,7 +24,7 @@ const handleImageUpload = (event) => {
     selectedImage.value = event.target.files[0];
 };
 
-const updateOrganisationDetails = async () => {
+const orgLogoUpdate = async () => {
     if (selectedImage.value) {
         const formData = new FormData();
         formData.append('image', selectedImage.value);
@@ -48,7 +48,7 @@ onMounted(fetchLogo);
 
 <template>
     <div class="profile-update">
-        <h2>Profile Update</h2>
+        <h2>Org Profile Update</h2>
         <div class="mb-3">
             <label for="logo" class="form-label">Logo</label>
             <input type="file" id="logo" @change="handleImageUpload" class="form-control">
@@ -56,7 +56,7 @@ onMounted(fetchLogo);
         <div class="mb-3" v-if="logoPath">
             <img :src="`${baseURL}${logoPath}`" alt="Organization Logo" class="img-thumbnail">
         </div>
-        <button @click="updateOrganisationDetails" class="btn btn-primary">Update</button>
+        <button @click="orgLogoUpdate" class="btn btn-primary">Save</button>
     </div>
 </template>
 

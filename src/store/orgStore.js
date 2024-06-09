@@ -2,10 +2,8 @@ import { ref, reactive } from 'vue'
 import router from '../router/router'
 import axios from 'axios';
 const orgAuthStore = reactive({
-    // org_logo = null,
     apiBase: 'http://localhost:8000',
     isAuthenticated: localStorage.getItem('auth') == 1,
-    user: JSON.parse(localStorage.getItem('user')),
     errors: null,
     async fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
         let request = {

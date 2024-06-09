@@ -1,18 +1,24 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/Home.vue'
-import OrgRegister from '../views/OrgRegister.vue'
-import IndividualDashboard from '../views/IndividualDashboard.vue'
+import Login from '../views/Login.vue'
+
 import IndividualRegister from '../views/IndividualRegister.vue'
+import IndividualDashboard from '../views/IndividualDashboard.vue'
+import ConnectedOrganisation from '../views/ConnectedOrganisation.vue'
+import NotificationFromOrg from '../views/NotificationFromOrg.vue'
+import IndividualProfileUpdate from '../views/IndividualProfileUpdate.vue'
+
+import OrgRegister from '../views/OrgRegister.vue'
 import OrgDashboard from '../views/OrgDashboard.vue'
 import OrgProfileUpdate from '../views/OrgProfileUpdate.vue'
 import AddMember from '../views/AddMember.vue'
 import OrgMemberList from '../views/orgMemberList.vue'
-import Login from '../views/Login.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
+    {  
       path: '/',
       name: 'home',
       component: HomeView
@@ -30,7 +36,24 @@ const router = createRouter({
     {
       path: '/individual-dashboard',
       name: 'individual-dashboard',
-      component: IndividualDashboard
+      component: IndividualDashboard,
+      children: [
+        {
+          path: 'connected-organisation',
+          name: 'connected-organisation',
+          component: ConnectedOrganisation
+        },
+        {
+          path: 'notification-from-org',
+          name: 'notification-from-org',
+          component: NotificationFromOrg
+        },
+        {
+          path: 'individual-profile-update',
+          name: 'individual-profile-update',
+          component: IndividualProfileUpdate
+        }
+      ]
     },
     {
       path: '/org-dashboard',
@@ -51,7 +74,12 @@ const router = createRouter({
           path: 'org-member-list',
           name: 'org-member-list',
           component: OrgMemberList
-        }
+        },
+        // {
+        //   path: 'create-meeting',
+        //   name: 'org-member-list',
+        //   component: OrgMemberList
+        // }
       ]
     },
     {
