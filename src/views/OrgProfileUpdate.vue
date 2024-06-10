@@ -1,17 +1,17 @@
 <!-- ProfileUpdate.vue -->
 <script setup>
 import { ref, onMounted } from 'vue';
-import { loginAuthStore } from "../store/loginLogoutStore";
+import { authStore } from "../store/authStore";
 import Swal from "sweetalert2";
 
-const orgId = loginAuthStore.org.id; // Assuming the org ID is stored in the logged-in user
+const orgId = authStore.org.id; // Assuming the org ID is stored in the logged-in user
 const logoPath = ref('');
 const selectedImage = ref(null);
 // Base URL of the Laravel backend server
 const baseURL = 'http://localhost:8000';
 const fetchLogo = async () => {
     try {
-        const response = await loginAuthStore.fetchProtectedApi(`/api/organisation/logo/${orgId}`, {}, 'GET');
+        const response = await authStore.fetchProtectedApi(`/api/organisation/logo/${orgId}`, {}, 'GET');
         if (response.status && response.data.image) {
             logoPath.value = response.data.image;
         }
@@ -29,7 +29,7 @@ const orgLogoUpdate = async () => {
         const formData = new FormData();
         formData.append('image', selectedImage.value);
         try {
-            const logoResponse = await loginAuthStore.uploadProtectedApi(`/api/organisation/logo/${orgId}`, formData);
+            const logoResponse = await authStore.uploadProtectedApi(`/api/organisation/logo/${orgId}`, formData);
             if (logoResponse.status) {
                 Swal.fire('Success', 'Logo save successfully', 'success');
                 logoPath.value = logoResponse.data.image;
@@ -68,4 +68,4 @@ onMounted(fetchLogo);
     max-width: 200px;
     margin-top: 10px;
 }
-</style>
+</style>../store/authStore

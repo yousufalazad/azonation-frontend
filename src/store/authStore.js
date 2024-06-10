@@ -3,7 +3,7 @@ import router from "../router/router";
 import axios from 'axios';
 import Swal from "sweetalert2";
 
-const loginAuthStore = reactive({
+const authStore = reactive({
   apiBase: "http://localhost:8000",
   isAuthenticated: localStorage.getItem("auth") == 1,
   user: JSON.parse(localStorage.getItem("user")),
@@ -27,12 +27,12 @@ const loginAuthStore = reactive({
       request.body = JSON.stringify(params);
     }
 
-    const res = await fetch(loginAuthStore.apiBase + endPoint, request);
+    const res = await fetch(authStore.apiBase + endPoint, request);
     const response = await res.json();
     return response;
   },
   async fetchProtectedApi(endPoint = "", params = {}, requestType = "GET") {
-    const token = loginAuthStore.getUserToken();
+    const token = authStore.getUserToken();
     let request = {
       method: requestType.toUpperCase(),
       headers: {
@@ -50,14 +50,14 @@ const loginAuthStore = reactive({
       request.body = JSON.stringify(params);
     }
 
-    const res = await fetch(loginAuthStore.apiBase + endPoint, request);
+    const res = await fetch(authStore.apiBase + endPoint, request);
     const response = await res.json();
     return response;
   },
   // async uploadProtectedApi(endPoint = "", params = {}) {
-  //   const token = loginAuthStore.getUserToken();
+  //   const token = authStore.getUserToken();
 
-  //   const res = await axios.post(loginAuthStore.apiBase + endPoint, params, {
+  //   const res = await axios.post(authStore.apiBase + endPoint, params, {
   //     headers: {
   //       "Access-Control-Allow-Origin": "*",
   //       "Content-Type": "multipart/form-data",
@@ -69,9 +69,9 @@ const loginAuthStore = reactive({
   //   return response;
   // },
   async uploadProtectedApi(endPoint = "", params = {}) {
-    const token = loginAuthStore.getUserToken();
+    const token = authStore.getUserToken();
 
-    const res = await axios.post(loginAuthStore.apiBase + endPoint, params, {
+    const res = await axios.post(authStore.apiBase + endPoint, params, {
       headers: {
         "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${token}`,
@@ -80,8 +80,30 @@ const loginAuthStore = reactive({
 
     return res.data;
   },
+  individualRegister(full_name, email, password) {
+    authStore.fetchPublicApi('/api/individual_register', { full_name, email: email, password: password }, 'POST')
+        .then(res => {
+            if (res.status) {
+              authStore.errors = null;
+                router.push('/login');
+            } else {
+              authStore.errors = res.errors;
+            }
+        });
+  },
+  orgRegister(org_name, email, password) {
+    authStore.fetchPublicApi('/api/org_register', { org_name: org_name, email: email, password: password }, 'POST')
+        .then(res => {
+            if (res.status) {
+              authStore.errors = null;
+                router.push('/login');
+            } else {
+              authStore.errors = res.errors;
+            }
+        });
+},
   authenticate(username, password) {
-    loginAuthStore
+    authStore
       .fetchPublicApi(
         "/api/login",
         { email: username, password: password },
@@ -89,8 +111,8 @@ const loginAuthStore = reactive({
       )
       .then((res) => {
         if (res.status) {
-          loginAuthStore.isAuthenticated = true;
-          loginAuthStore.user = res.data;
+          authStore.isAuthenticated = true;
+          authStore.user = res.data;
           localStorage.setItem("auth", 1);
           localStorage.setItem("user", JSON.stringify(res.data));
 
@@ -114,7 +136,7 @@ const loginAuthStore = reactive({
           });
         } else {
           // Handle login errors here
-          loginAuthStore.errors = res.errors;
+          authStore.errors = res.errors;
           Swal.fire({
             icon: "error",
             title: "Login Failed",
@@ -122,6 +144,32 @@ const loginAuthStore = reactive({
           });
         }
       });
+  },
+  logout() {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You will be logged out.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, log out!",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        authStore.isAuthenticated = false;
+        authStore.user = {};
+        localStorage.setItem("auth", 0);
+        localStorage.setItem("user", "{}");
+        router.push("/login");
+        Swal.fire({
+          icon: "success",
+          title: "Logged Out",
+          text: "You have been logged out successfully.",
+          timer: 2000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+        });
+      }
+    });
   },
   individualData(id) {
     console.log("user_id", id);
@@ -147,38 +195,23 @@ const loginAuthStore = reactive({
       }
     });
   },
-  logout() {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "You will be logged out.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, log out!",
-      cancelButtonText: "Cancel",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        loginAuthStore.isAuthenticated = false;
-        loginAuthStore.user = {};
-        localStorage.setItem("auth", 0);
-        localStorage.setItem("user", "{}");
-        router.push("/login");
-        Swal.fire({
-          icon: "success",
-          title: "Logged Out",
-          text: "You have been logged out successfully.",
-          timer: 2000,
-          timerProgressBar: true,
-          showConfirmButton: false,
-        });
-      }
-    });
-  },
   getUserToken() {
-    return loginAuthStore.user?.accessToken;
+    return authStore.user?.accessToken;
   },
   getUserType() {
-    return loginAuthStore.user?.type;
+    return authStore.user?.type;
+  },
+  createCommittee(orgId, name, short_description, start_date, end_date, note, status){
+    authStore.fetchPublicApi('/api/create_committee', {orgId: orgId, name: name, short_description: short_description, start_date: start_date, end_date: end_date, note: note, status: status}, 'POST')
+        .then(res => {
+            if (res.status) {
+              authStore.errors = null;
+                router.push('/committees');
+            } else {
+              authStore.errors = res.errors;
+            }
+        });
   },
 });
 
-export { loginAuthStore };
+export { authStore };

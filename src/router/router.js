@@ -13,6 +13,7 @@ import OrgDashboard from '../views/OrgDashboard.vue'
 import OrgProfileUpdate from '../views/OrgProfileUpdate.vue'
 import AddMember from '../views/AddMember.vue'
 import OrgMemberList from '../views/orgMemberList.vue'
+import CreateCommittee from '../views/Committee.vue'
 
 
 const router = createRouter({
@@ -74,6 +75,11 @@ const router = createRouter({
           path: 'org-member-list',
           name: 'org-member-list',
           component: OrgMemberList
+        },
+        {
+          path: 'create-committee',
+          name: 'create-committee',
+          component: CreateCommittee
         }
       ]
     },

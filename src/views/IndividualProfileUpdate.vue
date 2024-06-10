@@ -1,17 +1,17 @@
 <!-- ProfileUpdate.vue -->
 <script setup>
 import { ref, onMounted } from 'vue';
-import { loginAuthStore } from "../store/loginLogoutStore";
+import { authStore } from "../store/authStore";
 import Swal from 'sweetalert2';
 
-const individualId = loginAuthStore.individual.id; // Assuming the Individual ID is stored in the logged-in user
+const individualId = authStore.individual.id; // Assuming the Individual ID is stored in the logged-in user
 const profileImagePath = ref('');
 const selectedImage = ref(null);
 // Base URL of the Laravel backend server
 const baseURL = 'http://localhost:8000';
 const fetchProfileImage = async () => {
     try {
-        const response = await loginAuthStore.fetchProtectedApi(`/api/profileimage/${individualId}`, {}, 'GET');
+        const response = await authStore.fetchProtectedApi(`/api/profileimage/${individualId}`, {}, 'GET');
         if (response.status && response.data.image) {
           profileImagePath.value = response.data.image;
         }
@@ -29,7 +29,7 @@ const profileImageUpdate = async () => {
         const formData = new FormData();
         formData.append('image', selectedImage.value);
         try {
-            const profileImageResponse = await loginAuthStore.uploadProtectedApi(`/api/profileimage/${individualId}`, formData);
+            const profileImageResponse = await authStore.uploadProtectedApi(`/api/profileimage/${individualId}`, formData);
             if (profileImageResponse.status) {
                 Swal.fire('Success', 'Profile picture save successfully', 'success');
                 profileImagePath.value = profileImageResponse.data.image;
@@ -68,4 +68,4 @@ onMounted(fetchProfileImage);
     max-width: 200px;
     margin-top: 10px;
 }
-</style>
+</style>../store/authStore

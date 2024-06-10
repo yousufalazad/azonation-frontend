@@ -2,14 +2,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { loginAuthStore } from "../store/loginLogoutStore";
+import { authStore } from "../store/authStore";
 
 const memberList = ref([]);
-const orgId = loginAuthStore.org.id;
+const orgId = authStore.org.id;
 
 const fetchMemberList = async () => {
   try {
-    const response = await loginAuthStore.fetchProtectedApi(`/api/org-members-list/${orgId}`, {}, 'GET');
+    const response = await authStore.fetchProtectedApi(`/api/org-members-list/${orgId}`, {}, 'GET');
     if (response.status) {
       memberList.value = response.data;
     } else {
@@ -66,3 +66,4 @@ onMounted(fetchMemberList);
   padding: 20px;
 }
 </style>
+../store/authStore

@@ -1,8 +1,8 @@
 <!-- Home Component -->
 <script setup>
 import { ref } from 'vue'
-import { loginAuthStore } from '../store/loginLogoutStore';
-const loginAuth = loginAuthStore
+import { authStore } from '../store/authStore';
+const loginAuth = authStore
 
 import router from '../router/router'
 
@@ -62,3 +62,4 @@ const password = ref('')
 <style>
 /* Add any custom styles here if necessary */
 </style>
+../store/authStore

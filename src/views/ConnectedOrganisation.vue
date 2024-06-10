@@ -2,14 +2,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { loginAuthStore } from "../store/loginLogoutStore";
+import { authStore } from "../store/authStore";
 
 const connectedOrgList = ref([]);
-const individualId = loginAuthStore.individual.id;
+const individualId = authStore.individual.id;
 
 const fetchOrganisationList = async () => {
   try {
-    const response = await loginAuthStore.fetchProtectedApi(`/api/connected-org-list/${individualId}`, {}, 'GET');
+    const response = await authStore.fetchProtectedApi(`/api/connected-org-list/${individualId}`, {}, 'GET');
     if (response.status) {
       connectedOrgList.value = response.data;
     } else {
@@ -64,3 +64,4 @@ onMounted(fetchOrganisationList);
   padding: 20px;
 }
 </style>
+../store/authStore

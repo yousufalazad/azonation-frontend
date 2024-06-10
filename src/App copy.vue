@@ -73,3 +73,4 @@ const UserType = computed(() => auth.user?.type);
 <style>
 /* Add any custom styles here if necessary */
 </style>
+./store/authStore

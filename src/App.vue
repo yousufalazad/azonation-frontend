@@ -1,9 +1,9 @@
 <!-- App.vue -->
 <script setup>
 import { computed } from 'vue';
-import { loginAuthStore } from "./store/loginLogoutStore";
+import { authStore } from "./store/authStore";
 
-const auth = loginAuthStore;
+const auth = authStore;
 const UserType = computed(() => auth.user?.type);
 </script>
 
@@ -55,4 +55,4 @@ const UserType = computed(() => auth.user?.type);
 
 <style>
 /* Add any custom styles here if necessary */
-</style>
+</style>./store/authStore

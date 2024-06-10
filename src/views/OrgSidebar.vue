@@ -5,7 +5,7 @@
       <router-link to="/org-dashboard/add-member" class="menu-item">Add Member</router-link>
       <router-link to="/org-dashboard/org-member-list" class="menu-item">Member List</router-link>
       <br>
-      <router-link to="/org-dashboard/org-member-list" class="menu-item">Committee</router-link>
+      <router-link to="/org-dashboard/create-committee" class="menu-item">Committee</router-link>
       <router-link to="/org-dashboard/org-member-list" class="menu-item">Former Committee</router-link>
       <br>
       <router-link to="/org-dashboard/org-member-list" class="menu-item">Create Meeting</router-link>

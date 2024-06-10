@@ -1,8 +1,8 @@
 <!-- Individual Dashboard.vue -->
 <script setup>
 import IndividualSidebar from './IndividualSidebar.vue';
-import { loginAuthStore } from "../store/loginLogoutStore";
-const auth = loginAuthStore;
+import { authStore } from "../store/authStore";
+const auth = authStore;
 </script>
 
 <template>
@@ -23,4 +23,4 @@ const auth = loginAuthStore;
   padding: 20px;
   flex-grow: 1;
 }
-</style>
+</style>../store/authStore
