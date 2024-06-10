@@ -3,11 +3,16 @@
     <div class="individualSidebar">
         <router-link to="/individual-dashboard/notification-from-org" class="menu-item">Notification from Org</router-link>
         <router-link to="/individual-dashboard/connected-organisation" class="menu-item">Connected Organization</router-link>
-        <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Profile</router-link>
+        <br>
         <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Upcoming Event</router-link>
         <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Past Event</router-link>
+        <br>
         <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Your Attendance</router-link>
         <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Your Designation</router-link>
+        <br>
+        <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Profile</router-link>
+        <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Settings</router-link>
+
     </div>
   </template>
   
@@ -17,7 +22,7 @@
     top: 50;
     left: 0;
     height: 100%;
-    width: 200px;
+    width: 250px;
     background-color: #f8f9fa;
     padding: 20px;
   }

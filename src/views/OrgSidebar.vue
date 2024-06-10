@@ -28,8 +28,8 @@
     top: 50;
     left: 0;
     height: 100%;
-    width: 200px;
-    background-color: #e9e8e8;
+    width: 280px;
+    background-color: #f8f9fa;
     padding: 20px;
   }
   .menu-item {
