@@ -44,7 +44,7 @@ onMounted(fetchMemberList);
         <tbody>
           <tr v-for="member in memberList" :key="member.id">
             <td>{{ member.id }}</td>
-            <td>{{ member.existing_org_membership_id_number }}</td>
+            <td>{{ member.existing_org_membership_id }}</td>
             <td>{{ member.individual.full_name }}</td>
             <td>{{ member.individual.azon_id }}</td>
             <td>{{ member.individual.id }}</td>

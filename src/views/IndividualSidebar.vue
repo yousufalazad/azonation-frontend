@@ -4,6 +4,10 @@
         <router-link to="/individual-dashboard/notification-from-org" class="menu-item">Notification from Org</router-link>
         <router-link to="/individual-dashboard/connected-organisation" class="menu-item">Connected Organization</router-link>
         <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Profile</router-link>
+        <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Upcoming Event</router-link>
+        <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Past Event</router-link>
+        <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Your Attendance</router-link>
+        <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Your Designation</router-link>
     </div>
   </template>
   

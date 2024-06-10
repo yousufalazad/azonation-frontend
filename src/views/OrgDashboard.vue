@@ -1,6 +1,6 @@
 <!-- OrgDashboard.vue -->
 <script setup>
-import Sidebar from './Sidebar.vue';
+import OrgSidebar from './OrgSidebar.vue';
 import { loginAuthStore } from "../store/loginLogoutStore";
 
 const auth = loginAuthStore;
@@ -8,7 +8,7 @@ const auth = loginAuthStore;
 
 <template>
   <div class="dashboard-layout">
-    <Sidebar v-if="auth.isAuthenticated && auth.user?.type == 2" />
+    <OrgSidebar v-if="auth.isAuthenticated && auth.user?.type == 2" />
     <div class="content-area">
       <router-view />
     </div>

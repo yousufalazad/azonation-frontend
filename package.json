@@ -12,7 +12,7 @@
   "dependencies": {
     "and": "^0.0.3",
     "axios": "^1.6.8",
-    "sweetalert2": "^11.11.0",
+    "sweetalert2": "^11.11.1",
     "vue": "^3.4.21",
     "vue-axios": "^3.5.2",
     "vue-router": "^4.3.0",

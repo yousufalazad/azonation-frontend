@@ -2,7 +2,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { loginAuthStore } from "../store/loginLogoutStore";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 
 const orgId = loginAuthStore.org.id; // Assuming the org ID is stored in the logged-in user
 const logoPath = ref('');

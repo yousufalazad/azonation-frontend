@@ -50,11 +50,11 @@ onMounted(fetchProfileImage);
     <div class="profile-update">
         <h2>Profile Picture Update</h2>
         <div class="mb-3">
-            <label for="Profile picture" class="form-label">Logo</label>
+            <label for="Profile picture" class="form-label">Profile Picture</label>
             <input type="file" id="profile_picture" @change="handleImageUpload" class="form-control">
         </div>
         <div class="mb-3" v-if="profileImagePath">
-            <img :src="`${baseURL}${profileImagePath}`" alt="Organization Logo" class="img-thumbnail">
+            <img :src="`${baseURL}${profileImagePath}`" alt="Individual Profile Picture" class="img-thumbnail">
         </div>
         <button @click="profileImageUpdate" class="btn btn-primary">Save</button>
     </div>
