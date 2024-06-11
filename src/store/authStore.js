@@ -202,7 +202,7 @@ const authStore = reactive({
     return authStore.user?.type;
   },
   createCommittee(orgId, name, short_description, start_date, end_date, note, status){
-    authStore.fetchPublicApi('/api/create_committee', {orgId: orgId, name: name, short_description: short_description, start_date: start_date, end_date: end_date, note: note, status: status}, 'POST')
+    authStore.fetchProtectedApi('/api/create_committee_store', {orgId: orgId, name: name, short_description: short_description, start_date: start_date, end_date: end_date, note: note, status: status}, 'POST')
         .then(res => {
             if (res.status) {
               authStore.errors = null;

@@ -5,13 +5,17 @@ import { authStore } from "./store/authStore";
 
 const auth = authStore;
 const UserType = computed(() => auth.user?.type);
+const IndividualUserName = computed(() => auth.individual?.full_name);
+const OrgUserName = computed(() => auth.org?.org_name);
 </script>
 
 <template>
   <div>
     <header class="navbar navbar-expand-md navbar-light bg-light fixed-top">
       <div class="container-fluid">
-        <a class="navbar-brand h4 mb-0" href="#">Azonation (<span>{{ UserType }}</span>)</a>
+        <a class="navbar-brand h4 mb-0" href="#">
+          <p class="nav-item" v-if="auth.isAuthenticated && UserType == 1"><span>{{ IndividualUserName }}</span></p>
+          <p class="nav-item" v-if="auth.isAuthenticated && UserType == 2"><span>{{ OrgUserName }}</span></p></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -30,7 +34,7 @@ const UserType = computed(() => auth.user?.type);
               <router-link class="nav-link" to="/individual-dashboard">Individual Dashboard</router-link>
             </li>
             <li class="nav-item" v-if="auth.isAuthenticated && UserType == 2">
-              <router-link class="nav-link" to="/org-dashboard">Organization Dashboard</router-link>
+              <router-link class="nav-link" to="/org-dashboard">Organisation Dashboard</router-link>
             </li>
             <li class="nav-item" v-if="auth.isAuthenticated">
               <button @click="auth.logout()" class="btn btn-primary ms-md-2">
