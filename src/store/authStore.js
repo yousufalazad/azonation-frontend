@@ -10,6 +10,7 @@ const authStore = reactive({
   org: JSON.parse(localStorage.getItem("org")),
   individual: JSON.parse(localStorage.getItem("individual")),
   errors: null,
+
   async fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
     let request = {
       method: requestType.toUpperCase(),
@@ -31,6 +32,7 @@ const authStore = reactive({
     const response = await res.json();
     return response;
   },
+
   async fetchProtectedApi(endPoint = "", params = {}, requestType = "GET") {
     const token = authStore.getUserToken();
     let request = {
@@ -54,6 +56,7 @@ const authStore = reactive({
     const response = await res.json();
     return response;
   },
+
   // async uploadProtectedApi(endPoint = "", params = {}) {
   //   const token = authStore.getUserToken();
 
@@ -80,6 +83,7 @@ const authStore = reactive({
 
     return res.data;
   },
+
   individualRegister(full_name, email, password) {
     authStore.fetchPublicApi('/api/individual_register', { full_name, email: email, password: password }, 'POST')
         .then(res => {
@@ -91,6 +95,7 @@ const authStore = reactive({
             }
         });
   },
+
   orgRegister(org_name, email, password) {
     authStore.fetchPublicApi('/api/org_register', { org_name: org_name, email: email, password: password }, 'POST')
         .then(res => {
@@ -101,7 +106,8 @@ const authStore = reactive({
               authStore.errors = res.errors;
             }
         });
-},
+  },
+
   authenticate(username, password) {
     authStore
       .fetchPublicApi(
@@ -145,6 +151,7 @@ const authStore = reactive({
         }
       });
   },
+
   logout() {
     Swal.fire({
       title: "Are you sure?",
@@ -171,6 +178,7 @@ const authStore = reactive({
       }
     });
   },
+
   individualData(id) {
     console.log("user_id", id);
     this.fetchPublicApi(`/api/individual_data/${id}`, {}, "GET").then((res) => {
@@ -183,6 +191,7 @@ const authStore = reactive({
       }
     });
   },
+
   orgData(id) {
     console.log("user_id", id);
     this.fetchPublicApi(`/api/organisation_data/${id}`, {}, "GET").then((res) => {
@@ -195,18 +204,34 @@ const authStore = reactive({
       }
     });
   },
+
   getUserToken() {
     return authStore.user?.accessToken;
   },
+
   getUserType() {
     return authStore.user?.type;
   },
+
   createCommittee(orgId, name, short_description, start_date, end_date, note, status){
     authStore.fetchProtectedApi('/api/create_committee_store', {orgId: orgId, name: name, short_description: short_description, start_date: start_date, end_date: end_date, note: note, status: status}, 'POST')
         .then(res => {
             if (res.status) {
               authStore.errors = null;
                 router.push('/committees');
+            } else {
+              authStore.errors = res.errors;
+            }
+        });
+  },
+
+  createMeeting(orgId, name, name_for_admin, subject, date, time, description, address, agenda, requirements, note, status, conduct_type){
+    authStore.fetchProtectedApi('/api/create-meeting-store', {orgId: orgId, name: name, name_for_admin: name_for_admin, subject: subject, date: date, 
+      time: time, description: description, address: address, agenda: agenda, requirements: requirements, note: note, status: status, conduct_type: conduct_type}, 'POST')
+    .then(res => {
+            if (res.status) {
+              authStore.errors = null;
+                router.push('/create-meeting');
             } else {
               authStore.errors = res.errors;
             }

@@ -11,9 +11,14 @@ import IndividualProfileUpdate from '../views/IndividualProfileUpdate.vue'
 import OrgRegister from '../views/OrgRegister.vue'
 import OrgDashboard from '../views/OrgDashboard.vue'
 import OrgProfileUpdate from '../views/OrgProfileUpdate.vue'
+
 import AddMember from '../views/AddMember.vue'
 import OrgMemberList from '../views/orgMemberList.vue'
-import CreateCommittee from '../views/Committee.vue'
+
+import CommitteeList from '../views/CommitteeList.vue'
+import CreateCommittee from '../views/CreateCommittee.vue'
+import FormerCommitteeList from '../views/FormerCommitteeList.vue'
+import CreateMeeting from '../views/CreateMeeeting.vue'
 
 
 const router = createRouter({
@@ -80,6 +85,21 @@ const router = createRouter({
           path: 'create-committee',
           name: 'create-committee',
           component: CreateCommittee
+        },
+        {
+          path: 'committee-list',
+          name: 'committee-list',
+          component: CommitteeList
+        },
+        {
+          path: 'former-committee-list',
+          name: 'former-committee-list',
+          component: FormerCommitteeList
+        },
+        {
+          path: 'create-meeting',
+          name: 'create-meeting',
+          component: CreateMeeting
         }
       ]
     },

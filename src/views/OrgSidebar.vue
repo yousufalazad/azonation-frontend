@@ -5,14 +5,14 @@
     <router-link to="/org-dashboard/add-member" class="menu-item">Add Member</router-link>
     <router-link to="/org-dashboard/org-member-list" class="menu-item">Member List</router-link>
     <br>
-    <router-link to="/org-dashboard/org-member-list" class="menu-item">Committees</router-link>
-    <router-link to="/org-dashboard/org-member-list" class="menu-item">Former Committee</router-link>
+    <router-link to="/org-dashboard/committee-list" class="menu-item">Committees</router-link>
+    <router-link to="/org-dashboard/former-committee-list" class="menu-item">Former Committees</router-link>
     <router-link to="/org-dashboard/create-committee" class="menu-item">Create & Edit Committee</router-link>
     <br>
-    <router-link to="/org-dashboard/org-member-list" class="menu-item">Upcoming Meeting</router-link>
-    <router-link to="/org-dashboard/org-member-list" class="menu-item">Previous Meeting</router-link>
-    <router-link to="/org-dashboard/org-member-list" class="menu-item">Invite Meeting</router-link>
-    <router-link to="/org-dashboard/org-member-list" class="menu-item">Create Meeting</router-link>
+    <router-link to="/org-dashboard/upcoming-meeeting-list" class="menu-item">Upcoming Meeting</router-link>
+    <router-link to="/org-dashboard/previous-meeeting-list" class="menu-item">Previous Meeting</router-link>
+    <router-link to="/org-dashboard/invite-meeeting" class="menu-item">Invite Meeting</router-link>
+    <router-link to="/org-dashboard/create-meeting" class="menu-item">Create Meeting</router-link>
     <br>
     <router-link to="/org-dashboard/org-member-list" class="menu-item">Upcoming Program</router-link>
     <router-link to="/org-dashboard/org-member-list" class="menu-item">Previous Program</router-link>

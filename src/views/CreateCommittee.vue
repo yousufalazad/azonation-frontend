@@ -53,7 +53,8 @@ onMounted(fetchCommitteeList);
   <div class="card shadow-sm">
     <div class="card-body p-4">
       <div class="org-member-list">
-        <h2>Committees</h2>
+        <h2>Create and Edit Committee</h2>
+        <br>
         <div v-if="committeeList.length">
           <table class="table table-striped">
             <thead>
@@ -66,6 +67,7 @@ onMounted(fetchCommitteeList);
                 <th scope="col">Status</th>
                 <th scope="col">Short description</th>
                 <th scope="col">Note</th>
+                <th scope="col">Action</th>
               </tr>
             </thead>
             <tbody>
