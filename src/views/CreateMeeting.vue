@@ -20,7 +20,7 @@ const conduct_type = ref('');
 
 const meetingList = ref([]);
 
-const orgId = authStore.org.id; // Assuming the org ID is stored in the logged-in user
+const orgId = auth.org.id; // Assuming the org ID is stored in the logged-in user
 
 const createMeeting = async () => {
   try {
@@ -41,7 +41,7 @@ const createMeeting = async () => {
 
 const fetchMeetingList = async () => {
   try {
-    const response = await authStore.fetchProtectedApi(`/api/meeting-list/${orgId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/meeting-list/${orgId}`, {}, 'GET');
     if (response.status) {
         meetingList.value = response.data;
     } else {

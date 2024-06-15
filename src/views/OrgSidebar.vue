@@ -14,10 +14,11 @@
     <router-link to="/org-dashboard/invite-meeting" class="menu-item">Invite Meeting</router-link>
     <router-link to="/org-dashboard/create-meeting" class="menu-item">Create Meeting</router-link>
     <br>
-    <router-link to="/org-dashboard/org-member-list" class="menu-item">Upcoming Event</router-link>
-    <router-link to="/org-dashboard/org-member-list" class="menu-item">Previous Event</router-link>
-    <router-link to="/org-dashboard/org-member-list" class="menu-item">Invite Event</router-link>
-    <router-link to="/org-dashboard/org-member-list" class="menu-item">Create Event</router-link>
+    <router-link to="/org-dashboard/upcoming-events" class="menu-item">Upcoming Event</router-link>
+    <router-link to="/org-dashboard/upcoming-events" class="menu-item">Previous Event</router-link>
+    <router-link to="/org-dashboard/upcoming-events" class="menu-item">Invite Event</router-link>
+    <router-link to="/org-dashboard/create-event" class="menu-item">Create Event</router-link>
+    <router-link to="/org-dashboard/upcoming-events" class="menu-item">Registered Event participants List</router-link>
     <br>
     <router-link to="/org-dashboard/org-member-list" class="menu-item">Upcoming Project</router-link>
     <router-link to="/org-dashboard/org-member-list" class="menu-item">Previous Project</router-link>

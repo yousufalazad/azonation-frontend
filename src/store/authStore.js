@@ -237,6 +237,20 @@ const authStore = reactive({
             }
         });
   },
+  
+  createEvent(orgId, title, name, short_description, description, date, time, venue_name, venue_address, requirements, note, status, conduct_type){
+    authStore.fetchProtectedApi('/api/create-event', {orgId: orgId, title: title, name: name, short_description: short_description, description: description, date: date, 
+      time: time, venue_name: venue_name, venue_address: venue_address, requirements: requirements, note: note, status: status, conduct_type: conduct_type}, 'POST')
+    .then(res => {
+            if (res.status) {
+              authStore.errors = null;
+                router.push('/create-event');
+            } else {
+              authStore.errors = res.errors;
+            }
+        });
+  },
+
 });
 
 export { authStore };

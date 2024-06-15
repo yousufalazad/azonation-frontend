@@ -4,14 +4,15 @@ import { ref } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from "../store/authStore";
 
+const auth = authStore;
 const searchQuery = ref('');
 const searchResults = ref([]);
 const selectedIndividual = ref(null);
-const orgId = authStore.org.id; // Assuming the org ID is stored in the logged-in user
+const orgId = auth.org.id; // Assuming the org ID is stored in the logged-in user
 
 const searchIndividuals = async () => {
   try {
-    const response = await authStore.fetchPublicApi('/api/search_individuals', { query: searchQuery.value }, 'POST');
+    const response = await auth.fetchPublicApi('/api/search_org_members', { query: searchQuery.value }, 'POST');
     if (response.status) {
       searchResults.value = response.data;
     } else {
@@ -35,7 +36,7 @@ const addMember = async (individualId) => {
     });
 
     if (result.isConfirmed) {
-      const response = await authStore.fetchProtectedApi('/api/add_member', { org_id: orgId, individual_id: individualId }, 'POST');
+      const response = await auth.fetchProtectedApi('/api/add_member', { org_id: orgId, individual_id: individualId }, 'POST');
       if (response.status) {
         await Swal.fire(
           'Added!',
@@ -115,4 +116,3 @@ const addMember = async (individualId) => {
   margin-left: 10px;
 }
 </style>
-../store/authStore
