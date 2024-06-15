@@ -96,7 +96,7 @@ onMounted(fetchCommitteeList);
       <h1 class="h4 mb-4 fw-bold text-center">Create committee</h1>
 
       <div class="mb-3">
-        <label for="name" class="form-label">Committee name</label>
+        <label for="name" class="form-label required" required>Committee name (required)</label>
         <input v-model="name" type="text" id="name" class="form-control" placeholder="Committee Name" required>
         <p v-if="auth.errors?.name" class="text-danger mt-2">{{ auth.errors?.name[0] }}</p>
       </div>
@@ -104,14 +104,13 @@ onMounted(fetchCommitteeList);
       <div class="mb-3">
         <label for="short_description" class="form-label">Short description</label>
         <input v-model="short_description" type="text" id="short_description" class="form-control"
-          placeholder="Short description" required>
+          placeholder="Short description">
         <p v-if="auth.errors?.short_description" class="text-danger mt-2">{{ auth.errors?.short_description[0] }}</p>
       </div>
 
       <div class="mb-3">
         <label for="start_date" class="form-label">Committee start date</label>
-        <input v-model="start_date" type="date" id="start_date" class="form-control" placeholder="Committee start date"
-          required>
+        <input v-model="start_date" type="date" id="start_date" class="form-control" placeholder="Committee start date">
         <p v-if="auth.errors?.start_date" class="text-danger mt-2">{{ auth.errors?.start_date[0] }}</p>
       </div>
 
@@ -125,14 +124,13 @@ onMounted(fetchCommitteeList);
 
       <div class="mb-3">
         <label for="note" class="form-label">Note (only for admin)</label>
-        <input v-model="note" type="text" id="note" class="form-control" placeholder="Committee note" required>
+        <input v-model="note" type="text" id="note" class="form-control" placeholder="Committee note">
         <p v-if="auth.errors?.note" class="text-danger mt-2">{{ auth.errors?.note[0] }}</p>
       </div>
 
       <div class="mb-3">
         <label for="status" class="form-label">Committee status</label>
-        <input v-model="status" type="dropdown" id="status" class="form-control" placeholder="Committee status"
-          required>
+        <input v-model="status" type="dropdown" id="status" class="form-control" placeholder="Committee status">
         <p v-if="auth.errors?.status" class="text-danger mt-2">{{ auth.errors?.status[0] }}</p>
       </div>
 
