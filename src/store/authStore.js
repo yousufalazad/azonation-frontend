@@ -251,6 +251,19 @@ const authStore = reactive({
         });
   },
 
+  createProject(orgId, title, short_description, description, start_date, end_date, start_time, end_time, venue_name, venue_address, requirements, note, status, conduct_type){
+    authStore.fetchProtectedApi('/api/create-project', {orgId: orgId, title: title, short_description: short_description, description: description, start_date: start_date, end_date: end_date, 
+      start_time: start_time, end_time: end_time, venue_name: venue_name, venue_address: venue_address, requirements: requirements, note: note, status: status, conduct_type: conduct_type}, 'POST')
+    .then(res => {
+            if (res.status) {
+              authStore.errors = null;
+                router.push('/create-project');
+            } else {
+              authStore.errors = res.errors;
+            }
+        });
+  },
+
 });
 
 export { authStore };

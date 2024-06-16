@@ -1,3 +1,4 @@
+<!-- project create vue file -->
 <script setup>
 import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
@@ -5,19 +6,16 @@ import Swal from 'sweetalert2';
 
 const auth = authStore;
 const orgId = auth.org.id; // Assuming the org ID is stored in the logged-in user
-const eventList = ref([]);
+const projectList = ref([]);
 
 const title = ref('');
-const name = ref('');
 const short_description = ref('');
 const description = ref('');
-// const from_date = ref('');
-// const end_date = ref('');
-const date = ref('');
-// const start_time = ref('');
-// const end_time = ref('');
-const time = ref('');
-const venue_name = ref('');
+const start_date = ref('');
+const end_date = ref('');
+const start_time = ref('');
+const end_time = ref('');
+const venue_name = ref(''); 
 const venue_address = ref('');
 const requirements = ref('');
 const note = ref('');
@@ -25,14 +23,14 @@ const status = ref('');
 const conduct_type = ref('');
 
 
-const createEvent= async () => {
+const createProject= async () => {
   try {
-    await auth.createEvent(orgId, title.value, name.value, short_description.value, description.value, 
-    date.value, time.value, venue_name.value, venue_address.value, requirements.value, note.value, status.value, conduct_type.value);
+    await auth.createProject(orgId, title.value, short_description.value, description.value, start_date.value, end_date.value,  start_time.value, end_time.value, venue_name.value, venue_address.value, 
+    requirements.value, note.value, status.value, conduct_type.value);
     // Show success message
     Swal.fire({
       icon: 'success',
-      title: 'Event created successfully',
+      title: 'Project created successfully',
       showConfirmButton: false,
       timer: 1000
     });
@@ -42,21 +40,21 @@ const createEvent= async () => {
   }
 };
 
-const fetchEventList = async () => {
+const fetchProjectList = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/org-event-list/${orgId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/org-project-list/${orgId}`, {}, 'GET');
     if (response.status) {
-        eventList.value = response.data;
+        projectList.value = response.data;
     } else {
-        eventList.value = [];
+        projectList.value = [];
     }
   } catch (error) {
     console.error("Error fetching member list:", error);
-    eventList.value = [];
+    projectList.value = [];
   }
 };
 
-onMounted(fetchEventList);
+onMounted(fetchProjectList);
 </script>
 
 <template>
@@ -64,19 +62,20 @@ onMounted(fetchEventList);
   <div class="card shadow-sm">
     <div class="card-body p-4">
       <div class="org-member-list">
-        <h2>Create and Edit Event</h2>
+        <h2>Create and Edit Project</h2>
         <br>
-        <div v-if="eventList.length">
+        <div v-if="projectList.length">
           <table class="table table-striped">
             <thead>
               <tr>
                 <th scope="col">Sl</th>
                 <th scope="col">title</th>
-                <th scope="col">name</th>
                 <th scope="col">short_description</th>
                 <th scope="col">description</th>
-                <th scope="col">Date</th>
-                <th scope="col">Time</th>
+                <th scope="col">Start Date</th>
+                <th scope="col">End Date</th>
+                <th scope="col">Start Time</th>
+                <th scope="col">End Time</th>
                 <th scope="col">venue_name</th>
                 <th scope="col">venue_address</th>
                 <th scope="col">Requirements</th>
@@ -87,26 +86,27 @@ onMounted(fetchEventList);
               </tr>
             </thead>
             <tbody>
-              <tr v-for="event in eventList" :key="event.id">
-                <td>{{ event.id }}</td>
-                <td>{{ event.title }}</td>
-                <td>{{ event.name }}</td>
-                <td>{{ event.short_description }}</td>
-                <td>{{ event.description }}</td>
-                <td>{{ event.date }}</td>
-                <td>{{ event.time }}</td>
-                <td>{{ event.venue_name }}</td>
-                <td>{{ event.venue_address }}</td>
-                <td>{{ event.requirements }}</td>
-                <td>{{ event.note }}</td>
-                <td>{{ event.status }}</td>
-                <td>{{ event.conduct_type }}</td>
+              <tr v-for="project in projectList" :key="project.id">
+                <td>{{ project.id }}</td>
+                <td>{{ project.title }}</td>
+                <td>{{ project.short_description }}</td>
+                <td>{{ project.description }}</td>
+                <td>{{ project.start_date }}</td>
+                <td>{{ project.end_date }}</td>
+                <td>{{ project.start_time }}</td>
+                <td>{{ project.end_time }}</td>
+                <td>{{ project.venue_name }}</td>
+                <td>{{ project.venue_address }}</td>
+                <td>{{ project.requirements }}</td>
+                <td>{{ project.note }}</td>
+                <td>{{ project.status }}</td>
+                <td>{{ project.conduct_type }}</td>
               </tr>
             </tbody>
           </table>
         </div>
         <div v-else>
-          <p>No event found</p>
+          <p>No project found</p>
         </div>
       </div>
     </div>
@@ -114,18 +114,12 @@ onMounted(fetchEventList);
 <br>
   <div class="card shadow-sm">
     <div class="card-body p-4">
-      <h1 class="h4 mb-4 fw-bold text-center">Create event</h1>
+      <h1 class="h4 mb-4 fw-bold text-center">Create project</h1>
 
       <div class="mb-3">
-        <label for="title" class="form-label">Event title</label>
+        <label for="title" class="form-label">Project title</label>
         <input v-model="title" type="text" id="title" class="form-control" placeholder="Event title" required>
         <p v-if="auth.errors?.title" class="text-danger mt-2">{{ auth.errors?.title[0] }}</p>
-      </div>
-
-      <div class="mb-3">
-        <label for="name" class="form-label">Event name</label>
-        <input v-model="name" type="text" id="name" class="form-control" placeholder="Event Name">
-        <p v-if="auth.errors?.name" class="text-danger mt-2">{{ auth.errors?.name[0] }}</p>
       </div>
 
       <div class="mb-3">
@@ -141,15 +135,27 @@ onMounted(fetchEventList);
       </div>
 
       <div class="mb-3">
-        <label for="date" class="form-label">Date</label>
-        <input v-model="date" type="date" id="date" class="form-control" placeholder="Date">
-        <p v-if="auth.errors?.date" class="text-danger mt-2">{{ auth.errors?.date[0] }}</p>
+        <label for="start_date" class="form-label">Start Date</label>
+        <input v-model="start_date" type="date" id="date" class="form-control" placeholder="start_date">
+        <p v-if="auth.errors?.start_date" class="text-danger mt-2">{{ auth.errors?.start_date[0] }}</p>
       </div>
 
       <div class="mb-3">
-        <label for="time" class="form-label">Time</label>
-        <input v-model="time" type="time" id="time" class="form-control" placeholder="Time">
-        <p v-if="auth.errors?.time" class="text-danger mt-2">{{ auth.errors?.time[0] }}</p>
+        <label for="end_date" class="form-label">End Date</label>
+        <input v-model="end_date" type="date" id="date" class="form-control" placeholder="end_date">
+        <p v-if="auth.errors?.end_date" class="text-danger mt-2">{{ auth.errors?.end_date[0] }}</p>
+      </div>
+
+      <div class="mb-3">
+        <label for="start_time" class="form-label">Start Time</label>
+        <input v-model="start_time" type="time" id="start_time" class="form-control" placeholder="start_time">
+        <p v-if="auth.errors?.start_time" class="text-danger mt-2">{{ auth.errors?.start_time[0] }}</p>
+      </div>
+
+      <div class="mb-3">
+        <label for="end_time" class="form-label">End Time</label>
+        <input v-model="end_time" type="time" id="end_time" class="form-control" placeholder="end_time">
+        <p v-if="auth.errors?.end_time" class="text-danger mt-2">{{ auth.errors?.end_time[0] }}</p>
       </div>
 
       <div class="mb-3">
@@ -192,10 +198,11 @@ onMounted(fetchEventList);
 
       
       <div class="text-end">
-        <button @click="createEvent" class="btn btn-primary">Create event</button>
+        <button @click="createProject" class="btn btn-primary">Create project</button>
       </div>
     </div>
-  </div>
+
+</div>
 </template>
 
 <style>

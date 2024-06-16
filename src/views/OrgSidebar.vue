@@ -23,7 +23,7 @@
     <router-link to="/org-dashboard/org-member-list" class="menu-item">Upcoming Project</router-link>
     <router-link to="/org-dashboard/org-member-list" class="menu-item">Previous Project</router-link>
     <router-link to="/org-dashboard/org-member-list" class="menu-item">Invite Project</router-link>
-    <router-link to="/org-dashboard/org-member-list" class="menu-item">Create Project</router-link>
+    <router-link to="/org-dashboard/create-project" class="menu-item">Create Project</router-link>
     <br>
     <router-link to="/org-dashboard/org-member-list" class="menu-item">Attendance</router-link>
     <br>

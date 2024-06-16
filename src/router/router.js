@@ -27,6 +27,8 @@ import InviteMeeting from '../views/InviteMeeting.vue'
 import CreateEvent from '../views/Org/Event/CreateEvent.vue'
 import UpcomingEvents from '../views/Org/Event/EventList.vue'
 
+import CreateProject from '../views/Org/Project/Create.vue'
+
 
 
 const router = createRouter({
@@ -133,6 +135,11 @@ const router = createRouter({
           path: 'upcoming-events',
           name: 'upcoming-events',
           component: UpcomingEvents
+        },
+        {
+          path: 'create-project',
+          name: 'create-project',
+          component: CreateProject
         }
       ]
     },
