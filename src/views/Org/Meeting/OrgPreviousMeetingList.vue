@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { authStore } from '../store/authStore';
+import { authStore } from '../../../store/authStore';
 
 const auth = authStore;
 const meetingList = ref([]);

@@ -1,7 +1,7 @@
 <!-- Org register page -->
 <script setup>
 import { ref } from 'vue'
-import { authStore } from '../store/authStore';
+import { authStore } from '../../../store/authStore';
 const auth = authStore
 
 const org_name = ref('')

@@ -1,7 +1,7 @@
 <!-- ProfileUpdate.vue -->
 <script setup>
 import { ref, onMounted } from 'vue';
-import { authStore } from "../store/authStore";
+import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
 
 const individualId = authStore.individual.id; // Assuming the Individual ID is stored in the logged-in user

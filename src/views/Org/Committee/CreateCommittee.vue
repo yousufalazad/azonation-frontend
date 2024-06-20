@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { authStore } from '../store/authStore';
+import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
 
 const auth = authStore;

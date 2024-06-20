@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { authStore } from '../store/authStore';
+import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
 
 const auth = authStore;
@@ -29,7 +29,7 @@ onMounted(fetchCommitteeList);
   <div class="card shadow-sm">
     <div class="card-body p-4">
       <div class="org-member-list">
-        <h2>Committees</h2>
+        <h2>Former Committees</h2>
         <div v-if="committeeList.length">
           <table class="table table-striped">
             <thead>

@@ -1,7 +1,7 @@
 <!-- Sidebar.vue -->
 <template>
   <div class="org-sidebar">
-    <router-link to="/org-dashboard/org-profile-update" class="menu-item">Profile Update</router-link>
+    <router-link to="/org-dashboard/org-profile-update" class="menu-item">Profile</router-link>
     <router-link to="/org-dashboard/add-member" class="menu-item">Add Member</router-link>
     <router-link to="/org-dashboard/org-member-list" class="menu-item">Member List</router-link>
     <br>
@@ -20,9 +20,9 @@
     <router-link to="/org-dashboard/create-event" class="menu-item">Create Event</router-link>
     <router-link to="/org-dashboard/upcoming-events" class="menu-item">Registered Event participants List</router-link>
     <br>
-    <router-link to="/org-dashboard/org-member-list" class="menu-item">Upcoming Project</router-link>
-    <router-link to="/org-dashboard/org-member-list" class="menu-item">Previous Project</router-link>
-    <router-link to="/org-dashboard/org-member-list" class="menu-item">Invite Project</router-link>
+    <router-link to="/org-dashboard/projects" class="menu-item">Upcoming Project</router-link>
+    <router-link to="/org-dashboard/projects" class="menu-item">Previous Project</router-link>
+    <router-link to="/org-dashboard/projects" class="menu-item">Invite Project</router-link>
     <router-link to="/org-dashboard/create-project" class="menu-item">Create Project</router-link>
     <br>
     <router-link to="/org-dashboard/org-member-list" class="menu-item">Attendance</router-link>

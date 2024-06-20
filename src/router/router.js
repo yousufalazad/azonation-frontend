@@ -2,32 +2,34 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/Home.vue'
 import Login from '../views/Login.vue'
 
-import IndividualRegister from '../views/IndividualRegister.vue'
-import IndividualDashboard from '../views/IndividualDashboard.vue'
-import ConnectedOrganisation from '../views/ConnectedOrganisation.vue'
-import NotificationFromOrg from '../views/NotificationFromOrg.vue'
-import IndividualProfileUpdate from '../views/IndividualProfileUpdate.vue'
+import IndividualRegister from '../views/Individual/Profile/IndividualRegister.vue'
+import IndividualDashboard from '../views/Individual/IndividualDashboard.vue'
+import ConnectedOrganisation from '../views/Individual/ConnectedOrganisation.vue'
+import NotificationFromOrg from '../views/Individual/NotificationFromOrg.vue'
+import IndividualProfileUpdate from '../views/Individual/Profile/IndividualProfileUpdate.vue'
 
-import OrgRegister from '../views/OrgRegister.vue'
-import OrgDashboard from '../views/OrgDashboard.vue'
-import OrgProfileUpdate from '../views/OrgProfileUpdate.vue'
+import OrgRegister from '../views/Org/Profile/OrgRegister.vue'
+import OrgDashboard from '../views/Org/OrgDashboard.vue'
+import OrgProfileUpdate from '../views/Org/Profile/OrgProfileUpdate.vue'
 
-import AddMember from '../views/AddMember.vue'
-import OrgMemberList from '../views/orgMemberList.vue'
+import AddMember from '../views/Org/Member/AddMember.vue'
+import OrgMemberList from '../views/Org/Member/orgMemberList.vue'
 
-import CommitteeList from '../views/CommitteeList.vue'
-import CreateCommittee from '../views/CreateCommittee.vue'
-import FormerCommitteeList from '../views/FormerCommitteeList.vue'
+import CommitteeList from '../views/Org/Committee/CommitteeList.vue'
+import CreateCommittee from '../views/Org/Committee/CreateCommittee.vue'
+import FormerCommitteeList from '../views/Org/Committee/FormerCommitteeList.vue'
 
-import CreateMeeting from '../views/CreateMeeting.vue'
-import OrgUpcomingMeetingList from '../views/OrgUpcomingMeetingList.vue'
-import OrgPreviousMeetingList from '../views/OrgPreviousMeetingList.vue'
-import InviteMeeting from '../views/InviteMeeting.vue'
+import CreateMeeting from '../views/Org/Meeting/CreateMeeting.vue'
+import OrgUpcomingMeetingList from '../views/Org/Meeting/OrgUpcomingMeetingList.vue'
+import OrgPreviousMeetingList from '../views/Org/Meeting/OrgPreviousMeetingList.vue'
+import InviteMeeting from '../views/Org/Meeting/InviteMeeting.vue'
 
 import CreateEvent from '../views/Org/Event/CreateEvent.vue'
 import UpcomingEvents from '../views/Org/Event/EventList.vue'
 
 import CreateProject from '../views/Org/Project/Create.vue'
+import Projects from '../views/Org/Project/Index.vue'
+
 
 
 
@@ -140,6 +142,11 @@ const router = createRouter({
           path: 'create-project',
           name: 'create-project',
           component: CreateProject
+        },
+        {
+          path: 'projects',
+          name: 'projects',
+          component: Projects
         }
       ]
     },

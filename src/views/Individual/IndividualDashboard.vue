@@ -1,7 +1,7 @@
 <!-- Individual Dashboard.vue -->
 <script setup>
 import IndividualSidebar from './IndividualSidebar.vue';
-import { authStore } from "../store/authStore";
+import { authStore } from '../../store/authStore';
 const auth = authStore;
 </script>
 

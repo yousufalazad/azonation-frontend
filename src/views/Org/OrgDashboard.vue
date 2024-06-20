@@ -1,7 +1,7 @@
 <!-- OrgDashboard.vue -->
 <script setup>
 import OrgSidebar from './OrgSidebar.vue';
-import { authStore } from "../store/authStore";
+import { authStore } from '../../store/authStore';
 
 const auth = authStore;
 </script>
@@ -24,4 +24,4 @@ const auth = authStore;
   padding: 20px;
   flex-grow: 1;
 }
-</style>../store/authStore
+</style>

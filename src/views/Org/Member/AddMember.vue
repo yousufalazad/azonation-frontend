@@ -2,7 +2,7 @@
 <script setup>
 import { ref } from 'vue';
 import Swal from 'sweetalert2';
-import { authStore } from "../store/authStore";
+import { authStore } from '../../../store/authStore';
 
 const auth = authStore;
 const searchQuery = ref('');

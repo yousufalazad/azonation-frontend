@@ -1,7 +1,7 @@
 <!-- OrgMemberList.vue -->
 
 <script setup>
-import { authStore } from "../store/authStore";
+import { authStore } from '../../store/authStore';
 
 </script>
 

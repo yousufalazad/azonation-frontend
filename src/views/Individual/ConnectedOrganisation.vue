@@ -2,7 +2,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { authStore } from "../store/authStore";
+import { authStore } from '../../store/authStore';
 
 const connectedOrgList = ref([]);
 const individualId = authStore.individual.id;
