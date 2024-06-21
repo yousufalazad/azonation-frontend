@@ -1,10 +1,9 @@
 <template>
   <div class="org-sidebar">
-    <h5 @click="toggleDropdown('profile')">Profile</h5>
-    <div v-show="dropdowns.profile" class="dropdown-content">
-      <router-link to="/org-dashboard/org-profile-update" class="menu-item">Profile</router-link>
-      <router-link to="/org-dashboard/add-member" class="menu-item">Add Member</router-link>
+    <h5 @click="toggleDropdown('membership')">Membership</h5>
+    <div v-show="dropdowns.membership" class="dropdown-content">
       <router-link to="/org-dashboard/org-member-list" class="menu-item">Member List</router-link>
+      <router-link to="/org-dashboard/add-member" class="menu-item">Add Member</router-link>
     </div>
     <hr>
 
@@ -63,6 +62,12 @@
       <router-link to="/org-dashboard/org-member-list" class="menu-item">Time Zone</router-link>
       <router-link to="/org-dashboard/org-member-list" class="menu-item">Language</router-link>
     </div>
+    <hr>
+
+    <h5 @click="toggleDropdown('profile')">Profile</h5>
+    <div v-show="dropdowns.profile" class="dropdown-content">
+      <router-link to="/org-dashboard/org-profile-update" class="menu-item">Profile</router-link>
+    </div>
     <br>
     <br>
     <br>
@@ -75,7 +80,7 @@ export default {
   data() {
     return {
       dropdowns: {
-        profile: true,
+        membership: true,
         committees: true,
         meetings: true,
         events: true,
@@ -83,6 +88,7 @@ export default {
         attendance: true,
         membership: true,
         settings: true,
+        profile: true,
       },
     };
   },
