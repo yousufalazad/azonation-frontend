@@ -193,12 +193,12 @@ const authStore = reactive({
   },
 
   orgData(id) {
-    console.log("user_id", id);
+    // console.log("user_id", id);
     this.fetchPublicApi(`/api/organisation_data/${id}`, {}, "GET").then((res) => {
       if (res.status) {
         this.org = res.data;
         localStorage.setItem("org", JSON.stringify(res.data));
-        console.log("Organisation Data:", res.data);
+        // console.log("Organisation Data:", res.data);
       } else {
         this.errors = res.message;
       }

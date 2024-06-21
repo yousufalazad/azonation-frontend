@@ -5,24 +5,19 @@ import { authStore } from '../../../store/authStore';
 import Swal from "sweetalert2";
 
 const orgName = ref('');
-const short_description = ref('');
-
-const auth = authStore;
-const orgId = auth.org.id; // Assuming the org ID is stored in the logged-in user
-const baseURL = 'http://localhost:8000';
-const OrgUserName = computed(() => auth.org?.org_name);
-const OrgUserId = computed(() => auth.org?.user_id);
-const OrgAzonId = computed(() => auth.org?.azon_id);
-const OrgStatus = computed(() => auth.org?.status);
-const OrgShortDescription = computed(() => auth.org?.short_description);
+const shortDescription = ref('');
+const primaryId = ref('');
+const userId = ref('');
+const azonId = ref('');
+const status = ref('');
 
 
 const logoPath = ref('');
 const selectedImage = ref(null);
 
-
-
-orgName.value =  OrgUserName;
+const auth = authStore;
+const orgId = auth.org.id; // Assuming the org ID is stored in the logged-in user
+const baseURL = 'http://localhost:8000';
 
 
 const fetchLogo = async () => {
@@ -35,6 +30,45 @@ const fetchLogo = async () => {
         console.error("Error fetching logo:", error);
     }
 };
+
+const fetchOrgDetails = async () => {
+    try {
+        const response = await auth.fetchProtectedApi(`/api/organisation/${orgId}`, {}, 'GET');
+        if (response.status) {
+            orgName.value = response.data.org_name;
+            shortDescription.value = response.data.short_description;
+            primaryId.value = response.data.id;
+            userId.value = response.data.user_id;
+            azonId.value = response.data.azon_id;
+            status.value = response.data.status;
+        } else {
+            Swal.fire('Error', 'Failed to fetch organization details', 'error');
+        }
+    } catch (error) {
+        console.error("Error fetching organization details:", error);
+        Swal.fire('Error', 'Failed to fetch organization details', 'error');
+    }
+};
+
+const updateOrgDetails = async () => {
+    try {
+        const response = await auth.fetchProtectedApi(`/api/organisation/${orgId}`, {
+            org_name: orgName.value,
+            short_description: shortDescription.value
+        }, 'PUT');
+        if (response.status) {
+            Swal.fire('Success', 'Organization details updated successfully', 'success');
+            
+        } else {
+            Swal.fire('Error', 'Failed to update organization details', 'error');
+        }
+    } catch (error) {
+        console.error("Error updating organization details:", error);
+        Swal.fire('Error', 'Failed to update organization details', 'error');
+    }
+};
+
+
 
 const handleImageUpload = (event) => {
     selectedImage.value = event.target.files[0];
@@ -59,11 +93,12 @@ const orgLogoUpdate = async () => {
     }
 };
 
+onMounted(fetchOrgDetails);
 onMounted(fetchLogo);
 </script>
 
 <template>
-    <div class="profile-update">
+    <div class="profile-data-show">
         <h2>Org Profile</h2>
         <div class="mb-3">
             <label for="logo" class="form-label">Logo</label>
@@ -76,43 +111,38 @@ onMounted(fetchLogo);
         <button @click="orgLogoUpdate" class="btn btn-primary">Save</button>
     </div>
     <div>
-        <p>Org name: <span>{{ OrgUserName }}</span></p>
-        <p>Org User ID: <span>{{ OrgUserId }}</span></p>
-        <p>Org Azon ID: <span>{{ OrgAzonId }}</span></p>
-        <p>Org Status: <span>{{ OrgStatus }}</span></p>
-        <p>Org Short Description: <span>{{ OrgShortDescription }}</span></p>
+
+        <p>Org name: <span>{{ orgName }}</span></p>
+        <p>Org short description: <span>{{ shortDescription }}</span></p>
+        <p>Org primary ID: <span>{{ primaryId }}</span></p>
+        <p>Org user ID: <span>{{ userId }}</span></p>
+        <p>Org Azon ID: <span>{{ azonId }}</span></p>
+        <p>Org status: <span>{{ status }}</span></p>
     </div>
 
     <div class="card shadow-sm">
         <div class="card-body p-4">
-            <h1 class="h4 mb-4 fw-bold text-center">Update your profile</h1>
+            <h1 class="h4 mb-4 fw-bold text-center">Update organization profile</h1>
             <div class="mb-3">
-                <label for="org_name" class="form-label">Org Name</label>
-                <input v-model="org_name" type="text" id="orgName" class="form-control" placeholder="Name" required>
-                <p v-if="auth.errors?.org_name" class="text-danger mt-2">{{ auth.errors?.org_name[0] }}</p>
+                <label for="orgName" class="form-label">Org Name</label>
+                <input v-model="orgName" type="text" id="orgName" class="form-control" placeholder="Org name" required>
             </div>
 
             <div class="mb-3">
-                <label for="short_description" class="form-label">short_description</label>
-                <input v-model="short_description" type="text" id="short_description" class="form-control" placeholder="short_description">
-                <p v-if="auth.errors?.short_description" class="text-danger mt-2">{{ auth.errors?.short_description[0] }}</p>
-            </div>
-
-            <div class="mb-3">
-                <label for="status" class="form-label">status</label>
-                <input v-model="status" type="text" id="status" class="form-control" placeholder="status">
-                <p v-if="auth.errors?.status" class="text-danger mt-2">{{ auth.errors?.status[0] }}</p>
+                <label for="shortDescription" class="form-label">short description</label>
+                <!-- <input v-model="shortDescription" type="text" id="shortDescription" class="form-control" placeholder="Short Description"> -->
+                <textarea id="shortDescription" v-model="shortDescription" class="form-control" placeholder="Enter short description"></textarea>
             </div>
             
             <div class="text-end">
-                <button @click="auth.orgProfileUpdate(org_name, short_description, status)" class="btn btn-primary">Update</button>
+                <button @click="updateOrgDetails" class="btn btn-primary">Update</button>
             </div>
         </div>
     </div>
 </template>
 
 <style scoped>
-.profile-update {
+.profile-data-show {
     padding: 20px;
 }
 
