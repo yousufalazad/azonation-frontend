@@ -59,4 +59,4 @@ const OrgUserName = computed(() => auth.org?.org_name);
 
 <style>
 /* Add any custom styles here if necessary */
-</style>./store/authStore
+</style>

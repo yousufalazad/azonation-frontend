@@ -68,8 +68,6 @@ const updateOrgDetails = async () => {
     }
 };
 
-
-
 const handleImageUpload = (event) => {
     selectedImage.value = event.target.files[0];
 };

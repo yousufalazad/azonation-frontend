@@ -2,6 +2,7 @@
 <script setup>
 import OrgSidebar from './OrgSidebar.vue';
 import { authStore } from '../../store/authStore';
+import RightSidebar from './RightSidebar.vue';
 
 const auth = authStore;
 </script>
@@ -9,6 +10,7 @@ const auth = authStore;
 <template>
   <div class="dashboard-layout">
     <OrgSidebar v-if="auth.isAuthenticated && auth.user?.type == 2" />
+    <RightSidebar v-if="auth.isAuthenticated && auth.user?.type == 2" />
     <div class="content-area">
       <router-view />
     </div>
