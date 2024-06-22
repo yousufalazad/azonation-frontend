@@ -31,6 +31,7 @@ const selectedImage = ref(null);
 
 const auth = authStore;
 const orgId = auth.org.id; // Assuming the org ID is stored in the logged-in user
+const orgUsername = auth.user.email; // Assuming the user email address is stored in the logged-in user
 const baseURL = 'http://localhost:8000';
 
 
@@ -210,6 +211,12 @@ onMounted(fetchLogo);
         <p>Org user ID: <span>{{ userId }}</span></p>
         <p>Org Azon ID: <span>{{ azonId }}</span></p>
         <p>Org status: <span>{{ status }}</span></p>
+    </div>
+    <div>
+        <br>
+        <h5>User email address (username)</h5>
+        <p>Org name: <span>{{ orgUsername }}</span></p>
+        <br>
     </div>
     <div>
         <br>
