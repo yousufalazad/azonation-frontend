@@ -1,6 +1,6 @@
 <!-- ProfileUpdate.vue -->
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from "sweetalert2";
 
@@ -69,6 +69,7 @@ const fetchOrgAddress = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/organisation-address/${orgId}`, {}, 'GET');
         if (response.status) {
+            console.log(response)
             orgAddressLine.value = response.data.address_line;
             city.value = response.data.city;
             stateOrRegion.value = response.data.state_or_region;
@@ -87,6 +88,7 @@ const fetchOrgPhoneNumber = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/org-phone-number/${orgId}`, {}, 'GET');
         if (response.status) {
+            console.log(response)
             dialingCodeId.value = response.data.dialing_code_id;
             phoneNumber.value = response.data.phone_number;
             phoneType.value = response.data.phone_type;
@@ -215,7 +217,7 @@ onMounted(fetchLogo);
     <div>
         <br>
         <h5>User email address (username)</h5>
-        <p>Org name: <span>{{ orgUsername }}</span></p>
+        <p><span>{{ orgUsername }}</span></p>
         <br>
     </div>
     <div>

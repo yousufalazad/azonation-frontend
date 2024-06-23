@@ -11,6 +11,7 @@ import IndividualProfileUpdate from '../views/Individual/Profile/IndividualProfi
 import OrgRegister from '../views/Org/Profile/OrgRegister.vue'
 import OrgDashboard from '../views/Org/OrgDashboard.vue'
 import OrgProfileUpdate from '../views/Org/Profile/OrgProfileUpdate.vue'
+import OrgSettings from '../views/Org/Profile/Settings.vue'
 
 import AddMember from '../views/Org/Member/AddMember.vue'
 import OrgMemberList from '../views/Org/Member/orgMemberList.vue'
@@ -82,6 +83,11 @@ const router = createRouter({
           path: 'org-profile-update',
           name: 'org-profile-update',
           component: OrgProfileUpdate
+        },
+        {
+          path: 'org-settings',
+          name: 'org-settings',
+          component: OrgSettings
         },
         {
           path: 'add-member',

@@ -58,7 +58,7 @@
 
     <h5 @click="toggleDropdown('settings')">Settings</h5>
     <div v-show="dropdowns.settings" class="dropdown-content">
-      <router-link to="/org-dashboard/org-member-list" class="menu-item">Settings</router-link>
+      <router-link to="/org-dashboard/org-settings" class="menu-item">Settings</router-link>
       <router-link to="/org-dashboard/org-member-list" class="menu-item">Time Zone</router-link>
       <router-link to="/org-dashboard/org-member-list" class="menu-item">Language</router-link>
     </div>
