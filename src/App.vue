@@ -1,12 +1,14 @@
 <!-- App.vue -->
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { authStore } from "./store/authStore";
 
 const auth = authStore;
 const UserType = computed(() => auth.user?.type);
+
 const IndividualUserName = computed(() => auth.individual?.full_name);
 const OrgUserName = computed(() => auth.org?.org_name);
+
 </script>
 
 <template>
@@ -28,7 +30,7 @@ const OrgUserName = computed(() => auth.org?.org_name);
               <router-link class="nav-link" to="/org-register">Org Register</router-link>
             </li>
             <li class="nav-item" v-if="!auth.isAuthenticated">
-              <router-link class="nav-link" to="/login">Login</router-link>
+              <router-link class="nav-link" to="/">Login</router-link>
             </li>
             <li class="nav-item" v-if="auth.isAuthenticated && UserType == 1">
               <router-link class="nav-link" to="/individual-dashboard">Individual Dashboard</router-link>

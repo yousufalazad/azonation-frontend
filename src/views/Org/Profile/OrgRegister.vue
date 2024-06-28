@@ -10,9 +10,10 @@ const password = ref('')
 
 </script>
 <template>
-  <div class="card shadow-sm">
-    <div class="card-body p-4">
-      <h1 class="h4 mb-4 fw-bold text-center">Sign up to your account</h1>
+  <div class="d-flex flex-column align-items-center justify-content-center mt-5 px-3">
+    <div class="w-75 bg-white rounded-lg shadow-lg sm:max-w-md px-5">
+      <div class="p-4 space-y-4"></div>
+      <h1 class="text-xl fw-bold leading-tight text-center text-dark pb-4">Sign up to your account</h1>
       <div class="mb-3">
         <label for="org_name" class="form-label">Org Name</label>
         <input v-model="org_name" type="text" id="org_name" class="form-control" placeholder="Name" required>
@@ -29,9 +30,9 @@ const password = ref('')
         <p v-if="auth.errors?.password" class="text-danger mt-2">{{ auth.errors?.password[0] }}</p>
       </div>
       <div class="d-flex justify-content-between mb-3">
-        <router-link to="/login" class="text-primary">Already have an account? Login</router-link>
+        <router-link to="/" class="text-primary">Already have an account? Login</router-link>
       </div>
-      <div class="text-end">
+      <div class="text-end pb-4">
         <button @click="auth.orgRegister(org_name, email, password)" class="btn btn-primary">Sign Up</button>
       </div>
     </div>

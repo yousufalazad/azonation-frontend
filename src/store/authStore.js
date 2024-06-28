@@ -89,7 +89,15 @@ const authStore = reactive({
         .then(res => {
             if (res.status) {
               authStore.errors = null;
-                router.push('/login');
+              router.push('/');
+              Swal.fire({
+                icon: "success",
+                title: "Individual Register Successful",
+                text: "You have successfully register.",
+                timer: 5000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+              });
             } else {
               authStore.errors = res.errors;
             }
@@ -99,12 +107,20 @@ const authStore = reactive({
   orgRegister(org_name, email, password) {
     authStore.fetchPublicApi('/api/org_register', { org_name: org_name, email: email, password: password }, 'POST')
         .then(res => {
-            if (res.status) {
-              authStore.errors = null;
-                router.push('/login');
-            } else {
-              authStore.errors = res.errors;
-            }
+          if (res.status) {
+            authStore.errors = null;
+            router.push('/');
+            Swal.fire({
+              icon: "success",
+              title: "Organisation Register Successful",
+              text: "You have successfully register.",
+              timer: 5000,
+              timerProgressBar: true,
+              showConfirmButton: false,
+            });
+          } else {
+            authStore.errors = res.errors;
+          }
         });
   },
 
@@ -116,7 +132,7 @@ const authStore = reactive({
         "POST"
       )
       .then((res) => {
-        if (res.status) {
+        if (res.status === 'success') {
           authStore.isAuthenticated = true;
           authStore.user = res.data;
           localStorage.setItem("auth", 1);
@@ -136,7 +152,7 @@ const authStore = reactive({
             icon: "success",
             title: "Login Successful",
             text: "You have successfully logged in.",
-            timer: 2000,
+            timer: 1500,
             timerProgressBar: true,
             showConfirmButton: false,
           });
@@ -146,7 +162,7 @@ const authStore = reactive({
           Swal.fire({
             icon: "error",
             title: "Login Failed",
-            text: res.errors ? res.errors.join(", ") : "Unknown error",
+            text: res.message,
           });
         }
       });
@@ -166,7 +182,7 @@ const authStore = reactive({
         authStore.user = {};
         localStorage.setItem("auth", 0);
         localStorage.setItem("user", "{}");
-        router.push("/login");
+        router.push("/");
         Swal.fire({
           icon: "success",
           title: "Logged Out",

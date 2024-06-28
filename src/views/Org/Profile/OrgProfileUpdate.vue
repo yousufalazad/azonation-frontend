@@ -4,6 +4,7 @@ import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from "sweetalert2";
 
+
 //Org profile info
 const orgName = ref('');
 const shortDescription = ref('');
@@ -110,7 +111,8 @@ const updateOrgDetails = async () => {
         }, 'PUT');
         if (response.status) {
             Swal.fire('Success', 'Organization details updated successfully', 'success');
-            
+            auth.orgData(orgId) // update localStorage for updated org name when updated
+
         } else {
             Swal.fire('Error', 'Failed to update organization details', 'error');
         }
@@ -320,3 +322,4 @@ onMounted(fetchLogo);
     margin-top: 10px;
 }
 </style>
+

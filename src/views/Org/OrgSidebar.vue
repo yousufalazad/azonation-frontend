@@ -1,13 +1,13 @@
 <template>
   <div class="org-sidebar">
-    <h5 @click="toggleDropdown('membership')">Membership</h5>
+    <h6 @click="toggleDropdown('membership')">Membership</h6>
     <div v-show="dropdowns.membership" class="dropdown-content">
       <router-link to="/org-dashboard/org-member-list" class="menu-item">Member List</router-link>
       <router-link to="/org-dashboard/add-member" class="menu-item">Add Member</router-link>
     </div>
     <hr>
 
-    <h5 @click="toggleDropdown('committees')">Committees</h5>
+    <h6 @click="toggleDropdown('committees')">Committees</h6>
     <div v-show="dropdowns.committees" class="dropdown-content">
       <router-link to="/org-dashboard/committee-list" class="menu-item">Committees</router-link>
       <router-link to="/org-dashboard/former-committee-list" class="menu-item">Former Committees</router-link>
@@ -15,7 +15,7 @@
     </div>
     <hr>
 
-    <h5 @click="toggleDropdown('meetings')">Meetings</h5>
+    <h6 @click="toggleDropdown('meetings')">Meetings</h6>
     <div v-show="dropdowns.meetings" class="dropdown-content">
       <router-link to="/org-dashboard/upcoming-meeting-list" class="menu-item">Upcoming Meeting</router-link>
       <router-link to="/org-dashboard/previous-meeting-list" class="menu-item">Previous Meeting</router-link>
@@ -24,7 +24,7 @@
     </div>
     <hr>
 
-    <h5 @click="toggleDropdown('events')">Events</h5>
+    <h6 @click="toggleDropdown('events')">Events</h6>
     <div v-show="dropdowns.events" class="dropdown-content">
       <router-link to="/org-dashboard/upcoming-events" class="menu-item">Upcoming Event</router-link>
       <router-link to="/org-dashboard/upcoming-events" class="menu-item">Previous Event</router-link>
@@ -34,7 +34,7 @@
     </div>
     <hr>
 
-    <h5 @click="toggleDropdown('projects')">Projects</h5>
+    <h6 @click="toggleDropdown('projects')">Projects</h6>
     <div v-show="dropdowns.projects" class="dropdown-content">
       <router-link to="/org-dashboard/projects" class="menu-item">Upcoming Project</router-link>
       <router-link to="/org-dashboard/projects" class="menu-item">Previous Project</router-link>
@@ -43,20 +43,20 @@
     </div>
     <hr>
 
-    <h5 @click="toggleDropdown('attendance')">Attendance</h5>
+    <h6 @click="toggleDropdown('attendance')">Attendance</h6>
     <div v-show="dropdowns.attendance" class="dropdown-content">
       <router-link to="/org-dashboard/org-member-list" class="menu-item">Attendance</router-link>
     </div>
     <hr>
 
-    <h5 @click="toggleDropdown('membership')">Membership</h5>
+    <h6 @click="toggleDropdown('membership')">Membership</h6>
     <div v-show="dropdowns.membership" class="dropdown-content">
       <router-link to="/org-dashboard/org-member-list" class="menu-item">Online Membership Form</router-link>
       <router-link to="/org-dashboard/org-member-list" class="menu-item">Pending Membership Application</router-link>
     </div>
     <hr>
 
-    <h5 @click="toggleDropdown('settings')">Settings</h5>
+    <h6 @click="toggleDropdown('settings')">Settings</h6>
     <div v-show="dropdowns.settings" class="dropdown-content">
       <router-link to="/org-dashboard/org-settings" class="menu-item">Settings</router-link>
       <router-link to="/org-dashboard/org-member-list" class="menu-item">Time Zone</router-link>
@@ -64,7 +64,7 @@
     </div>
     <hr>
 
-    <h5 @click="toggleDropdown('profile')">Profile</h5>
+    <h6 @click="toggleDropdown('profile')">Profile</h6>
     <div v-show="dropdowns.profile" class="dropdown-content">
       <router-link to="/org-dashboard/org-profile-update" class="menu-item">Profile</router-link>
     </div>
@@ -125,9 +125,9 @@ export default {
   text-decoration: underline;
 }
 .dropdown-content {
-  margin-left: 15px;
+  margin-left: 0px;
 }
-h5 {
+h6 {
   cursor: pointer;
   margin: 10px 0;
   color: #343a40;
