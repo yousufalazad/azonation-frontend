@@ -125,7 +125,7 @@ export default {
   text-decoration: underline;
 }
 .dropdown-content {
-  margin-left: 0px;
+  margin-left: 7px;
 }
 h6 {
   cursor: pointer;

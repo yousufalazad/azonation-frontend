@@ -196,7 +196,6 @@ const authStore = reactive({
   },
 
   individualData(id) {
-    console.log("user_id", id);
     this.fetchPublicApi(`/api/individual_data/${id}`, {}, "GET").then((res) => {
       if (res.status) {
         this.individual = res.data;

@@ -2,7 +2,6 @@
   <div class="org-sidebar-right">
     <h4 @click="toggleDropdown('reports')">Reports</h4>
     <div v-show="dropdowns.reports" class="dropdown-content">
-      <br>
       <h6 @click="toggleDropdown('membership')">Membership</h6>
       <div v-show="dropdowns.membership" class="dropdown-content">
         <router-link to="/org-dashboard/org-member-list" class="menu-item">Membership growth report</router-link>
@@ -126,7 +125,7 @@ export default {
   height: 100%;
   width: 280px;
   background-color: #ffffff;
-  padding: 20px;
+  padding-top: 20px;
   overflow-y: hidden;
   transition: overflow-y 0.3s;
 }
@@ -143,12 +142,15 @@ export default {
   text-decoration: underline;
 }
 .dropdown-content {
-  margin-left: 0px;
+  margin-left: 7px;
 }
 h5, h6 {
   cursor: pointer;
   margin: 10px 0;
   color: #343a40;
+}
+h4 {
+margin-left: 7px;
 }
 hr {
   border-top: 1px solid #dee2e6;

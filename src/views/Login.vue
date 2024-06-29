@@ -2,7 +2,7 @@
 <script setup>
 import { ref } from 'vue'
 import { authStore } from '../store/authStore';
-const loginAuth = authStore
+const auth = authStore
 
 import router from '../router/router'
 
@@ -46,9 +46,9 @@ const password = ref('')
             </div>
           </div>
           <div class="text-center">
-            <router-link to="/register" class="text-primary fw-bold text-decoration-underline">Create new account</router-link>
+            <router-link to="/org-register" class="text-primary fw-bold text-decoration-underline">Create new account</router-link>
             <br><br>
-            <button @click="loginAuth.authenticate(username, password)"
+            <button @click="auth.authenticate(username, password)"
                     class="btn btn-primary">
               Login
             </button>
@@ -62,4 +62,3 @@ const password = ref('')
 <style>
 /* Add any custom styles here if necessary */
 </style>
-../store/authStore

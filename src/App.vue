@@ -33,10 +33,10 @@ const OrgUserName = computed(() => auth.org?.org_name);
               <router-link class="nav-link" to="/">Login</router-link>
             </li>
             <li class="nav-item" v-if="auth.isAuthenticated && UserType == 1">
-              <router-link class="nav-link" to="/individual-dashboard">Individual Dashboard</router-link>
+              <router-link class="nav-link" to="/individual-dashboard">Azonation</router-link>
             </li>
             <li class="nav-item" v-if="auth.isAuthenticated && UserType == 2">
-              <router-link class="nav-link" to="/org-dashboard">Organisation Dashboard</router-link>
+              <router-link class="nav-link" to="/org-dashboard">Azonation</router-link>
             </li>
             <li class="nav-item" v-if="auth.isAuthenticated">
               <button @click="auth.logout()" class="btn btn-primary ms-md-2">
