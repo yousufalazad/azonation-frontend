@@ -10,6 +10,27 @@ const auth = authStore;
     <IndividualSidebar v-if="auth.isAuthenticated && auth.user?.type == 1" />
     <div class="content-area">
       <router-view />
+
+      <div v-if="auth.isAuthenticated && auth.user?.type == 1">
+        <br>
+        <h3>Total Connected Organisations: 75</h3>
+        <br>
+        <h3>Total Committee Involvement: 3</h3>
+        <br>
+        <h3>Upcoming meeting: 2</h3>
+        <br>
+        <h3>Upcoming Events: 2</h3>
+        <br>
+        <h3>Upcoming Projects: 1</h3>
+        <br>
+        <h3>Next Meeting Date: 1 Jan 2025</h3>
+        <br>
+        <h3>Total Upcoming Meeting in {August}: 3</h3>
+        <br>
+        <h3>Meeting Attendance Parcentage : 75%</h3>
+        <br>
+      </div>
+      
     </div>
   </div>
 </template>
