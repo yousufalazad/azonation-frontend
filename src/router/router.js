@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/Home.vue'
 import Login from '../views/Login.vue'
 
 import IndividualRegister from '../views/Individual/Profile/IndividualRegister.vue'
@@ -32,11 +31,13 @@ import CreateProject from '../views/Org/Project/Create.vue'
 import Projects from '../views/Org/Project/Index.vue'
 
 
+// Mock authentication function
+function isAuthenticated() {
+  // Replace this with your actual authentication logic
+  return !!localStorage.getItem('auth');
+}
 
-
-const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
+const routes = [
     {
       path: '/',
       name: 'login',
@@ -45,8 +46,7 @@ const router = createRouter({
     {
       path: '/individual-register',
       name: 'individual-register',
-      component: IndividualRegister
-    },
+      component: IndividualRegister    },
     {
       path: '/org-register',
       name: 'org-register',
@@ -56,21 +56,25 @@ const router = createRouter({
       path: '/individual-dashboard',
       name: 'individual-dashboard',
       component: IndividualDashboard,
+      meta: { requiresAuth: true },
       children: [
         {
           path: 'connected-organisation',
           name: 'connected-organisation',
-          component: ConnectedOrganisation
+          component: ConnectedOrganisation,
+          meta: { requiresAuth: true },
         },
         {
           path: 'notification-from-org',
           name: 'notification-from-org',
-          component: NotificationFromOrg
+          component: NotificationFromOrg,
+          meta: { requiresAuth: true },
         },
         {
           path: 'individual-profile-update',
           name: 'individual-profile-update',
-          component: IndividualProfileUpdate
+          component: IndividualProfileUpdate,
+          meta: { requiresAuth: true },
         }
       ]
     },
@@ -78,85 +82,117 @@ const router = createRouter({
       path: '/org-dashboard',
       name: 'org-dashboard',
       component: OrgDashboard,
+      meta: { requiresAuth: true },
       children: [
         {
           path: 'org-profile-update',
           name: 'org-profile-update',
-          component: OrgProfileUpdate
+          component: OrgProfileUpdate,
+          meta: { requiresAuth: true },
         },
         {
           path: 'org-settings',
           name: 'org-settings',
-          component: OrgSettings
+          component: OrgSettings,
+          meta: { requiresAuth: true },
         },
         {
           path: 'add-member',
           name: 'add-member',
-          component: AddMember
+          component: AddMember,
+          meta: { requiresAuth: true },
         },
         {
           path: 'org-member-list',
           name: 'org-member-list',
-          component: OrgMemberList
+          component: OrgMemberList,
+          meta: { requiresAuth: true },
         },
         {
           path: 'create-committee',
           name: 'create-committee',
-          component: CreateCommittee
+          component: CreateCommittee,
+          meta: { requiresAuth: true },
         },
         {
           path: 'committee-list',
           name: 'committee-list',
-          component: CommitteeList
+          component: CommitteeList,
+          meta: { requiresAuth: true },
         },
         {
           path: 'former-committee-list',
           name: 'former-committee-list',
-          component: FormerCommitteeList
+          component: FormerCommitteeList,
+          meta: { requiresAuth: true },
         },
         {
           path: 'create-meeting',
           name: 'create-meeting',
-          component: CreateMeeting
+          component: CreateMeeting,
+          meta: { requiresAuth: true },
         },
         {
           path: 'upcoming-meeting-list',
           name: 'upcoming-meeting-list',
-          component: OrgUpcomingMeetingList
+          component: OrgUpcomingMeetingList,
+          meta: { requiresAuth: true },
         },
         {
           path: 'previous-meeting-list',
           name: 'previous-meeting-list',
-          component: OrgPreviousMeetingList
+          component: OrgPreviousMeetingList,
+          meta: { requiresAuth: true },
         },
         {
           path: 'invite-meeting',
           name: 'invite-meeting',
-          component: InviteMeeting
+          component: InviteMeeting,
+          meta: { requiresAuth: true },
         },
         {
           path: 'create-event',
           name: 'create-event',
-          component: CreateEvent
+          component: CreateEvent,
+          meta: { requiresAuth: true },
         },
         {
           path: 'upcoming-events',
           name: 'upcoming-events',
-          component: UpcomingEvents
+          component: UpcomingEvents,
+          meta: { requiresAuth: true },
         },
         {
           path: 'create-project',
           name: 'create-project',
-          component: CreateProject
+          component: CreateProject,
+          meta: { requiresAuth: true },
         },
         {
           path: 'projects',
           name: 'projects',
-          component: Projects
+          component: Projects,
+          meta: { requiresAuth: true },
         }
       ]
     }
   ]
+
+  const router = createRouter({
+    history: createWebHistory(import.meta.env.BASE_URL),
+    routes
+  })
+
+  router.beforeEach((to, from, next) => {
+    if (to.matched.some(record => record.meta.requiresAuth)) {
+      if (!isAuthenticated()) {
+        next({ name: 'login' })
+      } else {
+        next()
+      }
+    } else {
+      next()
+    }
 })
 
 export default router
