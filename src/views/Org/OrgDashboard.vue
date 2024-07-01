@@ -10,14 +10,14 @@ const orgId = auth.org.id;
 const totalOrgMember = ref('');
 
 const totalOrgMemberCount = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/total-org-member-count/${orgId}`, {}, 'GET');
-        if (response.status && response.totalOrgMemberCount) {
-          totalOrgMember.value = response.totalOrgMemberCount;
-        }
-    } catch (error) {
-        console.error("Error fetching logo:", error);
+  try {
+    const response = await auth.fetchProtectedApi(`/api/total-org-member-count/${orgId}`, {}, 'GET');
+    if (response.status && response.totalOrgMemberCount) {
+      totalOrgMember.value = response.totalOrgMemberCount;
     }
+  } catch (error) {
+    console.error("Error fetching logo:", error);
+  }
 };
 
 onMounted(totalOrgMemberCount)
@@ -52,7 +52,26 @@ onMounted(totalOrgMemberCount)
 
       <div v-if="auth.isAuthenticated && auth.user?.type == 2">
         <br>
-        <h3>Total Members: {{ totalOrgMember }}</h3>
+        <div class="row">
+          <div class="col-sm-6 mb-3 mb-sm-0">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Total Members</h5>
+                <p class="card-text"> <strong>{{ totalOrgMember }}</strong></p>
+                <a href="#" class="btn btn-primary">See all</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Total Active Committee</h5>
+                <p class="card-text"><strong>{{ totalOrgMember }}</strong></p>
+                <a href="#" class="btn btn-primary">See all</a>
+              </div>
+            </div>
+          </div>
+        </div>
         <br>
         <h3>Total Active Committee: 3</h3>
         <br>
