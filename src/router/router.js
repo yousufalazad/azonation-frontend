@@ -30,6 +30,10 @@ import UpcomingEvents from '../views/Org/Event/EventList.vue'
 import CreateProject from '../views/Org/Project/Create.vue'
 import Projects from '../views/Org/Project/Index.vue'
 
+import SuperAdminRegister from '../views/SuperAdmin/Profile/SuperAdminRegister.vue'
+import SuperAdminDashboard from '../views/SuperAdmin/Profile/SuperAdminDashboard.vue'
+import SuperAdminProfileUpdate from '../views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue'
+
 
 // Mock authentication function
 function isAuthenticated() {
@@ -46,11 +50,17 @@ const routes = [
     {
       path: '/individual-register',
       name: 'individual-register',
-      component: IndividualRegister    },
+      component: IndividualRegister    
+    },
     {
       path: '/org-register',
       name: 'org-register',
       component: OrgRegister
+    },
+    {
+      path: '/superadmin-register',
+      name: 'superadmin-register',
+      component: SuperAdminRegister
     },
     {
       path: '/individual-dashboard',
@@ -175,7 +185,21 @@ const routes = [
           meta: { requiresAuth: true },
         }
       ]
-    }
+    },
+    {
+      path: '/super-admin-dashboard',
+      name: 'super-admin-dashboard',
+      component: SuperAdminDashboard,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: 'superadmin-profile-update',
+          name: 'superadmin-profile-update',
+          component: SuperAdminProfileUpdate,
+          meta: { requiresAuth: true },
+        }
+      ]
+      }
   ]
 
   const router = createRouter({

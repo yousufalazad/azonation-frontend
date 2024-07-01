@@ -7,8 +7,9 @@ const authStore = reactive({
   apiBase: "http://localhost:8000",
   isAuthenticated: localStorage.getItem("auth") == 1,
   user: JSON.parse(localStorage.getItem("user")),
-  org: JSON.parse(localStorage.getItem("org")),
   individual: JSON.parse(localStorage.getItem("individual")),
+  org: JSON.parse(localStorage.getItem("org")),
+  superAdmin: JSON.parse(localStorage.getItem("superAdmin")),
   errors: null,
 
   async fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
@@ -124,6 +125,26 @@ const authStore = reactive({
         });
   },
 
+  superAdminRegister(admin_name, email, password) {
+    authStore.fetchPublicApi('/api/superadmin_register', { admin_name: admin_name, email: email, password: password }, 'POST')
+        .then(res => {
+          if (res.status) {
+            authStore.errors = null;
+            router.push('/');
+            Swal.fire({
+              icon: "success",
+              title: "SuperAdmin Register Successful",
+              text: "You have successfully register.",
+              timer: 5000,
+              timerProgressBar: true,
+              showConfirmButton: false,
+            });
+          } else {
+            authStore.errors = res.errors;
+          }
+        });
+  },
+
   authenticate(username, password) {
     authStore
       .fetchPublicApi(
@@ -147,6 +168,11 @@ const authStore = reactive({
           } else {
             router.push("/");
           }
+
+          // else if ("3" == res.data.type) {
+          //   this.superAdminData(res.data.user_id);
+          //   router.push({ name: "super-admin-dashboard" });
+          // }
 
           Swal.fire({
             icon: "success",

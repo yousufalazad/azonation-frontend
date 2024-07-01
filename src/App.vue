@@ -1,13 +1,14 @@
 <!-- App.vue -->
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed } from 'vue';
 import { authStore } from "./store/authStore";
 
 const auth = authStore;
 const UserType = computed(() => auth.user?.type);
 
-const IndividualUserName = computed(() => auth.individual?.full_name);
-const OrgUserName = computed(() => auth.org?.org_name);
+const individualUserName = computed(() => auth.individual?.full_name);
+const orgUserName = computed(() => auth.org?.org_name);
+const superAdminName = computed(() => auth.superAdmin?.admin_name);
 
 </script>
 
@@ -16,8 +17,9 @@ const OrgUserName = computed(() => auth.org?.org_name);
     <header class="navbar navbar-expand-md navbar-light bg-light fixed-top">
       <div class="container-fluid">
         <a class="navbar-brand h4 mb-0" href="#">
-          <p class="nav-item" v-if="auth.isAuthenticated && UserType == 1"><span>{{ IndividualUserName }}</span></p>
-          <p class="nav-item" v-if="auth.isAuthenticated && UserType == 2"><span>{{ OrgUserName }}</span></p></a>
+          <p class="nav-item" v-if="auth.isAuthenticated && UserType == 1"><span>{{ individualUserName }}</span></p>
+          <p class="nav-item" v-if="auth.isAuthenticated && UserType == 2"><span>{{ orgUserName }}</span></p>
+          <p class="nav-item" v-if="auth.isAuthenticated && UserType == 3"><span>{{ superAdminName }}</span></p></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
