@@ -9,7 +9,7 @@ const authStore = reactive({
   user: JSON.parse(localStorage.getItem("user")),
   individual: JSON.parse(localStorage.getItem("individual")),
   org: JSON.parse(localStorage.getItem("org")),
-  superAdmin: JSON.parse(localStorage.getItem("superAdmin")),
+  superadmin: JSON.parse(localStorage.getItem("superadmin")),
   errors: null,
 
   async fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
@@ -165,15 +165,12 @@ const authStore = reactive({
           } else if ("2" == res.data.type) {
             this.orgData(res.data.user_id);
             router.push({ name: "org-dashboard" });
+          } else if ("3" == res.data.type) {
+            this.superAdminUserData(res.data.user_id);
+            router.push({ name: "super-admin-dashboard" });
           } else {
             router.push("/");
           }
-
-          // else if ("3" == res.data.type) {
-          //   this.superAdminData(res.data.user_id);
-          //   router.push({ name: "super-admin-dashboard" });
-          // }
-
           Swal.fire({
             icon: "success",
             title: "Login Successful",
@@ -240,6 +237,19 @@ const authStore = reactive({
         this.org = res.data;
         localStorage.setItem("org", JSON.stringify(res.data));
         // console.log("Organisation Data:", res.data);
+      } else {
+        this.errors = res.message;
+      }
+    });
+  },
+
+  superAdminUserData(id) {
+    // console.log("user_id", id);
+    this.fetchPublicApi(`/api/super_admin_user_data/${id}`, {}, "GET").then((res) => {
+      if (res.status) {
+        this.superadmin = res.data;
+        localStorage.setItem("superadmin", JSON.stringify(res.data));
+        // console.log("superAdmin Data:", res.data);
       } else {
         this.errors = res.message;
       }

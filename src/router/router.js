@@ -30,9 +30,10 @@ import UpcomingEvents from '../views/Org/Event/EventList.vue'
 import CreateProject from '../views/Org/Project/Create.vue'
 import Projects from '../views/Org/Project/Index.vue'
 
-import SuperAdminRegister from '../views/SuperAdmin/Profile/SuperAdminRegister.vue'
-import SuperAdminDashboard from '../views/SuperAdmin/Profile/SuperAdminDashboard.vue'
-import SuperAdminProfileUpdate from '../views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue'
+import SuperAdminRegister from '../views/Superadmin/SuperAdminRegister.vue'
+import SuperAdminDashboard from '../views/Superadmin/Profile/SuperAdminDashboard.vue'
+import SuperAdminProfileUpdate from '../views/Superadmin/Profile/SuperAdminProfileUpdate.vue'
+
 
 
 // Mock authentication function

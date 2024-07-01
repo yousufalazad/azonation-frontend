@@ -68,4 +68,4 @@ onMounted(fetchProfileImage);
     max-width: 200px;
     margin-top: 10px;
 }
-</style>../store/authStore
+</style>

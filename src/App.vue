@@ -8,7 +8,7 @@ const UserType = computed(() => auth.user?.type);
 
 const individualUserName = computed(() => auth.individual?.full_name);
 const orgUserName = computed(() => auth.org?.org_name);
-const superAdminName = computed(() => auth.superAdmin?.admin_name);
+const superAdminName = computed(() => auth.superadmin?.admin_name);
 
 </script>
 
@@ -19,7 +19,7 @@ const superAdminName = computed(() => auth.superAdmin?.admin_name);
         <a class="navbar-brand h4 mb-0" href="#">
           <p class="nav-item" v-if="auth.isAuthenticated && UserType == 1"><span>{{ individualUserName }}</span></p>
           <p class="nav-item" v-if="auth.isAuthenticated && UserType == 2"><span>{{ orgUserName }}</span></p>
-          <p class="nav-item" v-if="auth.isAuthenticated && UserType == 3"><span>{{ superAdminName }}</span></p></a>
+          <p class="nav-item" v-if="auth.isAuthenticated && UserType == 3">Super Admin: <span>{{ superAdminName }}</span></p></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -32,12 +32,18 @@ const superAdminName = computed(() => auth.superAdmin?.admin_name);
               <router-link class="nav-link" to="/org-register">Org Register</router-link>
             </li>
             <li class="nav-item" v-if="!auth.isAuthenticated">
+              <router-link class="nav-link" to="/superadmin-register">SuperAdmin Register</router-link>
+            </li>
+            <li class="nav-item" v-if="!auth.isAuthenticated">
               <router-link class="nav-link" to="/">Login</router-link>
             </li>
             <li class="nav-item" v-if="auth.isAuthenticated && UserType == 1">
               <router-link class="nav-link" to="/individual-dashboard">Azonation</router-link>
             </li>
             <li class="nav-item" v-if="auth.isAuthenticated && UserType == 2">
+              <router-link class="nav-link" to="/org-dashboard">Azonation</router-link>
+            </li>
+            <li class="nav-item" v-if="auth.isAuthenticated && UserType == 3">
               <router-link class="nav-link" to="/org-dashboard">Azonation</router-link>
             </li>
             <li class="nav-item" v-if="auth.isAuthenticated">
