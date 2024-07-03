@@ -4,11 +4,11 @@ import Login from '../views/Login.vue'
 import IndividualRegister from '../views/Individual/Profile/IndividualRegister.vue'
 import IndividualDashboard from '../views/Individual/IndividualDashboard.vue'
 import ConnectedOrganisation from '../views/Individual/ConnectedOrganisation.vue'
-import NotificationFromOrg from '../views/Individual/NotificationFromOrg.vue'
+import NotificationFromOrg from '../views/Individual/Notifications/NotificationFromOrg.vue'
 import IndividualProfileUpdate from '../views/Individual/Profile/IndividualProfileUpdate.vue'
 
 import OrgRegister from '../views/Org/Profile/OrgRegister.vue'
-import OrgDashboard from '../views/Org/OrgDashboard.vue'
+import OrgDashboard from '../views/Org/Layouts/Layout.vue'
 import OrgProfileUpdate from '../views/Org/Profile/OrgProfileUpdate.vue'
 import OrgSettings from '../views/Org/Profile/Settings.vue'
 
@@ -30,10 +30,9 @@ import UpcomingEvents from '../views/Org/Event/EventList.vue'
 import CreateProject from '../views/Org/Project/Create.vue'
 import Projects from '../views/Org/Project/Index.vue'
 
-import SuperAdminRegister from '../views/Superadmin/SuperAdminRegister.vue'
-import SuperAdminDashboard from '../views/Superadmin/Profile/SuperAdminDashboard.vue'
-import SuperAdminProfileUpdate from '../views/Superadmin/Profile/SuperAdminProfileUpdate.vue'
-
+import SuperAdminRegister from '../views/SuperAdmin/SuperAdminRegister.vue'
+import SuperAdminDashboard  from '../views/SuperAdmin/Profile/SuperAdminDashboard.vue'
+import SuperAdminProfileUpdate from '../views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue'
 
 
 // Mock authentication function

@@ -1,5 +1,7 @@
 <template>
   <div class="org-sidebar">
+    <router-link to="/org-dashboard" class="menu-item">Org Dashboard</router-link>
+
     <h6 @click="toggleDropdown('membership')">Membership</h6>
     <div v-show="dropdowns.membership" class="dropdown-content">
       <router-link to="/org-dashboard/org-member-list" class="menu-item">Member List</router-link>

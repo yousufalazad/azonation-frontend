@@ -1,20 +1,20 @@
 <!-- App.vue -->
 <script setup>
-import { computed } from 'vue';
-import { authStore } from "./store/authStore";
+// import { computed } from 'vue';
+// import { authStore } from "./store/authStore";
 
-const auth = authStore;
-const UserType = computed(() => auth.user?.type);
+// const auth = authStore;
+// const UserType = computed(() => auth.user?.type);
 
-const individualUserName = computed(() => auth.individual?.full_name);
-const orgUserName = computed(() => auth.org?.org_name);
-const superAdminName = computed(() => auth.superadmin?.admin_name);
+// const individualUserName = computed(() => auth.individual?.full_name);
+// const orgUserName = computed(() => auth.org?.org_name);
+// const superAdminName = computed(() => auth.superadmin?.admin_name);
 
 </script>
 
 <template>
   <div>
-    <header class="navbar navbar-expand-md navbar-light bg-light fixed-top">
+    <!-- <header class="navbar navbar-expand-md navbar-light bg-light fixed-top">
       <div class="container-fluid">
         <a class="navbar-brand h4 mb-0" href="#">
           <p class="nav-item" v-if="auth.isAuthenticated && UserType == 1"><span>{{ individualUserName }}</span></p>
@@ -54,7 +54,9 @@ const superAdminName = computed(() => auth.superadmin?.admin_name);
           </ul>
         </div>
       </div>
-    </header>
+    </header> -->
+
+    
     <div class="container-fluid mt-5">
       <div class="row">
         <div class="col-12">

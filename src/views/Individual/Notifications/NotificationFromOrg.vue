@@ -1,7 +1,9 @@
 <!-- OrgMemberList.vue -->
 
 <script setup>
-import { authStore } from '../../store/authStore';
+import { authStore } from '../../../store/authStore'
+
+const auth = authStore;
 
 </script>
 
@@ -16,4 +18,3 @@ import { authStore } from '../../store/authStore';
   padding: 20px;
 }
 </style>
-../store/authStore

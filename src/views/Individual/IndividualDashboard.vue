@@ -1,13 +1,13 @@
 <!-- Individual Dashboard.vue -->
 <script setup>
-import IndividualSidebar from './IndividualSidebar.vue';
+import IndividualLeftSidebar from '../Individual/Layouts/Partials/LeftSidebar.vue';
 import { authStore } from '../../store/authStore';
 const auth = authStore;
 </script>
 
 <template>
   <div class="individual-layout">
-    <IndividualSidebar v-if="auth.isAuthenticated && auth.user?.type == 1" />
+    <IndividualLeftSidebar v-if="auth.isAuthenticated && auth.user?.type == 1" />
     <div class="content-area">
       <router-view />
 
@@ -44,4 +44,4 @@ const auth = authStore;
   padding: 20px;
   flex-grow: 1;
 }
-</style>../store/authStore
+</style>
