@@ -26,4 +26,4 @@ const auth = authStore;
   padding: 20px;
   flex-grow: 1;
 }
-</style>./OrgSidebar.vue./OrgRightSidebar.vue../../../store/authStore./Partials/RightSidebar.vue
+</style>

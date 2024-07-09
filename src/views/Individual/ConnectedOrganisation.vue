@@ -64,4 +64,3 @@ onMounted(fetchOrganisationList);
   padding: 20px;
 }
 </style>
-../store/authStore

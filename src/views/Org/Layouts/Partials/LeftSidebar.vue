@@ -108,7 +108,7 @@ export default {
   top: 50px;
   left: 0;
   height: 100%;
-  width: 280px;
+  /* width: 280px; */
   background-color: #ffffff;
   padding: 20px;
   overflow-y: hidden;
