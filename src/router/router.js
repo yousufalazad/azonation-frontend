@@ -1,15 +1,18 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Login from "../views/Login.vue";
 
-import IndividualRegister from "../views/Individual/Profile/IndividualRegister.vue";
+//Auth
+import Login from "../views/Auth/Login.vue";
+
+//Individual
+import IndividualRegister from "../views/Individual/User/Register.vue";
 import IndividualDashboard from "../views/Individual/IndividualDashboard.vue";
 import ConnectedOrganisation from "../views/Individual/ConnectedOrganisation.vue";
 import NotificationFromOrg from "../views/Individual/Notifications/NotificationFromOrg.vue";
 import IndividualProfileUpdate from "../views/Individual/Profile/IndividualProfileUpdate.vue";
 
-import OrgRegister from "../views/Org/Profile/OrgRegister.vue";
-import OrgLayout from "../views/Org/Layouts/Layout.vue";
-import OrgDashboard from "../views/Org/OrgDashboard.vue";
+//Org
+import OrgRegister from "../views/Org/User/Register.vue";
+import OrgDashboard from "../views/Org/Dashboard/Index.vue";
 import OrgProfileUpdate from "../views/Org/Profile/OrgProfileUpdate.vue";
 import OrgSettings from "../views/Org/Profile/Settings.vue";
 
@@ -31,9 +34,11 @@ import UpcomingEvents from "../views/Org/Event/EventList.vue";
 import CreateProject from "../views/Org/Project/Create.vue";
 import Projects from "../views/Org/Project/Index.vue";
 
-import SuperAdminRegister from "../views/Superadmin/SuperAdminRegister.vue";
-import SuperAdminDashboard from "../views/Superadmin/Profile/SuperAdminDashboard.vue";
-import SuperAdminProfileUpdate from "../views/Superadmin/Profile/SuperAdminProfileUpdate.vue";
+//SuperAdmin
+import SuperAdminRegister from "../views/SuperAdmin/User/Register.vue";
+import SuperAdminDashboard from "../views/SuperAdmin/Profile/SuperAdminDashboard.vue";
+import SuperAdminProfileUpdate from "@/views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue";
+
 
 // Mock authentication function
 function isAuthenticated() {
@@ -89,17 +94,11 @@ const routes = [
     ],
   },
   {
-    path: "/org-admin",
-    name: "org-layout",
-    component: OrgLayout,
+    path: "/org-dashboard",
+    name: "org-dashboard",
+    component: OrgDashboard,
     meta: { requiresAuth: true },
     children: [
-      {
-        path: "/org-dashboard",
-        name: "org-dashboard",
-        component: OrgDashboard,
-        meta: { requiresAuth: true },
-      },
       {
         path: "org-profile-update",
         name: "org-profile-update",

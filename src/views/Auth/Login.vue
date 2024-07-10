@@ -1,10 +1,9 @@
 <!-- Home Component -->
 <script setup>
 import { ref } from 'vue'
-import { authStore } from '../store/authStore';
+import { authStore } from '../../store/authStore';
 const auth = authStore
 
-import router from '../router/router'
 
 const username = ref('')
 const password = ref('')

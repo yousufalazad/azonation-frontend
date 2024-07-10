@@ -40,4 +40,4 @@ const auth = authStore;
   padding: 20px;
   flex-grow: 1;
 } */
-</style>
+</style>../Dashboard/OrgDashboard.vue

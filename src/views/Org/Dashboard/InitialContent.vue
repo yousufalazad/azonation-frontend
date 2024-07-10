@@ -1,7 +1,7 @@
 <!-- OrgDashboard.vue -->
 <script setup>
 import { ref, onMounted } from 'vue';
-import { authStore } from '../../store/authStore';
+import { authStore } from '../../../store/authStore';
 
 const auth = authStore;
 const orgId = auth.org.id;
@@ -67,19 +67,6 @@ onMounted(totalOrgMemberCount)
             </div>
           </div>
         </div>
-        <br>
-        <h3>Total Active Committee: 3</h3>
-        <br>
-        <h3>Upcoming Events: 2</h3>
-        <br>
-        <h3>Upcoming Projects: 1</h3>
-        <br>
-        <h3>Next Meeting Date: 1 Jan 2025</h3>
-        <br>
-        <h3>Total New Member Added in {August}: 3</h3>
-        <br>
-        <h3>Last Meeting Attendance Parcentage : 75%</h3>
-        <br>
       </div>
 
     </div>
