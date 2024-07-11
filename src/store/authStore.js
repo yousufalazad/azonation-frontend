@@ -164,7 +164,7 @@ const authStore = reactive({
             router.push({ name: "individual-dashboard" });
           } else if ("2" == res.data.type) {
             this.orgData(res.data.user_id);
-            router.push({ name: "org-dashboard" });
+            router.push({ name: "dashboard-initial-content" });
           } else if ("3" == res.data.type) {
             this.superAdminUserData(res.data.user_id);
             router.push({ name: "super-admin-dashboard" });

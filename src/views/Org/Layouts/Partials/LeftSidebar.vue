@@ -1,14 +1,12 @@
 <!-- Org Dashboard Page -->
 <template>
   <div class="org-sidebar">
-    <router-link to="/org-dashboard" class="menu-item">Org Dashboard</router-link>
+    <router-link to="/org-dashboard/dashboard-initial-content" class="menu-item">Home</router-link>
 
     <h6 @click="toggleDropdown('membership')">Membership</h6>
     <div v-show="dropdowns.membership" class="dropdown-content">
       <router-link to="/org-dashboard/org-member-list" class="menu-item">Member List</router-link>
       <router-link to="/org-dashboard/add-member" class="menu-item">Add Member</router-link>
-      <router-link to="/org-dashboard/initial-content" class="menu-item">Initial Content</router-link>
-
     </div>
     <hr>
 
