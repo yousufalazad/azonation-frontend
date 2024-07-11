@@ -17,7 +17,7 @@ const auth = authStore;
 
     <RightSidebar v-if="auth.isAuthenticated && auth.user?.type == 2" />
 
-    <InitialContent v-if="auth.isAuthenticated && auth.user?.type == 2" />
+    <!-- <InitialContent v-if="auth.isAuthenticated && auth.user?.type == 2" /> -->
   </div>
   
   <div class="dashboard-layout">

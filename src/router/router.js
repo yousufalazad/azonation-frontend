@@ -13,6 +13,8 @@ import IndividualProfileUpdate from "../views/Individual/Profile/IndividualProfi
 //Org
 import OrgRegister from "../views/Org/User/Register.vue";
 import OrgDashboard from "../views/Org/Dashboard/Index.vue";
+import OrgDashboardInitialContent from "../views/Org/Dashboard/InitialContent.vue"
+
 import OrgProfileUpdate from "../views/Org/Profile/OrgProfileUpdate.vue";
 import OrgSettings from "../views/Org/Profile/Settings.vue";
 
@@ -99,6 +101,12 @@ const routes = [
     component: OrgDashboard,
     meta: { requiresAuth: true },
     children: [
+      {
+        path: "/initial-content",
+        name: "org-dashboard-initial-content",
+        component: OrgDashboardInitialContent,
+        meta: { requiresAuth: true },
+      },
       {
         path: "org-profile-update",
         name: "org-profile-update",
