@@ -1,7 +1,7 @@
 <!-- OrgDashboard.vue -->
 <script setup>
 import { ref, onMounted } from 'vue';
-import { authStore } from '../../../store/authStore';
+import { authStore } from '../../../../store/authStore';
 
 const auth = authStore;
 const orgId = auth.org.id;
@@ -17,7 +17,6 @@ const totalOrgMemberCount = async () => {
     console.error("Error fetching logo:", error);
   }
 };
-
 onMounted(totalOrgMemberCount)
 </script>
 

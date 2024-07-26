@@ -12,8 +12,8 @@ import IndividualProfileUpdate from "../views/Individual/Profile/IndividualProfi
 
 //Org
 import OrgRegister from "../views/Org/User/Register.vue";
-import OrgDashboard from "../views/Org/Dashboard/Index.vue";
-import OrgDashboardInitialContent from "@/views/Org/Dashboard/InitialContent.vue";
+import OrgDashboard from "../views/Org/Layouts/Dashboard/Index.vue";
+import OrgDashboardInitialContent from "@/views/Org/Layouts/Dashboard/InitialContent.vue";
 
 import OrgProfileUpdate from "../views/Org/Profile/OrgProfileUpdate.vue";
 import OrgSettings from "../views/Org/Profile/Settings.vue";
@@ -37,10 +37,9 @@ import CreateProject from "../views/Org/Project/Create.vue";
 import Projects from "../views/Org/Project/Index.vue";
 
 //SuperAdmin
-import SuperAdminRegister from "../views/SuperAdmin/User/Register.vue";
-import SuperAdminDashboard from "../views/SuperAdmin/Profile/SuperAdminDashboard.vue";
-import SuperAdminProfileUpdate from "@/views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue";
-
+import SuperAdminRegister from "../views/Superadmin/User/Register.vue";
+import SuperAdminDashboard from "../views/Superadmin/Profile/SuperAdminDashboard.vue";
+import SuperAdminProfileUpdate from "../views/Superadmin/Profile/SuperAdminProfileUpdate.vue";
 
 // Mock authentication function
 function isAuthenticated() {

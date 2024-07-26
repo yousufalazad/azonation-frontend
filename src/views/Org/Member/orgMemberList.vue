@@ -62,8 +62,5 @@ onMounted(fetchMemberList);
 </template>
 
 <style scoped>
-.org-member-list {
-  padding: 20px;
-}
+
 </style>
-../store/authStore

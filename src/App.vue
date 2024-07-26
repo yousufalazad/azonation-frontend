@@ -2,8 +2,6 @@
 <script setup>
 import { computed } from 'vue';
 import { authStore } from "./store/authStore";
-import LeftSidebar from './views/Org/Layouts/Partials/LeftSidebar.vue';
-import RightSidebar from './views/SuperAdmin/Layouts/Partials/RightSidebar.vue';
 
 const auth = authStore;
 const UserType = computed(() => auth.user?.type);
@@ -24,7 +22,6 @@ const superAdminName = computed(() => auth.superadmin?.admin_name);
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-
 
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
