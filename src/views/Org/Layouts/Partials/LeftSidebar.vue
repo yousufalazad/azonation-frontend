@@ -105,5 +105,7 @@ export default {
 </script>
 
 <style scoped>
-
+  .left-sidebar {
+    padding-left: 30px;
+  }
 </style>

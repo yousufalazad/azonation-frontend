@@ -10,6 +10,25 @@ const password = ref('')
 
 </script>
 <template>
+  <header class="navbar navbar-expand-md navbar-light bg-light fixed-top">
+      <div class="container-fluid">
+        <li class="nav-item">
+              <router-link class="nav-link" to="#">Azonation</router-link>
+            </li>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+           
+            <li class="nav-item">
+              <router-link class="nav-link" to="/individual-register">Individual Register</router-link>
+            </li>
+            <li class="nav-item">
+              <router-link class="nav-link" to="/">Login</router-link>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </header>
   <div class="d-flex flex-column align-items-center justify-content-center mt-5 px-3">
     <div class="w-75 bg-white rounded-lg shadow-lg sm:max-w-md px-5">
       <div class="p-4 space-y-4"></div>

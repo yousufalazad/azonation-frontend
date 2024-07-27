@@ -13,7 +13,7 @@ const orgUserName = computed(() => auth.org?.org_name);
 
 <template>
     <div>
-        <header class="navbar navbar-expand-md navbar-light bg-light fixed-top">
+        <header class="navbar navbar-expand-md navbar-light bg-light">
             <div class="container-fluid">
                 <a class="navbar-brand h4 mb-0" href="#">
                     <p class="nav-item" v-if="auth.isAuthenticated && UserType == 2"><span>{{ orgUserName }}</span></p>
