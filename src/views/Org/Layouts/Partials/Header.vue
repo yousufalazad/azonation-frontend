@@ -8,15 +8,14 @@ const auth = authStore;
 const UserType = computed(() => auth.user?.type);
 const orgUserName = computed(() => auth.org?.org_name);
 
-
 </script>
 
 <template>
     <div>
         <header class="navbar navbar-expand-md navbar-light bg-light">
             <div class="container-fluid">
-                <a class="navbar-brand h4 mb-0" href="#">
-                    <p class="nav-item" v-if="auth.isAuthenticated && UserType == 2"><span>{{ orgUserName }}</span></p>
+                <a class="navbar-brand d-flex align-items-center" href="#">
+                   <h4 class="p-0 m-0">{{ orgUserName }}</h4>
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -44,5 +43,7 @@ const orgUserName = computed(() => auth.org?.org_name);
 </template>
 
 <style>
-/* Add any custom styles here if necessary */
+.navbar-brand{
+    margin-left: 22px;
+}
 </style>

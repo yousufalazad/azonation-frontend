@@ -1,5 +1,5 @@
 <template>
-  <div class="right-sidebar">
+  <div class="org-sidebar-right">
     <h4 @click="toggleDropdown('reports')">Reports</h4>
     <div v-show="dropdowns.reports" class="dropdown-content">
       <h6 @click="toggleDropdown('membership')">Membership</h6>
@@ -118,7 +118,48 @@ export default {
 </script>
 
 <style scoped>
- .right-sidebar {
-  padding-right: 30px;
- }
+.org-sidebar-right {
+  position: fixed;
+  top: 70px;
+  right: 0;
+  height: 100%;
+  width: 280px;
+  background-color: #ffffff;
+  padding-top: 20px;
+  overflow-y: hidden;
+  transition: overflow-y 0.3s;
+}
+.org-sidebar-right:hover {
+  overflow-y: auto;
+}
+.menu-item {
+  display: block;
+  margin: 10px 0;
+  color: #007bff;
+  text-decoration: none;
+}
+.menu-item:hover {
+  text-decoration: underline;
+}
+.dropdown-content {
+  margin-left: 7px;
+}
+h5, h6 {
+  cursor: pointer;
+  margin: 10px 0;
+  color: #343a40;
+}
+h4 {
+margin-left: 7px;
+}
+hr {
+  border-top: 1px solid #dee2e6;
+}
+@media (max-width: 767.98px) {
+  .org-sidebar-right {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+}
 </style>

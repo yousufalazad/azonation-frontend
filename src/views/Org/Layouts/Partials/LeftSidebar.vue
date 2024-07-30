@@ -105,7 +105,42 @@ export default {
 </script>
 
 <style scoped>
+.left-sidebar {
+  position: fixed;
+  top: 70px;
+  left: 0;
+  height: 100%;
+  background-color: #ffffff;
+  padding-left: 35px;
+}
+.left-sidebar:hover {
+  overflow-y: auto;
+}
+.menu-item {
+  display: block;
+  margin: 10px 0;
+  color: #007bff;
+  text-decoration: none;
+}
+.menu-item:hover {
+  text-decoration: underline;
+}
+.dropdown-content {
+  margin-left: 7px;
+}
+h6 {
+  cursor: pointer;
+  margin: 10px 0;
+  color: #343a40;
+}
+hr {
+  border-top: 1px solid #dee2e6;
+}
+@media (max-width: 767.98px) {
   .left-sidebar {
-    padding-left: 30px;
+    width: 100%;
+    height: auto;
+    position: relative;
   }
+}
 </style>
