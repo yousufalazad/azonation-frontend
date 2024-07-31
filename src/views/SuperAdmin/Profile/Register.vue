@@ -1,4 +1,5 @@
 <!-- Org register page -->
+
 <script setup>
 import { ref } from 'vue'
 import { authStore } from '../../../store/authStore';
@@ -9,28 +10,29 @@ const email = ref('')
 const password = ref('')
 
 </script>
+
 <template>
-     <header class="navbar navbar-expand-md navbar-light bg-light fixed-top">
- 
+  <header class="navbar navbar-expand-md navbar-light bg-light fixed-top width">
+    <div class="container-fluid">
+      <img src="../../../assets/Logo/Azonation.png" alt="Azonation" width="175px">
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-         
-            <li class="nav-item" v-if="!auth.isAuthenticated">
-              <router-link class="nav-link" to="/individual-register">Individual Register</router-link>
-            </li>
-            
-            <li class="nav-item">
-              <router-link class="nav-link" to="/individual-register">Individual Register</router-link>
-            </li>
+          <li class="nav-item" v-if="!auth.isAuthenticated">
+            <router-link class="nav-link" to="/individual-register">Individual Register</router-link>
+          </li>
 
-            <li class="nav-item">
-              <router-link class="nav-link" to="/">Login</router-link>
-            </li>
-          </ul>
-        </div>
-      
-    </header>
+          <li class="nav-item">
+            <router-link class="nav-link" to="/individual-register">Individual Register</router-link>
+          </li>
+
+          <li class="nav-item">
+            <router-link class="nav-link" to="/">Login</router-link>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </header>
 
 
   <div class="d-flex flex-column align-items-center justify-content-center mt-5 px-3">

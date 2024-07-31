@@ -3,17 +3,15 @@
 import { ref } from 'vue'
 import { authStore } from '../../store/authStore';
 const auth = authStore
-
-
 const username = ref('')
 const password = ref('')
 
 </script>
 <template>
-  <header class="navbar navbar-expand-md navbar-light bg-light fixed-top">
+  <header class="navbar navbar-expand-md navbar-light bg-light fixed-top width">
     <div class="container-fluid">
-      <li class="nav-item">
-        <router-link class="nav-link" to="#">Azonation</router-link>
+      <li class="nav-item azonation-logo">
+        <img src="../../assets/Logo/Azonation.png" alt="Azonation" width="175px">
       </li>
 
       <div class="collapse navbar-collapse" id="navbarNav">
@@ -81,5 +79,5 @@ const password = ref('')
 </template>
 
 <style>
-/* Add any custom styles here if necessary */
+
 </style>

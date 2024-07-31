@@ -1,0 +1,33 @@
+/* Custom CSS for Azonation */
+
+/* default css */
+* {
+    margin: 0px;
+    padding: 0px;
+    outline: 0px;
+  }
+  
+  img {
+    border: 0px;
+    margin: 0px;
+    padding: 0px;
+  }
+  
+  ol, ul, li {
+    list-style-type: none;
+  }
+  
+  a, a:hover, a:focus {
+    text-decoration: none;
+    outline: 0;
+  }
+  
+  body {
+    background-color: #F0F8FF;
+  }
+
+/* Custom CSS */
+
+.width{
+    --bs-navbar-padding-y: 1.5rem !important;
+}

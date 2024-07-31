@@ -10,11 +10,11 @@ const password = ref('')
 
 </script>
 <template>
-  <header class="navbar navbar-expand-md navbar-light bg-light fixed-top">
+  <header class="navbar navbar-expand-md navbar-light bg-light fixed-top width">
       <div class="container-fluid">
-        <li class="nav-item">
-              <router-link class="nav-link" to="#">Azonation</router-link>
-            </li>
+        <li class="nav-item azonation-logo">
+        <img src="../../../assets/Logo/Azonation.png" alt="Azonation" width="175px">
+      </li>
 
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
