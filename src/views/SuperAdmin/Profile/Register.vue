@@ -12,7 +12,7 @@ const password = ref('')
 </script>
 
 <template>
-  <header class="navbar navbar-expand-md navbar-light bg-light fixed-top width">
+  <header class="navbar navbar-expand-md navbar-light bg-light fixed-top navbar-width">
     <div class="container-fluid">
       <img src="../../../assets/Logo/Azonation.png" alt="Azonation" width="175px">
       <div class="collapse navbar-collapse" id="navbarNav">

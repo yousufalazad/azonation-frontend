@@ -28,6 +28,6 @@
 
 /* Custom CSS */
 
-.width{
+.navbar-width{
     --bs-navbar-padding-y: 1.5rem !important;
 }
