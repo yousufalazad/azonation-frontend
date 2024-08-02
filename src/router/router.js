@@ -37,7 +37,7 @@ import CreateProject from "../views/Org/Project/Create.vue";
 import Projects from "../views/Org/Project/Index.vue";
 
 //SuperAdmin
-import SuperAdminRegister from "../views/SuperAdmin/Profile/Register.vue"
+import SuperAdminRegister from "../views/SuperAdmin/Profile/Register.vue";
 import SuperAdminDashboard from "../views/SuperAdmin/Profile/SuperAdminDashboard.vue";
 import SuperAdminProfileUpdate from "../views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue";
 
@@ -64,8 +64,8 @@ const routes = [
     component: OrgRegister,
   },
   {
-    path: "/superadmin-register",
-    name: "superadmin-register",
+    path: "/superAdmin-register",
+    name: "superAdmin-register",
     component: SuperAdminRegister,
   },
   {
@@ -205,8 +205,8 @@ const routes = [
     meta: { requiresAuth: true },
     children: [
       {
-        path: "superadmin-profile-update",
-        name: "superadmin-profile-update",
+        path: "super-admin-profile-update",
+        name: "super-admin-profile-update",
         component: SuperAdminProfileUpdate,
         meta: { requiresAuth: true },
       },

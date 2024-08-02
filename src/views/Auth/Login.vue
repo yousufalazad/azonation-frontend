@@ -23,7 +23,7 @@ const password = ref('')
             <router-link class="nav-link" to="/org-register">Org Register</router-link>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link" to="/superadmin-register">SuperAdmin Register</router-link>
+            <router-link class="nav-link" to="/superAdmin-register">SuperAdmin Register</router-link>
           </li>
         </ul>
       </div>
