@@ -245,20 +245,34 @@ const authStore = reactive({
     });
   },
 
-  orgData(id) {
-    // console.log("user_id", id);
-    this.fetchPublicApi(`/api/organisation_data/${id}`, {}, "GET").then(
+  //Find org data after org login only
+  orgData(userId) {
+    this.fetchPublicApi(`/api/get_organisation_data/${userId}`, {}, "GET").then(
       (res) => {
         if (res.status) {
           this.org = res.data;
           localStorage.setItem("org", JSON.stringify(res.data));
-          // console.log("Organisation Data:", res.data);
         } else {
           this.errors = res.message;
         }
       }
     );
   },
+
+  //Find org data after any update
+  getOrgData(orgId) {
+    this.fetchPublicApi(`/api/organisation/${orgId}`, {}, "GET").then(
+      (res) => {
+        if (res.status) {
+          this.org = res.data;
+          localStorage.setItem("org", JSON.stringify(res.data));
+        } else {
+          this.errors = res.message;
+        }
+      }
+    );
+  },
+
 
   superAdminUserData(id) {
     // console.log("user_id", id);
@@ -274,6 +288,8 @@ const authStore = reactive({
       }
     );
   },
+
+
 
   getUserToken() {
     return authStore.user?.accessToken;

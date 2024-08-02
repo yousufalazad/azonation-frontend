@@ -111,8 +111,7 @@ const updateOrgDetails = async () => {
         }, 'PUT');
         if (response.status) {
             Swal.fire('Success', 'Organization details updated successfully', 'success');
-            auth.orgData(orgId) // update localStorage for updated org name when updated
-
+            auth.getOrgData(orgId) // update localStorage for updated org name when updated
         } else {
             Swal.fire('Error', 'Failed to update organization details', 'error');
         }
