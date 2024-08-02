@@ -14,7 +14,7 @@ const fetchMemberList = async () => {
       memberList.value = response.data;
     } else {
       memberList.value = [];
-    } 
+    }
   } catch (error) {
     console.error("Error fetching member list:", error);
     memberList.value = [];
@@ -61,6 +61,4 @@ onMounted(fetchMemberList);
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
