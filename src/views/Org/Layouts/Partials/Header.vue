@@ -1,12 +1,29 @@
-<!-- App.vue -->
+<!-- Top Header -->
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { authStore } from "../../../../store/authStore"
 
 const auth = authStore;
 const UserType = computed(() => auth.user?.type);
 const orgUserName = computed(() => auth.org?.org_name);
+
+const logoPath = ref('');
+const orgId = auth.org.id; // Assuming the org ID is stored in the logged-in user
+const baseURL = 'http://localhost:8000';
+
+const fetchLogo = async () => {
+    try {
+        const response = await auth.fetchProtectedApi(`/api/organisation/logo/${orgId}`, {}, 'GET');
+        if (response.status && response.data.image) {
+            logoPath.value = response.data.image;
+        }
+    } catch (error) {
+        console.error("Error fetching logo:", error);
+    }
+};
+
+onMounted(fetchLogo);
 
 </script>
 
@@ -14,8 +31,10 @@ const orgUserName = computed(() => auth.org?.org_name);
     <div>
         <header class="navbar navbar-expand-md navbar-light bg-light">
             <div class="container-fluid">
+                
                 <a class="navbar-brand d-flex align-items-center" href="#">
-                   <h4 class="p-0 m-0">{{ orgUserName }}</h4>
+                    <img :src="`${baseURL}${logoPath}`" alt="Organization Logo" class="img-thumbnail logo-height">
+                    <h4 class="p-0 m-0">{{ orgUserName }}</h4>
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -23,7 +42,7 @@ const orgUserName = computed(() => auth.org?.org_name);
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="collapse navbar-collapse mx-4" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
 
                         <li class="nav-item" v-if="auth.isAuthenticated && UserType == 2">
@@ -43,7 +62,20 @@ const orgUserName = computed(() => auth.org?.org_name);
 </template>
 
 <style>
-.navbar-brand{
+.navbar-brand {
     margin-left: 22px;
+    
+    padding-top: 0px;
+    padding-bottom: 0px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+.logo-height{
+    height: 43px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-right: 10px;
 }
 </style>

@@ -132,7 +132,6 @@ const updateOrgAddress = async () => {
         }, 'PUT');
         if (response.status) {
             Swal.fire('Success', 'Address updated successfully', 'success');
-            
         } else {
             Swal.fire('Error', 'Failed to update address', 'error');
         }
@@ -152,7 +151,6 @@ const updateOrgPhoneNumber = async () => {
         }, 'PUT');
         if (response.status) {
             Swal.fire('Success', 'Phone number updated successfully', 'success');
-            
         } else {
             Swal.fire('Error', 'Failed to update phone number', 'error');
         }
