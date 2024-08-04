@@ -1,7 +1,15 @@
 <!-- Org Dashboard Page -->
+
 <template>
   <div class="left-sidebar">
     <router-link to="/org-dashboard/dashboard-initial-content" class="menu-item">Home</router-link>
+    <button type="button" class="btn btn-primary btn-sm">Expand</button>
+    <button type="button" class="btn btn-secondary btn-sm ms-3">Collapse</button>
+
+    <form class="d-flex">
+      <input class="form-control me-1 my-2" type="search" placeholder="Search" aria-label="Search">
+      <button class="btn btn-outline-dark my-2" type="submit">Search</button>
+    </form>
 
     <h6 @click="toggleDropdown('membership')">Membership</h6>
     <div v-show="dropdowns.membership" class="dropdown-content">
@@ -33,7 +41,8 @@
       <router-link to="/org-dashboard/upcoming-events" class="menu-item">Previous Event</router-link>
       <router-link to="/org-dashboard/upcoming-events" class="menu-item">Invite Event</router-link>
       <router-link to="/org-dashboard/create-event" class="menu-item">Create Event</router-link>
-      <router-link to="/org-dashboard/upcoming-events" class="menu-item">Registered Event participants List</router-link>
+      <router-link to="/org-dashboard/upcoming-events" class="menu-item">Registered Event participants
+        List</router-link>
     </div>
     <hr>
 
@@ -107,35 +116,42 @@ export default {
 <style scoped>
 .left-sidebar {
   position: fixed;
-  top: 70px;
+  top: 66px;
   left: 0;
   height: 100%;
-  background-color: #ffffff;
+  background-color: #461d1d;
   padding-left: 35px;
 }
+
 .left-sidebar:hover {
   overflow-y: auto;
 }
+
 .menu-item {
   display: block;
   margin: 10px 0;
   color: #007bff;
   text-decoration: none;
 }
+
 .menu-item:hover {
   text-decoration: underline;
 }
+
 .dropdown-content {
   margin-left: 7px;
 }
+
 h6 {
   cursor: pointer;
   margin: 10px 0;
   color: #343a40;
 }
+
 hr {
   border-top: 1px solid #dee2e6;
 }
+
 @media (max-width: 767.98px) {
   .left-sidebar {
     width: 100%;

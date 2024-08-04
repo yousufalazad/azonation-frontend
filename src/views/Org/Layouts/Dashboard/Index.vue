@@ -1,12 +1,10 @@
 <!-- OrgDashboard.vue -->
 
 <script setup>
-import { authStore } from '../../../../store/authStore';
 import LeftSidebar from '../../../Org/Layouts/Partials/LeftSidebar.vue';
 import RightSidebar from '../../../Org/Layouts/Partials/RightSidebar.vue';
 import Header from '../Partials/Header.vue';
 
-const auth = authStore;
 </script>
 
 <template>

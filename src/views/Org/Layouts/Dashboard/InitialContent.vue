@@ -40,7 +40,7 @@ onMounted(fetchMemberList);
 
 <template>
   <div class="dashboard-layout">
-    <div class="content-area">
+    <div class="content-area my-5 ms-3">
       <div v-if="auth.isAuthenticated && auth.user?.type == 2">
         <br>
         <div class="row">

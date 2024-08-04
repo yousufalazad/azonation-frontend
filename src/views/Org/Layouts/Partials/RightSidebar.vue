@@ -1,6 +1,15 @@
 <template>
   <div class="org-sidebar-right">
-    <h4 @click="toggleDropdown('reports')">Reports</h4>
+    <h5 @click="toggleDropdown('reports')">Reports</h5>
+
+    <button type="button" class="btn btn-primary btn-sm">Expand</button>
+    <button type="button" class="btn btn-secondary btn-sm ms-3">Collapse</button>
+
+    <form class="d-flex">
+      <input class="form-control me-1 my-2" type="search" placeholder="Search" aria-label="Search">
+      <button class="btn btn-outline-dark my-2" type="submit">Search</button>
+    </form>
+
     <div v-show="dropdowns.reports" class="dropdown-content">
       <h6 @click="toggleDropdown('membership')">Membership</h6>
       <div v-show="dropdowns.membership" class="dropdown-content">
@@ -120,11 +129,10 @@ export default {
 <style scoped>
 .org-sidebar-right {
   position: fixed;
-  top: 70px;
-  right: 0;
+  margin-top: 66px;
+  margin-right: 0;
   height: 100%;
-  width: 280px;
-  background-color: #ffffff;
+  background-color: #30178b;
   padding-top: 20px;
   overflow-y: hidden;
   transition: overflow-y 0.3s;

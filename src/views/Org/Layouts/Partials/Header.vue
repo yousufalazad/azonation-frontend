@@ -28,7 +28,7 @@ onMounted(fetchLogo);
 </script>
 
 <template>
-    <div>
+    <div class="fixed-top">
         <header class="navbar navbar-expand-md navbar-light bg-light">
             <div class="container-fluid">
                 
@@ -64,14 +64,14 @@ onMounted(fetchLogo);
 <style>
 .navbar-brand {
     margin-left: 22px;
-    
+   
     padding-top: 0px;
     padding-bottom: 0px;
     margin-top: 0px;
     margin-bottom: 0px;
 }
 .logo-height{
-    height: 43px;
+    height: 50px;
     padding-top: 0px;
     padding-bottom: 0px;
     margin-top: 0px;
