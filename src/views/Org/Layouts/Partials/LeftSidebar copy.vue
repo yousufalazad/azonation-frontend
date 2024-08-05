@@ -115,8 +115,9 @@ export default {
 
 <style scoped>
 .left-sidebar {
-  position: absolute;
-  margin-top: 66px;
+  position: fixed;
+  top: 66px;
+  left: 0;
   height: 100%;
   background-color: #F0F8FF;
   padding-left: 35px;

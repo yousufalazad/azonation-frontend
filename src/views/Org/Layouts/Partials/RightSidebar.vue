@@ -1,7 +1,6 @@
 <template>
   <div class="org-sidebar-right">
     <h5 @click="toggleDropdown('reports')">Reports</h5>
-
     <button type="button" class="btn btn-primary btn-sm">Expand</button>
     <button type="button" class="btn btn-secondary btn-sm ms-3">Collapse</button>
 
@@ -128,7 +127,7 @@ export default {
 
 <style scoped>
 .org-sidebar-right {
-  position: fixed;
+  position: absolute;
   margin-top: 66px;
   margin-right: 0;
   height: 100%;
@@ -163,11 +162,5 @@ margin-left: 7px;
 hr {
   border-top: 1px solid #dee2e6;
 }
-@media (max-width: 767.98px) {
-  .org-sidebar-right {
-    width: 100%;
-    height: auto;
-    position: relative;
-  }
-}
+
 </style>
