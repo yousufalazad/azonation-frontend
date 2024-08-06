@@ -1,6 +1,7 @@
 <template>
   <div class="org-sidebar-right">
     <h5 @click="toggleDropdown('reports')">Reports</h5>
+
     <button type="button" class="btn btn-primary btn-sm">Expand</button>
     <button type="button" class="btn btn-secondary btn-sm ms-3">Collapse</button>
 
@@ -127,11 +128,11 @@ export default {
 
 <style scoped>
 .org-sidebar-right {
-  position: absolute;
+  position: fixed;
   margin-top: 66px;
   margin-right: 0;
   height: 100%;
-  background-color: #789bb9;
+  background-color: #F0F8FF;
   padding-top: 20px;
   overflow-y: hidden;
   transition: overflow-y 0.3s;
@@ -162,5 +163,11 @@ margin-left: 7px;
 hr {
   border-top: 1px solid #dee2e6;
 }
-
+@media (max-width: 767.98px) {
+  .org-sidebar-right {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+}
 </style>
