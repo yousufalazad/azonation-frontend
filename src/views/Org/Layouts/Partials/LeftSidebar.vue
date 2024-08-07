@@ -119,7 +119,7 @@ export default {
   top: 66px;
   left: 0;
   height: 100%;
-  background-color: #F0F8FF;
+  background-color: #173a58;
   padding-left: 35px;
 }
 
