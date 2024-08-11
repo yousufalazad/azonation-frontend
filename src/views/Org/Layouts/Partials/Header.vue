@@ -33,7 +33,7 @@ onMounted(fetchLogo);
             <div class="container-fluid">
                 
                 <a class="navbar-brand d-flex align-items-center" href="#">
-                    <img :src="`${baseURL}${logoPath}`" alt="Organization Logo" class="img-thumbnail logo-height">
+                    <img v-if="logoPath" :src="`${baseURL}${logoPath}`" alt="Organization Logo" class="img-thumbnail logo-height">
                     <h4 class="p-0 m-0">{{ orgUserName }}</h4>
                 </a>
 
