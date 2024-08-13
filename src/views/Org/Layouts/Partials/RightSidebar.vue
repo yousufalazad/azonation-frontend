@@ -132,7 +132,7 @@ export default {
   margin-top: 66px;
   margin-right: 0;
   height: 100%;
-  background-color: #f4f5fa;
+  background-color: #e8ebff;
   padding-top: 20px;
   overflow-y: hidden;
   transition: overflow-y 0.3s;
