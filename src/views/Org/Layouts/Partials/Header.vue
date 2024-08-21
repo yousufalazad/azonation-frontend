@@ -31,9 +31,10 @@ onMounted(fetchLogo);
     <div class="fixed-top">
         <header class="navbar navbar-expand-md navbar-light bg-light">
             <div class="container-fluid">
-                
+
                 <a class="navbar-brand d-flex align-items-center" href="#">
-                    <img v-if="logoPath" :src="`${baseURL}${logoPath}`" alt="Organization Logo" class="img-thumbnail logo-height">
+                    <img v-if="logoPath" :src="`${baseURL}${logoPath}`" alt="Organization Logo"
+                        class="img-thumbnail logo-height">
                     <h4 class="p-0 m-0">{{ orgUserName }}</h4>
                 </a>
 
@@ -44,6 +45,34 @@ onMounted(fetchLogo);
 
                 <div class="collapse navbar-collapse mx-4" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
+                        <li class="nav-item dropdown">
+                            <a id="navbarDropdown" class="nav-link " href="#" role="button" data-bs-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false" v-pre>
+                                <i class="fa fa-bell"></i>
+                                <!-- <span
+                                    class="badge badge-light bg-success badge-xs">{{auth()->user()->unreadNotifications->count()}}</span> -->
+                            </a>
+
+                            <!-- <ul class="dropdown-menu">
+                                @if (auth()->user()->unreadNotifications)
+                                <li class="d-flex justify-content-end mx-1 my-2">
+                                    <a href="{{route('mark-as-read')}}" class="btn btn-success btn-sm">Mark All as
+                                        Read</a>
+                                </li>
+                                @endif
+
+                                @foreach (auth()->user()->unreadNotifications as $notification)
+                                <a href="#" class="text-success">
+                                    <li class="p-1 text-success"> {{ $notification -> data['data'] }}</li>
+                                </a>
+                                @endforeach
+                                @foreach (auth()->user()->readNotifications as $notification)
+                                <a href="#" class="text-secondary">
+                                    <li class="p-1 text-secondary"> {{ $notification -> data['data'] }}</li>
+                                </a>
+                                @endforeach
+                            </ul> -->
+                        </li>
 
                         <li class="nav-item" v-if="auth.isAuthenticated && UserType == 2">
                             <router-link class="nav-link" to="/org-dashboard">Azonation</router-link>
@@ -64,13 +93,14 @@ onMounted(fetchLogo);
 <style>
 .navbar-brand {
     margin-left: 22px;
-   
+
     padding-top: 0px;
     padding-bottom: 0px;
     margin-top: 0px;
     margin-bottom: 0px;
 }
-.logo-height{
+
+.logo-height {
     height: 50px;
     padding-top: 0px;
     padding-bottom: 0px;
