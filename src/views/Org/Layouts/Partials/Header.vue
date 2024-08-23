@@ -3,10 +3,12 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { authStore } from "../../../../store/authStore"
+import axios from 'axios';
 
 const auth = authStore;
 const UserType = computed(() => auth.user?.type);
 const orgUserName = computed(() => auth.org?.org_name);
+const notifications = ref('');
 
 const logoPath = ref('');
 const orgId = auth.org.id; // Assuming the org ID is stored in the logged-in user
@@ -23,6 +25,33 @@ const fetchLogo = async () => {
     }
 };
 
+const fetchUnreadNotifications = async () => {
+    try {
+        const response = await auth.fetchProtectedApi(`/api/notifications/unread/${orgId}`, {}, 'GET');
+        notifications.value = response.data.notifications;
+        console.log(notifications.value);
+        console.log(response.data.notifications);
+        console.log(response.notifications);
+        console.log(response);
+        console.log('response');
+
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+    }
+};
+
+const markNotificationsAsRead = async () => {
+    try {
+        const response = await auth.fetchProtectedApi(`/api/notifications/mark-as-read/${orgId}`, {}, 'POST');
+        notifications = [];
+    } catch (error) {
+        console.error('Error marking notifications as read:', error);
+    }
+};
+
+
+onMounted(fetchUnreadNotifications);
+onMounted(markNotificationsAsRead);
 onMounted(fetchLogo);
 
 </script>
@@ -51,7 +80,20 @@ onMounted(fetchLogo);
                                 <i class="fa fa-bell"></i>
                                 <!-- <span
                                     class="badge badge-light bg-success badge-xs">{{auth()->user()->unreadNotifications->count()}}</span> -->
+
+
                             </a>
+
+                            <ul v-if="notifications.length">
+                                <li v-for="notification in notifications" :key="notification.id">
+                                    <span>{{ notification.data }}</span>
+                                    <small>{{ formatDate(notification.created_at) }}</small>
+                                </li>
+                            </ul>
+                            <p v-else>No unread notifications.</p>
+                            <button @click="markNotificationsAsRead" v-if="notifications.length">
+                                Mark All as Read
+                            </button>
 
                             <!-- <ul class="dropdown-menu">
                                 @if (auth()->user()->unreadNotifications)
