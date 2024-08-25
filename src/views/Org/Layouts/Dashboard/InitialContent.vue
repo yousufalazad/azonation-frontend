@@ -1,7 +1,7 @@
 <!-- OrgDashboard.vue -->
 
 <script setup>
-import { ref, onMounted } from 'vue';
+  import { ref, onMounted } from 'vue';
 import { authStore } from '../../../../store/authStore';
 
 const auth = authStore;

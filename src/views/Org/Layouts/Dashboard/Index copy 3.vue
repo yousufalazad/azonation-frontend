@@ -13,12 +13,14 @@ import LeftSidebar from '../../../Org/Layouts/Partials/LeftSidebar.vue';
     </div>
 
     <div class="row">
-      <div class="col-md-2">
+      <div class="col-md-12">
+        <div class="col-md-2">
           <LeftSidebar></LeftSidebar>
         </div>
         <div class="col-md-10">
           <router-view />
         </div>
+      </div>
     </div>
     
   </div>
