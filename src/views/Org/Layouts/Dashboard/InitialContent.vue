@@ -39,10 +39,8 @@ onMounted(fetchMemberList);
 </script>
 
 <template>
-  <div class="dashboard-layout">
-    <div class="content-area my-5 ms-3">
+ <div class="content-area">
       <div v-if="auth.isAuthenticated && auth.user?.type == 2">
-        <br>
         <div class="row">
           <div class="col-sm-6 mb-3 mb-sm-0">
             <div class="card">
@@ -143,5 +141,4 @@ onMounted(fetchMemberList);
       </div> -->
 
     </div>
-  </div>
 </template>

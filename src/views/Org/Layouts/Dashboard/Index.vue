@@ -16,7 +16,7 @@ import LeftSidebar from '../../../Org/Layouts/Partials/LeftSidebar.vue';
       <LeftSidebar></LeftSidebar>
 
     </div>
-    <div class="col-md-10 bg-danger main-content-area">
+    <div class="col-md-10 bg-danger">
       <router-view />
     </div>
     
@@ -32,17 +32,20 @@ import LeftSidebar from '../../../Org/Layouts/Partials/LeftSidebar.vue';
     height: 80px; /* Adjust the height of the top header as needed */
   }
 
-  .left-sidebar {
+  /* .left-sidebar {
     position: fixed;
-    top: 80px; /* Adjust according to the top-header height */
+    top: 80px; /* Adjust according to the top-header height
     bottom: 0;
     overflow-y: auto;
-    height: calc(100vh - 80px); /* Full height minus the header */
+    height: calc(100vh - 80px); /* Full height minus the header
+  } */
+
+  .left-sidebar {
+    /*position: fixed;*/
+    top: 80px; 
+    bottom: 0; 
+    overflow-y: auto;
+    height: calc(100vh - 80px); 
   }
 
-  .main-content-area {
-    margin-left: 16.6667%; /* Adjust according to the col-md-2 width */
-    padding: 20px; /* Optional: for some padding inside the content area */
-    padding-right: 50px;
-  }
 </style>
