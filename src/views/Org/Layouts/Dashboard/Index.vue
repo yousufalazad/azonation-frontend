@@ -7,16 +7,16 @@ import LeftSidebar from '../../../Org/Layouts/Partials/LeftSidebar.vue';
 </script>
 <template>
   <div class="row">
-    <div class="col-md-12 bg-primary top-header">
+    <div class="col-md-12 top-header">
       <Header></Header>
     </div>
   </div>
   <div class="row">
-    <div class="col-md-2 bg-success left-sidebar">
+    <div class="col-md-2 left-sidebar">
       <LeftSidebar></LeftSidebar>
 
     </div>
-    <div class="col-md-10 bg-danger px-5">
+    <div class="col-md-10 px-5">
       <router-view />
     </div>
     
@@ -32,20 +32,12 @@ import LeftSidebar from '../../../Org/Layouts/Partials/LeftSidebar.vue';
     height: 56px; /* Adjust the height of the top header as needed */
   }
 
-  /* .left-sidebar {
-    position: fixed;
-    top: 80px; /* Adjust according to the top-header height
-    bottom: 0;
-    overflow-y: auto;
-    height: calc(100vh - 80px); /* Full height minus the header
-  } */
-
   .left-sidebar {
-    /*position: fixed;*/
     top: 80px; 
     bottom: 0; 
-    overflow-y: auto;
-    height: calc(100vh - 80px); 
+    /* overflow-y: auto; */
+    height: calc(100vh); 
+    border-right: 0.01em solid;
   }
 
 </style>
