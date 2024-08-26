@@ -174,13 +174,13 @@ const authStore = reactive({
           localStorage.setItem("auth", 1);
           localStorage.setItem("user", JSON.stringify(res.data));
 
-          if ("1" == res.data.type) {
+          if ("individual" == res.data.type) {
             this.individualData(res.data.user_id);
             router.push({ name: "individual-dashboard" });
-          } else if ("2" == res.data.type) {
+          } else if ("organisation" == res.data.type) {
             this.orgData(res.data.user_id);
             router.push({ name: "dashboard-initial-content" });
-          } else if ("3" == res.data.type) {
+          } else if ("superadmin" == res.data.type) {
             this.superAdminUserData(res.data.user_id);
             router.push({ name: "super-admin-dashboard" });
           } else {
