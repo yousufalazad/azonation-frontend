@@ -16,7 +16,7 @@ import LeftSidebar from '../../../Org/Layouts/Partials/LeftSidebar.vue';
       <LeftSidebar></LeftSidebar>
 
     </div>
-    <div class="col-md-10 bg-danger">
+    <div class="col-md-10 bg-danger px-5">
       <router-view />
     </div>
     
@@ -29,7 +29,7 @@ import LeftSidebar from '../../../Org/Layouts/Partials/LeftSidebar.vue';
   }
   
   .top-header {
-    height: 80px; /* Adjust the height of the top header as needed */
+    height: 56px; /* Adjust the height of the top header as needed */
   }
 
   /* .left-sidebar {

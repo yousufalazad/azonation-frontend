@@ -39,40 +39,43 @@ onMounted(fetchMemberList);
 </script>
 
 <template>
- <div class="content-area mt-2">
+ <div class="content-area">
       <div v-if="auth.isAuthenticated && auth.user?.type == 2">
         <div class="row">
-          <div class="col">
+          <div class="col-sm-6 mb-3 mb-sm-0">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">Members</h5>
+                <h5 class="card-title">Total members</h5>
                 <p class="card-text"> <strong>{{ totalOrgMember }}</strong></p>
                 <a href="#" class="btn btn-primary">See all</a>
               </div>
             </div>
           </div>
-          <div class="col">
+          <div class="col-sm-6">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">Committees</h5>
+                <h5 class="card-title">Committees and sub-committees</h5>
                 <p class="card-text"><strong>{{ totalOrgMember }}</strong></p>
                 <a href="#" class="btn btn-primary">See all</a>
               </div>
             </div>
           </div>
-          <div class="col">
+        </div>
+        <br>
+        <div class="row">
+          <div class="col-sm-6 mb-3 mb-sm-0">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">Meetings</h5>
-                <p class="card-text"><strong>{{ totalOrgMember }}</strong></p>
+                <h5 class="card-title">Upcoming meetings</h5>
+                <p class="card-text"> <strong>{{ totalOrgMember }}</strong></p>
                 <a href="#" class="btn btn-primary">See all</a>
               </div>
             </div>
           </div>
-          <div class="col">
+          <div class="col-sm-6">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">Events</h5>
+                <h5 class="card-title">Upcoming events</h5>
                 <p class="card-text"><strong>{{ totalOrgMember }}</strong></p>
                 <a href="#" class="btn btn-primary">See all</a>
               </div>
@@ -116,5 +119,26 @@ onMounted(fetchMemberList);
           </div>
         </div>
       </div>
+      <!-- <div v-if="!auth.isAuthenticated">
+        <br>
+        <h2>Need to protect from Router, path need to protect router.js</h2>
+        <h3>Total Membership Organisation/s: 5</h3>
+        <br>
+        <h3>Total Committee Involvement: 3</h3>
+        <br>
+        <h3>Upcoming meeting: 2</h3>
+        <br>
+        <h3>Upcoming Events: 2</h3>
+        <br>
+        <h3>Upcoming Projects: 1</h3>
+        <br>
+        <h3>Next Meeting Date: 1 Jan 2025</h3>
+        <br>
+        <h3>Total Upcoming Meeting in {August}: 3</h3>
+        <br>
+        <h3>Meeting Attendance Parcentage : 75%</h3>
+        <br>
+      </div> -->
+
     </div>
 </template>
