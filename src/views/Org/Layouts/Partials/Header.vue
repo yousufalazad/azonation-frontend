@@ -31,7 +31,7 @@ onMounted(fetchLogo);
 
 <template>
     <div class="fixed-top">
-        <header class="navbar navbar-expand-md navbar-light bg-light">
+        <header class="navbar navbar-expand-md navbar-light">
             <div class="container-fluid">
 
                 <a class="navbar-brand d-flex align-items-center" href="#">
@@ -47,7 +47,7 @@ onMounted(fetchLogo);
 
                 <div class="collapse navbar-collapse mx-4" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
-                        <li class="nav-item" v-if="auth.isAuthenticated && UserType == 2">
+                        <li class="nav-item" v-if="auth.isAuthenticated && UserType == 'organisation'">
                             <router-link class="nav-link" to="/org-dashboard">Azonation</router-link>
                         </li>
 
@@ -66,7 +66,6 @@ onMounted(fetchLogo);
 <style>
 .navbar-brand {
     margin-left: 22px;
-
     padding-top: 0px;
     padding-bottom: 0px;
     margin-top: 0px;

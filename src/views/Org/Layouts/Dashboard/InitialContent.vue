@@ -40,7 +40,7 @@ onMounted(fetchMemberList);
 
 <template>
  <div class="content-area mt-4">
-      <div v-if="auth.isAuthenticated && auth.user?.type == 2">
+      <div v-if="auth.isAuthenticated && auth.user?.type == 'organisation'">
         <div class="row">
           <div class="col-md-2 col-6">
             <div class="card">

@@ -12,14 +12,14 @@ import LeftSidebar from '../../../Org/Layouts/Partials/LeftSidebar.vue';
     </div>
   </div>
   <div class="row">
-    <div class="col-md-2 left-sidebar">
+    <div class="col-md-2 left-sidebar border-right">
       <LeftSidebar></LeftSidebar>
 
     </div>
     <div class="col-md-10 px-5">
       <router-view />
     </div>
-    
+     
   </div>
 </template>
 
@@ -30,14 +30,18 @@ import LeftSidebar from '../../../Org/Layouts/Partials/LeftSidebar.vue';
   
   .top-header {
     height: 56px; /* Adjust the height of the top header as needed */
+    border-bottom: 0.01em solid;
+    border-color: whitesmoke;
   }
 
   .left-sidebar {
-    top: 80px; 
-    bottom: 0; 
+    top: 80px;
+    bottom: 0;
     /* overflow-y: auto; */
-    height: calc(100vh); 
+    height: calc(100vh);
+    /* border-right: 0.01em solid; */
     border-right: 0.01em solid;
+    border-color: whitesmoke;
   }
 
 </style>
