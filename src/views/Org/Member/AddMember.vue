@@ -8,11 +8,11 @@ const auth = authStore;
 const searchQuery = ref('');
 const searchResults = ref([]);
 const selectedIndividual = ref(null);
-const orgId = auth.org.id; // Assuming the org ID is stored in the logged-in user
+const orgTypeUserId = auth.user.id; // Assuming the org ID is stored in the logged-in user
 
 const searchIndividuals = async () => {
   try {
-    const response = await auth.fetchPublicApi('/api/search_org_members', { query: searchQuery.value }, 'POST');
+    const response = await auth.fetchPublicApi('/api/search_individual', { query: searchQuery.value }, 'POST');
     if (response.status) {
       searchResults.value = response.data;
     } else {
@@ -24,7 +24,7 @@ const searchIndividuals = async () => {
   }
 };
 
-const addMember = async (individualId) => {
+const addMember = async (individualTypeUserId) => {
   try {
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -36,7 +36,7 @@ const addMember = async (individualId) => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi('/api/add_member', { org_id: orgId, individual_id: individualId }, 'POST');
+      const response = await auth.fetchProtectedApi('/api/add_member', { org_type_user_id: orgTypeUserId, individual_type_user_id: individualTypeUserId }, 'POST');
       if (response.status) {
         await Swal.fire(
           'Added!',
@@ -70,14 +70,14 @@ const addMember = async (individualId) => {
     <h2 class="mb-4 text-center">Search and Add Member</h2>
     <div class="input-group-container">
       <div class="input-group mb-3">
-        <input type="text" class="form-control" v-model="searchQuery" placeholder="Search by ID, User ID, Azon ID, or Full Name" @input="searchIndividuals">
+        <input type="text" class="form-control" v-model="searchQuery" placeholder="Search by Email, User ID, Azon ID, or Full Name" @input="searchIndividuals">
         <button class="btn btn-outline-secondary" type="button" @click="searchIndividuals">Search</button>
       </div>
       <div v-if="searchResults.length" class="results-container">
         <ul class="list-group">
-          <li v-for="individual in searchResults" :key="individual.id" class="list-group-item d-flex justify-content-between align-items-center">
-            {{ individual.full_name }} ({{ individual.id }}, {{ individual.user_id }}, {{ individual.azon_id }})
-            <button class="btn btn-sm btn-primary px-4" @click="addMember(individual.id)">Add</button>
+          <li v-for="individualUser in searchResults" :key="individualUser.id" class="list-group-item d-flex justify-content-between align-items-center">
+            {{ individualUser.name }} ({{ individualUser.azon_id }}, {{ individualUser.email }})
+            <button class="btn btn-sm btn-primary px-4" @click="addMember(individualUser.id)">Add</button>
           </li>
         </ul>
       </div>

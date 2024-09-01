@@ -5,11 +5,11 @@ import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 
 const memberList = ref([]);
-const orgId = authStore.org.id;
+const userId = authStore.user.id;
 
 const fetchMemberList = async () => {
   try {
-    const response = await authStore.fetchProtectedApi(`/api/org-members-list/${orgId}`, {}, 'GET');
+    const response = await authStore.fetchProtectedApi(`/api/org-member-list/${userId}`, {}, 'GET');
     if (response.status) {
       memberList.value = response.data;
     } else {
@@ -33,7 +33,9 @@ onMounted(fetchMemberList);
           <tr>
             <th scope="col">Sl</th>
             <th scope="col">ID Number</th>
+            <th scope="col">Photo</th>
             <th scope="col">Name</th>
+            <th scope="col">Email</th>
             <th scope="col">Azon ID</th>
             <th scope="col">Individual ID</th>
             <th scope="col">Joining Date</th>
@@ -45,7 +47,9 @@ onMounted(fetchMemberList);
           <tr v-for="member in memberList" :key="member.id">
             <td>{{ member.id }}</td>
             <td>{{ member.existing_org_membership_id }}</td>
-            <td>{{ member.individual.full_name }}</td>
+            <td>{{ member.individual.image }}</td>
+            <td>{{ member.individual.name }}</td>
+            <td>{{ member.individual.email }}</td>
             <td>{{ member.individual.azon_id }}</td>
             <td>{{ member.individual.id }}</td>
             <td>{{ member.joining_date }}</td>

@@ -6,26 +6,26 @@ import { authStore } from "../../../../store/authStore"
 import axios from 'axios';
 
 const auth = authStore;
-const UserType = computed(() => auth.user?.type);
-const orgUserName = computed(() => auth.org?.org_name);
-const notifications = ref('');
+const userType = computed(() => auth.user?.type);
+const userName = computed(() => auth.user?.name);
+
 
 const logoPath = ref('');
-const orgId = auth.org.id; // Assuming the org ID is stored in the logged-in user
-const baseURL = 'http://localhost:8000';
+// const orgId = auth.org.id; // Assuming the org ID is stored in the logged-in user
+//const baseURL = 'http://localhost:8000';
 
-const fetchLogo = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/organisation/logo/${orgId}`, {}, 'GET');
-        if (response.status && response.data.image) {
-            logoPath.value = response.data.image;
-        }
-    } catch (error) {
-        console.error("Error fetching logo:", error);
-    }
-};
+// const fetchLogo = async () => {
+//     try {
+//         const response = await auth.fetchProtectedApi(`/api/organisation/logo/${orgId}`, {}, 'GET');
+//         if (response.status && response.data.image) {
+//             logoPath.value = response.data.image;
+//         }
+//     } catch (error) {
+//         console.error("Error fetching logo:", error);
+//     }
+// };
 
-onMounted(fetchLogo);
+// onMounted(fetchLogo);
 
 </script>
 
@@ -37,7 +37,7 @@ onMounted(fetchLogo);
                 <a class="navbar-brand d-flex align-items-center" href="#">
                     <!-- <img v-if="logoPath" :src="`${baseURL}${logoPath}`" alt="Organization Logo"
                         class="img-thumbnail logo-height"> -->
-                    <h4 class="p-0 m-0">{{ orgUserName }}</h4>
+                    <h4 class="p-0 m-0">{{ userName }}</h4>
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -47,8 +47,11 @@ onMounted(fetchLogo);
 
                 <div class="collapse navbar-collapse mx-4" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
-                        <li class="nav-item" v-if="auth.isAuthenticated && UserType == 'organisation'">
+                        <li class="nav-item" v-if="auth.isAuthenticated && userType == 'organisation'">
                             <router-link class="nav-link" to="/org-dashboard">Azonation</router-link>
+                        </li>
+                        <li class="nav-item" v-if="auth.isAuthenticated && userType == 'individual'">
+                            <router-link class="nav-link" to="/org-dashboard">Azonation Individual Dashboard</router-link>
                         </li>
 
                         <li class="nav-item" v-if="auth.isAuthenticated">

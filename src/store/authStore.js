@@ -85,11 +85,11 @@ const authStore = reactive({
     return res.data;
   },
 
-  individualRegister(full_name, email, password) {
+  register(name, type, email, password) {
     authStore
       .fetchPublicApi(
-        "/api/individual_register",
-        { full_name, email: email, password: password },
+        "/api/register",
+        { name: name, type:type, email: email, password: password },
         "POST"
       )
       .then((res) => {
@@ -98,58 +98,8 @@ const authStore = reactive({
           router.push("/");
           Swal.fire({
             icon: "success",
-            title: "Individual Register Successful",
-            text: "You have successfully register.",
-            timer: 5000,
-            timerProgressBar: true,
-            showConfirmButton: false,
-          });
-        } else {
-          authStore.errors = res.errors;
-        }
-      });
-  },
-
-  orgRegister(org_name, email, password) {
-    authStore
-      .fetchPublicApi(
-        "/api/org_register",
-        { org_name: org_name, email: email, password: password },
-        "POST"
-      )
-      .then((res) => {
-        if (res.status) {
-          authStore.errors = null;
-          router.push("/");
-          Swal.fire({
-            icon: "success",
-            title: "Organisation Register Successful",
-            text: "You have successfully register.",
-            timer: 5000,
-            timerProgressBar: true,
-            showConfirmButton: false,
-          });
-        } else {
-          authStore.errors = res.errors;
-        }
-      });
-  },
-
-  superAdminRegister(admin_name, email, password) {
-    authStore
-      .fetchPublicApi(
-        "/api/superadmin_register",
-        { admin_name: admin_name, email: email, password: password },
-        "POST"
-      )
-      .then((res) => {
-        if (res.status) {
-          authStore.errors = null;
-          router.push("/");
-          Swal.fire({
-            icon: "success",
-            title: "SuperAdmin Register Successful",
-            text: "You have successfully register.",
+            title: "Registration Successful",
+            text: "You have successfully registered.",
             timer: 5000,
             timerProgressBar: true,
             showConfirmButton: false,
@@ -175,13 +125,13 @@ const authStore = reactive({
           localStorage.setItem("user", JSON.stringify(res.data));
 
           if ("individual" == res.data.type) {
-            this.individualData(res.data.user_id);
+            this.individualData(res.data.id);
             router.push({ name: "individual-dashboard" });
           } else if ("organisation" == res.data.type) {
-            this.orgData(res.data.user_id);
+            this.orgData(res.data.id);
             router.push({ name: "dashboard-initial-content" });
           } else if ("superadmin" == res.data.type) {
-            this.superAdminUserData(res.data.user_id);
+            this.superAdminUserData(res.data.id);
             router.push({ name: "super-admin-dashboard" });
           } else {
             router.push("/");
@@ -233,8 +183,8 @@ const authStore = reactive({
     });
   },
 
-  individualData(id) {
-    this.fetchPublicApi(`/api/individual_data/${id}`, {}, "GET").then((res) => {
+  individualData(userId) {
+    this.fetchPublicApi(`/api/individual_data/${userId}`, {}, "GET").then((res) => {
       if (res.status) {
         this.individual = res.data;
         localStorage.setItem("individual", JSON.stringify(res.data));

@@ -8,8 +8,8 @@ const auth = authStore;
 
 <template>
   <div class="dashboard-layout">
-    <OrgSidebar v-if="auth.isAuthenticated && auth.user?.type == 2" />
-    <RightSidebar v-if="auth.isAuthenticated && auth.user?.type == 2" />
+    <OrgSidebar v-if="auth.isAuthenticated && auth.user?.type == 'individual'" />
+    <RightSidebar v-if="auth.isAuthenticated && auth.user?.type == 'individual'" />
     <div class="content-area">
       <router-view />
     </div>

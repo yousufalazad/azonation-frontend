@@ -4,9 +4,11 @@ import { ref } from 'vue'
 import { authStore } from '../../../store/authStore';
 const auth = authStore
 
-const full_name = ref('')
+const name = ref('')
 const email = ref('')
 const password = ref('')
+const type = 'individual'  // Set the type value directly
+
 
 </script>
 <template>
@@ -35,8 +37,8 @@ const password = ref('')
       <h1 class="text-xl fw-bold leading-tight text-center text-dark pb-4">Sign up to your account</h1>
       <div class="mb-3">
         <label for="full_name" class="form-label">Full Name</label>
-        <input v-model="full_name" type="text" id="full_name" class="form-control" placeholder="Full Name" required>
-        <p v-if="auth.errors?.full_name" class="text-danger mt-2">{{ auth.errors?.full_name[0] }}</p>
+        <input v-model="name" type="text" id="name" class="form-control" placeholder="Full Name" required>
+        <p v-if="auth.errors?.name" class="text-danger mt-2">{{ auth.errors?.name[0] }}</p>
       </div>
       
       <div class="mb-3">
@@ -55,7 +57,7 @@ const password = ref('')
         <router-link to="/" class="text-primary">Already have an account? Login</router-link>
       </div>
       <div class="text-end pb-4">
-        <button @click="auth.individualRegister(full_name, email, password)" class="btn btn-primary">Sign Up</button>
+        <button @click="auth.register(name, type, email, password)" class="btn btn-primary">Sign Up</button>
       </div>
     </div>
   </div>
