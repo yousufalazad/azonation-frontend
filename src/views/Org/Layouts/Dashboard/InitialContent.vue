@@ -42,7 +42,7 @@ onMounted(fetchMemberList);
  <div class="content-area mt-4">
       <div v-if="auth.isAuthenticated && auth.user?.type == 'organisation'">
         <div class="row">
-          <div class="col-md-2 col-6">
+          <div class="col-md-3 col-6">
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title">Members</h5>
@@ -51,16 +51,8 @@ onMounted(fetchMemberList);
               </div>
             </div>
           </div>
-          <div class="col-md-2 col-6">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">Committees</h5>
-                <p class="card-text"><strong>{{ totalOrgMember }}</strong></p>
-                <a href="#" class="btn btn-primary">See all</a>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-2 col-6">
+          
+          <div class="col-md-3 col-6">
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title">Meetings</h5>
@@ -69,7 +61,7 @@ onMounted(fetchMemberList);
               </div>
             </div>
           </div>
-          <div class="col-md-2 col-6">
+          <div class="col-md-3 col-6">
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title">Events</h5>
@@ -78,16 +70,8 @@ onMounted(fetchMemberList);
               </div>
             </div>
           </div>
-          <div class="col-md-2 col-6">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">Projects</h5>
-                <p class="card-text"><strong>{{ totalOrgMember }}</strong></p>
-                <a href="#" class="btn btn-primary">See all</a>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-2 col-6">
+
+          <div class="col-md-3 col-6">
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title">New Member</h5>

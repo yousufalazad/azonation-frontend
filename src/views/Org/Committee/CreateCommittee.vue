@@ -13,11 +13,11 @@ const note = ref('');
 const status = ref('');
 const committeeList = ref([]);
 
-const orgId = authStore.org.id; // Assuming the org ID is stored in the logged-in user
+const userId = authStore.user.id; // Assuming the org ID is stored in the logged-in user
 
 const createCommittee = async () => {
   try {
-    await auth.createCommittee(orgId, name.value, short_description.value, start_date.value, end_date.value, note.value, status.value);
+    await auth.createCommittee(userId, name.value, short_description.value, start_date.value, end_date.value, note.value, status.value);
     // Show success message
     Swal.fire({
       icon: 'success',
@@ -33,7 +33,7 @@ const createCommittee = async () => {
 
 const fetchCommitteeList = async () => {
   try {
-    const response = await authStore.fetchProtectedApi(`/api/org-committee-list/${orgId}`, {}, 'GET');
+    const response = await authStore.fetchProtectedApi(`/api/org-committee-list/${userId}`, {}, 'GET');
     if (response.status) {
       committeeList.value = response.data;
     } else {
@@ -60,7 +60,7 @@ onMounted(fetchCommitteeList);
             <thead>
               <tr>
                 <th scope="col">Sl</th>
-                <th scope="col">Ord ID</th>
+                <th scope="col">Org User ID</th>
                 <th scope="col">Committee name</th>
                 <th scope="col">Starting date</th>
                 <th scope="col">Ending date</th>
@@ -73,7 +73,7 @@ onMounted(fetchCommitteeList);
             <tbody>
               <tr v-for="committee in committeeList" :key="committee.id">
                 <td>{{ committee.id }}</td>
-                <td>{{ committee.org_id }}</td>
+                <td>{{ committee.user_id }}</td>
                 <td>{{ committee.name }}</td>
                 <td>{{ committee.start_date }}</td>
                 <td>{{ committee.end_date }}</td>
