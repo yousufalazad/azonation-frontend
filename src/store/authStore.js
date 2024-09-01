@@ -250,7 +250,7 @@ const authStore = reactive({
   },
 
   createCommittee(
-    orgId,
+    userId,
     name,
     short_description,
     start_date,
@@ -262,7 +262,7 @@ const authStore = reactive({
       .fetchProtectedApi(
         "/api/create_committee_store",
         {
-          orgId: orgId,
+          userId: userId,
           name: name,
           short_description: short_description,
           start_date: start_date,
