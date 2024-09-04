@@ -1,4 +1,5 @@
 <!-- Top Header -->
+
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { authStore } from "../../../../store/authStore";
@@ -44,6 +45,28 @@ const markAllAsRead = async () => {
         }
     } catch (error) {
         console.error("There was an error marking the notifications as read:", error);
+    }
+};
+
+
+// Mark a single notification as read
+const markAsRead = async (notificationId) => {
+    try {
+        const response = await auth.fetchPublicApi(`/api/notifications/mark-as-read/${userId}/${notificationId}`, {}, 'GET');
+        if (response.status) {
+            notifications.value = notifications.value.map(notification => {
+                if (notification.id === notificationId) {
+                    return {
+                        ...notification,
+                        read_at: new Date().toISOString() // Mark this notification as read locally
+                    };
+                }
+                return notification;
+            });
+            console.log('Notification marked as read');
+        }
+    } catch (error) {
+        console.error('There was an error marking the notification as read:', error);
     }
 };
 
@@ -97,7 +120,9 @@ const unreadCount = computed(() => {
                                     </button>
                                 </li>
                                 <template v-for="notification in notifications" :key="notification.id">
-                                    <a href="#" :class="notification.read_at ? 'text-secondary' : 'text-primary'">
+                                    
+                                    <a href="#" @click.prevent="markAsRead(notification.id)"
+                                        :class="notification.read_at ? 'text-secondary' : 'text-primary'">
                                         <li :class="notification.read_at ? 'p-1 text-secondary' : 'p-1 text-primary'">
                                             {{ notification.data.data }}
                                         </li>
@@ -105,6 +130,7 @@ const unreadCount = computed(() => {
                                             <hr class="dropdown-divider">
                                         </li>
                                     </a>
+
                                 </template>
                             </ul>
                         </li>
