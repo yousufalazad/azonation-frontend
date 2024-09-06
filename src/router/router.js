@@ -4,11 +4,14 @@ import { createRouter, createWebHistory } from "vue-router";
 import Login from "../views/Auth/Login.vue";
 
 //Individual
-import IndividualRegister from "../views/Individual/User/Register.vue";
-import IndividualDashboard from "../views/Individual/IndividualDashboard.vue";
-import ConnectedOrganisation from "../views/Individual/ConnectedOrganisation.vue";
+import IndividualRegister from "../views/Individual/Profile/Register.vue";
+import IndividualDashboard from "../views/Individual/Layouts/Dashboard/Index.vue";
+import IndividualDashboardInitialContent from "../views/Individual/Layouts/Dashboard/InitialContent.vue";
+
+//import ConnectedOrganisation from "../views/Individual/--ConnectedOrganisation.vue";
 import NotificationFromOrg from "../views/Individual/Notifications/NotificationFromOrg.vue";
 import IndividualProfileUpdate from "../views/Individual/Profile/IndividualProfileUpdate.vue";
+
 
 //Org
 import OrgRegister from "../views/Org/Profile/Register.vue";
@@ -75,11 +78,17 @@ const routes = [
     meta: { requiresAuth: true },
     children: [
       {
-        path: "connected-organisation",
-        name: "connected-organisation",
-        component: ConnectedOrganisation,
+        path: "individual-dashboard-initial-content",
+        name: "individual-dashboard-initial-content",
+        component: IndividualDashboardInitialContent,
         meta: { requiresAuth: true },
       },
+      // {
+      //   path: "connected-organisation",
+      //   name: "connected-organisation",
+      //   component: ConnectedOrganisation,
+      //   meta: { requiresAuth: true },
+      // },
       {
         path: "notification-from-org",
         name: "notification-from-org",

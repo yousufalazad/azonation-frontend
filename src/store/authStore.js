@@ -125,10 +125,10 @@ const authStore = reactive({
           localStorage.setItem("user", JSON.stringify(res.data));
 
           if ("individual" == res.data.type) {
-            this.individualData(res.data.id);
-            router.push({ name: "individual-dashboard" });
+            //this.individualData(res.data.id);
+            router.push({ name: "individual-dashboard-initial-content" });
           } else if ("organisation" == res.data.type) {
-            this.orgData(res.data.id);
+            //this.orgData(res.data.id);
             router.push({ name: "dashboard-initial-content" });
           } else if ("superadmin" == res.data.type) {
             this.superAdminUserData(res.data.id);
@@ -183,45 +183,45 @@ const authStore = reactive({
     });
   },
 
-  individualData(userId) {
-    this.fetchPublicApi(`/api/individual_data/${userId}`, {}, "GET").then((res) => {
-      if (res.status) {
-        this.individual = res.data;
-        localStorage.setItem("individual", JSON.stringify(res.data));
-        console.log("Individual Data:", res.data);
-      } else {
-        this.errors = res.message;
-      }
-    });
-  },
+  // individualData(userId) {
+  //   this.fetchPublicApi(`/api/individual_profile_data/${userId}`, {}, "GET").then((res) => {
+  //     if (res.status) {
+  //       this.individual = res.data;
+  //       localStorage.setItem("individual", JSON.stringify(res.data));
+  //       console.log("Individual Data:", res.data);
+  //     } else {
+  //       this.errors = res.message;
+  //     }
+  //   });
+  // },
 
   //Find org data after org login only
-  orgData(userId) {
-    this.fetchPublicApi(`/api/get_organisation_data/${userId}`, {}, "GET").then(
-      (res) => {
-        if (res.status) {
-          this.org = res.data;
-          localStorage.setItem("org", JSON.stringify(res.data));
-        } else {
-          this.errors = res.message;
-        }
-      }
-    );
-  },
+  // orgData(userId) {
+  //   this.fetchPublicApi(`/api/get_organisation_data/${userId}`, {}, "GET").then(
+  //     (res) => {
+  //       if (res.status) {
+  //         this.org = res.data;
+  //         localStorage.setItem("org", JSON.stringify(res.data));
+  //       } else {
+  //         this.errors = res.message;
+  //       }
+  //     }
+  //   );
+  // },
 
   //Find org data after any update
-  getOrgData(orgId) {
-    this.fetchPublicApi(`/api/organisation/${orgId}`, {}, "GET").then(
-      (res) => {
-        if (res.status) {
-          this.org = res.data;
-          localStorage.setItem("org", JSON.stringify(res.data));
-        } else {
-          this.errors = res.message;
-        }
-      }
-    );
-  },
+  // getOrgData(orgId) {
+  //   this.fetchPublicApi(`/api/organisation/${orgId}`, {}, "GET").then(
+  //     (res) => {
+  //       if (res.status) {
+  //         this.org = res.data;
+  //         localStorage.setItem("org", JSON.stringify(res.data));
+  //       } else {
+  //         this.errors = res.message;
+  //       }
+  //     }
+  //   );
+  // },
 
 
   superAdminUserData(id) {

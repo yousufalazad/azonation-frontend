@@ -87,7 +87,7 @@ const unreadCount = computed(() => {
 
 <template>
     <div class="fixed-top">
-        <header class="navbar navbar-expand-md navbar-light">
+        <header class="navbar navbar-expand-md navbar-light" v-if="auth.isAuthenticated && userType == 'organisation'">
             <div class="container-fluid">
 
                 <a class="navbar-brand d-flex align-items-center" href="#">
