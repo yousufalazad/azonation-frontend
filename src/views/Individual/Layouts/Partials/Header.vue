@@ -41,7 +41,7 @@ const markAllAsRead = async () => {
             notifications.value.forEach(notification => {
                 notification.read_at = new Date().toISOString(); // Mark them as read locally
             });
-            console.log('Notifications marked as read');
+            //console.log('Notifications marked as read');
         }
     } catch (error) {
         console.error("There was an error marking the notifications as read:", error);
@@ -63,7 +63,7 @@ const markAsRead = async (notificationId) => {
                 }
                 return notification;
             });
-            console.log('Notification marked as read');
+            //console.log('Notification marked as read');
         }
     } catch (error) {
         console.error('There was an error marking the notification as read:', error);

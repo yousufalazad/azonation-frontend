@@ -45,8 +45,8 @@ onMounted(fetchMemberList);
           <div class="col-md-3 col-6">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">Members</h5>
-                <p class="card-text"> <strong>{{ totalOrgMember }}</strong></p>
+                <h5 class="card-title">Connected organisation</h5>
+                <p class="card-text"> <strong>3</strong></p>
                 <a href="#" class="btn btn-primary">See all</a>
               </div>
             </div>
@@ -55,8 +55,8 @@ onMounted(fetchMemberList);
           <div class="col-md-3 col-6">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">Meetings</h5>
-                <p class="card-text"><strong>{{ totalOrgMember }}</strong></p>
+                <h5 class="card-title">Next meeting</h5>
+                <p class="card-text"><strong>5 Aug 2025</strong></p>
                 <a href="#" class="btn btn-primary">See all</a>
               </div>
             </div>
@@ -64,8 +64,8 @@ onMounted(fetchMemberList);
           <div class="col-md-3 col-6">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">Events</h5>
-                <p class="card-text"><strong>{{ totalOrgMember }}</strong></p>
+                <h5 class="card-title">Upcoming event</h5>
+                <p class="card-text"><strong>16 Dec 2024</strong></p>
                 <a href="#" class="btn btn-primary">See all</a>
               </div>
             </div>
@@ -74,9 +74,9 @@ onMounted(fetchMemberList);
           <div class="col-md-3 col-6">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">New Member</h5>
-                <p class="card-text"><strong>{{ totalOrgMember }}</strong></p>
-                <a href="#" class="btn btn-primary">This month</a>
+                <h5 class="card-title">Approval request</h5>
+                <p class="card-text"><strong>Membership request from XYZ org</strong></p>
+                <a href="#" class="btn btn-primary">See all</a>
               </div>
             </div>
           </div>
