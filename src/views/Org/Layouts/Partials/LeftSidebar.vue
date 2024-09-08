@@ -1,4 +1,5 @@
 <!-- Left Sidebar Page -->
+<!-- ref: https://flowbite.com/docs/components/sidebar/ -->
 
 <script setup>
 import { computed } from 'vue';
@@ -11,6 +12,7 @@ const userType = computed(() => auth.user?.type);
 
 <template>
   <section v-if="auth.isAuthenticated && userType == 'organisation'">
+    
     <div class="left-sidebar-content mt-4">
       <router-link to="/org-dashboard/dashboard-initial-content" class="menu-item">Dashboard</router-link>
       <br><br>
@@ -39,4 +41,5 @@ const userType = computed(() => auth.user?.type);
 .left-sidebar-content {
   margin-left: 23px;
 }
+
 </style>

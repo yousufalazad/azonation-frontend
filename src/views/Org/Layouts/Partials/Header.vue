@@ -1,4 +1,5 @@
 <!-- Top Header -->
+<!-- ref: https://flowbite.com/docs/components/sidebar/ -->
 
 <script setup>
 import { computed, ref, onMounted } from 'vue';
@@ -93,7 +94,7 @@ const unreadCount = computed(() => {
                 <a class="navbar-brand d-flex align-items-center" href="#">
                     <!-- <img v-if="logoPath" :src="`${baseURL}${logoPath}`" alt="Organization Logo"
                         class="img-thumbnail logo-height"> -->
-                    <h4 class="p-0 m-0">{{ userName }}</h4>
+                    <h4 class="p-0 m-0 text-blue-600">{{ userName }}</h4>
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -101,7 +102,8 @@ const unreadCount = computed(() => {
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="collapse navbar-collapse mx-4" id="navbarNav">
+                <!-- <div class="collapse navbar-collapse mx-4" id="navbarNav"> -->
+                <div>
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item dropdown">
                             <a id="navbarDropdown" class="nav-link" href="#" role="button" data-bs-toggle="dropdown"
@@ -135,7 +137,7 @@ const unreadCount = computed(() => {
                             </ul>
                         </li>
                         <li class="nav-item" v-if="auth.isAuthenticated && userType == 'organisation'">
-                            <router-link class="nav-link" to="/org-dashboard">Azonation</router-link>
+                            <router-link class="nav-link text-blue-700" to="/org-dashboard">Azonation</router-link>
                         </li>
                         <li class="nav-item" v-if="auth.isAuthenticated">
                             <button @click="auth.logout()" class="btn btn-primary ms-md-2">

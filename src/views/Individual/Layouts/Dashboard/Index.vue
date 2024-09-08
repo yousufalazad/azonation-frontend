@@ -28,7 +28,7 @@ import LeftSidebar from '../Partials/LeftSidebar.vue';
   }
   
   .top-header {
-    height: 56px; /* Adjust the height of the top header as needed */
+    height: 65px; /* Adjust the height of the top header as needed */
     border-bottom: 0.01em solid;
     border-color: whitesmoke;
   }
