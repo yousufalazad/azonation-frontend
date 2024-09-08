@@ -101,7 +101,7 @@ const unreadCount = computed(() => {
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="collapse navbar-collapse mx-4" id="navbarNav">
+                <div>
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item dropdown">
                             <a id="navbarDropdown" class="nav-link" href="#" role="button" data-bs-toggle="dropdown"

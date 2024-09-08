@@ -262,7 +262,7 @@ const authStore = reactive({
       .fetchProtectedApi(
         "/api/create_committee_store",
         {
-          userId: userId,
+          user_id: userId,
           name: name,
           short_description: short_description,
           start_date: start_date,
@@ -282,8 +282,45 @@ const authStore = reactive({
       });
   },
 
+  updateCommittee(
+    id,
+    name,
+    short_description,
+    start_date,
+    end_date,
+    note,
+    status
+  ) {
+    authStore
+      .fetchProtectedApi(
+        // Correct the URL to use backticks for interpolation
+        `/api/update_committee/${id}`,
+        {
+          name: name,
+          short_description: short_description,
+          start_date: start_date,
+          end_date: end_date,
+          note: note,
+          status: status,
+        },
+        "PUT"
+      )
+      .then((res) => {
+        if (res.status) {
+          authStore.errors = null;
+          router.push("/committees");
+        } else {
+          authStore.errors = res.errors;
+        }
+      })
+      .catch((error) => {
+        console.error("Error updating committee:", error);
+      });
+  },
+  
+
   createMeeting(
-    orgId,
+    user_id,
     name,
     name_for_admin,
     subject,
@@ -301,7 +338,7 @@ const authStore = reactive({
       .fetchProtectedApi(
         "/api/create-meeting-store",
         {
-          orgId: orgId,
+          user_id: user_id,
           name: name,
           name_for_admin: name_for_admin,
           subject: subject,
@@ -328,7 +365,7 @@ const authStore = reactive({
   },
 
   createEvent(
-    orgId,
+    user_id,
     title,
     name,
     short_description,
