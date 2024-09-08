@@ -167,7 +167,6 @@ const committeeList = ref([]);
 const modalVisible = ref(false);
 const isEditMode = ref(false);
 const selectedCommittee = ref(null);
-
 const name = ref('');
 // const id = ref('');
 const short_description = ref('');
@@ -175,7 +174,6 @@ const start_date = ref('');
 const end_date = ref('');
 const note = ref('');
 const status = ref('');
-
 const userId = authStore.user.id;
 
 const fetchCommitteeList = async () => {
@@ -250,35 +248,6 @@ const updateCommittee = async () => {
     console.error("Error updating committee:", error);
   }
 };
-
-// const updateCommittee = async () => {
-//     try {
-//         const response = await auth.fetchProtectedApi(`/api/update_committee/${userId}`, {
-//             address_line: orgAddressLine.value,
-//             city: city.value,
-//             state_or_region: stateOrRegion.value,
-//             postal_code: postalCode.value,
-//             country_id: country.value
-
-//             user_id: selectedCommittee.value.user_id,
-//           name: name,
-//           short_description: short_description,
-//           start_date: start_date,
-//           end_date: end_date,
-//           note: note,
-//           status: status,
-
-//         }, 'PUT');
-//         if (response.status) {
-//             Swal.fire('Success', 'Address updated successfully', 'success');
-//         } else {
-//             Swal.fire('Error', 'Failed to update address', 'error');
-//         }
-//     } catch (error) {
-//         console.error("Error updating address:", error);
-//         Swal.fire('Error', 'Failed to update address', 'error');
-//     }
-// };
 
 onMounted(fetchCommitteeList);
 </script>
