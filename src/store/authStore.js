@@ -322,7 +322,7 @@ const authStore = reactive({
   createMeeting(
     user_id,
     name,
-    name_for_admin,
+    short_name,
     subject,
     date,
     time,
@@ -336,11 +336,11 @@ const authStore = reactive({
   ) {
     authStore
       .fetchProtectedApi(
-        "/api/create-meeting-store",
+        "/api/create-meeting",
         {
           user_id: user_id,
           name: name,
-          name_for_admin: name_for_admin,
+          short_name: short_name,
           subject: subject,
           date: date,
           time: time,
@@ -383,7 +383,7 @@ const authStore = reactive({
       .fetchProtectedApi(
         "/api/create-event",
         {
-          orgId: orgId,
+          user_id: user_id,
           title: title,
           name: name,
           short_description: short_description,
@@ -410,7 +410,7 @@ const authStore = reactive({
   },
 
   createProject(
-    orgId,
+    user_id,
     title,
     short_description,
     description,
@@ -429,7 +429,7 @@ const authStore = reactive({
       .fetchProtectedApi(
         "/api/create-project",
         {
-          orgId: orgId,
+          user_id: user_id,
           title: title,
           short_description: short_description,
           description: description,
@@ -449,7 +449,51 @@ const authStore = reactive({
       .then((res) => {
         if (res.status) {
           authStore.errors = null;
-          router.push("/create-project");
+        } else {
+          authStore.errors = res.errors;
+        }
+      });
+  },
+
+  updateProject(
+    id,
+    title,
+    short_description,
+    description,
+    start_date,
+    end_date,
+    start_time,
+    end_time,
+    venue_name,
+    venue_address,
+    requirements,
+    note,
+    status,
+    conduct_type
+  ) {
+    authStore
+      .fetchProtectedApi(
+        `/api/update-project/${id}`,
+        {
+          title: title,
+          short_description: short_description,
+          description: description,
+          start_date: start_date,
+          end_date: end_date,
+          start_time: start_time,
+          end_time: end_time,
+          venue_name: venue_name,
+          venue_address: venue_address,
+          requirements: requirements,
+          note: note,
+          status: status,
+          conduct_type: conduct_type,
+        },
+        "PUT"
+      )
+      .then((res) => {
+        if (res.status) {
+          authStore.errors = null;
         } else {
           authStore.errors = res.errors;
         }

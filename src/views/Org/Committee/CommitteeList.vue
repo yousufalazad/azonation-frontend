@@ -1,3 +1,99 @@
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import { authStore } from '../../../store/authStore';
+import Swal from 'sweetalert2';
+
+const auth = authStore;
+const committeeList = ref([]);
+const modalVisible = ref(false);
+const isEditMode = ref(false);
+const selectedCommittee = ref(null);
+const name = ref('');
+// const id = ref('');
+const short_description = ref('');
+const start_date = ref('');
+const end_date = ref('');
+const note = ref('');
+const status = ref('');
+const userId = authStore.user.id;
+
+const fetchCommitteeList = async () => {
+  try {
+    const response = await auth.fetchProtectedApi(`/api/org-committee-list/${userId}`, {}, 'GET');
+    if (response.status) {
+      committeeList.value = response.data;
+    } else {
+      committeeList.value = [];
+    }
+  } catch (error) {
+    console.error("Error fetching committee list:", error);
+    committeeList.value = [];
+  }
+};
+
+const openModal = (committee = null) => {
+  if (committee) {
+    isEditMode.value = true;
+    selectedCommittee.value = committee;
+    name.value = committee.name;
+    short_description.value = committee.short_description;
+    start_date.value = committee.start_date;
+    end_date.value = committee.end_date;
+    note.value = committee.note;
+    status.value = committee.status;
+  } else {
+    isEditMode.value = false;
+    selectedCommittee.value = null;
+    name.value = '';
+    short_description.value = '';
+    start_date.value = '';
+    end_date.value = '';
+    note.value = '';
+    status.value = '';
+  }
+  modalVisible.value = true;
+};
+
+const closeModal = () => {
+  modalVisible.value = false;
+};
+
+const createCommittee = async () => {
+  try {
+    await auth.createCommittee(userId, name.value, short_description.value, start_date.value, end_date.value, note.value, status.value);
+    Swal.fire({
+      icon: 'success',
+      title: 'Committee created successfully',
+      showConfirmButton: false,
+      timer: 1500
+    });
+    closeModal();
+    fetchCommitteeList();
+  } catch (error) {
+    console.error("Error creating committee:", error);
+  }
+};
+
+const updateCommittee = async () => {
+  try {
+    await auth.updateCommittee(selectedCommittee.value.id, name.value, short_description.value, start_date.value, end_date.value, note.value, status.value);
+    Swal.fire({
+      icon: 'success',
+      title: 'Committee updated successfully',
+      showConfirmButton: false,
+      timer: 1500
+    });
+    closeModal();
+    fetchCommitteeList();
+  } catch (error) {
+    console.error("Error updating committee:", error);
+  }
+};
+
+onMounted(fetchCommitteeList);
+</script>
+
 <template>
   <div>
     <!-- Committee List -->
@@ -157,100 +253,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue';
-import { authStore } from '../../../store/authStore';
-import Swal from 'sweetalert2';
-
-const auth = authStore;
-const committeeList = ref([]);
-const modalVisible = ref(false);
-const isEditMode = ref(false);
-const selectedCommittee = ref(null);
-const name = ref('');
-// const id = ref('');
-const short_description = ref('');
-const start_date = ref('');
-const end_date = ref('');
-const note = ref('');
-const status = ref('');
-const userId = authStore.user.id;
-
-const fetchCommitteeList = async () => {
-  try {
-    const response = await auth.fetchProtectedApi(`/api/org-committee-list/${userId}`, {}, 'GET');
-    if (response.status) {
-      committeeList.value = response.data;
-    } else {
-      committeeList.value = [];
-    }
-  } catch (error) {
-    console.error("Error fetching committee list:", error);
-    committeeList.value = [];
-  }
-};
-
-const openModal = (committee = null) => {
-  if (committee) {
-    isEditMode.value = true;
-    selectedCommittee.value = committee;
-    name.value = committee.name;
-    short_description.value = committee.short_description;
-    start_date.value = committee.start_date;
-    end_date.value = committee.end_date;
-    note.value = committee.note;
-    status.value = committee.status;
-  } else {
-    isEditMode.value = false;
-    selectedCommittee.value = null;
-    name.value = '';
-    short_description.value = '';
-    start_date.value = '';
-    end_date.value = '';
-    note.value = '';
-    status.value = '';
-  }
-  modalVisible.value = true;
-};
-
-const closeModal = () => {
-  modalVisible.value = false;
-};
-
-const createCommittee = async () => {
-  try {
-    await auth.createCommittee(userId, name.value, short_description.value, start_date.value, end_date.value, note.value, status.value);
-    Swal.fire({
-      icon: 'success',
-      title: 'Committee created successfully',
-      showConfirmButton: false,
-      timer: 1500
-    });
-    closeModal();
-    fetchCommitteeList();
-  } catch (error) {
-    console.error("Error creating committee:", error);
-  }
-};
-
-const updateCommittee = async () => {
-  try {
-    await auth.updateCommittee(selectedCommittee.value.id, name.value, short_description.value, start_date.value, end_date.value, note.value, status.value);
-    Swal.fire({
-      icon: 'success',
-      title: 'Committee updated successfully',
-      showConfirmButton: false,
-      timer: 1500
-    });
-    closeModal();
-    fetchCommitteeList();
-  } catch (error) {
-    console.error("Error updating committee:", error);
-  }
-};
-
-onMounted(fetchCommitteeList);
-</script>
 
 <style scoped>
 </style>

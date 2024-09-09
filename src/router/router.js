@@ -22,15 +22,14 @@ import OrgProfileUpdate from "../views/Org/Profile/OrgProfileUpdate.vue";
 import OrgSettings from "../views/Org/Profile/Settings.vue";
 
 import AddMember from "../views/Org/Member/AddMember.vue";
-import OrgMemberList from "../views/Org/Member/orgMemberList.vue";
+import MemberList from "../views/Org/Member/MemberList.vue";
 
 import CommitteeList from "../views/Org/Committee/CommitteeList.vue";
 import CreateCommittee from "../views/Org/Committee/CreateCommittee.vue";
 import FormerCommitteeList from "../views/Org/Committee/FormerCommitteeList.vue";
 
-import CreateMeeting from "../views/Org/Meeting/CreateMeeting.vue";
-import OrgUpcomingMeetingList from "../views/Org/Meeting/OrgUpcomingMeetingList.vue";
-import OrgPreviousMeetingList from "../views/Org/Meeting/OrgPreviousMeetingList.vue";
+import CreateMeeting from "../views/Org/Meeting/Create.vue";
+import OrgPreviousMeetingList from "../views/Org/Meeting/PastMeetingList.vue";
 import InviteMeeting from "../views/Org/Meeting/InviteMeeting.vue";
 
 import CreateEvent from "../views/Org/Event/CreateEvent.vue";
@@ -71,38 +70,7 @@ const routes = [
     name: "superAdmin-register",
     component: SuperAdminRegister,
   },
-  {
-    path: "/individual-dashboard",
-    name: "individual-dashboard",
-    component: IndividualDashboard,
-    meta: { requiresAuth: true },
-    children: [
-      {
-        path: "individual-dashboard-initial-content",
-        name: "individual-dashboard-initial-content",
-        component: IndividualDashboardInitialContent,
-        meta: { requiresAuth: true },
-      },
-      // {
-      //   path: "connected-organisation",
-      //   name: "connected-organisation",
-      //   component: ConnectedOrganisation,
-      //   meta: { requiresAuth: true },
-      // },
-      {
-        path: "notification-from-org",
-        name: "notification-from-org",
-        component: NotificationFromOrg,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "individual-profile-update",
-        name: "individual-profile-update",
-        component: IndividualProfileUpdate,
-        meta: { requiresAuth: true },
-      },
-    ],
-  },
+  //ORGANISATION
   {
     path: "/org-dashboard",
     name: "org-dashboard",
@@ -134,9 +102,9 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "org-member-list",
-        name: "org-member-list",
-        component: OrgMemberList,
+        path: "member-list",
+        name: "member-list",
+        component: MemberList,
         meta: { requiresAuth: true },
       },
       {
@@ -161,12 +129,6 @@ const routes = [
         path: "create-meeting",
         name: "create-meeting",
         component: CreateMeeting,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "upcoming-meeting-list",
-        name: "upcoming-meeting-list",
-        component: OrgUpcomingMeetingList,
         meta: { requiresAuth: true },
       },
       {
@@ -207,6 +169,42 @@ const routes = [
       },
     ],
   },
+
+  //INDIVIDUAL
+  {
+    path: "/individual-dashboard",
+    name: "individual-dashboard",
+    component: IndividualDashboard,
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: "individual-dashboard-initial-content",
+        name: "individual-dashboard-initial-content",
+        component: IndividualDashboardInitialContent,
+        meta: { requiresAuth: true },
+      },
+      // {
+      //   path: "connected-organisation",
+      //   name: "connected-organisation",
+      //   component: ConnectedOrganisation,
+      //   meta: { requiresAuth: true },
+      // },
+      {
+        path: "notification-from-org",
+        name: "notification-from-org",
+        component: NotificationFromOrg,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "individual-profile-update",
+        name: "individual-profile-update",
+        component: IndividualProfileUpdate,
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
+
+  //SUPERADMIN
   {
     path: "/super-admin-dashboard",
     name: "super-admin-dashboard",

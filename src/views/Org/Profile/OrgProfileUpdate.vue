@@ -9,7 +9,6 @@ import Swal from "sweetalert2";
 const shortDescription = ref('');
 const detailDescription = ref('');
 const primaryId = ref('');
-const userId = ref('');
 const status = ref('');
 
 //org address
@@ -30,7 +29,7 @@ const logoPath = ref('');
 const selectedImage = ref(null);
 
 const auth = authStore;
-const orgId = auth.org.id;
+const userId = auth.user.id;
 const userName = auth.user.name;
 const userEmail = auth.user.email;
 const baseURL = 'http://localhost:8000';
@@ -38,7 +37,7 @@ const baseURL = 'http://localhost:8000';
 
 const fetchLogo = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/organisation/logo/${orgId}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/organisation/logo/${userId}`, {}, 'GET');
         if (response.status && response.data.image) {
             logoPath.value = response.data.image;
         }
@@ -65,9 +64,28 @@ const fetchOrgDetails = async () => {
     }
 };
 
+// const createOrgAddress = async () => {
+//     try {
+//         const response = await auth.fetchProtectedApi(`/api/organisation-address/${userId}`, {}, 'GET');
+//         if (response.status) {
+//             console.log(response)
+//             orgAddressLine.value = response.data.address_line;
+//             city.value = response.data.city;
+//             stateOrRegion.value = response.data.state_or_region;
+//             postalCode.value = response.data.postal_code;
+//             country.value = response.data.country_id;
+//         } else {
+//             Swal.fire('Error', 'Failed to fetch organization details', 'error');
+//         }
+//     } catch (error) {
+//         console.error("Error fetching organization details:", error);
+//         Swal.fire('Error', 'Failed to fetch organization details', 'error');
+//     }
+// };
+
 const fetchOrgAddress = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/organisation-address/${orgId}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/organisation-address/${userId}`, {}, 'GET');
         if (response.status) {
             console.log(response)
             orgAddressLine.value = response.data.address_line;
@@ -84,9 +102,29 @@ const fetchOrgAddress = async () => {
     }
 };
 
+const updateOrgAddress = async () => {
+    try {
+        const response = await auth.fetchProtectedApi(`/api/organisation-address/${userId}`, {
+            address_line: orgAddressLine.value,
+            city: city.value,
+            state_or_region: stateOrRegion.value,
+            postal_code: postalCode.value,
+            country_id: country.value
+        }, 'PUT');
+        if (response.status) {
+            Swal.fire('Success', 'Address updated successfully', 'success');
+        } else {
+            Swal.fire('Error', 'Failed to update address', 'error');
+        }
+    } catch (error) {
+        console.error("Error updating address:", error);
+        Swal.fire('Error', 'Failed to update address', 'error');
+    }
+};
+
 const fetchOrgPhoneNumber = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/org-phone-number/${orgId}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/org-phone-number/${userId}`, {}, 'GET');
         if (response.status) {
             console.log(response)
             dialingCodeId.value = response.data.dialing_code_id;
@@ -120,29 +158,11 @@ const updateOrgProfile = async () => {
     }
 };
 
-const updateOrgAddress = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/organisation-address/${orgId}`, {
-            address_line: orgAddressLine.value,
-            city: city.value,
-            state_or_region: stateOrRegion.value,
-            postal_code: postalCode.value,
-            country_id: country.value
-        }, 'PUT');
-        if (response.status) {
-            Swal.fire('Success', 'Address updated successfully', 'success');
-        } else {
-            Swal.fire('Error', 'Failed to update address', 'error');
-        }
-    } catch (error) {
-        console.error("Error updating address:", error);
-        Swal.fire('Error', 'Failed to update address', 'error');
-    }
-};
+
 
 const updateOrgPhoneNumber = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/org-phone-number/${orgId}`, {
+        const response = await auth.fetchProtectedApi(`/api/org-phone-number/${userId}`, {
             dialing_code_id: dialingCodeId.value,
             phone_number: phoneNumber.value,
             phone_type: phoneType.value,
@@ -168,7 +188,7 @@ const orgLogoUpdate = async () => {
         const formData = new FormData();
         formData.append('image', selectedImage.value);
         try {
-            const logoResponse = await auth.uploadProtectedApi(`/api/organisation/logo/${orgId}`, formData);
+            const logoResponse = await auth.uploadProtectedApi(`/api/organisation/logo/${userId}`, formData);
             if (logoResponse.status) {
                 Swal.fire('Success', 'Logo save successfully', 'success');
                 logoPath.value = logoResponse.data.image;
@@ -216,7 +236,7 @@ onMounted(fetchLogo);
     <div>
         <br>
         <h5>User email address (username)</h5>
-        <p><span>{{ orgUsername }}</span></p>
+        <p><span>{{ userEmail }}</span></p>
         <br>
     </div>
     <div>
