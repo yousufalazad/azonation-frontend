@@ -9,55 +9,57 @@ const email = ref('')
 const password = ref('')
 const type = 'individual'  // Set the type value directly
 
-
 </script>
 <template>
-    <header class="navbar navbar-expand-md navbar-light bg-light fixed-top navbar-width">
-      <div class="container-fluid">
-        <li class="nav-item">
-          <img src="../../../assets/Logo/Azonation.png" alt="Azonation" width="175px">
-            </li>
+  <header class="fixed top-0 left-0 w-full bg-white shadow-md z-50">
+    <div class="container mx-auto flex justify-between items-center px-4 py-3">
+      <li class="nav-item">
+        <img src="../../../assets/Logo/Azonation.png" alt="Azonation" class="w-44">
+      </li>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            
-            <li class="nav-item">
-              <router-link class="nav-link" to="/org-register">Org Register</router-link>
-            </li>
-            <li class="nav-item">
-              <router-link class="nav-link" to="/">Login</router-link>
-            </li>
-          </ul>
-        </div>
+      <div class="hidden md:flex">
+        <ul class="flex space-x-4">
+          <li>
+            <router-link class="text-gray-600 hover:text-blue-600" to="/org-register">Org Register</router-link>
+          </li>
+          <li>
+            <router-link class="text-gray-600 hover:text-blue-600" to="/">Login</router-link>
+          </li>
+        </ul>
       </div>
-    </header>
-  <div class="d-flex flex-column align-items-center justify-content-center mt-5 px-3">
-    <div class="w-75 bg-white rounded-lg shadow-lg sm:max-w-md px-5">
-      <div class="p-4 space-y-4"></div>
-      <h1 class="text-xl fw-bold leading-tight text-center text-dark pb-4">Sign up to your account</h1>
-      <div class="mb-3">
-        <label for="full_name" class="form-label">Full Name</label>
-        <input v-model="name" type="text" id="name" class="form-control" placeholder="Full Name" required>
-        <p v-if="auth.errors?.name" class="text-danger mt-2">{{ auth.errors?.name[0] }}</p>
-      </div>
-      
-      <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input v-model="email" type="email" id="email" class="form-control" placeholder="Email" required>
-        <p v-if="auth.errors?.email" class="text-danger mt-2">{{ auth.errors?.email[0] }}</p>
+    </div>
+  </header>
+
+  <div class="flex flex-col items-center justify-center mt-20 px-3">
+    <div class="w-full max-w-md bg-white rounded-lg shadow-lg px-6">
+      <h1 class="text-xl font-bold text-center text-gray-800 py-4">Sign up to your account</h1>
+
+      <div class="mb-4">
+        <label for="full_name" class="block text-sm font-medium text-gray-700">Full Name</label>
+        <input v-model="name" type="text" id="name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Full Name" required>
+        <p v-if="auth.errors?.name" class="text-red-500 text-sm mt-2">{{ auth.errors?.name[0] }}</p>
       </div>
 
-      <div class="mb-3">
-        <label for="password" class="form-label">Password</label>
-        <input v-model="password" type="password" id="password" class="form-control" placeholder="••••••••" required>
-        <p v-if="auth.errors?.password" class="text-danger mt-2">{{ auth.errors?.password[0] }}</p>
+      <div class="mb-4">
+        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+        <input v-model="email" type="email" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Email" required>
+        <p v-if="auth.errors?.email" class="text-red-500 text-sm mt-2">{{ auth.errors?.email[0] }}</p>
       </div>
 
-      <div class="d-flex justify-content-between mb-3">
-        <router-link to="/" class="text-primary">Already have an account? Login</router-link>
+      <div class="mb-4">
+        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+        <input v-model="password" type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="••••••••" required>
+        <p v-if="auth.errors?.password" class="text-red-500 text-sm mt-2">{{ auth.errors?.password[0] }}</p>
       </div>
-      <div class="text-end pb-4">
-        <button @click="auth.register(name, type, email, password)" class="btn btn-primary">Sign Up</button>
+
+      <div class="flex justify-between items-center mb-4">
+        <router-link to="/" class="text-indigo-600 hover:underline">Already have an account? Login</router-link>
+      </div>
+
+      <div class="text-right pb-4">
+        <button @click="auth.register(name, type, email, password)" class="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+          Sign Up
+        </button>
       </div>
     </div>
   </div>
