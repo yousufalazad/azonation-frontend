@@ -14,7 +14,7 @@
 
         <!-- Organization Information Section with Update Buttons -->
         <div class="space-y-4">
-            <p>Short Description: <span>{{ shortDescription }}</span> <button @click="openModal('shortDescription')"
+            <p>Short Description: <span>{{ short_description }}</span> <button @click="openModal('short_description')"
                     class="text-blue-500">Edit</button></p>
             <p>Detail Description: <span>{{ detailDescription }}</span> <button @click="openModal('detailDescription')"
                     class="text-blue-500">Edit</button></p>
@@ -37,8 +37,8 @@
                     class="text-blue-500">Edit</button></p>
             <p>Impact: <span>{{ impact }}</span> <button @click="openModal('impact')"
                     class="text-blue-500">Edit</button></p>
-            <p>whyJoinUs: <span>{{ whyJoinUs }}</span> <button
-                    @click="openModal('whyJoinUs')" class="text-blue-500">Edit</button></p>
+            <p>whyJoinOurOrganisation: <span>{{ whyJoinOurOrganisation }}</span> <button
+                    @click="openModal('whyJoinOurOrganisation')" class="text-blue-500">Edit</button></p>
             <p>Scope of Work: <span>{{ scopeOfWork }}</span> <button @click="openModal('scopeOfWork')"
                     class="text-blue-500">Edit</button></p>
             <p>Organising Date: <span>{{ organisingDate }}</span> <button @click="openModal('organisingDate')"
@@ -71,7 +71,7 @@ import { authStore } from '../../../store/authStore';
 import Swal from "sweetalert2";
 
 // Org profile info
-const shortDescription = ref('');
+const short_description = ref('');
 const detailDescription = ref('');
 const whoWeAre = ref('');
 const whatWeDo = ref('');
@@ -82,7 +82,7 @@ const value = ref('');
 const areasOfFocus = ref('');
 const causes = ref('');
 const impact = ref('');
-const whyJoinUs = ref('');
+const whyJoinOurOrganisation = ref('');
 const scopeOfWork = ref('');
 const organisingDate = ref('');
 const foundationDate = ref('');
@@ -125,13 +125,10 @@ const profileImageUpdate = async () => {
         }
     }
 };
-// Convert camel case field names to snake case
-const camelToSnake = (str) => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
 
 const updateSingleField = async (field, value) => {
-    const snakeCaseField = camelToSnake(field);
     try {
-        const response = await auth.fetchProtectedApi(`/api/org-profile-update/${userId}`, { [snakeCaseField]: value }, 'PUT');
+        const response = await auth.fetchProtectedApi(`/api/org-profile-update/${userId}`, { [field]: value }, 'PUT');
         if (response.status) {
             Swal.fire('Success', `${field} updated successfully`, 'success');
         } else {
@@ -147,7 +144,7 @@ const fetchOrgProfileData = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/org-profile-data/${userId}`, {}, 'GET');
         if (response.status) {
-            shortDescription.value = response.data.short_description;
+            short_description.value = response.data.short_description;
             detailDescription.value = response.data.detail_description;
             whoWeAre.value = response.data.who_we_are;
             whatWeDo.value = response.data.what_we_do;
@@ -158,7 +155,7 @@ const fetchOrgProfileData = async () => {
             areasOfFocus.value = response.data.areas_of_focus;
             causes.value = response.data.causes;
             impact.value = response.data.impact;
-            whyJoinUs.value = response.data.why_join_us;
+            whyJoinOurOrganisation.value = response.data.why_join_our_organisation;
             scopeOfWork.value = response.data.scope_of_work;
             organisingDate.value = response.data.organising_date;
             foundationDate.value = response.data.foundation_date;

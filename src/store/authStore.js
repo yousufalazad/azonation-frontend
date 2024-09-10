@@ -318,7 +318,6 @@ const authStore = reactive({
       });
   },
   
-
   createMeeting(
     user_id,
     name,

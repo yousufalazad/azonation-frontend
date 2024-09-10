@@ -14,15 +14,15 @@
 
         <!-- Organization Information Section with Update Buttons -->
         <div class="space-y-4">
-            <p>Short Description: <span>{{ shortDescription }}</span> <button @click="openModal('shortDescription')"
+            <p>Short Description: <span>{{ short_description }}</span> <button @click="openModal('short_description')"
                     class="text-blue-500">Edit</button></p>
-            <p>Detail Description: <span>{{ detailDescription }}</span> <button @click="openModal('detailDescription')"
+            <p>Detail Description: <span>{{ detail_description }}</span> <button @click="openModal('detail_description')"
                     class="text-blue-500">Edit</button></p>
-            <p>whoWeAre: <span>{{ whoWeAre }}</span> <button @click="openModal('whoWeAre')"
+            <p>whoWeAre: <span>{{ who_we_are }}</span> <button @click="openModal('who_we_are')"
                     class="text-blue-500">Edit</button></p>
-            <p>whatWeDo: <span>{{ whatWeDo }}</span> <button @click="openModal('whatWeDo')"
+            <p>whatWeDo: <span>{{ what_we_do }}</span> <button @click="openModal('what_we_do')"
                     class="text-blue-500">Edit</button></p>
-            <p>howWeDo: <span>{{ howWeDo }}</span> <button @click="openModal('howWeDo')"
+            <p>howWeDo: <span>{{ how_we_do }}</span> <button @click="openModal('how_we_do')"
                     class="text-blue-500">Edit</button></p>
 
             <p>Mission: <span>{{ mission }}</span> <button @click="openModal('mission')"
@@ -31,19 +31,19 @@
                     class="text-blue-500">Edit</button></p>
             <p>Value: <span>{{ value }}</span> <button @click="openModal('value')" class="text-blue-500">Edit</button>
             </p>
-            <p>Areas of Focus: <span>{{ areasOfFocus }}</span> <button @click="openModal('areasOfFocus')"
+            <p>Areas of Focus: <span>{{ areas_of_focus }}</span> <button @click="openModal('areas_of_focus')"
                     class="text-blue-500">Edit</button></p>
             <p>Causes: <span>{{ causes }}</span> <button @click="openModal('causes')"
                     class="text-blue-500">Edit</button></p>
             <p>Impact: <span>{{ impact }}</span> <button @click="openModal('impact')"
                     class="text-blue-500">Edit</button></p>
-            <p>whyJoinUs: <span>{{ whyJoinUs }}</span> <button
-                    @click="openModal('whyJoinUs')" class="text-blue-500">Edit</button></p>
-            <p>Scope of Work: <span>{{ scopeOfWork }}</span> <button @click="openModal('scopeOfWork')"
+            <p>whyJoinOurOrganisation: <span>{{ why_join_us }}</span> <button
+                    @click="openModal('why_join_us')" class="text-blue-500">Edit</button></p>
+            <p>Scope of Work: <span>{{ scope_of_work }}</span> <button @click="openModal('scope_of_work')"
                     class="text-blue-500">Edit</button></p>
-            <p>Organising Date: <span>{{ organisingDate }}</span> <button @click="openModal('organisingDate')"
+            <p>Organising Date: <span>{{ organising_date }}</span> <button @click="openModal('organising_date')"
                     class="text-blue-500">Edit</button></p>
-            <p>Foundation Date: <span>{{ foundationDate }}</span> <button @click="openModal('foundationDate')"
+            <p>Foundation Date: <span>{{ foundation_date }}</span> <button @click="openModal('foundation_date')"
                     class="text-blue-500">Edit</button></p>
             <p>Status: <span>{{ status }}</span> <button @click="openModal('status')"
                     class="text-blue-500">Edit</button></p>
@@ -71,21 +71,21 @@ import { authStore } from '../../../store/authStore';
 import Swal from "sweetalert2";
 
 // Org profile info
-const shortDescription = ref('');
-const detailDescription = ref('');
-const whoWeAre = ref('');
-const whatWeDo = ref('');
-const howWeDo = ref('');
+const short_description = ref('');
+const detail_description = ref('');
+const who_we_are = ref('');
+const what_we_do = ref('');
+const how_we_do = ref('');
 const mission = ref('');
 const vision = ref('');
 const value = ref('');
-const areasOfFocus = ref('');
+const areas_of_focus = ref('');
 const causes = ref('');
 const impact = ref('');
-const whyJoinUs = ref('');
-const scopeOfWork = ref('');
-const organisingDate = ref('');
-const foundationDate = ref('');
+const why_join_us = ref('');
+const scope_of_work = ref('');
+const organising_date = ref('');
+const foundation_date = ref('');
 const status = ref('');
 
 // Org logo
@@ -125,13 +125,10 @@ const profileImageUpdate = async () => {
         }
     }
 };
-// Convert camel case field names to snake case
-const camelToSnake = (str) => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
 
 const updateSingleField = async (field, value) => {
-    const snakeCaseField = camelToSnake(field);
     try {
-        const response = await auth.fetchProtectedApi(`/api/org-profile-update/${userId}`, { [snakeCaseField]: value }, 'PUT');
+        const response = await auth.fetchProtectedApi(`/api/org-profile-update/${userId}`, { [field]: value }, 'PUT');
         if (response.status) {
             Swal.fire('Success', `${field} updated successfully`, 'success');
         } else {
@@ -147,21 +144,21 @@ const fetchOrgProfileData = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/org-profile-data/${userId}`, {}, 'GET');
         if (response.status) {
-            shortDescription.value = response.data.short_description;
-            detailDescription.value = response.data.detail_description;
-            whoWeAre.value = response.data.who_we_are;
-            whatWeDo.value = response.data.what_we_do;
-            howWeDo.value = response.data.how_we_do;
+            short_description.value = response.data.short_description;
+            detail_description.value = response.data.detail_description;
+            who_we_are.value = response.data.who_we_are;
+            what_we_do.value = response.data.what_we_do;
+            how_we_do.value = response.data.how_we_do;
             mission.value = response.data.mission;
             vision.value = response.data.vision;
             value.value = response.data.value;
-            areasOfFocus.value = response.data.areas_of_focus;
+            areas_of_focus.value = response.data.areas_of_focus;
             causes.value = response.data.causes;
             impact.value = response.data.impact;
-            whyJoinUs.value = response.data.why_join_us;
-            scopeOfWork.value = response.data.scope_of_work;
-            organisingDate.value = response.data.organising_date;
-            foundationDate.value = response.data.foundation_date;
+            why_join_us.value = response.data.why_join_us;
+            scope_of_work.value = response.data.scope_of_work;
+            organising_date.value = response.data.organising_date;
+            foundation_date.value = response.data.foundation_date;
             status.value = response.data.status;
         } else {
             Swal.fire('Error', 'Failed to fetch organization details', 'error');
@@ -187,8 +184,8 @@ const openModal = (field) => {
     fieldToUpdate.value = field; 
     modalModel.value = eval(field).value;
     modalTitle.value = `Edit ${field.replace(/([A-Z])/g, ' $1')}`.replace(/^./, str => str.toUpperCase());
-    isTextarea.value = (field === 'short_description' || field === 'detailDescription' || field === `whoWeAre` || field === `whatWeDo` 
-    || field === 'howWeDo' || field === 'mission' || field === 'vision' || field === 'value' || field === 'areasOfFocus' || field === 'causes' || field === 'impact' || field === 'whyJoinOurOrganisation');
+    isTextarea.value = (field === 'short_description' || field === 'detail_description' || field === `who_we_are` || field === `what_we_do` 
+    || field === 'how_we_do' || field === 'mission' || field === 'vision' || field === 'value' || field === 'areas_of_focus' || field === 'causes' || field === 'impact' || field === 'why_join_us');
 
     isModalVisible.value = true;
 };

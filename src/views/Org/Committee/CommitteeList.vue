@@ -1,4 +1,3 @@
-
 <script setup>
 import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
@@ -100,10 +99,7 @@ onMounted(fetchCommitteeList);
     <div class="card shadow-sm my-4">
       <div class="card-body">
         <h2 class="text-2xl font-bold mb-4">Committees</h2>
-        <button
-          @click="openModal()"
-          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4"
-        >
+        <button @click="openModal()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4">
           Create Committee
         </button>
         <div v-if="committeeList.length">
@@ -132,10 +128,8 @@ onMounted(fetchCommitteeList);
                 <td class="py-2 px-4 border-b">{{ committee.short_description }}</td>
                 <td class="py-2 px-4 border-b">{{ committee.note }}</td>
                 <td class="py-2 px-4 border-b">
-                  <button
-                    @click="openModal(committee)"
-                    class="bg-yellow-500 text-white px-4 py-1 rounded hover:bg-yellow-600"
-                  >
+                  <button @click="openModal(committee)"
+                    class="bg-yellow-500 text-white px-4 py-1 rounded hover:bg-yellow-600">
                     Edit
                   </button>
                 </td>
@@ -170,81 +164,54 @@ onMounted(fetchCommitteeList);
 
         <div class="mb-4">
           <label for="name" class="block text-sm font-medium text-gray-700">Committee Name</label>
-          <input
-            v-model="name"
-            type="text"
-            id="name"
+          <input v-model="name" type="text" id="name"
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            required
-          />
+            required />
           <p v-if="auth.errors?.name" class="text-red-500 text-sm mt-1">{{ auth.errors?.name[0] }}</p>
         </div>
 
         <div class="mb-4">
           <label for="short_description" class="block text-sm font-medium text-gray-700">Short Description</label>
-          <input
-            v-model="short_description"
-            type="text"
-            id="short_description"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
-          <p v-if="auth.errors?.short_description" class="text-red-500 text-sm mt-1">{{ auth.errors?.short_description[0] }}</p>
+          <input v-model="short_description" type="text" id="short_description"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+          <p v-if="auth.errors?.short_description" class="text-red-500 text-sm mt-1">{{
+            auth.errors?.short_description[0] }}</p>
         </div>
 
         <div class="mb-4">
           <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
-          <input
-            v-model="start_date"
-            type="date"
-            id="start_date"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
+          <input v-model="start_date" type="date" id="start_date"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
           <p v-if="auth.errors?.start_date" class="text-red-500 text-sm mt-1">{{ auth.errors?.start_date[0] }}</p>
         </div>
 
         <div class="mb-4">
           <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
-          <input
-            v-model="end_date"
-            type="date"
-            id="end_date"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
+          <input v-model="end_date" type="date" id="end_date"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
           <p v-if="auth.errors?.end_date" class="text-red-500 text-sm mt-1">{{ auth.errors?.end_date[0] }}</p>
         </div>
 
         <div class="mb-4">
           <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-          <input
-            v-model="status"
-            type="text"
-            id="status"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
+          <input v-model="status" type="text" id="status"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
           <p v-if="auth.errors?.status" class="text-red-500 text-sm mt-1">{{ auth.errors?.status[0] }}</p>
         </div>
 
         <div class="mb-4">
           <label for="note" class="block text-sm font-medium text-gray-700">Note</label>
-          <textarea
-            v-model="note"
-            id="note"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          ></textarea>
+          <textarea v-model="note" id="note"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
           <p v-if="auth.errors?.note" class="text-red-500 text-sm mt-1">{{ auth.errors?.note[0] }}</p>
         </div>
 
         <div class="flex justify-end">
-          <button 
-            class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
-            @click="closeModal"
-          >
+          <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2" @click="closeModal">
             Close
           </button>
-          <button 
-            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            @click="isEditMode ? updateCommittee() : createCommittee()"
-          >
+          <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            @click="isEditMode ? updateCommittee() : createCommittee()">
             {{ isEditMode ? 'Update' : 'Submit' }}
           </button>
         </div>
@@ -254,5 +221,4 @@ onMounted(fetchCommitteeList);
 </template>
 
 
-<style scoped>
-</style>
+<style scoped></style>
