@@ -27,7 +27,7 @@ const userType = computed(() => auth.user?.type);
       <br><br>
       <router-link to="/org-dashboard/create-project" class="menu-item">Create Project</router-link>
       <br><br>
-      <router-link to="/org-dashboard/org-profile-update" class="menu-item">Profile</router-link><br>
+      <router-link to="/org-dashboard/profile" class="menu-item">Profile</router-link><br>
       <br><br><br><br>
     </div>
   </section>

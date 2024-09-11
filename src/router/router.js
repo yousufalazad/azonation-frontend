@@ -13,13 +13,14 @@ import NotificationFromOrg from "../views/Individual/Notifications/NotificationF
 import IndividualProfileUpdate from "../views/Individual/Profile/IndividualProfileUpdate.vue";
 
 
-//Org
+// Org
 import OrgRegister from "../views/Org/Profile/Register.vue";
 import OrgDashboard from "../views/Org/Layouts/Dashboard/Index.vue";
 import OrgDashboardInitialContent from "@/views/Org/Layouts/Dashboard/InitialContent.vue";
 
-import OrgProfileUpdate from "../views/Org/Profile/OrgProfileUpdate.vue";
-import OrgSettings from "../views/Org/Profile/Settings.vue";
+// Profile
+import Profile from "../views/Org/Profile/Profile.vue";
+import Settings from "../views/Org/Profile/Settings.vue";
 
 import AddMember from "../views/Org/Member/AddMember.vue";
 import MemberList from "../views/Org/Member/MemberList.vue";
@@ -84,15 +85,15 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "org-profile-update",
-        name: "org-profile-update",
-        component: OrgProfileUpdate,
+        path: "profile",
+        name: "profile",
+        component: Profile,
         meta: { requiresAuth: true },
       },
       {
-        path: "org-settings",
-        name: "org-settings",
-        component: OrgSettings,
+        path: "settings",
+        name: "settings",
+        component: Settings,
         meta: { requiresAuth: true },
       },
       {
