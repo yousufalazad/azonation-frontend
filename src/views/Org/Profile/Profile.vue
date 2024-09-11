@@ -380,7 +380,7 @@ const createAddress = async () => {
             Swal.fire('Error', 'Failed to created address', 'error');
         }
         closeAddressModal();
-        fetchOrgAddress();
+        //fetchOrgAddress();
     } catch (error) {
         console.error("Error create address:", error);
         Swal.fire('Error', 'Failed to create address', 'error');
