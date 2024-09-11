@@ -127,6 +127,74 @@
                     <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                         @click="isEditMode ? updateAddress() : createAddress()">
                         {{ isEditMode ? 'Update' : 'Submit' }}
+                        <!-- only update is working for create and update -->
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile number section -->
+        <div class="space-y-4">
+            <h3 class="text-lg font-bold mb-2">Mobile number</h3>
+
+            <p>{{ dialing_code_id }},{{ phone_number }}, {{ phone_type }}, {{ status }}
+                <button @click="openPhoneModal()" class="text-blue-500">Edit</button>
+            </p>
+        </div>
+
+        <!-- Modal -->
+        <div v-if="modalVisiblePhone"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
+                <h2 class="text-2xl font-bold mb-4 text-center">
+                    {{ isEditModePhone ? 'Edit mobile number' : 'Add Mobile Number' }}
+                </h2>
+
+                <div class="mb-4">
+                    <label for="dialing_code_id" class="block text-sm font-medium text-gray-700">dialing_code_id</label>
+                    <input v-model="dialing_code_id" type="text" id="dialing_code_id"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        required />
+                    <p v-if="auth.errors?.dialing_code_id" class="text-red-500 text-sm mt-1">{{
+                        auth.errors?.dialing_code_id[0] }}</p>
+                </div>
+
+                <div class="mb-4">
+                    <label for="phone_number" class="block text-sm font-medium text-gray-700">phone_number (number only)</label>
+                    <input v-model="phone_number" type="text" id="phone_number"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                    <p v-if="auth.errors?.phone_number" class="text-red-500 text-sm mt-1">{{
+                        auth.errors?.phone_number[0] }}</p>
+                </div>
+
+                <div class="mb-4">
+                    <label for="phone_type" class="block text-sm font-medium text-gray-700">phone_type (0/1/2/3)</label>
+                    <input v-model="phone_type" type="text" id="phone_type"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                    <p v-if="auth.errors?.phone_type" class="text-red-500 text-sm mt-1">{{ auth.errors?.phone_type[0] }}</p>
+                </div>
+
+
+                <div class="mb-4">
+                    <label for="status" class="block text-sm font-medium text-gray-700">status (boolean)</label>
+                    <input v-model="status" type="boolean" id="status"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                    <p v-if="auth.errors?.status" class="text-red-500 text-sm mt-1">{{
+                        auth.errors?.status[0] }}</p>
+                </div>
+
+                
+
+                <div class="flex justify-end">
+                    <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
+                        @click="closePhoneModal">
+                        Close
+                    </button>
+
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                        @click="isEditModePhone ? updateOrgPhoneNumber() : updateOrgPhoneNumber()">
+                        {{ isEditModePhone ? 'Update' : 'Submit' }}
+                        <!-- only update is working for create and update -->
                     </button>
                 </div>
             </div>
@@ -138,6 +206,10 @@
 import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from "sweetalert2";
+
+const auth = authStore;
+const userId = auth.user.id;
+const baseURL = 'http://localhost:8000';
 
 // Org profile info
 const shortDescription = ref('');
@@ -164,20 +236,30 @@ const selectedImage = ref(null);
 // Org profile info
 const address_user_id = ref('');
 const address_line_one = ref('');
-// const addressLineTwo = ref('');
 const address_line_two = ref('');
 const city = ref('');
-// const stateOrRegion = ref('');
 const state_or_region = ref('');
-// const postalCode = ref('');
 const postal_code = ref('');
 const country_id = ref('');
 const modalVisibleAddress = ref(false);
 const isEditMode = ref(false);
 
-const auth = authStore;
-const userId = auth.user.id;
-const baseURL = 'http://localhost:8000';
+// Org Phone Number
+const dialing_code_id = ref('');
+const phone_number = ref('');
+const phone_type = ref('');
+// const status = ref(''); //defined in address
+const modalVisiblePhone = ref(false);
+const isEditModePhone = ref(false);
+
+
+// Modal logic
+const isModalVisible = ref(false);
+const modalTitle = ref('');
+const modalModel = ref('');
+const isTextarea = ref(false);
+const fieldToUpdate = ref('');
+
 
 
 const fetchLogo = async () => {
@@ -325,18 +407,51 @@ const updateAddress = async () => {
     }
 };
 
+const fetchOrgPhoneNumber = async () => {
+    try {
+        const response = await auth.fetchProtectedApi(`/api/phone-number/${userId}`, {}, 'GET');
+        // Ensure the response status is true and data exists
+        if (response.status && response.data) {
+            dialing_code_id.value = response.data.dialing_code_id || '';
+            phone_number.value = response.data.phone_number || '';
+            phone_type.value = response.data.phone_type || '';
+            status.value = response.data.status || '';
+        } else {
+            Swal.fire('Error', 'Failed to fetch organization Phone Number', 'error');
+        }
+    } catch (error) {
+        console.error("Error fetching organization Phone Number:", error);
+        Swal.fire('Error', 'Failed to fetch organization Phone Number', 'error');
+    }
+};
+
+const updateOrgPhoneNumber = async () => {
+    try {
+        const response = await auth.fetchProtectedApi(`/api/phone-number/${userId}`, {
+            dialing_code_id: dialing_code_id.value,
+            phone_number: phone_number.value,
+            phone_type: phone_type.value,
+            status: status.value,
+        }, 'PUT');
+        if (response.status) {
+            Swal.fire('Success', 'Phone Number updated successfully', 'success');
+        } else {
+            Swal.fire('Error', 'Failed to update Phone Number', 'error');
+        }
+        closePhoneModal();
+        fetchOrgPhoneNumber();
+    } catch (error) {
+        console.error("Error updating Phone Number:", error);
+        Swal.fire('Error', 'Failed to update Phone Number', 'error');
+    }
+};
 
 const handleImageUpload = (event) => {
     selectedImage.value = event.target.files[0];
 };
 
-// Modal logic
-const isModalVisible = ref(false);
-const modalTitle = ref('');
-const modalModel = ref('');
-const isTextarea = ref(false);
-const fieldToUpdate = ref('');
 
+//For Org Info
 const openModal = (field) => {
     fieldToUpdate.value = field;
     modalModel.value = eval(field).value;
@@ -351,35 +466,35 @@ const closeModal = () => {
     isModalVisible.value = false;
 };
 
+const saveModal = () => {
+    eval(fieldToUpdate.value).value = modalModel.value;
+    updateSingleField(fieldToUpdate.value, modalModel.value);
+    closeModal();
+};
+
+//for Address
+const openAddressModal = () => {
+    isEditMode.value = true; //updateAddress() will work 
+    modalVisibleAddress.value = true;
+};
+
 const closeAddressModal = () => {
     modalVisibleAddress.value = false;
 };
 
-const saveModal = () => {
-    eval(fieldToUpdate.value).value = modalModel.value;
-    updateSingleField(fieldToUpdate.value, modalModel.value);
-
-    closeModal();
+//for Phone Number
+const openPhoneModal = () => {
+    isEditModePhone.value = true; //updateAddress() will work 
+    modalVisiblePhone.value = true;
 };
 
-
-// const openAddressModal = () => {
-
-//     if (!address_user_id == null) {
-//         isEditMode.value = true; //updateAddress() will work 
-//     } else {
-//         isEditMode.value = false; //createAddress() will work 
-//     }
-//     modalVisibleAddress.value = true;
-// };
-
-const openAddressModal = () => {
-    isEditMode.value = true; //updateAddress() will work 
-  modalVisibleAddress.value = true;
+const closePhoneModal = () => {
+    modalVisiblePhone.value = false;
 };
 
 onMounted(fetchOrgProfileData);
 onMounted(fetchOrgAddress);
+onMounted(fetchOrgPhoneNumber);
 onMounted(fetchLogo);
 
 </script>
