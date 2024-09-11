@@ -7,8 +7,6 @@ const authStore = reactive({
   apiBase: "http://localhost:8000",
   isAuthenticated: localStorage.getItem("auth") == 1,
   user: JSON.parse(localStorage.getItem("user")),
-  individual: JSON.parse(localStorage.getItem("individual")),
-  org: JSON.parse(localStorage.getItem("org")),
   superadmin: JSON.parse(localStorage.getItem("superadmin")),
   errors: null,
 
@@ -195,13 +193,13 @@ const authStore = reactive({
   //   });
   // },
 
-  //Find org data after org login only
-  // orgData(userId) {
-  //   this.fetchPublicApi(`/api/get_organisation_data/${userId}`, {}, "GET").then(
+  //Find user data after user login only
+  // userUpdatedData(userId) {
+  //   this.fetchPublicApi(`/api/user_data/${userId}`, {}, "GET").then(
   //     (res) => {
   //       if (res.status) {
-  //         this.org = res.data;
-  //         localStorage.setItem("org", JSON.stringify(res.data));
+  //         this.user = res.data;
+  //         localStorage.setItem("user", JSON.stringify(res.data));
   //       } else {
   //         this.errors = res.message;
   //       }

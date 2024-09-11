@@ -49,20 +49,6 @@
                     class="text-blue-500">Edit</button></p>
         </div>
 
-        <!-- Modal Component -->
-        <div v-if="isModalVisible" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-            <div class="bg-white p-5 rounded-lg shadow-lg max-w-md w-full">
-                <h3 class="text-lg font-bold mb-3">{{ modalTitle }}</h3>
-                <textarea v-if="isTextarea" v-model="modalModel"
-                    class="w-full h-32 p-2 border border-gray-300 rounded"></textarea>
-                <input v-else type="text" v-model="modalModel" class="w-full p-2 border border-gray-300 rounded">
-                <div class="flex justify-end mt-4">
-                    <button @click="saveModal" class="bg-blue-500 text-white py-2 px-4 rounded mr-2">Save</button>
-                    <button @click="closeModal" class="bg-gray-300 py-2 px-4 rounded">Close</button>
-                </div>
-            </div>
-        </div>
-
         <!-- Address Section -->
         <div class="space-y-4">
             <h3 class="text-lg font-bold mb-2">Address</h3>
