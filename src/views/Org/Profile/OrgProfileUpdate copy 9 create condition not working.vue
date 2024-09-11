@@ -278,29 +278,29 @@ const fetchOrgAddress = async () => {
     }
 };
 
-// const createAddress = async () => {
-//     try {
-//         const response = await auth.fetchProtectedApi("/api/address/", {
-//             user_id: userId,
-//             address_line_one: address_line_one.value,
-//             address_line_two: address_line_two.value,
-//             city: city.value,
-//             state_or_region: state_or_region.value,
-//             postal_code: postal_code.value,
-//             country_id: country_id.value,
-//         }, 'POST');
-//         if (response.status) {
-//             Swal.fire('Success', 'Address updated successfully', 'success');
-//         } else {
-//             Swal.fire('Error', 'Failed to update address', 'error');
-//         }
-//         closeAddressModal();
-//         fetchOrgAddress();
-//     } catch (error) {
-//         console.error("Error updating address:", error);
-//         Swal.fire('Error', 'Failed to update address', 'error');
-//     }
-// };
+const createAddress = async () => {
+    try {
+        const response = await auth.fetchProtectedApi("/api/address/", {
+            user_id: userId,
+            address_line_one: address_line_one.value,
+            address_line_two: address_line_two.value,
+            city: city.value,
+            state_or_region: state_or_region.value,
+            postal_code: postal_code.value,
+            country_id: country_id.value,
+        }, 'POST');
+        if (response.status) {
+            Swal.fire('Success', 'Address updated successfully', 'success');
+        } else {
+            Swal.fire('Error', 'Failed to update address', 'error');
+        }
+        closeAddressModal();
+        fetchOrgAddress();
+    } catch (error) {
+        console.error("Error updating address:", error);
+        Swal.fire('Error', 'Failed to update address', 'error');
+    }
+};
 
 const updateAddress = async () => {
     try {
