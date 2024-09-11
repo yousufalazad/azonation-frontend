@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 const auth = authStore;
 const committeeList = ref([]);
 const modalVisible = ref(false);
+
 const isEditMode = ref(false);
 const selectedCommittee = ref(null);
 const name = ref('');
@@ -149,18 +150,6 @@ onMounted(fetchCommitteeList);
         <h2 class="text-2xl font-bold mb-4 text-center">
           {{ isEditMode ? 'Edit Committee' : 'Create Committee' }}
         </h2>
-
-        <!-- <div class="mb-4">
-          <label for="name" class="block text-sm font-medium text-gray-700">Committee Id</label>
-          <input
-            v-model="id"
-            type="text"
-            id="id"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            required
-          />
-          <p v-if="auth.errors?.id" class="text-red-500 text-sm mt-1">{{ auth.errors?.id[0] }}</p>
-        </div> -->
 
         <div class="mb-4">
           <label for="name" class="block text-sm font-medium text-gray-700">Committee Name</label>

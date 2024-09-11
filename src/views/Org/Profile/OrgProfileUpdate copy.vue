@@ -1,11 +1,76 @@
-<!-- ProfileUpdate.vue -->
+<template>
+    <div class="profile-data-show">
+        <h2 class="text-xl font-bold mb-4">Org Profile</h2>
+
+        <!-- Logo Section -->
+        <div class="mb-4">
+            <label for="logo" class="block text-sm font-medium text-gray-700">Logo</label>
+            <input type="file" id="logo" @change="handleImageUpload" class="block w-full text-sm text-gray-500">
+            <div v-if="logoPath" class="mt-3">
+                <img :src="`${baseURL}${logoPath}`" alt="Organization Logo" class="rounded-lg max-w-xs">
+            </div>
+            <button @click="profileImageUpdate" class="mt-2 bg-blue-500 text-white py-2 px-4 rounded">Save Logo</button>
+        </div>
+
+        <!-- Organization Information Section with Update Buttons -->
+        <div class="space-y-4">
+            <p>Short Description: <span>{{ shortDescription }}</span> <button @click="openModal('shortDescription')"
+                    class="text-blue-500">Edit</button></p>
+            <p>Detail Description: <span>{{ detailDescription }}</span> <button @click="openModal('detailDescription')"
+                    class="text-blue-500">Edit</button></p>
+            <p>whoWeAre: <span>{{ whoWeAre }}</span> <button @click="openModal('whoWeAre')"
+                    class="text-blue-500">Edit</button></p>
+            <p>whatWeDo: <span>{{ whatWeDo }}</span> <button @click="openModal('whatWeDo')"
+                    class="text-blue-500">Edit</button></p>
+            <p>howWeDo: <span>{{ howWeDo }}</span> <button @click="openModal('howWeDo')"
+                    class="text-blue-500">Edit</button></p>
+
+            <p>Mission: <span>{{ mission }}</span> <button @click="openModal('mission')"
+                    class="text-blue-500">Edit</button></p>
+            <p>Vision: <span>{{ vision }}</span> <button @click="openModal('vision')"
+                    class="text-blue-500">Edit</button></p>
+            <p>Value: <span>{{ value }}</span> <button @click="openModal('value')" class="text-blue-500">Edit</button>
+            </p>
+            <p>Areas of Focus: <span>{{ areasOfFocus }}</span> <button @click="openModal('areasOfFocus')"
+                    class="text-blue-500">Edit</button></p>
+            <p>Causes: <span>{{ causes }}</span> <button @click="openModal('causes')"
+                    class="text-blue-500">Edit</button></p>
+            <p>Impact: <span>{{ impact }}</span> <button @click="openModal('impact')"
+                    class="text-blue-500">Edit</button></p>
+            <p>whyJoinUs: <span>{{ whyJoinUs }}</span> <button
+                    @click="openModal('whyJoinUs')" class="text-blue-500">Edit</button></p>
+            <p>Scope of Work: <span>{{ scopeOfWork }}</span> <button @click="openModal('scopeOfWork')"
+                    class="text-blue-500">Edit</button></p>
+            <p>Organising Date: <span>{{ organisingDate }}</span> <button @click="openModal('organisingDate')"
+                    class="text-blue-500">Edit</button></p>
+            <p>Foundation Date: <span>{{ foundationDate }}</span> <button @click="openModal('foundationDate')"
+                    class="text-blue-500">Edit</button></p>
+            <p>Status: <span>{{ status }}</span> <button @click="openModal('status')"
+                    class="text-blue-500">Edit</button></p>
+        </div>
+
+        <!-- Modal Component -->
+        <div v-if="isModalVisible" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
+            <div class="bg-white p-5 rounded-lg shadow-lg max-w-md w-full">
+                <h3 class="text-lg font-bold mb-3">{{ modalTitle }}</h3>
+                <textarea v-if="isTextarea" v-model="modalModel"
+                    class="w-full h-32 p-2 border border-gray-300 rounded"></textarea>
+                <input v-else type="text" v-model="modalModel" class="w-full p-2 border border-gray-300 rounded">
+                <div class="flex justify-end mt-4">
+                    <button @click="saveModal" class="bg-blue-500 text-white py-2 px-4 rounded mr-2">Save</button>
+                    <button @click="closeModal" class="bg-gray-300 py-2 px-4 rounded">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from "sweetalert2";
 
-
-//Org profile info
+// Org profile info
 const shortDescription = ref('');
 const detailDescription = ref('');
 const whoWeAre = ref('');
@@ -17,41 +82,25 @@ const value = ref('');
 const areasOfFocus = ref('');
 const causes = ref('');
 const impact = ref('');
-const whyJoinOurOrganisation = ref('');
+const whyJoinUs = ref('');
 const scopeOfWork = ref('');
 const organisingDate = ref('');
 const foundationDate = ref('');
 const status = ref('');
 
-//org address
-const orgAddressLine = ref('');
-const city = ref('');
-const stateOrRegion = ref('');
-const postalCode = ref('');
-const country = ref('');
-
-//org phone number
-const dialingCodeId = ref('');
-const phoneNumber = ref('');
-const phoneType = ref('');
-const orgPhoneNumberStatus = ref('');
-
-//Org logo
+// Org logo
 const logoPath = ref('');
 const selectedImage = ref(null);
 
 const auth = authStore;
 const userId = auth.user.id;
-const userName = auth.user.name;
-const userEmail = auth.user.email;
 const baseURL = 'http://localhost:8000';
-
 
 const fetchLogo = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/org-profile/logo/${userId}`, {}, 'GET');
         if (response.status && response.data.image) {
-            logoPath.value = response.data.image; // value assign
+            logoPath.value = response.data.image;
         }
     } catch (error) {
         console.error("Error fetching logo:", error);
@@ -65,7 +114,7 @@ const profileImageUpdate = async () => {
         try {
             const imageResponse = await auth.uploadProtectedApi(`/api/org-profile/logo/${userId}`, formData);
             if (imageResponse.status) {
-                Swal.fire('Success', 'Logo save successfully', 'success');
+                Swal.fire('Success', 'Logo saved successfully', 'success');
                 logoPath.value = imageResponse.data.image;
             } else {
                 Swal.fire('Error', 'Failed to update logo', 'error');
@@ -76,36 +125,21 @@ const profileImageUpdate = async () => {
         }
     }
 };
+// Convert camel case field names to snake case
+const camelToSnake = (str) => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
 
-const updateOrgProfileData = async () => {
+const updateSingleField = async (field, value) => {
+    const snakeCaseField = camelToSnake(field);
     try {
-        const response = await auth.fetchProtectedApi(`/api/org-profile-update/${userId}`, {
-            short_description: shortDescription.value,
-            detail_description: detailDescription.value,
-            who_we_are: whoWeAre.value,
-            what_we_do: whatWeDo.value,
-            how_we_do: howWeDo.value,
-            mission: mission.value,
-            vision: vision.value,
-            value: value.value,
-            areas_of_focus: areasOfFocus.value,
-            causes: causes.value,
-            impact: impact.value,
-            why_join_our_organisation: whyJoinOurOrganisation.value,
-            scope_of_work: scopeOfWork.value,
-            organising_date: organisingDate.value,
-            foundation_date: foundationDate.value,
-            status: status.value,
-        }, 'PUT');
+        const response = await auth.fetchProtectedApi(`/api/org-profile-update/${userId}`, { [snakeCaseField]: value }, 'PUT');
         if (response.status) {
-            Swal.fire('Success', 'Organization details updated successfully', 'success');
-            //auth.getOrgData(userId) // update localStorage for updated org name when updated
+            Swal.fire('Success', `${field} updated successfully`, 'success');
         } else {
-            Swal.fire('Error', 'Failed to update organization details', 'error');
+            Swal.fire('Error', `Failed to update ${field}`, 'error');
         }
     } catch (error) {
-        console.error("Error updating organization details:", error);
-        Swal.fire('Error', 'Failed to update organization details', 'error');
+        console.error(`Error updating ${field}:`, error);
+        Swal.fire('Error', `Failed to update ${field}`, 'error');
     }
 };
 
@@ -113,7 +147,6 @@ const fetchOrgProfileData = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/org-profile-data/${userId}`, {}, 'GET');
         if (response.status) {
-            userId.value = response.data.user_id;
             shortDescription.value = response.data.short_description;
             detailDescription.value = response.data.detail_description;
             whoWeAre.value = response.data.who_we_are;
@@ -125,113 +158,17 @@ const fetchOrgProfileData = async () => {
             areasOfFocus.value = response.data.areas_of_focus;
             causes.value = response.data.causes;
             impact.value = response.data.impact;
-            whyJoinOurOrganisation.value = response.data.why_join_our_organisation;
+            whyJoinUs.value = response.data.why_join_us;
             scopeOfWork.value = response.data.scope_of_work;
             organisingDate.value = response.data.organising_date;
             foundationDate.value = response.data.foundation_date;
             status.value = response.data.status;
-
         } else {
             Swal.fire('Error', 'Failed to fetch organization details', 'error');
         }
     } catch (error) {
         console.error("Error fetching organization details:", error);
         Swal.fire('Error', 'Failed to fetch organization details', 'error');
-    }
-};
-
-// const createOrgAddress = async () => {
-//     try {
-//         const response = await auth.fetchProtectedApi(`/api/organisation-address/${userId}`, {}, 'GET');
-//         if (response.status) {
-//             console.log(response)
-//             orgAddressLine.value = response.data.address_line;
-//             city.value = response.data.city;
-//             stateOrRegion.value = response.data.state_or_region;
-//             postalCode.value = response.data.postal_code;
-//             country.value = response.data.country_id;
-//         } else {
-//             Swal.fire('Error', 'Failed to fetch organization details', 'error');
-//         }
-//     } catch (error) {
-//         console.error("Error fetching organization details:", error);
-//         Swal.fire('Error', 'Failed to fetch organization details', 'error');
-//     }
-// };
-
-const fetchOrgAddress = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/organisation-address/${userId}`, {}, 'GET');
-        if (response.status) {
-            console.log(response)
-            orgAddressLine.value = response.data.address_line;
-            city.value = response.data.city;
-            stateOrRegion.value = response.data.state_or_region;
-            postalCode.value = response.data.postal_code;
-            country.value = response.data.country_id;
-        } else {
-            Swal.fire('Error', 'Failed to fetch organization details', 'error');
-        }
-    } catch (error) {
-        console.error("Error fetching organization details:", error);
-        Swal.fire('Error', 'Failed to fetch organization details', 'error');
-    }
-};
-
-const updateOrgAddress = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/organisation-address/${userId}`, {
-            address_line: orgAddressLine.value,
-            city: city.value,
-            state_or_region: stateOrRegion.value,
-            postal_code: postalCode.value,
-            country_id: country.value
-        }, 'PUT');
-        if (response.status) {
-            Swal.fire('Success', 'Address updated successfully', 'success');
-        } else {
-            Swal.fire('Error', 'Failed to update address', 'error');
-        }
-    } catch (error) {
-        console.error("Error updating address:", error);
-        Swal.fire('Error', 'Failed to update address', 'error');
-    }
-};
-
-const fetchOrgPhoneNumber = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/org-phone-number/${userId}`, {}, 'GET');
-        if (response.status) {
-            console.log(response)
-            dialingCodeId.value = response.data.dialing_code_id;
-            phoneNumber.value = response.data.phone_number;
-            phoneType.value = response.data.phone_type;
-            orgPhoneNumberStatus.value = response.data.status;
-        } else {
-            Swal.fire('Error', 'Failed to fetch organization phone number', 'error');
-        }
-    } catch (error) {
-        console.error("Error fetching organization phone number:", error);
-        Swal.fire('Error', 'Failed to fetch organization phone number', 'error');
-    }
-};
-
-const updateOrgPhoneNumber = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/org-phone-number/${userId}`, {
-            dialing_code_id: dialingCodeId.value,
-            phone_number: phoneNumber.value,
-            phone_type: phoneType.value,
-            status: orgPhoneNumberStatus.value,
-        }, 'PUT');
-        if (response.status) {
-            Swal.fire('Success', 'Phone number updated successfully', 'success');
-        } else {
-            Swal.fire('Error', 'Failed to update phone number', 'error');
-        }
-    } catch (error) {
-        console.error("Error updating phone number:", error);
-        Swal.fire('Error', 'Failed to update phone number', 'error');
     }
 };
 
@@ -239,255 +176,84 @@ const handleImageUpload = (event) => {
     selectedImage.value = event.target.files[0];
 };
 
+// Modal logic
+const isModalVisible = ref(false);
+const modalTitle = ref('');
+const modalModel = ref('');
+const isTextarea = ref(false);
+const fieldToUpdate = ref('');
 
+const openModal = (field) => {
+    fieldToUpdate.value = field; 
+    modalModel.value = eval(field).value;
+    modalTitle.value = `Edit ${field.replace(/([A-Z])/g, ' $1')}`.replace(/^./, str => str.toUpperCase());
+    isTextarea.value = (field === 'shortDescription' || field === 'detailDescription' || field === `whoWeAre` || field === `whatWeDo` 
+    || field === 'howWeDo' || field === 'mission' || field === 'vision' || field === 'value' || field === 'areasOfFocus' || field === 'causes' || field === 'impact' || field === 'whyJoinUs');
+
+    isModalVisible.value = true;
+};
+
+const closeModal = () => {
+    isModalVisible.value = false;
+};
+
+const saveModal = () => {
+    eval(fieldToUpdate.value).value = modalModel.value;
+    updateSingleField(fieldToUpdate.value, modalModel.value);
+    closeModal();
+};
 
 onMounted(fetchOrgProfileData);
-onMounted(updateOrgProfileData);
-onMounted(fetchOrgAddress);
-onMounted(fetchOrgPhoneNumber);
 onMounted(fetchLogo);
+
 </script>
-
-<template>
-    <div class="profile-data-show">
-        <h2>Org Profile</h2>
-        <div class="mb-3">
-            <label for="logo" class="form-label">Logo</label>
-            <input type="file" id="logo" @change="handleImageUpload" class="form-control">
-        </div>
-
-        <div class="mb-3" v-if="logoPath">
-            <img :src="`${baseURL}${logoPath}`" alt="Organization Logo" class="img-thumbnail">
-        </div>
-        <button @click="profileImageUpdate" class="btn btn-primary">Save</button>
-    </div>
-    <br>
-    <div>
-        <h5>Organization profile information</h5>
-        <br>
-        <p>Org name: <span>{{ userName }}</span></p>
-        <p>short description: <span>{{ shortDescription }}</span></p>
-        <p>detail description: <span>{{ detailDescription }}</span></p>
-        <p>whoWeAre: <span>{{ whoWeAre }}</span></p>
-        <p>whatWeDo: <span>{{ whatWeDo }}</span></p>
-        <p>whatWeDo: <span>{{ howWeDo }}</span></p>
-        <p>mission: <span>{{ mission }}</span></p>
-        <p>vision: <span>{{ vision }}</span></p>
-        <p>value: <span>{{ value }}</span></p>
-        <p>areasOfFocus: <span>{{ areasOfFocus }}</span></p>
-        <p>causes: <span>{{ causes }}</span></p>
-        <p>impact: <span>{{ impact }}</span></p>
-        <p>whyJoinOurOrganisation: <span>{{ whyJoinOurOrganisation }}</span></p>
-        <p>scopeOfWork: <span>{{ scopeOfWork }}</span></p>
-        <p>organisingDate: <span>{{ organisingDate }}</span></p>
-        <p>foundationDate: <span>{{ foundationDate }}</span></p>
-        <p>status: <span>{{ status }}</span></p>
-    </div>
-    <div>
-        <br>
-        <h5>User email address (username)</h5>
-        <p><span>{{ userEmail }}</span></p>
-        <br>
-    </div>
-    <div>
-        <br>
-        <h5>Address</h5>
-        <p><span>{{ orgAddressLine }}, {{ city }}, {{ stateOrRegion }}, {{ postalCode }}, {{ country }}</span></p>
-        <br>
-    </div>
-    <div>
-        <br>
-        <h5>Phone</h5>
-        <p><span>{{ dialingCodeId }}, {{ phoneNumber }}, {{ phoneType }}, {{ orgPhoneNumberStatus }}</span></p>
-        <br>
-    </div>
-
-    <div class="card shadow-sm">
-        <div class="card-body p-4">
-            <h1 class="h4 mb-4 fw-bold text-center">Update organization profile</h1>
-            <div class="mb-3">
-                <label for="shortDescription" class="form-label">short description</label>
-                <!-- <input v-model="shortDescription" type="text" id="shortDescription" class="form-control" placeholder="Short Description"> -->
-                <textarea id="shortDescription" v-model="shortDescription" class="form-control"
-                    placeholder="Enter short description"></textarea>
-            </div>
-            <div class="mb-3">
-                <label for="detailDescription" class="form-label">details description</label>
-                <textarea id="detailDescription" v-model="detailDescription" class="form-control"
-                    placeholder="Enter detail description"></textarea>
-            </div>
-
-            <div class="mb-3">
-                <label for="whoWeAre" class="form-label">whoWeAre</label>
-                <textarea id="whoWeAre" v-model="whoWeAre" class="form-control" placeholder="whoWeAre"></textarea>
-            </div>
-
-            <div class="mb-3">
-                <label for="whatWeDo" class="form-label">whatWeDo</label>
-                <textarea id="whatWeDo" v-model="whatWeDo" class="form-control" placeholder="whatWeDo"></textarea>
-            </div>
-
-            <div class="mb-3">
-                <label for="howWeDo" class="form-label">howWeDo</label>
-                <textarea id="howWeDo" v-model="howWeDo" class="form-control" placeholder="howWeDo"></textarea>
-            </div>
-
-
-            <div class="mb-4">
-                <label for="mission" class="block text-sm font-medium text-gray-700">mission</label>
-                <input v-model="mission" type="text" id="mission"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                <p v-if="auth.errors?.mission" class="text-red-500 text-sm mt-1">{{
-                    auth.errors?.mission[0] }}</p>
-            </div>
-
-
-            <div class="mb-4">
-                <label for="vision" class="block text-sm font-medium text-gray-700">vision</label>
-                <input v-model="vision" type="text" id="vision"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                <p v-if="auth.errors?.vision" class="text-red-500 text-sm mt-1">{{
-                    auth.errors?.vision[0] }}</p>
-            </div>
-
-
-            <div class="mb-4">
-                <label for="value" class="block text-sm font-medium text-gray-700">value</label>
-                <input v-model="value" type="text" id="value"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                <p v-if="auth.errors?.value" class="text-red-500 text-sm mt-1">{{
-                    auth.errors?.value[0] }}</p>
-            </div>
-
-            <div class="mb-4">
-                <label for="areasOfFocus" class="block text-sm font-medium text-gray-700">areasOfFocus</label>
-                <input v-model="areasOfFocus" type="text" id="areasOfFocus"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                <p v-if="auth.errors?.areasOfFocus" class="text-red-500 text-sm mt-1">{{
-                    auth.errors?.areasOfFocus[0] }}</p>
-            </div>
-
-            <div class="mb-3">
-                <label for="causes" class="form-label">causes</label>
-                <textarea id="causes" v-model="causes" class="form-control" placeholder="causes"></textarea>
-            </div>
-
-            <div class="mb-3">
-                <label for="impact" class="form-label">impact</label>
-                <textarea id="impact" v-model="impact" class="form-control" placeholder="impact"></textarea>
-            </div>
-
-            <div class="mb-3">
-                <label for="whyJoinOurOrganisation" class="form-label">whyJoinOurOrganisation</label>
-                <textarea id="whyJoinOurOrganisation" v-model="whyJoinOurOrganisation" class="form-control"
-                    placeholder="whyJoinOurOrganisation"></textarea>
-            </div>
-            <div class="mb-3">
-                <label for="scopeOfWork" class="form-label">scopeOfWork</label>
-                <textarea id="scopeOfWork" v-model="scopeOfWork" class="form-control"
-                    placeholder="scopeOfWork"></textarea>
-            </div>
-
-            <div class="mb-4">
-                <label for="organisingDate" class="block text-sm font-medium text-gray-700">organisingDate</label>
-                <input v-model="organisingDate" type="date" id="organisingDate"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                <p v-if="auth.errors?.organisingDate" class="text-red-500 text-sm mt-1">{{
-                    auth.errors?.organisingDate[0] }}</p>
-            </div>
-
-            <div class="mb-4">
-                <label for="foundationDate" class="block text-sm font-medium text-gray-700">foundationDate</label>
-                <input v-model="foundationDate" type="date" id="foundationDate"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                <p v-if="auth.errors?.foundationDate" class="text-red-500 text-sm mt-1">{{
-                    auth.errors?.foundationDate[0] }}</p>
-            </div>
-
-            <div class="mb-4">
-                <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-                <input v-model="status" type="text" id="status"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                <p v-if="auth.errors?.status" class="text-red-500 text-sm mt-1">{{ auth.errors?.status[0] }}</p>
-            </div>
-
-
-            <div class="text-end">
-                <button @click="updateOrgProfileData" class="btn btn-primary">Update profile</button>
-            </div>
-        </div>
-    </div>
-    <br>
-    <div class="card shadow-sm">
-        <div class="card-body p-4">
-            <h1 class="h4 mb-4 fw-bold text-center">Update address</h1>
-            <div class="mb-3">
-                <label for="orgAddressLine" class="form-label">Address line</label>
-                <input v-model="orgAddressLine" type="text" id="orgAddressLine" class="form-control"
-                    placeholder="Address line" required>
-            </div>
-            <div class="mb-3">
-                <label for="city" class="form-label">city</label>
-                <input v-model="city" type="text" id="city" class="form-control" placeholder="city" required>
-            </div>
-            <div class="mb-3">
-                <label for="stateOrRegion" class="form-label">State or Region</label>
-                <input v-model="stateOrRegion" type="text" id="stateOrRegion" class="form-control"
-                    placeholder="State Or Region">
-            </div>
-            <div class="mb-3">
-                <label for="postalCode" class="form-label">Post Code</label>
-                <input v-model="postalCode" type="text" id="postalCode" class="form-control" placeholder="Post Code"
-                    required>
-            </div>
-            <div class="mb-3">
-                <label for="country" class="form-label">Country</label>
-                <input v-model="country" type="text" id="country" class="form-control" placeholder="Country" required>
-            </div>
-
-            <div class="text-end">
-                <button @click="updateOrgAddress" class="btn btn-primary">Update address</button>
-            </div>
-        </div>
-    </div>
-    <br>
-    <div class="card shadow-sm">
-        <div class="card-body p-4">
-            <h1 class="h4 mb-4 fw-bold text-center">Update phone number</h1>
-
-            <div class="mb-3">
-                <label for="dialingCodeId" class="form-label">Dialing code</label>
-                <input v-model="dialingCodeId" type="text" id="dialingCodeId" class="form-control"
-                    placeholder="Dialing code" required>
-            </div>
-            <div class="mb-3">
-                <label for="phoneNumber" class="form-label">Phone number</label>
-                <input v-model="phoneNumber" type="text" id="phoneNumber" class="form-control"
-                    placeholder="Phone Number" required>
-            </div>
-            <div class="mb-3">
-                <label for="phoneType" class="form-label">Phone type</label>
-                <input v-model="phoneType" type="text" id="phoneType" class="form-control" placeholder="Phone Type">
-            </div>
-            <div class="mb-3">
-                <label for="orgPhoneNumberStatus" class="form-label">Status (by system)</label>
-                <input v-model="orgPhoneNumberStatus" type="text" id="orgPhoneNumberStatus" class="form-control"
-                    placeholder="orgPhoneNumberStatus" required>
-            </div>
-            <div class="text-end">
-                <button @click="updateOrgPhoneNumber" class="btn btn-primary">Update address</button>
-            </div>
-        </div>
-    </div>
-</template>
 
 <style scoped>
 .profile-data-show {
     padding: 20px;
 }
 
-.img-thumbnail {
-    max-width: 200px;
-    margin-top: 10px;
+.fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.bg-opacity-75 {
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
+.max-w-md {
+    max-width: 28rem;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.flex {
+    display: flex;
+}
+
+.justify-end {
+    justify-content: flex-end;
 }
 </style>

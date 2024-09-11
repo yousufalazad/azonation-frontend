@@ -53,8 +53,8 @@
         <div class="space-y-4">
             <h3 class="text-lg font-bold mb-2">Address</h3>
             
-            <p><span>{{ address_line_one }}</span>,{{ address_line_two }}, {{ city }}, {{ state_or_region }}, {{ postal_code }}, {{ country_id }}
-            <button @click="openAddressModal()" class="text-blue-500">Edit</button>
+            <p><span>{{ address_line_one }}</span>,{{ address_line_two }}, {{ city }}, {{ state_or_region }}, {{ postal_code }}, {{ country }}
+            <button @click="openAddressModal(address_user_id)" class="text-blue-500">Edit</button>
             </p>
         </div>
 
@@ -83,11 +83,12 @@
 
         <div class="mb-4">
           <label for="city" class="block text-sm font-medium text-gray-700">city</label>
-          <input v-model="city" type="text" id="city"
+          <input v-model="city" type="date" id="city"
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
           <p v-if="auth.errors?.city" class="text-red-500 text-sm mt-1">{{ auth.errors?.city[0] }}</p>
         </div>
 
+        
 
         <div class="mb-4">
           <label for="state_or_region" class="block text-sm font-medium text-gray-700">state_or_region</label>
@@ -114,11 +115,6 @@
           <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2" @click="closeAddressModal">
             Close
           </button>
-          <!-- <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            @click="isEditMode ? updateAddress() : createAddress()">
-            {{ isEditMode ? 'Update' : 'Submit' }}
-          </button> -->
-
           <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
             @click="isEditMode ? updateAddress() : createAddress()">
             {{ isEditMode ? 'Update' : 'Submit' }}
@@ -126,6 +122,56 @@
         </div>
       </div>
     </div>
+<!--
+        <div v-if="isModalVisible" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
+            <div class="bg-white p-5 rounded-lg shadow-lg max-w-md w-full">
+                <h3 class="text-lg font-bold mb-3">{{ modalTitle }}</h3>
+                <textarea v-if="isTextarea" v-model="modalModel"
+                    class="w-full h-32 p-2 border border-gray-300 rounded"></textarea>
+                <input v-else type="text" v-model="modalModel" class="w-full p-2 border border-gray-300 rounded">
+                <div class="flex justify-end mt-4">
+                    <button @click="saveModal" class="bg-blue-500 text-white py-2 px-4 rounded mr-2">Save</button>
+                    <button @click="closeModal" class="bg-gray-300 py-2 px-4 rounded">Close</button>
+                </div>
+            </div>
+        </div>
+
+          <div v-if="isModalVisible && fieldToUpdate === 'address'" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
+            <div class="bg-white p-5 rounded-lg shadow-lg max-w-md w-full">
+                <h3 class="text-lg font-bold mb-3">Edit Address</h3>
+
+                <div class="mb-4">
+                    <label for="orgAddressLine" class="block text-sm font-medium text-gray-700">Address Line</label>
+                    <input v-model="orgAddressLine" type="text" id="orgAddressLine" class="w-full p-2 border border-gray-300 rounded">
+                </div>
+                
+                <div class="mb-4">
+                    <label for="city" class="block text-sm font-medium text-gray-700">City</label>
+                    <input v-model="city" type="text" id="city" class="w-full p-2 border border-gray-300 rounded">
+                </div>
+                
+                <div class="mb-4">
+                    <label for="stateOrRegion" class="block text-sm font-medium text-gray-700">State or Region</label>
+                    <input v-model="stateOrRegion" type="text" id="stateOrRegion" class="w-full p-2 border border-gray-300 rounded">
+                </div>
+                
+                <div class="mb-4">
+                    <label for="postalCode" class="block text-sm font-medium text-gray-700">Postal Code</label>
+                    <input v-model="postalCode" type="text" id="postalCode" class="w-full p-2 border border-gray-300 rounded">
+                </div>
+                
+                <div class="mb-4">
+                    <label for="country" class="block text-sm font-medium text-gray-700">Country</label>
+                    <input v-model="country" type="text" id="country" class="w-full p-2 border border-gray-300 rounded">
+                </div>
+
+                
+                <div class="flex justify-end mt-4">
+                    <button @click="saveAddress" class="bg-blue-500 text-white py-2 px-4 rounded mr-2">Save</button>
+                    <button @click="closeModal" class="bg-gray-300 py-2 px-4 rounded">Close</button>
+                </div>
+            </div>
+        </div> -->
     </div>
 </template>
 
@@ -256,6 +302,7 @@ const fetchOrgProfileData = async () => {
     }
 };
 
+
 const fetchOrgAddress = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/address/${userId}`, {}, 'GET');
@@ -278,52 +325,33 @@ const fetchOrgAddress = async () => {
     }
 };
 
-const createAddress = async () => {
-    try {
-        const response = await auth.fetchProtectedApi("/api/address/", {
-            user_id: userId,
-            address_line_one: address_line_one.value,
-            address_line_two: address_line_two.value,
-            city: city.value,
-            state_or_region: state_or_region.value,
-            postal_code: postal_code.value,
-            country_id: country_id.value,
-        }, 'POST');
-        if (response.status) {
-            Swal.fire('Success', 'Address updated successfully', 'success');
-        } else {
-            Swal.fire('Error', 'Failed to update address', 'error');
-        }
-        closeAddressModal();
-        fetchOrgAddress();
-    } catch (error) {
-        console.error("Error updating address:", error);
-        Swal.fire('Error', 'Failed to update address', 'error');
-    }
-};
+// const updateOrgAddress = async () => {
+//     try {
+//         const response = await auth.fetchProtectedApi(`/api/organisation-address/${userId}`, {
+//             address_line: orgAddressLine.value,
+//             city: city.value,
+//             state_or_region: stateOrRegion.value,
+//             postal_code: postalCode.value,
+//             country_id: country.value
+//         }, 'PUT');
+//         if (response.status) {
+//             Swal.fire('Success', 'Address updated successfully', 'success');
+//         } else {
+//             Swal.fire('Error', 'Failed to update address', 'error');
+//         }
+//     } catch (error) {
+//         console.error("Error updating address:", error);
+//         Swal.fire('Error', 'Failed to update address', 'error');
+//     }
+// };
 
-const updateAddress = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/address/${userId}`, {
-            address_line_one: address_line_one.value,
-            address_line_two: address_line_two.value,
-            city: city.value,
-            state_or_region: state_or_region.value,
-            postal_code: postal_code.value,
-            country_id: country_id.value,
-        }, 'PUT');
-        if (response.status) {
-            Swal.fire('Success', 'Address updated successfully', 'success');
-        } else {
-            Swal.fire('Error', 'Failed to update address', 'error');
-        }
-        closeAddressModal();
-        fetchOrgAddress();
-    } catch (error) {
-        console.error("Error updating address:", error);
-        Swal.fire('Error', 'Failed to update address', 'error');
-    }
-};
+// // Modal logic
+
+// const saveAddress = () => {
+//     updateOrgAddress();
+//     closeModal();
+// };
+
 
 
 const handleImageUpload = (event) => {
@@ -363,11 +391,23 @@ const saveModal = () => {
 };
 
 
-const openAddressModal = () => {
-    if (address_user_id) {
+const openAddressModal = (user_id = null) => {
+  if (user_id) {
     isEditMode.value = true;
+    address_line_one.value = address_line_one;
+    address_line_two.value = address_line_two;
+    city.value = city;
+    state_or_region.value = state_or_region;
+    postal_code.value = postal_code;
+    country_id.value = country_id;
   } else {
     isEditMode.value = false;
+    address_line_one.value = '';
+    address_line_two.value = '';
+    city.value = '';
+    state_or_region.value = '';
+    postal_code.value = '';
+    country_id.value = '';
   }
   modalVisibleAddress.value = true;
 };
