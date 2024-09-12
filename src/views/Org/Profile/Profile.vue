@@ -152,7 +152,7 @@
         <div class="space-y-4">
             <h3 class="text-lg font-bold mb-2">Mobile number</h3>
 
-            <p>{{ dialing_code_id }},{{ phone_number }}, {{ phone_type }}, {{ status }}
+            <p>{{ dialing_code_id }},{{ phone_number }}, {{ phone_type }}, {{ statusPhone }}
                 <button @click="openPhoneModal()" class="text-blue-500">Edit</button>
             </p>
         </div>
@@ -193,11 +193,11 @@
 
 
                 <div class="mb-4">
-                    <label for="status" class="block text-sm font-medium text-gray-700">status (boolean)</label>
-                    <input v-model="status" type="boolean" id="status"
+                    <label for="statusPhone" class="block text-sm font-medium text-gray-700">statusPhone (boolean)</label>
+                    <input v-model="statusPhone" type="boolean" id="statusPhone"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                    <p v-if="auth.errors?.status" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.status[0] }}</p>
+                    <p v-if="auth.errors?.statusPhone" class="text-red-500 text-sm mt-1">{{
+                auth.errors?.statusPhone[0] }}</p>
                 </div>
 
 
@@ -348,7 +348,7 @@ const isEditMode = ref('');
 const dialing_code_id = ref('');
 const phone_number = ref('');
 const phone_type = ref('');
-// const status = ref(''); //defined in address
+const statusPhone = ref(''); //status defined in address
 const modalVisiblePhone = ref(false);
 const isEditModePhone = ref(false);
 
@@ -523,7 +523,7 @@ const fetchOrgPhoneNumber = async () => {
             dialing_code_id.value = response.data.dialing_code_id || '';
             phone_number.value = response.data.phone_number || '';
             phone_type.value = response.data.phone_type || '';
-            status.value = response.data.status || '';
+            statusPhone.value = response.data.status || '';
         } else {
             Swal.fire('Error', 'Failed to fetch organization Phone Number', 'error');
         }
@@ -539,7 +539,7 @@ const updateOrgPhoneNumber = async () => {
             dialing_code_id: dialing_code_id.value,
             phone_number: phone_number.value,
             phone_type: phone_type.value,
-            status: status.value,
+            status: statusPhone.value,
         }, 'PUT');
         if (response.status) {
             Swal.fire('Success', 'Phone Number updated successfully', 'success');
