@@ -45,7 +45,7 @@ onMounted(fetchMemberList);
           <div class="col-md-3 col-6">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">Connected organisation</h5>
+                <h5 class="card-title">Connected organisations</h5>
                 <p class="card-text"> <strong>3</strong></p>
                 <a href="#" class="btn btn-primary">See all</a>
               </div>

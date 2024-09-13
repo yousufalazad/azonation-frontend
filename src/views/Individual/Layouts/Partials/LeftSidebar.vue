@@ -11,23 +11,21 @@ const userType = computed(() => auth.user?.type);
 <template>
   <section v-if="auth.isAuthenticated && userType == 'individual'">
     <div class="left-sidebar-content mt-4">
-      <router-link to="/org-dashboard/dashboard-initial-content" class="menu-item">Individual Dashboard</router-link>
+      <router-link to="/org-dashboard/dashboard-initial-content" class="menu-item">Dashboard</router-link>
       <br><br>
       
-      <router-link to="/individual-dashboard/connected-organisation" class="menu-item">Connected
-        Organization</router-link><br>
+      <router-link to="/individual-dashboard/connected-organisation" class="menu-item">Organisations</router-link><br>
       <br>
-      <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Upcoming
-        Event</router-link><br>
-      <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Past Event</router-link><br>
-      <br>
-      <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Your
+      <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">
+        Events</router-link><br><br>
+      
+      <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">
         Attendance</router-link><br><br>
-      <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Your
-        Positions</router-link><br>
+      <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">
+        Designations</router-link><br>
       <br>
-      <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Profile</router-link><br><br>
-      <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Settings</router-link><br>
+      <!-- <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Profile</router-link><br><br>
+      <router-link to="/individual-dashboard/individual-profile-update" class="menu-item">Settings</router-link><br> will place in top right dropdown-->
       <br><br><br><br>
     </div>
   </section>
