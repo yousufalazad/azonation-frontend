@@ -4,16 +4,9 @@
     <aside :class="{ 'w-64': isSidebarExpanded, 'w-20': !isSidebarExpanded }"
       class="transition-width duration-200 bg-white shadow">
       <div class="h-full flex flex-col">
-
         <!-- Sidebar Menu -->
         <nav class="flex-1 px-2 py-4 space-y-2">
-
           <!-- Static Links -->
-          <router-link to="/org-dashboard/dashboard-initial-content"
-            class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
-            <span v-if="isSidebarExpanded">Dashboard</span>
-            <span v-else class="hidden">Dashboard</span>
-          </router-link>
           <router-link to="/org-dashboard/member-list"
             class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Members</span>
@@ -52,10 +45,11 @@
             <span v-else class="hidden">Accounts</span>
           </router-link>
 
-          <!-- Reports Section -->
+
+          <!-- reports Section -->
           <div>
             <button @click="toggleSection('reports')"
-              class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
+              class="w-full text-left p-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
               <span v-if="isSidebarExpanded">Reports</span>
               <svg v-if="isSectionOpen('reports')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                 viewBox="0 0 24 24" stroke="currentColor">
@@ -66,20 +60,18 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
               </svg>
             </button>
-            <div v-if="isSectionOpen('reports') && isSidebarExpanded" class="space-y-1">
-              <router-link to="/dashboard/reports/project1"
-                class="block px-4 text-gray-500 py-2 hover:text-gray-900">Report 1</router-link>
-              <router-link to="/dashboard/reports/project2"
-                class="block px-4 text-gray-500 py-2 hover:text-gray-900">Report 2</router-link>
+            <div v-if="isSectionOpen('reports') && isSidebarExpanded" class="pl-4 space-y-1">
+              <router-link to="/dashboard/reports/project1" class="block text-gray-500 py-1 hover:text-gray-900">Profile
+                1</router-link>
+              <router-link to="/dashboard/reports/project2" class="block text-gray-500 py-1 hover:text-gray-900">Profile
+                2</router-link>
             </div>
           </div>
 
-         
-
-          <!-- Profile Section -->
+          <!-- profile Section -->
           <div>
             <button @click="toggleSection('profile')"
-              class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
+              class="w-full text-left p-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
               <span v-if="isSidebarExpanded">Profile</span>
               <svg v-if="isSectionOpen('profile')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                 viewBox="0 0 24 24" stroke="currentColor">
@@ -90,23 +82,19 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
               </svg>
             </button>
-            <div v-if="isSectionOpen('profile') && isSidebarExpanded" class="space-y-1">
-              <router-link to="/org-dashboard/profile" class="block px-4 text-gray-500 py-2 hover:text-gray-900">My
-                Profile</router-link>
-              <router-link to="/org-dashboard/profile"
-                class="block px-4 text-gray-500 py-2 hover:text-gray-900">History</router-link>
-              <router-link to="/org-dashboard/profile"
-                class="block px-4 text-gray-500 py-2 hover:text-gray-900">Strategic Plan</router-link>
+            <div v-if="isSectionOpen('profile') && isSidebarExpanded" class="pl-4 space-y-1">
+              <router-link to="/dashboard/profile/engineering"
+                class="block text-gray-500 py-1 hover:text-gray-900">Engineering</router-link>
+              <router-link to="/dashboard/profile/hr" class="block text-gray-500 py-1 hover:text-gray-900">Human
+                Resources</router-link>
+              <router-link to="/dashboard/profile/customer-success"
+                class="block text-gray-500 py-1 hover:text-gray-900">Customer Success</router-link>
             </div>
           </div>
-
-          <router-link to="/org-dashboard/profile" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
-            <span v-if="isSidebarExpanded">Settings</span>
-            <span v-else class="hidden">Settings</span>
-          </router-link>
         </nav>
       </div>
     </aside>
+
     <!-- Main content -->
     <main class="flex-1 overflow-y-auto">
       <div class="py-6">
