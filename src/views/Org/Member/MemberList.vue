@@ -25,36 +25,36 @@ onMounted(fetchMemberList);
 </script>
 
 <template>
-  <div class="org-member-list">
-    <h2>Member List</h2>
+  <div class="p-4">
+    <h2 class="text-2xl font-semibold mb-4">Member List</h2>
     <div v-if="memberList.length">
-      <table class="table table-striped">
-        <thead>
+      <table class="min-w-full table-auto border-collapse border border-gray-300">
+        <thead class="bg-gray-100">
           <tr>
-            <th scope="col">Sl</th>
-            <th scope="col">ID Number</th>
-            <th scope="col">Photo</th>
-            <th scope="col">Name</th>
-            <th scope="col">Email</th>
-            <th scope="col">Azon ID</th>
-            <th scope="col">Individual ID</th>
-            <th scope="col">Joining Date</th>
-            <th scope="col">Membership Type</th>
-            <th scope="col">End Date</th>
+            <th class="border px-4 py-2">Sl</th>
+            <th class="border px-4 py-2">ID Number</th>
+            <th class="border px-4 py-2">Photo</th>
+            <th class="border px-4 py-2">Name</th>
+            <th class="border px-4 py-2">Email</th>
+            <th class="border px-4 py-2">Azon ID</th>
+            <th class="border px-4 py-2">Individual ID</th>
+            <th class="border px-4 py-2">Joining Date</th>
+            <th class="border px-4 py-2">Membership Type</th>
+            <th class="border px-4 py-2">End Date</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="member in memberList" :key="member.id">
-            <td>{{ member.id }}</td>
-            <td>{{ member.existing_org_membership_id }}</td>
-            <td>{{ member.individual.image }}</td>
-            <td>{{ member.individual.name }}</td>
-            <td>{{ member.individual.email }}</td>
-            <td>{{ member.individual.azon_id }}</td>
-            <td>{{ member.individual.id }}</td>
-            <td>{{ member.joining_date }}</td>
-            <td>{{ member.membership_type }}</td>
-            <td>{{ member.end_date }}</td>
+          <tr v-for="member in memberList" :key="member.id" class="hover:bg-gray-50">
+            <td class="border px-4 py-2">{{ member.id }}</td>
+            <td class="border px-4 py-2">{{ member.existing_org_membership_id }}</td>
+            <td class="border px-4 py-2">{{ member.individual.image }}</td>
+            <td class="border px-4 py-2">{{ member.individual.name }}</td>
+            <td class="border px-4 py-2">{{ member.individual.email }}</td>
+            <td class="border px-4 py-2">{{ member.individual.azon_id }}</td>
+            <td class="border px-4 py-2">{{ member.individual.id }}</td>
+            <td class="border px-4 py-2">{{ member.joining_date }}</td>
+            <td class="border px-4 py-2">{{ member.membership_type }}</td>
+            <td class="border px-4 py-2">{{ member.end_date }}</td>
           </tr>
         </tbody>
       </table>

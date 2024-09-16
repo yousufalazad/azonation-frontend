@@ -2,7 +2,7 @@
 
 /* default css */
 
-* {
+/* * {
     margin: 0px;
     padding: 0px;
     outline: 0px;
@@ -29,10 +29,16 @@
   row {
     padding: 0px;
     margin: 0px;
-  }
+  } */
 
 /* Custom CSS */
 
-.navbar-width{
+/* .navbar-width{
     --bs-navbar-padding-y: 1.5rem !important;
+} */
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
 }

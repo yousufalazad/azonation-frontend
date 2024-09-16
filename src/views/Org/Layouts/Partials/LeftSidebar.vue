@@ -2,8 +2,9 @@
   <div class="h-screen flex overflow-hidden bg-gray-100">
     <!-- Sidebar -->
     <aside :class="{ 'w-64': isSidebarExpanded, 'w-20': !isSidebarExpanded }"
-      class="transition-width duration-200 bg-white shadow">
+      class="transition-width duration-200 bg-white shadow h-screen overflow-y-auto">
       <div class="h-full flex flex-col">
+
 
         <!-- Sidebar Menu -->
         <nav class="flex-1 px-2 py-4 space-y-2">
@@ -74,8 +75,6 @@
             </div>
           </div>
 
-         
-
           <!-- Profile Section -->
           <div>
             <button @click="toggleSection('profile')"
@@ -104,9 +103,14 @@
             <span v-if="isSidebarExpanded">Settings</span>
             <span v-else class="hidden">Settings</span>
           </router-link>
+          
+
+          
         </nav>
       </div>
     </aside>
+
+
     <!-- Main content -->
     <main class="flex-1 overflow-y-auto">
       <div class="py-6">
@@ -115,6 +119,7 @@
         </div>
       </div>
     </main>
+
   </div>
 </template>
 

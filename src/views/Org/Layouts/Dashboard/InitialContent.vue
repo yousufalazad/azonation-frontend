@@ -1,7 +1,7 @@
 <!-- OrgDashboard.vue -->
 
 <script setup>
-  import { ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { authStore } from '../../../../store/authStore';
 
 const auth = authStore;
@@ -34,91 +34,78 @@ const fetchMemberList = async () => {
   }
 };
 
-onMounted(totalOrgMemberCount)
+onMounted(totalOrgMemberCount);
 onMounted(fetchMemberList);
 </script>
 
 <template>
- <div class="content-area mt-4">
-      <div v-if="auth.isAuthenticated && auth.user?.type == 'organisation'">
-        <div class="row">
-          <div class="col-md-3 col-6">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">Members</h5>
-                <p class="card-text"> <strong>{{ totalOrgMember }}</strong></p>
-                <a href="#" class="btn btn-primary">See all</a>
-              </div>
-            </div>
-          </div>
-          
-          <div class="col-md-3 col-6">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">Meetings</h5>
-                <p class="card-text"><strong>{{ totalOrgMember }}</strong></p>
-                <a href="#" class="btn btn-primary">See all</a>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3 col-6">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">Events</h5>
-                <p class="card-text"><strong>{{ totalOrgMember }}</strong></p>
-                <a href="#" class="btn btn-primary">See all</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-3 col-6">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">New Member</h5>
-                <p class="card-text"><strong>{{ totalOrgMember }}</strong></p>
-                <a href="#" class="btn btn-primary">This month</a>
-              </div>
-            </div>
-          </div>
+  <div class="mt-4 p-4">
+    <div v-if="auth.isAuthenticated && auth.user?.type == 'organisation'">
+      <!-- First Row for Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white shadow rounded-lg p-6">
+          <h5 class="text-lg font-semibold">Members</h5>
+          <p class="text-2xl font-bold">{{ totalOrgMember }}</p>
+          <a href="#" class="text-blue-500 hover:underline">See all</a>
         </div>
-        <br>
-        <br>
-        <div class="row">
-          <div class="col-md-12">
-            <h5>Member List</h5>
-            <div v-if="memberList.length">
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th scope="col">Sl</th>
-                    <th scope="col">Photo</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">ID Number</th>
-                    <th scope="col">Membership Type</th>
-                    <th scope="col">Joining Date</th>
-                    <th scope="col">Note</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="  member   in   memberList  " :key="member.id">
-                    <td>{{ member.id }}</td>
-                    <td>{{ member.existing_org_membership_id }}</td>
-                    <td>{{ member.individual.name }}</td>
-                    <td>{{ member.individual.email }}</td>
-                    <td>{{ member.existing_org_membership_id }}</td>
-                    <td>{{ member.membership_type }}</td>
-                    <td>{{ member.joining_date }}</td>
-                    <td>{{ member.note }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div v-else>
-              <p>No members found</p>
-            </div>
-          </div>
+
+        <div class="bg-white shadow rounded-lg p-6">
+          <h5 class="text-lg font-semibold">Meetings</h5>
+          <p class="text-2xl font-bold">{{ totalOrgMember }}</p>
+          <a href="#" class="text-blue-500 hover:underline">See all</a>
+        </div>
+
+        <div class="bg-white shadow rounded-lg p-6">
+          <h5 class="text-lg font-semibold">Events</h5>
+          <p class="text-2xl font-bold">{{ totalOrgMember }}</p>
+          <a href="#" class="text-blue-500 hover:underline">See all</a>
+        </div>
+
+        <div class="bg-white shadow rounded-lg p-6">
+          <h5 class="text-lg font-semibold">New Member</h5>
+          <p class="text-2xl font-bold">{{ totalOrgMember }}</p>
+          <a href="#" class="text-blue-500 hover:underline">This month</a>
+        </div>
+      </div>
+
+      <!-- Spacing -->
+      <div class="my-8"></div>
+
+      <!-- Member List Table -->
+      <div>
+        <h5 class="text-lg font-semibold mb-4">Member List</h5>
+        <div v-if="memberList.length">
+          <table class="min-w-full table-auto border-collapse border border-gray-200">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="border px-4 py-2">Sl</th>
+                <th class="border px-4 py-2">Photo</th>
+                <th class="border px-4 py-2">Name</th>
+                <th class="border px-4 py-2">Email</th>
+                <th class="border px-4 py-2">ID Number</th>
+                <th class="border px-4 py-2">Membership Type</th>
+                <th class="border px-4 py-2">Joining Date</th>
+                <th class="border px-4 py-2">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="member in memberList" :key="member.id" class="hover:bg-gray-50">
+                <td class="border px-4 py-2">{{ member.id }}</td>
+                <td class="border px-4 py-2">{{ member.existing_org_membership_id }}</td>
+                <td class="border px-4 py-2">{{ member.individual.name }}</td>
+                <td class="border px-4 py-2">{{ member.individual.email }}</td>
+                <td class="border px-4 py-2">{{ member.existing_org_membership_id }}</td>
+                <td class="border px-4 py-2">{{ member.membership_type }}</td>
+                <td class="border px-4 py-2">{{ member.joining_date }}</td>
+                <td class="border px-4 py-2">{{ member.note }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-else>
+          <p>No members found</p>
         </div>
       </div>
     </div>
+  </div>
 </template>

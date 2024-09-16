@@ -6,11 +6,11 @@ import LeftSidebar from '../../../Org/Layouts/Partials/LeftSidebar.vue';
 
 </script>
 <template>
-  <div class="row">
-    <div class="col-md-12 top-header">
+  <div>
+    <div>
       <Header></Header>
     </div>
-    <div class="col-md-12 left-sidebar border-right">
+    <div>
       <LeftSidebar></LeftSidebar>
     </div>
   </div>
@@ -18,24 +18,5 @@ import LeftSidebar from '../../../Org/Layouts/Partials/LeftSidebar.vue';
 </template>
 
 <style scoped>
-.row {
-  margin: 0;
-}
 
-.top-header {
-  height: 65px;
-  /* Adjust the height of the top header as needed */
-  border-bottom: 0.01em solid;
-  border-color: whitesmoke;
-}
-
-.left-sidebar {
-  top: 80px;
-  bottom: 0;
-  /* overflow-y: auto; */
-  height: calc(100vh);
-  /* border-right: 0.01em solid; */
-  border-right: 0.01em solid;
-  border-color: whitesmoke;
-}
 </style>
