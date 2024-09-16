@@ -1,7 +1,7 @@
 <template>
     <div class="fixed-top">
       <header
-        class="bg-white shadow-md p-2.5 flex items-center justify-between"
+        class="bg-white shadow-md p-4 flex items-center justify-between"
         v-if="auth.isAuthenticated && userType == 'organisation'"
       >
         <div class="flex items-center">
@@ -78,7 +78,7 @@
                 alt="Profile"
                 class="w-10 h-10 rounded-full object-cover"
               />
-              <!-- <span class="text-gray-800 font-medium">{{ userName }}</span> -->
+              <span class="text-gray-800 font-medium">{{ userName }}</span>
             </button>
   
             <!-- Profile Dropdown -->
@@ -101,43 +101,66 @@
                   </div>
                 </div>
               </div>
-              <!-- Menu Links -->
+              <!-- Menu Links with Icons -->
               <ul class="py-2">
                 <li>
-                  <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                  <a href="#" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M18 8a6 6 0 11-12 0 6 6 0 0112 0z" />
+                      <path fill-rule="evenodd" d="M12 14a6 6 0 00-4 0v2a6 6 0 008 0v-2a6 6 0 00-4 0z" clip-rule="evenodd" />
+                    </svg>
                     Profile
                   </a>
                 </li>
                 <li>
-                  <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
-                    Account details
+                  <a href="#" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4 10a6 6 0 1112 0A6 6 0 014 10z" clip-rule="evenodd" />
+                    </svg>
+                    Account Details
                   </a>
                 </li>
                 <li>
-                  <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                  <a href="#" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M17 9V5a2 2 0 00-2-2H5a2 2 0 00-2 2v4M3 13a2 2 0 012-2h10a2 2 0 012 2v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4z" />
+                    </svg>
                     Billing
                   </a>
                 </li>
                 <li>
-                  <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                  <a href="#" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M7 4v1h6V4a1 1 0 10-2 0v3h-2V4a1 1 0 10-2 0v1zM5 12h10v2a1 1 0 01-1 1H6a1 1 0 01-1-1v-2z" />
+                    </svg>
                     Subscription
                   </a>
                 </li>
                 <li>
-                  <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                  <a href="#" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M2 6a2 2 0 012-2h4v2H4v8h4v2H4a2 2 0 01-2-2V6z" />
+                      <path d="M9 2h2v2h-2V2zm3 0h2v2h-2V2zm3 0h2v2h-2V2z" />
+                    </svg>
                     Customization
                   </a>
                 </li>
                 <li>
-                  <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
-                    Invite friends
+                  <a href="#" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M4.93 4.93a1 1 0 010 1.41l-1.414 1.415a1 1 0 01-1.415-1.414L3.514 4.93a1 1 0 011.415 0zm14.849-.849a2 2 0 00-2.828 0l-7.071 7.071a1 1 0 00-.293.707v2.828a1 1 0 001 1h2.828a1 1 0 00.707-.293l7.071-7.071a2 2 0 000-2.828z" />
+                    </svg>
+                    Invite Friends
                   </a>
                 </li>
                 <li class="border-t">
                   <button
                     @click="auth.logout()"
-                    class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    class="flex items-center w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
                   >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M5 9V5a2 2 0 012-2h6a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2v-4H4v4a3 3 0 003 3h6a3 3 0 003-3V5a3 3 0 00-3-3H7a3 3 0 00-3 3v4h1zm3 4.293l3-3a1 1 0 00-1.414-1.414l-1.586 1.586V7a1 1 0 10-2 0v3.465l-1.586-1.586A1 1 0 104.707 10.707l3 3a1 1 0 001.414 0z" clip-rule="evenodd" />
+                    </svg>
                     Logout
                   </button>
                 </li>
