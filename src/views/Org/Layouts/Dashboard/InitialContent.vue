@@ -75,7 +75,7 @@ onMounted(fetchMemberList);
       <div>
         <div class="flex justify-between mb-4 left-color-shade">
           <div>
-            <h5 class="text-md font-semibold mt-1">Members list</h5>
+            <h5 class="text-md font-semibold mt-1">Member list</h5>
           </div>
           <a href="/org-dashboard/add-member">
             <button class="text-md text-white font-semibold bg-blue-600 p-1 rounded">
