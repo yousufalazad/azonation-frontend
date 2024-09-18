@@ -1,7 +1,6 @@
 <template>
   <header class="sticky top-0 z-50 flex items-center justify-between bg-white shadow  py-3 px-6"
     v-if="auth.isAuthenticated && userType == 'organisation'">
-    <!-- sticky top-0 z-50  -->
     <div>
       <!-- Organization/Brand Name -->
       <a href="/org-dashboard/dashboard-initial-content" class="text-xl font-semibold text-gray-600">
@@ -13,7 +12,7 @@
     <div class="flex items-center space-x-4">
       <!-- Notifications -->
       <div class="relative">
-        <button @click="toggleNotificationDropdown" class="relative text-gray-600">
+        <button @click="toggleNotificationDropdown" class="relative text-gray-600" ref="notificationButton">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell"
             viewBox="0 0 16 16">
             <path
@@ -23,9 +22,10 @@
             class="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{{
               unreadCount }}</span>
         </button>
- 
+
         <!-- Notifications Dropdown -->
-        <div v-if="isNotificationDropdownOpen" class="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg">
+        <div v-if="isNotificationDropdownOpen" class="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg"
+          ref="notificationMenu">
           <div class="flex justify-between p-2 border-b">
             <h3 class="text-sm font-medium">Notifications</h3>
             <button v-if="unreadCount > 0" @click="markAllAsRead" class="text-blue-500 text-xs">
@@ -44,19 +44,17 @@
         </div>
       </div>
 
-      <!-- Profile Dropdown -->
+      <!-- Profile -->
       <div class="relative">
-        <button @click="toggleProfileDropdown" class="flex items-center space-x-2">
-          <!-- Profile Image -->
-          <!-- <img src="https://via.placeholder.com/40" alt="Profile" class="w-10 h-10 rounded-full object-cover" /> -->
+        <button @click="toggleProfileDropdown" ref="profileButton" class="flex items-center space-x-2">
           <div v-if="logoPath">
             <img :src="`${baseURL}${logoPath}`" alt="Org Logo" class="w-10 h-10 rounded-full object-covers">
           </div>
         </button>
 
-
         <!-- Profile Dropdown -->
-        <div v-if="isProfileDropdownOpen" class="absolute right-0 mt-2 w-64 bg-white shadow rounded-lg">
+        <div v-if="isProfileDropdownOpen" class="absolute right-0 mt-2 w-64 bg-white shadow rounded-lg"
+          ref="dropdownMenu">
           <div class="p-4 border-b">
             <!-- Profile info -->
             <div class="flex items-left space-x-2">
@@ -66,10 +64,9 @@
           </div>
 
           <div class="p-4 border-b">
-            <!-- Profile info -->
             <div class="flex items-center space-x-2">
-              <div class="break-words w-full"> <!-- Added w-full to ensure it takes full width -->
-                <h4 class="text-gray-700 break-words">{{ userEmail }}</h4> <!-- Email will wrap here -->
+              <div class="break-words w-full">
+                <h4 class="text-gray-700 break-words">{{ userEmail }}</h4>
                 <p class="text-gray-500 text-xs">Joined {{ createdAtDate }}</p>
               </div>
             </div>
@@ -77,32 +74,18 @@
 
           <!-- Menu Links -->
           <ul class="py-2">
-
-            <li>
-              <a href="/org-dashboard/my-account" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
-                My account
-              </a>
+            <li><a href="/org-dashboard/my-account" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">My
+                account</a>
             </li>
-            <li>
-              <a href="/org-dashboard/settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
-                Settings
-              </a>
+            <li><a href="/org-dashboard/settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
             </li>
-            <li>
-              <a href="/org-dashboard/subscription" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
-                Subscriptions
-              </a>
+            <li><a href="/org-dashboard/subscription"
+                class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Subscriptions</a></li>
+            <li><a href="#/org-dashboard/billing" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Billing</a>
             </li>
-            <li>
-              <a href="#/org-dashboard/billing" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
-                Billing
-              </a>
-            </li>
-            <li>
-              <a href="/org-dashboard/invite-friends" class="block px-4 py-2 mb-3 text-gray-700 hover:bg-gray-100">
-                Invite friends
-              </a>
-            </li>
+            <li><a href="/org-dashboard/invite-friends"
+                class="block px-4 py-2 mb-3 text-gray-700 hover:bg-gray-100">Invite
+                friends</a></li>
             <li class="border-t">
               <button @click="auth.logout()"
                 class="w-full text-left px-4 py-2 mt-1 text-blue-600 hover:bg-gray-100 font-semibold">
@@ -117,7 +100,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { authStore } from "../../../../store/authStore";
 
 const auth = authStore;
@@ -126,36 +109,67 @@ const baseURL = 'http://localhost:8000';
 const userName = computed(() => auth.user?.name);
 const userType = computed(() => auth.user?.type);
 const userEmail = computed(() => auth.user?.email);
-// const userHandle = computed(() => auth.user?.handle || 'username'); for Username (need a field in DB)
-import dayjs from 'dayjs'; // Import dayjs for date formatting
-// Format created_at date using dayjs
+import dayjs from 'dayjs';
 const createdAtDate = computed(() => {
   const createdAt = auth.user?.created_at;
   return createdAt && dayjs(createdAt).isValid() ? dayjs(createdAt).format('MMMM, YYYY') : 'Invalid date';
 });
 
-
-
-
 // Org logo
 const logoPath = ref('');
 
 const notifications = ref([]);
-const unreadCount = computed(() => {
-  const unreadNotifications = notifications.value.filter(notification => notification.read_at === null);
-  return unreadNotifications.length;
-});
+const unreadCount = computed(() => notifications.value.filter(notification => notification.read_at === null).length);
 
 const isNotificationDropdownOpen = ref(false);
-const isProfileDropdownOpen = ref(false);
-
 const toggleNotificationDropdown = () => {
   isNotificationDropdownOpen.value = !isNotificationDropdownOpen.value;
 };
 
+const isProfileDropdownOpen = ref(false);
 const toggleProfileDropdown = () => {
   isProfileDropdownOpen.value = !isProfileDropdownOpen.value;
 };
+
+// Close dropdown when clicked outside
+const handleClickOutside = (event) => {
+  const dropdown = dropdownMenu.value;
+  const button = profileButton.value;
+
+  if (dropdown && !dropdown.contains(event.target) && button && !button.contains(event.target)) {
+    isProfileDropdownOpen.value = false;
+  }
+};
+
+const notificationHandleClickOutside = (event) => {
+  const dropdown = notificationMenu.value;
+  const button = notificationButton.value;
+
+  if (dropdown && !dropdown.contains(event.target) && button && !button.contains(event.target)) {
+    isNotificationDropdownOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('mousedown', handleClickOutside);
+  document.addEventListener('mousedown', notificationHandleClickOutside);
+  getNotifications();
+  fetchLogo();
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', handleClickOutside);
+  document.removeEventListener('mousedown', notificationHandleClickOutside);
+});
+
+const dropdownMenu = ref(null);
+const profileButton = ref(null);
+
+const notificationMenu = ref(null);
+const notificationButton = ref(null);
+// Close dropdown when clicked outside end
+
+
 
 const getNotifications = async () => {
   try {
@@ -206,13 +220,6 @@ const fetchLogo = async () => {
   }
 };
 
-onMounted(() => {
-  getNotifications();
-  fetchLogo();
-  console.log("User Created At:", auth.user?.created_at); // Log created_at value
-  console.log("Auth User Object:", auth.user); // Log the entire user object
-
-});
 </script>
 
 <style scoped></style>
