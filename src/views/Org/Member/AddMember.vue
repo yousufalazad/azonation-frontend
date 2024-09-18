@@ -66,23 +66,23 @@ const addMember = async (individualTypeUserId) => {
 </script>
 
 <template>
-  <div class="add-member container">
-    <h2 class="mb-4 text-center">Search and Add Member</h2>
+  <div class="add-member container mx-auto p-6">
+    <h2 class="mb-4 text-center text-2xl font-semibold">Search and Add Member</h2>
     <div class="input-group-container">
-      <div class="input-group mb-3">
-        <input type="text" class="form-control" v-model="searchQuery" placeholder="Search by Email, User ID, Azon ID, or Full Name" @input="searchIndividuals">
-        <button class="btn btn-outline-secondary" type="button" @click="searchIndividuals">Search</button>
+      <div class="flex mb-3">
+        <input type="text" class="form-control flex-1 px-3 py-2 border border-gray-300 rounded-l-md" v-model="searchQuery" placeholder="Search by Email, User ID, Azon ID, or Full Name" @input="searchIndividuals">
+        <button class="bg-gray-200 hover:bg-gray-300 px-4 py-2 border border-gray-300 rounded-r-md" type="button" @click="searchIndividuals">Search</button>
       </div>
       <div v-if="searchResults.length" class="results-container">
-        <ul class="list-group">
-          <li v-for="individualUser in searchResults" :key="individualUser.id" class="list-group-item d-flex justify-content-between align-items-center">
+        <ul class="list-none">
+          <li v-for="individualUser in searchResults" :key="individualUser.id" class="flex justify-between items-center py-2 border-b">
             {{ individualUser.name }} ({{ individualUser.azon_id }}, {{ individualUser.email }})
-            <button class="btn btn-sm btn-primary px-4" @click="addMember(individualUser.id)">Add</button>
+            <button class="bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-4 rounded" @click="addMember(individualUser.id)">Add</button>
           </li>
         </ul>
       </div>
       <div v-else>
-        <p>No results found</p>
+        <p class="text-center text-gray-600">No results found</p>
       </div>
     </div>
   </div>
@@ -101,18 +101,5 @@ const addMember = async (individualTypeUserId) => {
 .results-container {
   width: 100%;
 }
-
-.input-group {
-  width: 100%;
-}
-
-.list-group-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.list-group-item button {
-  margin-left: 10px;
-}
 </style>
+

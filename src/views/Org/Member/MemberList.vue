@@ -26,10 +26,19 @@ onMounted(fetchMemberList);
 
 <template>
   <div class="p-4">
-    <h2 class="text-2xl font-semibold mb-4">Member List</h2>
-    <div v-if="memberList.length">
+    <div class="flex justify-between mb-4 left-color-shade">
+      <div>
+        <h5 class="text-md font-semibold mt-1">Members list</h5>
+      </div>
+      <a href="/org-dashboard/add-member">
+        <button class="text-md text-white font-semibold bg-blue-600 p-1 rounded">
+          + Add member
+        </button>
+      </a>
+    </div>
+    <div v-if="memberList.length" class="bg-white">
       <table class="min-w-full table-auto border-collapse border border-gray-300">
-        <thead class="bg-gray-100">
+        <thead>
           <tr>
             <th class="border px-4 py-2">Sl</th>
             <th class="border px-4 py-2">ID Number</th>
