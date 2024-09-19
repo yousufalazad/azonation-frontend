@@ -9,12 +9,14 @@ const searchQuery = ref('');
 const searchResults = ref([]);
 const selectedIndividual = ref(null);
 const orgTypeUserId = auth.user.id; // Assuming the org ID is stored in the logged-in user
+const baseURL = 'http://localhost:8000';
 
 const searchIndividuals = async () => {
   try {
     const response = await auth.fetchPublicApi('/api/search_individual', { query: searchQuery.value }, 'POST');
     if (response.status) {
       searchResults.value = response.data;
+      console.log(response.data);
     } else {
       searchResults.value = [];
     }
@@ -66,40 +68,61 @@ const addMember = async (individualTypeUserId) => {
 </script>
 
 <template>
-  <div class="add-member container mx-auto p-6">
-    <h2 class="mb-4 text-center text-2xl font-semibold">Search and Add Member</h2>
-    <div class="input-group-container">
-      <div class="flex mb-3">
-        <input type="text" class="form-control flex-1 px-3 py-2 border border-gray-300 rounded-l-md" v-model="searchQuery" placeholder="Search by Email, User ID, Azon ID, or Full Name" @input="searchIndividuals">
-        <button class="bg-gray-200 hover:bg-gray-300 px-4 py-2 border border-gray-300 rounded-r-md" type="button" @click="searchIndividuals">Search</button>
-      </div>
-      <div v-if="searchResults.length" class="results-container">
-        <ul class="list-none">
-          <li v-for="individualUser in searchResults" :key="individualUser.id" class="flex justify-between items-center py-2 border-b">
-            {{ individualUser.name }} ({{ individualUser.azon_id }}, {{ individualUser.email }})
-            <button class="bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-4 rounded" @click="addMember(individualUser.id)">Add</button>
-          </li>
-        </ul>
-      </div>
-      <div v-else>
-        <p class="text-center text-gray-600">No results found</p>
-      </div>
+  <div class="add-member max-w-7xl mx-auto p-8">
+    <h2 class="mb-8 text-center text-2xl text-gray-500">Search & add member</h2>
+
+    <!-- Search Input -->
+    <div class="flex justify-center mb-6">
+      <input type="text"
+        class="form-input flex-1 max-w-lg px-4 py-2 rounded-l-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        v-model="searchQuery" placeholder="Search by name, email, mobile, username or Azon Id"
+        @input="searchIndividuals" />
+      <button class="bg-blue-500 text-white px-6 py-2 rounded-r-md hover:bg-blue-600 transition-all focus:outline-none"
+        @click="searchIndividuals">
+        Search
+      </button>
+    </div>
+
+    <!-- Search Results -->
+    <div v-if="searchResults.length" class="bg-white shadow-lg rounded-lg p-6">
+      <ul class="divide-y divide-gray-200">
+        <li v-for="individualUser in searchResults" :key="individualUser.id" class="flex items-center py-4">
+          <!-- Profile Image -->
+          <img :src="`${baseURL}/storage/${individualUser.image}`" alt="Profile picture"
+            class="w-20 h-20 rounded-full object-cover mr-4" />
+
+          <!-- User Details -->
+          <div class="flex-1">
+            <p class="font-medium text-lg text-gray-700">{{ individualUser.name }}</p>
+            <p class="text-sm text-gray-500">
+              {{ individualUser.city }}, {{ individualUser.country_name }}
+            </p>
+            <!-- <p class="text-sm text-gray-500">
+              {{ individualUser.email }} | {{ individualUser.dialing_code }}{{
+                individualUser.phone_number }}
+            </p> -->
+            <p class="text-sm text-gray-500">
+              Username: {{ individualUser.username }}
+            </p>
+            <p class="text-sm text-gray-500">
+              Azon Id: {{ individualUser.azon_id }}
+            </p>
+          </div>
+
+          <!-- Add Button -->
+          <button class="ml-4 bg-blue-500 hover:bg-green-600 text-white text-sm py-2 px-4 rounded focus:outline-none"
+            @click="addMember(individualUser.id)">
+            Add
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <!-- No Results Found -->
+    <div v-else>
+      <p class="text-center text-gray-500 mt-4"></p>
     </div>
   </div>
 </template>
 
-<style scoped>
-.add-member {
-  padding: 20px;
-}
-
-.input-group-container {
-  max-width: 600px;
-  margin: auto;
-}
-
-.results-container {
-  width: 100%;
-}
-</style>
-
+<style scoped></style>

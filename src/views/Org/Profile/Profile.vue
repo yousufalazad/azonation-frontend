@@ -220,37 +220,37 @@
 
     <!-- User name section -->
     <div class="space-y-4">
-        <h3 class="text-lg font-bold mb-2">User Name</h3>
+        <h3 class="text-lg font-bold mb-2">Name</h3>
 
-        <p>{{ UserName }}
-            <button @click="openUserNameModal()" class="text-blue-500">Edit</button>
+        <p>{{ name }}
+            <button @click="openNameModal()" class="text-blue-500">Edit</button>
         </p>
     </div>
 
     <!-- User name Modal -->
-    <div v-if="modalVisibleUserName" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div v-if="modalVisibleName" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
         <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
             <h2 class="text-2xl font-bold mb-4 text-center">
-                Edit User Name
+                Edit Name
             </h2>
 
             <div class="mb-4">
-                <label for="name" class="block text-sm font-medium text-gray-700">User name</label>
-                <input v-model="name" type="text" id="name"
+                <label for="newName" class="block text-sm font-medium text-gray-700">New Name</label>
+                <input v-model="newName" type="text" id="newName"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     required />
-                <p v-if="auth.errors?.name" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.name[0] }}</p>
+                <p v-if="auth.errors?.newName" class="text-red-500 text-sm mt-1">{{
+                auth.errors?.newName[0] }}</p>
             </div>
 
 
             <div class="flex justify-end">
                 <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
-                    @click="closeUserNameModal">
+                    @click="closeNameModal">
                     Close
                 </button>
 
-                <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" @click="updateUserName()">
+                <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" @click="updateName()">
                     Update
                 </button>
             </div>
@@ -307,7 +307,7 @@ import Swal from "sweetalert2";
 
 const auth = authStore;
 const userId = auth.user.id;
-const UserName = auth.user.name;
+const name = auth.user.name;
 const UserEmail = auth.user.email;
 const baseURL = 'http://localhost:8000';
 
@@ -353,9 +353,9 @@ const modalVisiblePhone = ref(false);
 const isEditModePhone = ref(false);
 
 
-// Org User Name Change
-const modalVisibleUserName = ref(false);
-const name = ref('');
+// Org Name Change
+const modalVisibleName = ref(false);
+const newName = ref('');
 
 // Org User Email Change
 const modalVisibleUserEmail= ref(false);
@@ -554,17 +554,17 @@ const updateOrgPhoneNumber = async () => {
     }
 };
 
-const updateUserName = async () => {
+const updateName = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/update-username/${userId}`, {
-            name: name.value,
+        const response = await auth.fetchProtectedApi(`/api/update-name/${userId}`, {
+            name: newName.value,
         }, 'PUT');
         if (response.status) {
             Swal.fire('Success', 'Name updated successfully', 'success');
         } else {
             Swal.fire('Error', 'Failed to update name', 'error');
         }
-        closeUserNameModal();
+        closeNameModal();
         //user information auto mount korte hob e
     } catch (error) {
         console.error("Error updating Phone Number:", error);
@@ -649,12 +649,12 @@ const closePhoneModal = () => {
     modalVisiblePhone.value = false;
 };
 
-const openUserNameModal = () => {
-    modalVisibleUserName.value = true;
+const openNameModal = () => {
+    modalVisibleName.value = true;
 };
 
-const closeUserNameModal = () => {
-    modalVisibleUserName.value = false;
+const closeNameModal = () => {
+    modalVisibleName.value = false;
 };
 
 //Email Address

@@ -73,7 +73,7 @@
           </div>
 
           <!-- Menu Links -->
-          <ul class="py-2">
+          <ul class="pt-2">
             <li><a href="/org-dashboard/my-account" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">My
                 account</a>
             </li>
@@ -88,10 +88,13 @@
                 friends</a></li>
             <li class="border-t">
               <button @click="auth.logout()"
-                class="w-full text-left px-4 py-2 mt-1 text-blue-600 hover:bg-gray-100 font-semibold">
+                class="w-full text-left px-4 py-2 text-blue-600 hover:bg-gray-100 font-semibold">
                 Logout
               </button>
             </li>
+            <li class="border-t"></li>
+            <li class="py-4 px-3.5"><img src="../../../../assets/Logo/Azonation.png" alt="" class="max-h-[50px] max-w-[100px]"></li>
+           
           </ul>
         </div>
       </div>
