@@ -69,7 +69,7 @@ const addMember = async (individualTypeUserId) => {
 
 <template>
   <div class="add-member max-w-7xl mx-auto p-8">
-    <h2 class="mb-8 text-center text-2xl text-gray-500">Search & add member</h2>
+    <h2 class="mb-8 text-center text-2xl text-gray-500">Search  &  add member</h2>
 
     <!-- Search Input -->
     <div class="flex justify-center mb-6">
@@ -110,7 +110,7 @@ const addMember = async (individualTypeUserId) => {
           </div>
 
           <!-- Add Button -->
-          <button class="ml-4 bg-blue-500 hover:bg-green-600 text-white text-sm py-2 px-4 rounded focus:outline-none"
+          <button class="ml-4 bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 px-4 rounded focus:outline-none"
             @click="addMember(individualUser.id)">
             Add
           </button>

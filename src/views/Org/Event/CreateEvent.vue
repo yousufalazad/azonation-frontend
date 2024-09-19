@@ -4,7 +4,7 @@ import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
 
 const auth = authStore;
-const orgId = auth.org.id; // Assuming the org ID is stored in the logged-in user
+const userId = auth.user.id; // Assuming the org ID is stored in the logged-in user
 const eventList = ref([]);
 
 const title = ref('');
@@ -27,7 +27,7 @@ const conduct_type = ref('');
 
 const createEvent= async () => {
   try {
-    await auth.createEvent(orgId, title.value, name.value, short_description.value, description.value, 
+    await auth.createEvent(userId, title.value, name.value, short_description.value, description.value, 
     date.value, time.value, venue_name.value, venue_address.value, requirements.value, note.value, status.value, conduct_type.value);
     // Show success message
     Swal.fire({
@@ -44,7 +44,7 @@ const createEvent= async () => {
 
 const fetchEventList = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/org-event-list/${orgId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/org-event-list/${userId}`, {}, 'GET');
     if (response.status) {
         eventList.value = response.data;
     } else {
@@ -60,143 +60,144 @@ onMounted(fetchEventList);
 </script>
 
 <template>
-  <br>
-  <div class="card shadow-sm">
-    <div class="card-body p-4">
-      <div class="org-member-list">
-        <h2>Create and Edit Event</h2>
-        <br>
-        <div v-if="eventList.length">
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th scope="col">Sl</th>
-                <th scope="col">title</th>
-                <th scope="col">name</th>
-                <th scope="col">short_description</th>
-                <th scope="col">description</th>
-                <th scope="col">Date</th>
-                <th scope="col">Time</th>
-                <th scope="col">venue_name</th>
-                <th scope="col">venue_address</th>
-                <th scope="col">Requirements</th>
-                <th scope="col">Note</th>
-                <th scope="col">Status</th>
-                <th scope="col">Conduct type</th>
-                <th scope="col">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="event in eventList" :key="event.id">
-                <td>{{ event.id }}</td>
-                <td>{{ event.title }}</td>
-                <td>{{ event.name }}</td>
-                <td>{{ event.short_description }}</td>
-                <td>{{ event.description }}</td>
-                <td>{{ event.date }}</td>
-                <td>{{ event.time }}</td>
-                <td>{{ event.venue_name }}</td>
-                <td>{{ event.venue_address }}</td>
-                <td>{{ event.requirements }}</td>
-                <td>{{ event.note }}</td>
-                <td>{{ event.status }}</td>
-                <td>{{ event.conduct_type }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else>
-          <p>No event found</p>
-        </div>
+  <div class="space-y-6">
+    <!-- Event List Section -->
+    <div class="bg-white shadow rounded-lg p-6">
+      <h2 class="text-xl font-semibold mb-6">Create and Edit Event</h2>
+      
+      <div v-if="eventList.length">
+        <table class="w-full text-left table-auto">
+          <thead class="border-b">
+            <tr>
+              <th class="py-3 px-4">Sl</th>
+              <th class="py-3 px-4">Title</th>
+              <th class="py-3 px-4">Name</th>
+              <th class="py-3 px-4">Short Description</th>
+              <th class="py-3 px-4">Description</th>
+              <th class="py-3 px-4">Date</th>
+              <th class="py-3 px-4">Time</th>
+              <th class="py-3 px-4">Venue Name</th>
+              <th class="py-3 px-4">Venue Address</th>
+              <th class="py-3 px-4">Requirements</th>
+              <th class="py-3 px-4">Note</th>
+              <th class="py-3 px-4">Status</th>
+              <th class="py-3 px-4">Conduct Type</th>
+              <th class="py-3 px-4">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="event in eventList" :key="event.id" class="border-b">
+              <td class="py-3 px-4">{{ event.id }}</td>
+              <td class="py-3 px-4">{{ event.title }}</td>
+              <td class="py-3 px-4">{{ event.name }}</td>
+              <td class="py-3 px-4">{{ event.short_description }}</td>
+              <td class="py-3 px-4">{{ event.description }}</td>
+              <td class="py-3 px-4">{{ event.date }}</td>
+              <td class="py-3 px-4">{{ event.time }}</td>
+              <td class="py-3 px-4">{{ event.venue_name }}</td>
+              <td class="py-3 px-4">{{ event.venue_address }}</td>
+              <td class="py-3 px-4">{{ event.requirements }}</td>
+              <td class="py-3 px-4">{{ event.note }}</td>
+              <td class="py-3 px-4">{{ event.status }}</td>
+              <td class="py-3 px-4">{{ event.conduct_type }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div v-else>
+        <p class="text-gray-500">No event found</p>
       </div>
     </div>
-  </div>
-<br>
-  <div class="card shadow-sm">
-    <div class="card-body p-4">
-      <h1 class="h4 mb-4 fw-bold text-center">Create event</h1>
 
-      <div class="mb-3">
-        <label for="title" class="form-label">Event title</label>
-        <input v-model="title" type="text" id="title" class="form-control" placeholder="Event title" required>
-        <p v-if="auth.errors?.title" class="text-danger mt-2">{{ auth.errors?.title[0] }}</p>
-      </div>
+    <!-- Event Creation Section -->
+    <div class="bg-white shadow rounded-lg p-6">
+      <h1 class="text-center text-lg font-bold mb-6">Create Event</h1>
 
-      <div class="mb-3">
-        <label for="name" class="form-label">Event name</label>
-        <input v-model="name" type="text" id="name" class="form-control" placeholder="Event Name">
-        <p v-if="auth.errors?.name" class="text-danger mt-2">{{ auth.errors?.name[0] }}</p>
-      </div>
+      <form @submit="createEvent" class="space-y-4">
+        <div>
+          <label for="title" class="block text-sm font-medium">Event Title</label>
+          <input v-model="title" id="title" type="text" class="w-full mt-1 border border-gray-300 rounded-md p-2" placeholder="Event title" required>
+          <p v-if="auth.errors?.title" class="text-red-500 text-sm mt-2">{{ auth.errors?.title[0] }}</p>
+        </div>
 
-      <div class="mb-3">
-        <label for="short_description" class="form-label">short_description</label>
-        <input v-model="short_description" type="text" id="short_description" class="form-control" placeholder="short_description">
-        <p v-if="auth.errors?.short_description" class="text-danger mt-2">{{ auth.errors?.short_description[0] }}</p>
-      </div>
+        <div>
+          <label for="name" class="block text-sm font-medium">Event Name</label>
+          <input v-model="name" id="name" type="text" class="w-full mt-1 border border-gray-300 rounded-md p-2" placeholder="Event name">
+          <p v-if="auth.errors?.name" class="text-red-500 text-sm mt-2">{{ auth.errors?.name[0] }}</p>
+        </div>
 
-      <div class="mb-3">
-        <label for="description" class="form-label">description</label>
-        <input v-model="description" type="text" id="description" class="form-control" placeholder="description">
-        <p v-if="auth.errors?.description" class="text-danger mt-2">{{ auth.errors?.description[0] }}</p>
-      </div>
+        <div>
+          <label for="short_description" class="block text-sm font-medium">Short Description</label>
+          <input v-model="short_description" id="short_description" type="text" class="w-full mt-1 border border-gray-300 rounded-md p-2" placeholder="Short description">
+          <p v-if="auth.errors?.short_description" class="text-red-500 text-sm mt-2">{{ auth.errors?.short_description[0] }}</p>
+        </div>
 
-      <div class="mb-3">
-        <label for="date" class="form-label">Date</label>
-        <input v-model="date" type="date" id="date" class="form-control" placeholder="Date">
-        <p v-if="auth.errors?.date" class="text-danger mt-2">{{ auth.errors?.date[0] }}</p>
-      </div>
+        <div>
+          <label for="description" class="block text-sm font-medium">Description</label>
+          <input v-model="description" id="description" type="text" class="w-full mt-1 border border-gray-300 rounded-md p-2" placeholder="Description">
+          <p v-if="auth.errors?.description" class="text-red-500 text-sm mt-2">{{ auth.errors?.description[0] }}</p>
+        </div>
 
-      <div class="mb-3">
-        <label for="time" class="form-label">Time</label>
-        <input v-model="time" type="time" id="time" class="form-control" placeholder="Time">
-        <p v-if="auth.errors?.time" class="text-danger mt-2">{{ auth.errors?.time[0] }}</p>
-      </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="date" class="block text-sm font-medium">Date</label>
+            <input v-model="date" id="date" type="date" class="w-full mt-1 border border-gray-300 rounded-md p-2">
+            <p v-if="auth.errors?.date" class="text-red-500 text-sm mt-2">{{ auth.errors?.date[0] }}</p>
+          </div>
 
-      <div class="mb-3">
-        <label for="venue_name" class="form-label">venue_name</label>
-        <input v-model="venue_name" type="text" id="venue_name" class="form-control"
-          placeholder="venue_name">
-        <p v-if="auth.errors?.venue_name" class="text-danger mt-2">{{ auth.errors?.venue_name[0] }}</p>
-      </div>
+          <div>
+            <label for="time" class="block text-sm font-medium">Time</label>
+            <input v-model="time" id="time" type="time" class="w-full mt-1 border border-gray-300 rounded-md p-2">
+            <p v-if="auth.errors?.time" class="text-red-500 text-sm mt-2">{{ auth.errors?.time[0] }}</p>
+          </div>
+        </div>
 
-      <div class="mb-3">
-        <label for="venue_address" class="form-label">venue_address</label>
-        <input v-model="venue_address" type="text" id="venue_address" class="form-control" placeholder="venue_address">
-        <p v-if="auth.errors?.venue_address" class="text-danger mt-2">{{ auth.errors?.venue_address[0] }}</p>
-      </div>
+        <div>
+          <label for="venue_name" class="block text-sm font-medium">Venue Name</label>
+          <input v-model="venue_name" id="venue_name" type="text" class="w-full mt-1 border border-gray-300 rounded-md p-2" placeholder="Venue name">
+          <p v-if="auth.errors?.venue_name" class="text-red-500 text-sm mt-2">{{ auth.errors?.venue_name[0] }}</p>
+        </div>
 
-      <div class="mb-3">
-        <label for="requirements" class="form-label">Requirements</label>
-        <input v-model="requirements" type="text" id="requirements" class="form-control" placeholder="Requirements">
-        <p v-if="auth.errors?.requirements" class="text-danger mt-2">{{ auth.errors?.requirements[0] }}</p>
-      </div>
+        <div>
+          <label for="venue_address" class="block text-sm font-medium">Venue Address</label>
+          <input v-model="venue_address" id="venue_address" type="text" class="w-full mt-1 border border-gray-300 rounded-md p-2" placeholder="Venue address">
+          <p v-if="auth.errors?.venue_address" class="text-red-500 text-sm mt-2">{{ auth.errors?.venue_address[0] }}</p>
+        </div>
 
-      <div class="mb-3">
-        <label for="note" class="form-label">Note</label>
-        <input v-model="note" type="text" id="note" class="form-control" placeholder="Note">
-        <p v-if="auth.errors?.note" class="text-danger mt-2">{{ auth.errors?.note[0] }}</p>
-      </div>
+        <div>
+          <label for="requirements" class="block text-sm font-medium">Requirements</label>
+          <input v-model="requirements" id="requirements" type="text" class="w-full mt-1 border border-gray-300 rounded-md p-2" placeholder="Requirements">
+          <p v-if="auth.errors?.requirements" class="text-red-500 text-sm mt-2">{{ auth.errors?.requirements[0] }}</p>
+        </div>
 
-      <div class="mb-3">
-        <label for="status" class="form-label">Status: Postponed/cancelled/hold</label>
-        <input v-model="status" type="dropdown" id="status" class="form-control" placeholder="Meeting status"
-          required>
-        <p v-if="auth.errors?.status" class="text-danger mt-2">{{ auth.errors?.status[0] }}</p>
-      </div>
+        <div>
+          <label for="note" class="block text-sm font-medium">Note</label>
+          <input v-model="note" id="note" type="text" class="w-full mt-1 border border-gray-300 rounded-md p-2" placeholder="Note">
+          <p v-if="auth.errors?.note" class="text-red-500 text-sm mt-2">{{ auth.errors?.note[0] }}</p>
+        </div>
 
-      <div class="mb-3">
-        <label for="conduct_type" class="form-label">Meeting conduct type</label>
-        <input v-model="conduct_type" type="dropdown" id="conduct_type" class="form-control" placeholder="Meeting conduct type">
-        <p v-if="auth.errors?.conduct_type" class="text-danger mt-2">{{ auth.errors?.conduct_type[0] }}</p>
-      </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="status" class="block text-sm font-medium">Status</label>
+            <input v-model="status" id="status" type="text" class="w-full mt-1 border border-gray-300 rounded-md p-2" placeholder="Status (Postponed/Cancelled/Hold)">
+            <p v-if="auth.errors?.status" class="text-red-500 text-sm mt-2">{{ auth.errors?.status[0] }}</p>
+          </div>
 
-      
-      <div class="text-end">
-        <button @click="createEvent" class="btn btn-primary">Create event</button>
-      </div>
+          <div>
+            <label for="conduct_type" class="block text-sm font-medium">Conduct Type</label>
+            <input v-model="conduct_type" id="conduct_type" type="text" class="w-full mt-1 border border-gray-300 rounded-md p-2" placeholder="Conduct type">
+            <p v-if="auth.errors?.conduct_type" class="text-red-500 text-sm mt-2">{{ auth.errors?.conduct_type[0] }}</p>
+          </div>
+        </div>
+
+        <div class="text-right">
+          <button type="submit" class="bg-blue-600 text-white py-2 mb-6 px-4 rounded-md shadow hover:bg-blue-700">Create Event</button>
+        </div>
+      </form>
     </div>
   </div>
 </template>
+
 
 <style>
 

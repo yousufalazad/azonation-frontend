@@ -68,6 +68,7 @@
               <div class="break-words w-full">
                 <h4 class="text-gray-700 break-words">{{ userEmail }}</h4>
                 <p class="text-gray-500 text-xs">Joined {{ createdAtDate }}</p>
+                <p class="text-gray-500 text-xs">Azon Id: {{ azonId }}</p>
               </div>
             </div>
           </div>
@@ -112,6 +113,8 @@ const baseURL = 'http://localhost:8000';
 const userName = computed(() => auth.user?.name);
 const userType = computed(() => auth.user?.type);
 const userEmail = computed(() => auth.user?.email);
+const azonId = computed(() => auth.user?.azon_id);
+
 import dayjs from 'dayjs';
 const createdAtDate = computed(() => {
   const createdAt = auth.user?.created_at;
