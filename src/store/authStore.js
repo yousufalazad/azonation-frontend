@@ -87,7 +87,7 @@ const authStore = reactive({
     authStore
       .fetchPublicApi(
         "/api/register",
-        { name: name, type:type, email: email, password: password },
+        { name: name, type: type, email: email, password: password },
         "POST"
       )
       .then((res) => {
@@ -221,7 +221,6 @@ const authStore = reactive({
   //   );
   // },
 
-
   superAdminUserData(id) {
     // console.log("user_id", id);
     this.fetchPublicApi(`/api/super_admin_user_data/${id}`, {}, "GET").then(
@@ -236,8 +235,6 @@ const authStore = reactive({
       }
     );
   },
-
-
 
   getUserToken() {
     return authStore.user?.accessToken;
@@ -315,7 +312,7 @@ const authStore = reactive({
         console.error("Error updating committee:", error);
       });
   },
-  
+
   createMeeting(
     user_id,
     name,
@@ -362,7 +359,7 @@ const authStore = reactive({
   },
 
   createEvent(
-    user_id,
+    userId,
     title,
     name,
     short_description,
@@ -380,19 +377,19 @@ const authStore = reactive({
       .fetchProtectedApi(
         "/api/create-event",
         {
-          user_id: user_id,
-          title: title,
-          name: name,
-          short_description: short_description,
-          description: description,
-          date: date,
-          time: time,
-          venue_name: venue_name,
-          venue_address: venue_address,
-          requirements: requirements,
-          note: note,
-          status: status,
-          conduct_type: conduct_type,
+          userId,
+          title,
+          name,
+          short_description,
+          description,
+          date,
+          time,
+          venue_name,
+          venue_address,
+          requirements,
+          note,
+          status,
+          conduct_type,
         },
         "POST"
       )
