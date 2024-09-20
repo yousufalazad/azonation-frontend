@@ -99,25 +99,25 @@
             <div v-if="isSectionOpen('profile') && isSidebarExpanded" class="space-y-1">
               
               <router-link to="/org-dashboard/profile"
-                class="block px-4 text-gray-500 py-2 hover:text-gray-900">Profile</router-link>
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Profile</router-link>
 
               <router-link to="/org-dashboard/profile"
-                class="block px-4 text-gray-500 py-2 hover:text-gray-900">Founders</router-link>
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Founders</router-link>
 
               <router-link to="/org-dashboard/profile"
-                class="block px-4 text-gray-500 py-2 hover:text-gray-900">Strategic plan</router-link>
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Strategic plan</router-link>
 
               <router-link to="/org-dashboard/profile"
-                class="block px-4 text-gray-500 py-2 hover:text-gray-900">Awards/achievement</router-link>
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Awards/achievement</router-link>
 
               <router-link to="/org-dashboard/profile"
-                class="block px-4 text-gray-500 py-2 hover:text-gray-900">Success story</router-link>
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Success story</router-link>
 
               <router-link to="/org-dashboard/profile"
-                class="block px-4 text-gray-500 py-2 hover:text-gray-900">History</router-link>
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">History</router-link>
 
               <router-link to="/org-dashboard/profile"
-                class="block px-4 text-gray-500 py-2 hover:text-gray-900">Year plan</router-link>
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Year plan</router-link>
             </div>
           </div>
 

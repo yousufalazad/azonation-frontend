@@ -55,30 +55,118 @@
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      project: {
-        title: '',
-        short_description: '',
-        description: '',
-        venue: '',
-        date: '',
-        requirements: '',
-        status: 'active',
-      }
-    };
-  },
-  methods: {
-    createProject() {
-      // Handle form submission logic
-      console.log(this.project);
-    },
-    handleSubmit() {
-      // Add additional form validation or submission logic here
-      this.createProject();
-    }
+<script setup>
+import { ref, onMounted } from 'vue';
+import { authStore } from '../../../store/authStore';
+import Swal from 'sweetalert2';
+
+const auth = authStore;
+const userId = auth.user.id; // Assuming the org ID is stored in the logged-in user
+const projectList = ref([]);
+const modalVisible = ref(false);
+const isEditMode = ref(false);
+
+const title = ref('');
+const short_description = ref('');
+const description = ref('');
+const start_date = ref('');
+const end_date = ref('');
+const start_time = ref('');
+const end_time = ref('');
+const venue_name = ref(''); 
+const venue_address = ref('');
+const requirements = ref('');
+const note = ref('');
+const status = ref('');
+const conduct_type = ref('');
+const selectedProject = ref(null);
+
+const openModal = (project = null) => {
+  if (project) {
+    isEditMode.value = true;
+    selectedProject.value = project;
+    title.value = project.title;
+    short_description.value = project.short_description;
+    description.value = project.description;
+    start_date.value = project.start_date;
+    end_date.value = project.end_date;
+    start_time.value = project.start_time;
+    end_time.value = project.end_time;
+    venue_name.value = project.venue_name;
+    venue_address.value = project.venue_address;
+    requirements.value = project.requirements;
+    note.value = project.note;
+    status.value = project.status;
+    conduct_type.value = project.conduct_type;
+  } else {
+    isEditMode.value = false;
+    selectedProject.value = null;
+    title.value = '';
+    short_description.value = '';
+    description.value = '';
+    start_date.value = '';
+    end_date.value = '';
+    start_time.value = '';
+    end_time.value = '';
+    venue_name.value = '';
+    venue_address.value = '';
+    requirements.value = '';
+    note.value = '';
+    status.value = '';
+    conduct_type.value = '';
+  }
+  modalVisible.value = true;
+};
+
+const closeModal = () => {
+  modalVisible.value = false;
+};
+
+const createProject = async () => {
+  try {
+    await auth.createProject(userId, title.value, short_description.value, description.value, start_date.value, end_date.value, start_time.value, end_time.value, venue_name.value, venue_address.value, requirements.value, note.value, status.value, conduct_type.value);
+    Swal.fire({
+      icon: 'success',
+      title: 'Project created successfully',
+      showConfirmButton: false,
+      timer: 1000
+    });
+    closeModal();
+    fetchProjectList();
+  } catch (error) {
+    console.error("Error creating project", error);
   }
 };
+
+const updateProject = async () => {
+  try {
+    await auth.updateProject(selectedProject.value.id, title.value, short_description.value, description.value, start_date.value, end_date.value, start_time.value, end_time.value, venue_name.value, venue_address.value, requirements.value, note.value, status.value, conduct_type.value);
+    Swal.fire({
+      icon: 'success',
+      title: 'Project updated successfully',
+      showConfirmButton: false,
+      timer: 1000
+    });
+    closeModal();
+    fetchProjectList();
+  } catch (error) {
+    console.error("Error updating project", error);
+  }
+};
+
+const fetchProjectList = async () => {
+  try {
+    const response = await auth.fetchProtectedApi(`/api/org-project-list/${userId}`, {}, 'GET');
+    if (response.status) {
+      projectList.value = response.data;
+    } else {
+      projectList.value = [];
+    }
+  } catch (error) {
+    console.error("Error fetching project list:", error);
+    projectList.value = [];
+  }
+};
+
+onMounted(fetchProjectList);
 </script>
