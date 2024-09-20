@@ -48,7 +48,7 @@
       <div class="relative">
         <button @click="toggleProfileDropdown" ref="profileButton" class="flex items-center space-x-2">
           <div v-if="logoPath">
-            <img :src="`${baseURL}${logoPath}`" alt="Org Logo" class="w-10 h-10 rounded-full object-covers">
+            <img :src="`${baseURL}${logoPath}`" alt="Logo" class="w-10 h-10 rounded-full object-covers">
           </div>
         </button>
 
@@ -58,7 +58,7 @@
           <div class="p-4 border-b">
             <!-- Profile info -->
             <div class="flex items-left space-x-2">
-              <img :src="`${baseURL}${logoPath}`" alt="Org Logo"
+              <img :src="`${baseURL}${logoPath}`" alt="Logo"
                 class="rounded-lg max-h-[90px] max-w-[200px] w-auto h-auto">
             </div>
           </div>
@@ -67,8 +67,10 @@
             <div class="flex items-center space-x-2">
               <div class="break-words w-full">
                 <h4 class="text-gray-700 break-words">{{ userEmail }}</h4>
-                <p class="text-gray-500 text-xs">Joined {{ createdAtDate }}</p>
+                <p class="text-gray-500 text-xs">Username: {{ username }}</p>
                 <p class="text-gray-500 text-xs">Azon Id: {{ azonId }}</p>
+                <p class="text-gray-500 text-xs">Joined: {{ createdAtDate }}</p>
+
               </div>
             </div>
           </div>
@@ -114,6 +116,7 @@ const baseURL = 'http://localhost:8000';
 const name = computed(() => auth.user?.name);
 const userType = computed(() => auth.user?.type);
 const userEmail = computed(() => auth.user?.email);
+const username = computed(() => auth.user?.username);
 const azonId = computed(() => auth.user?.azon_id);
 
 import dayjs from 'dayjs';
@@ -229,4 +232,5 @@ const fetchLogo = async () => {
 
 </script>
 
-<style scoped></style>
+<style scoped>
+</style>

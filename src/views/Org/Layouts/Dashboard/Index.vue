@@ -14,7 +14,6 @@ import LeftSidebar from '../../../Org/Layouts/Partials/LeftSidebar.vue';
       <LeftSidebar></LeftSidebar>
     </div>
   </div>
-
 </template>
 
 <style scoped>

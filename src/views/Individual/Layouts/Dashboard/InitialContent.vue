@@ -1,7 +1,7 @@
 <!-- OrgDashboard.vue -->
 
 <script setup>
-  import { ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { authStore } from '../../../../store/authStore';
 
 const auth = authStore;
@@ -39,86 +39,67 @@ onMounted(fetchMemberList);
 </script>
 
 <template>
- <div class="content-area mt-4">
-      <div v-if="auth.isAuthenticated && auth.user?.type == 'individual'">
-        <div class="row">
-          <div class="col-md-3 col-6">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">Connected organisations</h5>
-                <p class="card-text"> <strong>3</strong></p>
-                <a href="#" class="btn btn-primary">See all</a>
-              </div>
-            </div>
-          </div>
-          
-          <div class="col-md-3 col-6">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">Next meeting</h5>
-                <p class="card-text"><strong>5 Aug 2025</strong></p>
-                <a href="#" class="btn btn-primary">See all</a>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3 col-6">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">Upcoming event</h5>
-                <p class="card-text"><strong>16 Dec 2024</strong></p>
-                <a href="#" class="btn btn-primary">See all</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-3 col-6">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">Approval request</h5>
-                <p class="card-text"><strong>Membership request from XYZ org</strong></p>
-                <a href="#" class="btn btn-primary">See all</a>
-              </div>
-            </div>
-          </div>
-        </div>
-        <br>
-        <br>
-        <div class="row">
-          <div class="col-md-12">
-            <h5>Member List</h5>
-            <div v-if="memberList.length">
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th scope="col">Sl</th>
-                    <th scope="col">Photo</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">ID Number</th>
-                    <th scope="col">Membership Type</th>
-                    <th scope="col">Joining Date</th>
-                    <th scope="col">Note</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="  member   in   memberList  " :key="member.id">
-                    <td>{{ member.id }}</td>
-                    <td>{{ member.existing_org_membership_id }}</td>
-                    <td>{{ member.individual.name }}</td>
-                    <td>{{ member.individual.email }}</td>
-                    <td>{{ member.existing_org_membership_id }}</td>
-                    <td>{{ member.membership_type }}</td>
-                    <td>{{ member.joining_date }}</td>
-                    <td>{{ member.note }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div v-else>
-              <p>No members found</p>
-            </div>
-          </div>
-        </div>
+  <div v-if="auth.isAuthenticated && auth.user?.type == 'individual'" class="space-y-8 mt-4">
+    <!-- Connected Organization Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white shadow rounded-lg p-4">
+        <h5 class="font-semibold text-lg">Connected organisations</h5>
+        <p class="text-sm font-medium"><strong>{{ connectedOrganisation }}</strong></p>
+        <a href="#" class="mt-3 inline-block text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded">See all</a>
+      </div>
+      <div class="bg-white shadow rounded-lg p-4">
+        <h5 class="font-semibold text-lg">Next meeting</h5>
+        <p class="text-sm font-medium"><strong>{{ nextMeetingDate }}</strong></p>
+        <a href="#" class="mt-3 inline-block text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded">See all</a>
+      </div>
+      <div class="bg-white shadow rounded-lg p-4">
+        <h5 class="font-semibold text-lg">Upcoming event</h5>
+        <p class="text-sm font-medium"><strong>{{ upcomingEventDate }}</strong></p>
+        <a href="#" class="mt-3 inline-block text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded">See all</a>
+      </div>
+      <div class="bg-white shadow rounded-lg p-4">
+        <h5 class="font-semibold text-lg">Approval request</h5>
+        <p class="text-sm font-medium"><strong>{{ approvalRequest }}</strong></p>
+        <a href="#" class="mt-3 inline-block text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded">See all</a>
       </div>
     </div>
+
+    <!-- Connected Organizations' Activities -->
+    <div>
+      <h3 class="text-xl font-bold mb-4">Connected Organizations' Activities</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Example Activity -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+          <img src="#" alt="Meeting Image" class="w-full h-48 object-cover">
+          <div class="p-4">
+            <h4 class="font-semibold text-lg">Organization Name</h4>
+            <p class="text-sm text-gray-600">Meeting at <strong>Venue Name</strong></p>
+            <p class="text-sm text-gray-600">Held on <strong>{{ meetingDate }}</strong></p>
+            <a href="#" class="text-blue-500 hover:underline mt-2 inline-block">View details</a>
+          </div>
+        </div>
+        <!-- Add more activity cards as needed -->
+      </div>
+    </div>
+
+    <!-- Completed Event Details -->
+    <div>
+      <h3 class="text-xl font-bold mb-4">Completed Event Details</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Example Event -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+          <img src="#" alt="Event Image" class="w-full h-48 object-cover">
+          <div class="p-4">
+            <h4 class="font-semibold text-lg">Event Title</h4>
+            <p class="text-sm text-gray-600">Purpose: <strong>Event Purpose</strong></p>
+            <p class="text-sm text-gray-600">Location: <strong>Venue Name</strong></p>
+            <p class="text-sm text-gray-600">Held on <strong>{{ eventDate }}</strong></p>
+            <a href="#" class="text-blue-500 hover:underline mt-2 inline-block">View details</a>
+          </div>
+        </div>
+        <!-- Add more event cards as needed -->
+      </div>
+    </div>
+  </div>
 </template>
+

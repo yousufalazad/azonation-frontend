@@ -108,7 +108,7 @@
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Strategic plan</router-link>
 
               <router-link to="/org-dashboard/profile"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Awards/achievement</router-link>
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Recognitions</router-link>
 
               <router-link to="/org-dashboard/profile"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Success story</router-link>
