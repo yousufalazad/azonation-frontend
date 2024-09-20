@@ -1,60 +1,3 @@
-<template>
-  <div class="container mx-auto mt-6">
-    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-      <h2 class="text-2xl font-bold mb-4">Create and Edit Project</h2>
-      
-      <form @submit.prevent="handleSubmit" class="space-y-4">
-        <div>
-          <label for="projectTitle" class="block text-sm font-medium text-gray-700">Project Title</label>
-          <input v-model="project.title" type="text" id="projectTitle" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter project title" required>
-        </div>
-
-        <div>
-          <label for="shortDescription" class="block text-sm font-medium text-gray-700">Short Description</label>
-          <textarea v-model="project.short_description" id="shortDescription" rows="3" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter short description"></textarea>
-        </div>
-
-        <div>
-          <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-          <textarea v-model="project.description" id="description" rows="4" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Write project description"></textarea>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label for="venue" class="block text-sm font-medium text-gray-700">Venue Name</label>
-            <input v-model="project.venue" type="text" id="venue" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter venue name">
-          </div>
-
-          <div>
-            <label for="date" class="block text-sm font-medium text-gray-700">Project Date</label>
-            <input v-model="project.date" type="date" id="date" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-          </div>
-        </div>
-
-        <div>
-          <label for="requirements" class="block text-sm font-medium text-gray-700">Requirements</label>
-          <input v-model="project.requirements" type="text" id="requirements" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter requirements">
-        </div>
-
-        <div>
-          <label for="status" class="block text-sm font-medium text-gray-700">Project Status</label>
-          <select v-model="project.status" id="status" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-            <option value="active">Active</option>
-            <option value="completed">Completed</option>
-            <option value="hold">On Hold</option>
-          </select>
-        </div>
-
-        <div class="text-right">
-          <button @click.prevent="createProject" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            Create Project
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
@@ -170,3 +113,148 @@ const fetchProjectList = async () => {
 
 onMounted(fetchProjectList);
 </script>
+
+<template>
+  <div class="p-4">
+    <div class="mb-4">
+      <button @click="openModal()" class="bg-blue-500 text-white py-2 px-4 rounded">Create Project</button>
+    </div>
+
+    <div v-if="projectList.length" class="mb-4">
+      <table class="min-w-full bg-white border border-gray-200">
+        <thead>
+          <tr class="border-b">
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Short Description</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Time</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Time</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Venue Name</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Venue Address</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requirements</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Note</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Conduct Type</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="project in projectList" :key="project.id" class="border-b">
+            <td class="px-6 py-4">{{ project.id }}</td>
+            <td class="px-6 py-4">{{ project.title }}</td>
+            <td class="px-6 py-4">{{ project.short_description }}</td>
+            <td class="px-6 py-4">{{ project.description }}</td>
+            <td class="px-6 py-4">{{ project.start_date }}</td>
+            <td class="px-6 py-4">{{ project.end_date }}</td>
+            <td class="px-6 py-4">{{ project.start_time }}</td>
+            <td class="px-6 py-4">{{ project.end_time }}</td>
+            <td class="px-6 py-4">{{ project.venue_name }}</td>
+            <td class="px-6 py-4">{{ project.venue_address }}</td>
+            <td class="px-6 py-4">{{ project.requirements }}</td>
+            <td class="px-6 py-4">{{ project.note }}</td>
+            <td class="px-6 py-4">{{ project.status }}</td>
+            <td class="px-6 py-4">{{ project.conduct_type }}</td>
+            <td class="px-6 py-4">
+              <button @click="openModal(project)" class="bg-yellow-500 text-white py-1 px-2 rounded">Edit</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Modal -->
+<div v-if="modalVisible" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg max-w-full mx-auto px-4 h-3/4 overflow-y-auto">
+    <h2 class="text-lg font-semibold mb-4">{{ isEditMode ? 'Edit Project' : 'Create Project' }}</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
+      <!-- Full-width field -->
+      <div class="col-span-3">
+        <label for="title" class="block text-sm font-medium text-gray-700">Project Title</label>
+        <input v-model="title" type="text" id="title" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-12" placeholder="Project Title" required>
+      </div>
+
+      <!-- Half-width fields -->
+      <div>
+        <label for="short_description" class="block text-sm font-medium text-gray-700">Short Description</label>
+        <input v-model="short_description" type="text" id="short_description" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-12" placeholder="Short Description">
+      </div>
+
+      <div>
+        <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+        <input v-model="description" type="text" id="description" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-12" placeholder="Description">
+      </div>
+
+      <!-- Full-width field -->
+      <div class="col-span-3">
+        <label for="venue_name" class="block text-sm font-medium text-gray-700">Venue Name</label>
+        <input v-model="venue_name" type="text" id="venue_name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-12" placeholder="Venue Name">
+      </div>
+
+      <!-- Half-width fields -->
+      <div>
+        <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
+        <input v-model="start_date" type="date" id="start_date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-12">
+      </div>
+
+      <div>
+        <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
+        <input v-model="end_date" type="date" id="end_date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-12">
+      </div>
+
+      <div>
+        <label for="start_time" class="block text-sm font-medium text-gray-700">Start Time</label>
+        <input v-model="start_time" type="time" id="start_time" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-12">
+      </div>
+
+      <div>
+        <label for="end_time" class="block text-sm font-medium text-gray-700">End Time</label>
+        <input v-model="end_time" type="time" id="end_time" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-12">
+      </div>
+
+      <!-- Full-width fields -->
+      <div class="col-span-3">
+        <label for="venue_address" class="block text-sm font-medium text-gray-700">Venue Address</label>
+        <input v-model="venue_address" type="text" id="venue_address" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-12" placeholder="Venue Address">
+      </div>
+
+      <!-- Full-width field with bigger textarea -->
+      <div class="col-span-3">
+        <label for="requirements" class="block text-sm font-medium text-gray-700">Requirements</label>
+        <textarea v-model="requirements" id="requirements" rows="4" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Requirements"></textarea>
+      </div>
+
+      <!-- Full-width field with bigger textarea -->
+      <div class="col-span-3">
+        <label for="note" class="block text-sm font-medium text-gray-700">Note</label>
+        <textarea v-model="note" id="note" rows="6" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Note"></textarea>
+      </div>
+
+      <!-- Half-width fields -->
+      <div>
+        <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+        <input v-model="status" type="text" id="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-12" placeholder="Status">
+      </div>
+
+      <div>
+        <label for="conduct_type" class="block text-sm font-medium text-gray-700">Conduct Type</label>
+        <input v-model="conduct_type" type="text" id="conduct_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-12" placeholder="Conduct Type">
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-4 mt-6">
+      <button @click="closeModal" class="bg-gray-500 text-white py-2 px-4 rounded">Cancel</button>
+      <button @click="isEditMode ? updateProject() : createProject()" class="bg-blue-500 text-white py-2 px-4 rounded">{{ isEditMode ? 'Update Project' : 'Create Project' }}</button>
+    </div>
+  </div>
+</div>
+
+  </div>
+</template>
+
+<style scoped>
+/* Add any additional styles here if needed */
+</style>

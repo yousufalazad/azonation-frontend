@@ -113,7 +113,7 @@ onMounted(fetchEventList);
     <div class="bg-white shadow rounded-lg p-6">
       <h1 class="text-center text-lg font-bold mb-6">Create Event</h1>
 
-      <form @submit="createEvent" class="space-y-4">
+      <form @submit.prevent="createEvent" class="space-y-4">
         <div>
           <label for="title" class="block text-sm font-medium">Event Title</label>
           <input v-model="title" id="title" type="text" class="w-full mt-1 border border-gray-300 rounded-md p-2" placeholder="Event title" required>
