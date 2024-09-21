@@ -13,9 +13,11 @@ const password = ref('')
 <template>
   <header class="fixed top-0 left-0 w-full bg-white shadow-md z-50">
     <div class="container mx-auto flex justify-between items-center px-4 py-3">
-      <li class="nav-item">
+      
+      <div>
         <img src="../../../assets/Logo/Azonation.png" alt="Azonation" class="w-44">
-      </li>
+      </div>
+
       <div class="hidden md:flex">
         <ul class="flex space-x-4">
           <li>
@@ -31,7 +33,7 @@ const password = ref('')
 
   <div class="flex flex-col items-center justify-center mt-20 px-3">
     <div class="w-full max-w-md bg-white rounded-lg shadow-lg px-6">
-      <h1 class="text-xl font-bold text-center text-gray-800 py-4">Sign up to your account</h1>
+      <h1 class="text-xl font-bold text-center text-gray-800 py-4">Sign up</h1>
 
       <div class="mb-4">
         <label for="name" class="block text-sm font-medium text-gray-700">Org Name</label>

@@ -20,7 +20,7 @@
                     </svg>
                     <span v-if="unreadCount > 0"
                         class="absolute top-0 right-0 bg-gray-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{{
-            unreadCount }}</span>
+                        unreadCount }}</span>
                 </button>
 
                 <!-- Notifications Dropdown -->

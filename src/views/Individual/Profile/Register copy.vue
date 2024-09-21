@@ -1,38 +1,20 @@
+<!-- Individual register page -->
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { authStore } from '../../../store/authStore';
-
 const auth = authStore
 
 const name = ref('')
 const email = ref('')
 const password = ref('')
-const confirmPassword = ref('') // New ref for password confirmation
-const type = 'individual'
-
-// Computed property to check if the passwords match
-const passwordsMatch = computed(() => {
-  const match = password.value === confirmPassword.value;
-  console.log("Passwords match:", match); // Debug log for password match
-  return match;
-});
-
-// Computed property to enable/disable the sign-up button
-const canSignUp = computed(() => {
-  const isReadyToRegister = name.value.trim() !== '' && 
-                            email.value.trim() !== '' && 
-                            password.value.trim() !== '' && 
-                            confirmPassword.value.trim() !== '' &&
-                            passwordsMatch.value; // Ensure both passwords match
-  console.log("Can sign up:", isReadyToRegister); // Keep this for debugging
-  return isReadyToRegister;
-});
+const type = 'individual'  // Set the type value directly
 
 </script>
 
 <template>
   <header class="fixed top-0 left-0 w-full bg-white shadow-md z-50">
     <div class="container mx-auto flex justify-between items-center px-4 py-3">
+      
       <div>
         <img src="../../../assets/Logo/Azonation.png" alt="Azonation" class="w-44">
       </div>
@@ -54,57 +36,34 @@ const canSignUp = computed(() => {
     <div class="w-full max-w-md bg-white rounded-lg shadow-lg px-6 pb-6">
       <h1 class="text-xl font-bold text-center text-gray-800 py-4">Sign up</h1>
 
-      <!-- Full Name Input -->
       <div class="mb-4">
-        <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
+        <label for="full_name" class="block text-sm font-medium text-gray-700">Full Name</label>
         <input v-model="name" type="text" id="name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Full Name" required>
         <p v-if="auth.errors?.name" class="text-red-500 text-sm mt-2">{{ auth.errors?.name[0] }}</p>
       </div>
 
-      <!-- Email Input -->
       <div class="mb-4">
         <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
         <input v-model="email" type="email" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Email" required>
         <p v-if="auth.errors?.email" class="text-red-500 text-sm mt-2">{{ auth.errors?.email[0] }}</p>
       </div>
 
-      <!-- Password Input -->
       <div class="mb-4">
         <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
         <input v-model="password" type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="••••••••" required>
         <p v-if="auth.errors?.password" class="text-red-500 text-sm mt-2">{{ auth.errors?.password[0] }}</p>
       </div>
 
-      <!-- Confirm Password Input -->
-      <div class="mb-4">
-        <label for="confirm_password" class="block text-sm font-medium text-gray-700">Confirm Password</label>
-        <input v-model="confirmPassword" type="password" id="confirm_password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="••••••••" required>
-        <p v-if="!passwordsMatch" class="text-red-500 text-sm mt-2">Passwords do not match</p>
+      <div class="flex justify-between items-center mb-4">
+        <router-link to="/" class="text-indigo-600 hover:underline">Already have an account? Login</router-link>
       </div>
 
-      <!-- Sign Up Button -->
       <div class="text-right pb-4">
-        <button 
-          @click="auth.register(name, type, email, password)" 
-          :disabled="!canSignUp"  
-          class="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          :class="{'opacity-50 cursor-not-allowed': !canSignUp}">
+        <button @click="auth.register(name, type, email, password)" class="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
           Sign Up
         </button>
       </div>
 
-      <!-- Optional: Debug log to view what's happening -->
-      <div class="mt-4 text-sm text-gray-500">
-        <p>Debug Info:</p>
-        <p>Name: {{ name }}</p>
-        <p>Email: {{ email }}</p>
-        <p>Password: {{ password }}</p>
-        <p>Confirm Password: {{ confirmPassword }}</p>
-        <p>Passwords Match: {{ passwordsMatch }}</p>
-        <p>Can Sign Up: {{ canSignUp }}</p>
-      </div>
-
-      <!-- Google and Apple Sign Up buttons -->
       <div class="relative flex items-center justify-center mt-6">
         <div class="w-full border-t border-gray-300"></div>
         <span class="absolute bg-white px-2 text-gray-500">or</span>
@@ -142,3 +101,7 @@ const canSignUp = computed(() => {
     </div>
   </div>
 </template>
+
+<style>
+/* Add any custom styles here if necessary */
+</style>
