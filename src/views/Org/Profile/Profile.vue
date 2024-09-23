@@ -7,7 +7,7 @@
             <label for="logo" class="block text-sm font-medium text-gray-700">Logo</label>
             <input type="file" id="logo" @change="handleImageUpload" class="block w-full text-sm text-gray-500">
             <div v-if="logoPath" class="mt-3">
-                <img :src="`${baseURL}${logoPath}`" alt="Organization Logo" class="rounded-lg max-w-xs">
+                <img :src="`${baseURL}${logoPath}`" alt="Organization Logo" class="rounded-lg max-w-xs max-h-xs">
             </div>
             <button @click="profileImageUpdate" class="mt-2 bg-blue-500 text-white py-2 px-4 rounded">Save Logo</button>
         </div>
@@ -405,35 +405,70 @@ const profileImageUpdate = async () => {
     }
 };
 
+// const updateName = async () => {
+//     try {
+//         const response = await auth.fetchProtectedApi(`/api/update-name/${userId}`, {
+//             name: newName.value,
+//         }, 'PUT');
+//         if (response.status) {
+//             Swal.fire('Success', 'Name updated successfully', 'success');
+//             // Close the modal after successful update
+//             closeNameModal();
+//             // Update the name in localStorage explicitly
+//             let user = JSON.parse(localStorage.getItem('user'));
+//             if (user) {
+//                 user.name = newName.value;
+//                 localStorage.setItem('user', JSON.stringify(user));
+//             }
+
+//             // Now refresh the current page
+//             window.location.reload();
+//         } else {
+//             Swal.fire('Error', 'Failed to update name try-Else', 'error');
+//         }
+
+
+
+//     } catch (error) {
+//         console.error("Error updating name:", error);
+//         Swal.fire('Error', 'Failed to update Name catch', 'error');
+//     }
+// };
+
 const updateName = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/update-name/${userId}`, {
             name: newName.value,
         }, 'PUT');
+
         if (response.status) {
-            Swal.fire('Success', 'Name updated successfully', 'success');
+            // Success handling
+            Swal.fire('Success', response.message || 'Name updated successfully', 'success');
+
+            // Close the modal after successful update
+            closeNameModal();
+
+            // Update the name in localStorage explicitly
+            let user = JSON.parse(localStorage.getItem('user'));
+            if (user) {
+                user.name = newName.value;
+                localStorage.setItem('user', JSON.stringify(user));
+            }
+
+            // Optionally, you can reload the page or update the UI without reloading
+            window.location.reload();
         } else {
-            Swal.fire('Error', 'Failed to update name try-Else', 'error');
+            // Display error message from server response
+            Swal.fire('Error', response.message || 'Failed to update name, please try again.', 'error');
         }
-
-        // Close the modal after successful update
-        closeNameModal();
-
-        // Update the name in localStorage explicitly
-        let user = JSON.parse(localStorage.getItem('user'));
-        if (user) {
-            user.name = newName.value;
-            localStorage.setItem('user', JSON.stringify(user));
-        }
-
-        // Now refresh the current page
-        window.location.reload();
 
     } catch (error) {
+        // Catch block for any other errors
         console.error("Error updating name:", error);
-        Swal.fire('Error', 'Failed to update Name catch', 'error');
+        Swal.fire('Error', error.response?.data?.message || 'An unexpected error occurred while updating the name', 'error');
     }
 };
+
 
 const updateUserEmail = async () => {
     try {

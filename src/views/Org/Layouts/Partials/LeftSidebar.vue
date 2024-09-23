@@ -101,6 +101,9 @@
               <router-link to="/org-dashboard/profile"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Profile</router-link>
 
+              <router-link to="/org-dashboard/fundamental-info"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Fundamental Info</router-link>
+
               <router-link to="/org-dashboard/profile"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Founders</router-link>
 

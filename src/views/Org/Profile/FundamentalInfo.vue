@@ -1,18 +1,8 @@
 <template>
     <div class="profile-data-show">
-        <h2 class="text-xl font-bold mb-4">Org Profile</h2>
+        <h2 class="text-xl font-bold mb-4">Fundamental Info</h2>
 
-        <!-- Logo Section -->
-        <div class="mb-4">
-            <label for="logo" class="block text-sm font-medium text-gray-700">Logo</label>
-            <input type="file" id="logo" @change="handleImageUpload" class="block w-full text-sm text-gray-500">
-            <div v-if="logoPath" class="mt-3">
-                <img :src="`${baseURL}${logoPath}`" alt="Organization Logo" class="rounded-lg max-w-xs">
-            </div>
-            <button @click="profileImageUpdate" class="mt-2 bg-blue-500 text-white py-2 px-4 rounded">Save Logo</button>
-        </div>
-
-        <!-- Organization Information Section with Update Buttons -->
+        <!-- User Information Section with Update Buttons -->
         <div class="space-y-4">
             <p>Short Description: <span>{{ shortDescription }}</span> <button @click="openModal('shortDescription')"
                     class="text-blue-500">Edit</button></p>
@@ -37,8 +27,8 @@
                     class="text-blue-500">Edit</button></p>
             <p>Impact: <span>{{ impact }}</span> <button @click="openModal('impact')"
                     class="text-blue-500">Edit</button></p>
-            <p>whyJoinUs: <span>{{ whyJoinUs }}</span> <button
-                    @click="openModal('whyJoinUs')" class="text-blue-500">Edit</button></p>
+            <p>whyJoinUs: <span>{{ whyJoinUs }}</span> <button @click="openModal('whyJoinUs')"
+                    class="text-blue-500">Edit</button></p>
             <p>Scope of Work: <span>{{ scopeOfWork }}</span> <button @click="openModal('scopeOfWork')"
                     class="text-blue-500">Edit</button></p>
             <p>Organising Date: <span>{{ organisingDate }}</span> <button @click="openModal('organisingDate')"
@@ -63,6 +53,10 @@
             </div>
         </div>
     </div>
+
+    <div class="py-6 my-6">
+
+    </div>
 </template>
 
 <script setup>
@@ -70,7 +64,12 @@ import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from "sweetalert2";
 
-// Org profile info
+const auth = authStore;
+const userId = auth.user.id;
+
+
+
+// profile info
 const shortDescription = ref('');
 const detailDescription = ref('');
 const whoWeAre = ref('');
@@ -88,43 +87,13 @@ const organisingDate = ref('');
 const foundationDate = ref('');
 const status = ref('');
 
-// Org logo
-const logoPath = ref('');
-const selectedImage = ref(null);
+// Modal logic
+const isModalVisible = ref(false);
+const modalTitle = ref('');
+const modalModel = ref('');
+const isTextarea = ref(false);
+const fieldToUpdate = ref('');
 
-const auth = authStore;
-const userId = auth.user.id;
-const baseURL = 'http://localhost:8000';
-
-const fetchLogo = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/org-profile/logo/${userId}`, {}, 'GET');
-        if (response.status && response.data.image) {
-            logoPath.value = response.data.image;
-        }
-    } catch (error) {
-        console.error("Error fetching logo:", error);
-    }
-};
-
-const profileImageUpdate = async () => {
-    if (selectedImage.value) {
-        const formData = new FormData();
-        formData.append('image', selectedImage.value);
-        try {
-            const imageResponse = await auth.uploadProtectedApi(`/api/org-profile/logo/${userId}`, formData);
-            if (imageResponse.status) {
-                Swal.fire('Success', 'Logo saved successfully', 'success');
-                logoPath.value = imageResponse.data.image;
-            } else {
-                Swal.fire('Error', 'Failed to update logo', 'error');
-            }
-        } catch (error) {
-            console.error("Error updating logo:", error);
-            Swal.fire('Error', 'Failed to update logo', 'error');
-        }
-    }
-};
 
 // Convert camel case field names to snake case
 const camelToSnake = (str) => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
@@ -144,52 +113,13 @@ const updateSingleField = async (field, value) => {
     }
 };
 
-const fetchOrgProfileData = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/org-profile-data/${userId}`, {}, 'GET');
-        if (response.status) {
-            shortDescription.value = response.data.short_description;
-            detailDescription.value = response.data.detail_description;
-            whoWeAre.value = response.data.who_we_are;
-            whatWeDo.value = response.data.what_we_do;
-            howWeDo.value = response.data.how_we_do;
-            mission.value = response.data.mission;
-            vision.value = response.data.vision;
-            value.value = response.data.value;
-            areasOfFocus.value = response.data.areas_of_focus;
-            causes.value = response.data.causes;
-            impact.value = response.data.impact;
-            whyJoinUs.value = response.data.why_join_us;
-            scopeOfWork.value = response.data.scope_of_work;
-            organisingDate.value = response.data.organising_date;
-            foundationDate.value = response.data.foundation_date;
-            status.value = response.data.status;
-        } else {
-            Swal.fire('Error', 'Failed to fetch organization details', 'error');
-        }
-    } catch (error) {
-        console.error("Error fetching organization details:", error);
-        Swal.fire('Error', 'Failed to fetch organization details', 'error');
-    }
-};
 
-const handleImageUpload = (event) => {
-    selectedImage.value = event.target.files[0];
-};
-
-// Modal logic
-const isModalVisible = ref(false);
-const modalTitle = ref('');
-const modalModel = ref('');
-const isTextarea = ref(false);
-const fieldToUpdate = ref('');
-
+//For Org Info
 const openModal = (field) => {
-    fieldToUpdate.value = field; 
+    fieldToUpdate.value = field;
     modalModel.value = eval(field).value;
     modalTitle.value = `Edit ${field.replace(/([A-Z])/g, ' $1')}`.replace(/^./, str => str.toUpperCase());
-    isTextarea.value = (field === 'shortDescription' || field === 'detailDescription' || field === `whoWeAre` || field === `whatWeDo` 
-    || field === 'howWeDo' || field === 'mission' || field === 'vision' || field === 'value' || field === 'areasOfFocus' || field === 'causes' || field === 'impact' || field === 'whyJoinUs');
+    isTextarea.value = (field === 'shortDescription' || field === 'detailDescription' || field === `whoWeAre` || field === `whatWeDo` || field === 'howWeDo' || field === 'mission' || field === 'vision' || field === 'value' || field === 'areasOfFocus' || field === 'causes' || field === 'impact' || field === 'whyJoinUs');
 
     isModalVisible.value = true;
 };
@@ -203,9 +133,6 @@ const saveModal = () => {
     updateSingleField(fieldToUpdate.value, modalModel.value);
     closeModal();
 };
-
-onMounted(fetchOrgProfileData);
-onMounted(fetchLogo);
 
 </script>
 

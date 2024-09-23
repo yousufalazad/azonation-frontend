@@ -21,6 +21,7 @@ import OrgDashboardInitialContent from "@/views/Org/Layouts/Dashboard/InitialCon
 // Profile
 import Profile from "../views/Org/Profile/Profile.vue";
 import Settings from "../views/Org/Profile/Settings.vue";
+import fundamentalInfo from "../views/Org/Profile/FundamentalInfo.vue";
 
 import AddMember from "../views/Org/Member/AddMember.vue";
 import MemberList from "../views/Org/Member/MemberList.vue";
@@ -88,6 +89,12 @@ const routes = [
         path: "profile",
         name: "profile",
         component: Profile,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "fundamental-info",
+        name: "fundamental-info",
+        component: fundamentalInfo,
         meta: { requiresAuth: true },
       },
       {

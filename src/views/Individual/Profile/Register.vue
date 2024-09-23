@@ -94,7 +94,7 @@ const canSignUp = computed(() => {
       </div>
 
       <!-- Optional: Debug log to view what's happening -->
-      <div class="mt-4 text-sm text-gray-500">
+      <!-- <div class="mt-4 text-sm text-gray-500">
         <p>Debug Info:</p>
         <p>Name: {{ name }}</p>
         <p>Email: {{ email }}</p>
@@ -102,7 +102,7 @@ const canSignUp = computed(() => {
         <p>Confirm Password: {{ confirmPassword }}</p>
         <p>Passwords Match: {{ passwordsMatch }}</p>
         <p>Can Sign Up: {{ canSignUp }}</p>
-      </div>
+      </div> -->
 
       <!-- Google and Apple Sign Up buttons -->
       <div class="relative flex items-center justify-center mt-6">
