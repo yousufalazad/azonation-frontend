@@ -1,6 +1,6 @@
 <template>
     <div class="profile-data-show">
-        <h2 class="text-xl font-bold mb-4">Org Profile</h2>
+        <h2 class="text-xl font-bold mb-4">Profile</h2>
 
         <!-- Logo Section -->
         <div class="mb-4">
@@ -88,7 +88,7 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         required />
                     <p v-if="auth.errors?.address_line_one" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.address_line_one[0] }}</p>
+                        auth.errors?.address_line_one[0] }}</p>
                 </div>
 
                 <div class="mb-4">
@@ -97,7 +97,7 @@
                     <input v-model="address_line_two" type="text" id="address_line_two"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
                     <p v-if="auth.errors?.address_line_two" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.address_line_two[0] }}</p>
+                        auth.errors?.address_line_two[0] }}</p>
                 </div>
 
                 <div class="mb-4">
@@ -113,7 +113,7 @@
                     <input v-model="state_or_region" type="text" id="state_or_region"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
                     <p v-if="auth.errors?.state_or_region" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.state_or_region[0] }}</p>
+                        auth.errors?.state_or_region[0] }}</p>
                 </div>
 
                 <div class="mb-4">
@@ -171,7 +171,7 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         required />
                     <p v-if="auth.errors?.dialing_code_id" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.dialing_code_id[0] }}</p>
+                        auth.errors?.dialing_code_id[0] }}</p>
                 </div>
 
                 <div class="mb-4">
@@ -180,7 +180,7 @@
                     <input v-model="phone_number" type="text" id="phone_number"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
                     <p v-if="auth.errors?.phone_number" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.phone_number[0] }}</p>
+                        auth.errors?.phone_number[0] }}</p>
                 </div>
 
                 <div class="mb-4">
@@ -193,11 +193,12 @@
 
 
                 <div class="mb-4">
-                    <label for="statusPhone" class="block text-sm font-medium text-gray-700">statusPhone (boolean)</label>
+                    <label for="statusPhone" class="block text-sm font-medium text-gray-700">statusPhone
+                        (boolean)</label>
                     <input v-model="statusPhone" type="boolean" id="statusPhone"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
                     <p v-if="auth.errors?.statusPhone" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.statusPhone[0] }}</p>
+                        auth.errors?.statusPhone[0] }}</p>
                 </div>
 
 
@@ -209,7 +210,7 @@
                     </button>
 
                     <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                        @click="isEditModePhone ? updateOrgPhoneNumber() : updateOrgPhoneNumber()">
+                        @click="isEditModePhone ? updatePhoneNumber() : updatePhoneNumber()">
                         {{ isEditModePhone ? 'Update' : 'Submit' }}
                         <!-- only update is working for create and update -->
                     </button>
@@ -240,13 +241,12 @@
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     required />
                 <p v-if="auth.errors?.newName" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.newName[0] }}</p>
+                    auth.errors?.newName[0] }}</p>
             </div>
 
 
             <div class="flex justify-end">
-                <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
-                    @click="closeNameModal">
+                <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2" @click="closeNameModal">
                     Close
                 </button>
 
@@ -254,34 +254,35 @@
                     Update
                 </button>
             </div>
-            
+
         </div>
     </div>
- 
- 
+
+
     <!-- User email section -->
- <div class="space-y-4">
+    <div class="space-y-4">
         <h3 class="text-lg font-bold mb-2">User Email</h3>
 
-        <p>{{ UserEmail }}
-            <button @click="openUserEmailModal()" class="text-blue-500">Edit</button>
+        <p>{{ email }}
+            <button @click="openUserEmailModal()" class="text-blue-500 ">Edit</button>
         </p>
     </div>
 
     <!-- User email Modal -->
-    <div v-if="modalVisibleUserEmail" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div v-if="modalVisibleUserEmail"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
         <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
             <h2 class="text-2xl font-bold mb-4 text-center">
                 Edit User Email
             </h2>
 
             <div class="mb-4">
-                <label for="email" class="block text-sm font-medium text-gray-700">User email address</label>
-                <input v-model="email" type="email" id="email"
+                <label for="newEmail" class="block text-sm font-medium text-gray-700">User newEmail address</label>
+                <input v-model="newEmail" type="newEmail" id="newEmail"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     required />
-                <p v-if="auth.errors?.email" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.email[0] }}</p>
+                <p v-if="auth.errors?.newEmail" class="text-red-500 text-sm mt-1">{{
+                    auth.errors?.newEmail[0] }}</p>
             </div>
 
 
@@ -298,7 +299,9 @@
         </div>
     </div>
 
+    <div class="py-6 my-6">
 
+    </div>
 </template>
 
 <script setup>
@@ -309,10 +312,11 @@ import Swal from "sweetalert2";
 const auth = authStore;
 const userId = auth.user.id;
 const name = auth.user.name;
-const UserEmail = auth.user.email;
+const email = auth.user.email;
 const baseURL = 'http://localhost:8000';
 
-// Org profile info
+
+// profile info
 const shortDescription = ref('');
 const detailDescription = ref('');
 const whoWeAre = ref('');
@@ -330,11 +334,11 @@ const organisingDate = ref('');
 const foundationDate = ref('');
 const status = ref('');
 
-// Org logo
+// logo
 const logoPath = ref('');
 const selectedImage = ref(null);
 
-// Org profile info
+// profile info
 const address_user_id = ref(null);
 const address_line_one = ref('');
 const address_line_two = ref('');
@@ -345,7 +349,7 @@ const country_id = ref('');
 const modalVisibleAddress = ref(false);
 const isEditMode = ref('');
 
-// Org Phone Number
+// Phone Number
 const dialing_code_id = ref('');
 const phone_number = ref('');
 const phone_type = ref('');
@@ -354,13 +358,13 @@ const modalVisiblePhone = ref(false);
 const isEditModePhone = ref(false);
 
 
-// Org Name Change
+// Name Change
 const modalVisibleName = ref(false);
 const newName = ref('');
 
-// Org User Email Change
-const modalVisibleUserEmail= ref(false);
-const email = ref('');
+// User Email Change
+const modalVisibleUserEmail = ref(false);
+const newEmail = ref('');
 
 // Modal logic
 const isModalVisible = ref(false);
@@ -400,6 +404,65 @@ const profileImageUpdate = async () => {
         }
     }
 };
+
+const updateName = async () => {
+    try {
+        const response = await auth.fetchProtectedApi(`/api/update-name/${userId}`, {
+            name: newName.value,
+        }, 'PUT');
+        if (response.status) {
+            Swal.fire('Success', 'Name updated successfully', 'success');
+        } else {
+            Swal.fire('Error', 'Failed to update name try-Else', 'error');
+        }
+
+        // Close the modal after successful update
+        closeNameModal();
+
+        // Update the name in localStorage explicitly
+        let user = JSON.parse(localStorage.getItem('user'));
+        if (user) {
+            user.name = newName.value;
+            localStorage.setItem('user', JSON.stringify(user));
+        }
+
+        // Now refresh the current page
+        window.location.reload();
+
+    } catch (error) {
+        console.error("Error updating name:", error);
+        Swal.fire('Error', 'Failed to update Name catch', 'error');
+    }
+};
+
+const updateUserEmail = async () => {
+    try {
+        const response = await auth.fetchProtectedApi(`/api/update-email/${userId}`, {
+            email: newEmail.value,
+        }, 'PUT');
+        if (response.status) {
+            Swal.fire('Success', 'Email updated successfully', 'success');
+        } else {
+            Swal.fire('Error', 'Failed to update email', 'error');
+        }
+        closeUserEmailModal();
+
+        // Update the email in localStorage explicitly
+        let user = JSON.parse(localStorage.getItem('user'));
+        if (user) {
+            user.email = newEmail.value;
+            localStorage.setItem('user', JSON.stringify(user));
+        }
+
+        // Now refresh the current page
+        window.location.reload();
+
+    } catch (error) {
+        console.error("Error updating email:", error);
+        Swal.fire('Error', 'Failed to update email', 'error');
+    }
+};
+
 // Convert camel case field names to snake case
 const camelToSnake = (str) => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
 
@@ -418,36 +481,7 @@ const updateSingleField = async (field, value) => {
     }
 };
 
-const fetchOrgProfileData = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/org-profile-data/${userId}`, {}, 'GET');
-        if (response.status) {
-            shortDescription.value = response.data.short_description;
-            detailDescription.value = response.data.detail_description;
-            whoWeAre.value = response.data.who_we_are;
-            whatWeDo.value = response.data.what_we_do;
-            howWeDo.value = response.data.how_we_do;
-            mission.value = response.data.mission;
-            vision.value = response.data.vision;
-            value.value = response.data.value;
-            areasOfFocus.value = response.data.areas_of_focus;
-            causes.value = response.data.causes;
-            impact.value = response.data.impact;
-            whyJoinUs.value = response.data.why_join_us;
-            scopeOfWork.value = response.data.scope_of_work;
-            organisingDate.value = response.data.organising_date;
-            foundationDate.value = response.data.foundation_date;
-            status.value = response.data.status;
-        } else {
-            Swal.fire('Error', 'Failed to fetch organization details', 'error');
-        }
-    } catch (error) {
-        console.error("Error fetching organization details:", error);
-        Swal.fire('Error', 'Failed to fetch organization details', 'error');
-    }
-};
-
-const fetchOrgAddress = async () => {
+const fetchAddress = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/address/${userId}`, {}, 'GET');
 
@@ -486,7 +520,7 @@ const createAddress = async () => {
             Swal.fire('Error', 'Failed to created address', 'error');
         }
         closeAddressModal();
-        //fetchOrgAddress();
+        //fetchAddress();
     } catch (error) {
         console.error("Error create address:", error);
         Swal.fire('Error', 'Failed to create address', 'error');
@@ -509,14 +543,14 @@ const updateAddress = async () => {
             Swal.fire('Error', 'Failed to update address', 'error');
         }
         closeAddressModal();
-        fetchOrgAddress();
+        fetchAddress();
     } catch (error) {
         console.error("Error updating address:", error);
         Swal.fire('Error', 'Failed to update address', 'error');
     }
 };
 
-const fetchOrgPhoneNumber = async () => {
+const fetchPhoneNumber = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/phone-number/${userId}`, {}, 'GET');
         // Ensure the response status is true and data exists
@@ -534,7 +568,7 @@ const fetchOrgPhoneNumber = async () => {
     }
 };
 
-const updateOrgPhoneNumber = async () => {
+const updatePhoneNumber = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/phone-number/${userId}`, {
             dialing_code_id: dialing_code_id.value,
@@ -548,48 +582,14 @@ const updateOrgPhoneNumber = async () => {
             Swal.fire('Error', 'Failed to update Phone Number', 'error');
         }
         closePhoneModal();
-        fetchOrgPhoneNumber();
+        fetchPhoneNumber();
     } catch (error) {
         console.error("Error updating Phone Number:", error);
         Swal.fire('Error', 'Failed to update Phone Number', 'error');
     }
 };
 
-const updateName = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/update-name/${userId}`, {
-            name: newName.value,
-        }, 'PUT');
-        if (response.status) {
-            Swal.fire('Success', 'Name updated successfully', 'success');
-        } else {
-            Swal.fire('Error', 'Failed to update name', 'error');
-        }
-        closeNameModal();
-        //user information auto mount korte hob e
-    } catch (error) {
-        console.error("Error updating Phone Number:", error);
-        Swal.fire('Error', 'Failed to update Phone Number', 'error');
-    }
-};
 
-const updateUserEmail = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/update-email/${userId}`, {
-            email: email.value,
-        }, 'PUT');
-        if (response.status) {
-            Swal.fire('Success', 'Email updated successfully', 'success');
-        } else {
-            Swal.fire('Error', 'Failed to update email', 'error');
-        }
-        closeUserEmailModal();
-        //user information auto mount korte hob e
-    } catch (error) {
-        console.error("Error updating email:", error);
-        Swal.fire('Error', 'Failed to update email', 'error');
-    }
-};
 
 const handleImageUpload = (event) => {
     selectedImage.value = event.target.files[0];
@@ -631,11 +631,6 @@ const openAddressModal = () => {
     modalVisibleAddress.value = true;
 };
 
-// const openAddressModal = () => {
-//     isEditMode.value = true; //updateAddress() will work 
-//     modalVisibleAddress.value = true;
-// };
-
 const closeAddressModal = () => {
     modalVisibleAddress.value = false;
 };
@@ -652,6 +647,7 @@ const closePhoneModal = () => {
 
 const openNameModal = () => {
     modalVisibleName.value = true;
+    newName.value = name;
 };
 
 const closeNameModal = () => {
@@ -661,17 +657,16 @@ const closeNameModal = () => {
 //Email Address
 const openUserEmailModal = () => {
     modalVisibleUserEmail.value = true;
+    newEmail.value = email;
 };
 
 const closeUserEmailModal = () => {
     modalVisibleUserEmail.value = false;
 };
 
-onMounted(fetchOrgProfileData);
-onMounted(fetchOrgAddress);
-onMounted(fetchOrgPhoneNumber);
+onMounted(fetchAddress);
+onMounted(fetchPhoneNumber);
 onMounted(fetchLogo);
-
 </script>
 
 <style scoped>

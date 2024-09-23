@@ -7,7 +7,6 @@ const authStore = reactive({
   apiBase: "http://localhost:8000",
   isAuthenticated: localStorage.getItem("auth") == 1,
   user: JSON.parse(localStorage.getItem("user")),
-  superadmin: JSON.parse(localStorage.getItem("superadmin")),
   errors: null,
 
   async fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
@@ -208,12 +207,12 @@ const authStore = reactive({
   // },
 
   //Find org data after any update
-  // getOrgData(orgId) {
-  //   this.fetchPublicApi(`/api/organisation/${orgId}`, {}, "GET").then(
+  // getUserData(userId) {
+  //   this.fetchPublicApi(`/api/user-data-local-update/${userId}`, {}, "GET").then(
   //     (res) => {
   //       if (res.status) {
-  //         this.org = res.data;
-  //         localStorage.setItem("org", JSON.stringify(res.data));
+  //         this.user = res.data;
+  //         localStorage.setItem("user", JSON.stringify(res.data));
   //       } else {
   //         this.errors = res.message;
   //       }
@@ -279,7 +278,7 @@ const authStore = reactive({
 
   updateCommittee(
     id,
-    name,
+    newName,
     short_description,
     start_date,
     end_date,
@@ -291,7 +290,7 @@ const authStore = reactive({
         // Correct the URL to use backticks for interpolation
         `/api/update_committee/${id}`,
         {
-          name: name,
+          name: newName,
           short_description: short_description,
           start_date: start_date,
           end_date: end_date,

@@ -8,7 +8,7 @@ const committeeList = ref([]);
 const modalVisible = ref(false);
 const isEditMode = ref(false);
 const selectedCommittee = ref(null);
-const name = ref('');
+const newName = ref('');
 const short_description = ref('');
 const start_date = ref('');
 const end_date = ref('');
@@ -36,7 +36,7 @@ const openModal = (committee = null) => {
   if (committee) {
     isEditMode.value = true;
     selectedCommittee.value = committee;
-    name.value = committee.name;
+    newName.value = committee.name;
     short_description.value = committee.short_description;
     start_date.value = committee.start_date;
     end_date.value = committee.end_date;
@@ -45,7 +45,7 @@ const openModal = (committee = null) => {
   } else {
     isEditMode.value = false;
     selectedCommittee.value = null;
-    name.value = '';
+    newName.value = '';
     short_description.value = '';
     start_date.value = '';
     end_date.value = '';
@@ -63,7 +63,7 @@ const closeModal = () => {
 // Create committee
 const createCommittee = async () => {
   try {
-    await auth.createCommittee(userId, name.value, short_description.value, start_date.value, end_date.value, note.value, status.value);
+    await auth.createCommittee(userId, newName.value, short_description.value, start_date.value, end_date.value, note.value, status.value);
     Swal.fire({
       icon: 'success',
       title: 'Committee created successfully',
@@ -80,7 +80,7 @@ const createCommittee = async () => {
 // Update committee
 const updateCommittee = async () => {
   try {
-    await auth.updateCommittee(selectedCommittee.value.id, name.value, short_description.value, start_date.value, end_date.value, note.value, status.value);
+    await auth.updateCommittee(selectedCommittee.value.id, newName.value, short_description.value, start_date.value, end_date.value, note.value, status.value);
     Swal.fire({
       icon: 'success',
       title: 'Committee updated successfully',
@@ -118,7 +118,7 @@ onMounted(fetchCommitteeList);
           <tr>
             <th class="py-2 px-4 text-left">Sl</th>
             <th class="py-2 px-4 text-left">User ID</th>
-            <th class="py-2 px-4 text-left">Name</th>
+            <th class="py-2 px-4 text-left">newName</th>
             <th class="py-2 px-4 text-left">Start Date</th>
             <th class="py-2 px-4 text-left">End Date</th>
             <th class="py-2 px-4 text-left">Status</th>
@@ -159,8 +159,8 @@ onMounted(fetchCommitteeList);
       </h2>
 
       <div class="mb-4">
-        <label for="name" class="block text-sm font-medium text-gray-700" required >Committee Name</label>
-        <input v-model="name" @keydown="handleKeyDown" type="text" id="name" required
+        <label for="newName" class="block text-sm font-medium text-gray-700" required >Committee newName</label>
+        <input v-model="newName" @keydown="handleKeyDown" type="text" id="newName" required
           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
       </div>
 
