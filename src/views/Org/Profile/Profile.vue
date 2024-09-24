@@ -302,6 +302,8 @@ const isEditModePhone = ref(false);
 // Org Name Change
 const modalVisibleName = ref(false);
 const newName = ref('');
+newName.value = name;
+
 
 // Org User Email Change
 const modalVisibleUserEmail = ref(false);
@@ -327,6 +329,24 @@ const fetchLogo = async () => {
     }
 };
 
+const updateName = async () => {
+    try {
+        const response = await auth.fetchProtectedApi(`/api/update-name/${userId}`, {
+            name: newName.value,
+        }, 'PUT');
+        if (response.status) {
+            Swal.fire('Success', 'Name updated successfully', 'success');
+        } else {
+            Swal.fire('Error', 'Failed to update name', 'error');
+        }
+        closeNameModal();
+        //user information auto mount korte hob e
+    } catch (error) {
+        console.error("Error updating Phone Number:", error);
+        Swal.fire('Error', 'Failed to update Phone Number', 'error');
+    }
+};
+
 const profileImageUpdate = async () => {
     if (selectedImage.value) {
         const formData = new FormData();
@@ -346,9 +366,6 @@ const profileImageUpdate = async () => {
         }
     }
 };
-
-
-
 
 const fetchOrgAddress = async () => {
     try {
@@ -458,23 +475,7 @@ const updateOrgPhoneNumber = async () => {
     }
 };
 
-const updateName = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/update-name/${userId}`, {
-            name: newName.value,
-        }, 'PUT');
-        if (response.status) {
-            Swal.fire('Success', 'Name updated successfully', 'success');
-        } else {
-            Swal.fire('Error', 'Failed to update name', 'error');
-        }
-        closeNameModal();
-        //user information auto mount korte hob e
-    } catch (error) {
-        console.error("Error updating Phone Number:", error);
-        Swal.fire('Error', 'Failed to update Phone Number', 'error');
-    }
-};
+
 
 const updateUserEmail = async () => {
     try {
