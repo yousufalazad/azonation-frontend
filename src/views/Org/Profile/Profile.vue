@@ -192,22 +192,14 @@
                     {{ isEditModePhone ? 'Edit mobile number' : 'Add Mobile Number' }}
                 </h2>
 
-                <!-- <div class="mb-4">
-                    <label for="dialing_code_id" class="block text-sm font-medium text-gray-700">dialing_code_id</label>
-                    <input v-model="dialing_code_id" type="text" id="dialing_code_id"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        required />
-                    <p v-if="auth.errors?.dialing_code_id" class="text-red-500 text-sm mt-1">{{
-                        auth.errors?.dialing_code_id[0] }}</p>
-                </div> -->
-
+               
                 
                 <div class="mb-4">
-                    <label for="dialing_code_id" class="block text-sm font-medium text-gray-700">Dialing Code</label>
+                    <label for="dialing_code_id" class="block text-sm font-medium text-gray-700 required">Dialing Code</label>
                     <select v-model="dialing_code_id" id="dialing_code_id"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         required>
-                        <option disabled value="">Select</option>
+                        <option value="">Select</option>
                         <option v-for="dialing_code in allDialingCodes" :key="dialing_code.id" :value="dialing_code.id">
                             {{ dialing_code.dialing_code }} - ({{ dialing_code.country_name }})
                         </option>
@@ -232,8 +224,19 @@
 
                 <div class="mb-4">
                     <label for="phone_type" class="block text-sm font-medium text-gray-700">phone_type (0/1/2/3)</label>
-                    <input v-model="phone_type" type="text" id="phone_type"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+
+                    <select v-model="phone_type" id="phone_type"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        required>
+                        <option disabled value="">Select</option>
+                        <option value="1">Mobile</option>
+                        <option value="2">Work</option>
+                        <option value="3">Home</option>
+                        <option value="4">Other</option>
+                                                
+                    </select>
+
+                    
                     <p v-if="auth.errors?.phone_type" class="text-red-500 text-sm mt-1">{{ auth.errors?.phone_type[0] }}
                     </p>
                 </div>
