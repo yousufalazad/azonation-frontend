@@ -2,7 +2,7 @@
     <!-- Logo Section -->
     <section>
         <h2 class="text-lg font-bold mb-4 left-color-shade py-2">Logo</h2>
-        <div class="mb-4 flex items-center justify-between pb-9">
+        <div class="mb-4 flex justify-between pb-9">
             <div v-if="logoPath">
                 <img :src="`${baseURL}${logoPath}`" alt="Logo" class="rounded-lg h-[150px] ml-5">
             </div>
@@ -18,7 +18,7 @@
     <!-- User name section -->
     <section>
         <div class="space-y-4">
-            
+
             <h3 class="text-lg font-bold mb-4 left-color-shade py-2">Name</h3>
 
             <p class="ml-5 pb-9">{{ name }}
@@ -39,7 +39,7 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         required />
                     <p v-if="auth.errors?.newName" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.newName[0] }}</p>
+                        auth.errors?.newName[0] }}</p>
                 </div>
 
 
@@ -62,8 +62,9 @@
         <div class="space-y-4">
             <h3 class="text-lg font-bold mb-4 left-color-shade py-2">Address</h3>
 
-            <p class="ml-5 pb-9"><span>{{ address_line_one }}</span>,{{ address_line_two }}, {{ city }}, {{ state_or_region }}, {{
-                postal_code }}, {{ country_id }}
+            <p class="ml-5 pb-9"><span>{{ address_line_one }}</span>,{{ address_line_two }}, {{ city }}, {{
+                state_or_region }}, {{
+                    postal_code }}, {{ country_id }}
                 <button @click="openAddressModal()" class="text-blue-500 pl-9">Edit</button>
             </p>
         </div>
@@ -83,7 +84,7 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         required />
                     <p v-if="auth.errors?.address_line_one" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.address_line_one[0] }}</p>
+                        auth.errors?.address_line_one[0] }}</p>
                 </div>
 
                 <div class="mb-4">
@@ -92,7 +93,7 @@
                     <input v-model="address_line_two" type="text" id="address_line_two"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
                     <p v-if="auth.errors?.address_line_two" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.address_line_two[0] }}</p>
+                        auth.errors?.address_line_two[0] }}</p>
                 </div>
 
                 <div class="mb-4">
@@ -108,7 +109,7 @@
                     <input v-model="state_or_region" type="text" id="state_or_region"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
                     <p v-if="auth.errors?.state_or_region" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.state_or_region[0] }}</p>
+                        auth.errors?.state_or_region[0] }}</p>
                 </div>
 
                 <div class="mb-4">
@@ -143,15 +144,31 @@
             </div>
         </div>
     </section>
-    
+
     <!-- Mobile number section -->
     <section>
         <div class="space-y-4">
             <h3 class="text-lg font-bold mb-4 left-color-shade py-2">Mobile number</h3>
 
-            <p class="ml-5 pb-9">{{ dialing_code_id }},{{ phone_number }}, {{ phone_type }}, {{ statusPhone }}
-                <button @click="openPhoneModal()" class="text-blue-500 pl-9">Edit</button>
-            </p>
+            <div class="flex justify-between">
+                <div>
+                    <p class="ml-5 pb-9 flex">
+                        <span>{{ dialing_code }}{{ phone_number }}</span>
+                        <span class="ml-16">Type:
+                            {{ phone_type === 1 ? 'Mobile' : phone_type === 2 ? 'Work' : phone_type === 3 ? 'Home' :
+                            'Others' }}
+                        </span>,
+                        <span class="ml-16">{{ statusPhone }}</span>
+                    </p>
+
+                </div>
+
+                <div>
+                    <button @click="openPhoneModal()" class="text-blue-500 pl-9 ml-16">Edit</button>
+
+                </div>
+            </div>
+
         </div>
 
         <!-- Mobile number Modal -->
@@ -168,7 +185,7 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         required />
                     <p v-if="auth.errors?.dialing_code_id" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.dialing_code_id[0] }}</p>
+                        auth.errors?.dialing_code_id[0] }}</p>
                 </div>
 
                 <div class="mb-4">
@@ -177,7 +194,7 @@
                     <input v-model="phone_number" type="text" id="phone_number"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
                     <p v-if="auth.errors?.phone_number" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.phone_number[0] }}</p>
+                        auth.errors?.phone_number[0] }}</p>
                 </div>
 
                 <div class="mb-4">
@@ -195,7 +212,7 @@
                     <input v-model="statusPhone" type="boolean" id="statusPhone"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
                     <p v-if="auth.errors?.statusPhone" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.statusPhone[0] }}</p>
+                        auth.errors?.statusPhone[0] }}</p>
                 </div>
 
 
@@ -221,9 +238,14 @@
         <div class="space-y-4">
             <h3 class="text-lg font-bold mb-2 left-color-shade py-2">User Email</h3>
 
-            <p class="ml-5 pb-9">{{ UserEmail }}
-                <button @click="openUserEmailModal()" class="text-blue-500 pl-9">Edit</button>
-            </p>
+            <div class="flex justify-between">
+                <div>
+                    <p class="ml-5 pb-9">{{ email }}
+                    </p>
+                </div>
+                <div><button @click="openEmailModal()" class="text-blue-500 pl-9">Edit</button></div>
+            </div>
+
         </div>
 
         <!-- User email Modal -->
@@ -235,18 +257,18 @@
                 </h2>
 
                 <div class="mb-4">
-                    <label for="email" class="block text-sm font-medium text-gray-700">User email address</label>
-                    <input v-model="email" type="email" id="email"
+                    <label for="newEmail" class="block text-sm font-medium text-gray-700">User email address</label>
+                    <input v-model="newEmail" type="newEmail" id="newEmail"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         required />
-                    <p v-if="auth.errors?.email" class="text-red-500 text-sm mt-1">{{
-                auth.errors?.email[0] }}</p>
+                    <p v-if="auth.errors?.newEmail" class="text-red-500 text-sm mt-1">{{
+                        auth.errors?.newEmail[0] }}</p>
                 </div>
 
 
                 <div class="flex justify-end">
                     <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
-                        @click="closeUserEmailModal">
+                        @click="closeEmailModal">
                         Close
                     </button>
 
@@ -270,7 +292,7 @@ import Swal from "sweetalert2";
 const auth = authStore;
 const userId = auth.user.id;
 const name = auth.user.name;
-const UserEmail = auth.user.email;
+const email = auth.user.email;
 const baseURL = 'http://localhost:8000';
 
 
@@ -291,6 +313,7 @@ const modalVisibleAddress = ref(false);
 const isEditMode = ref('');
 
 // Org Phone Number
+const dialing_code = ref('');
 const dialing_code_id = ref('');
 const phone_number = ref('');
 const phone_type = ref('');
@@ -302,20 +325,11 @@ const isEditModePhone = ref(false);
 // Org Name Change
 const modalVisibleName = ref(false);
 const newName = ref('');
-newName.value = name;
 
 
 // Org User Email Change
 const modalVisibleUserEmail = ref(false);
-const email = ref('');
-
-// // Modal logic
-// const isModalVisible = ref(false);
-// const modalTitle = ref('');
-// const modalModel = ref('');
-// const isTextarea = ref(false);
-// const fieldToUpdate = ref('');
-
+const newEmail = ref('');
 
 
 const fetchLogo = async () => {
@@ -326,24 +340,6 @@ const fetchLogo = async () => {
         }
     } catch (error) {
         console.error("Error fetching logo:", error);
-    }
-};
-
-const updateName = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/update-name/${userId}`, {
-            name: newName.value,
-        }, 'PUT');
-        if (response.status) {
-            Swal.fire('Success', 'Name updated successfully', 'success');
-        } else {
-            Swal.fire('Error', 'Failed to update name', 'error');
-        }
-        closeNameModal();
-        //user information auto mount korte hob e
-    } catch (error) {
-        console.error("Error updating Phone Number:", error);
-        Swal.fire('Error', 'Failed to update Phone Number', 'error');
     }
 };
 
@@ -366,6 +362,40 @@ const profileImageUpdate = async () => {
         }
     }
 };
+
+const updateName = async () => {
+    try {
+        const response = await auth.fetchProtectedApi(`/api/update-name/${userId}`, {
+            name: newName.value,
+        }, 'PUT');
+        if (response.status) {
+            // Success handling
+            Swal.fire('Success', response.message || 'Name updated successfully', 'success');
+
+            // Close the modal after successful update
+            closeNameModal();
+
+            // Update the name in localStorage explicitly
+            let user = JSON.parse(localStorage.getItem('user'));
+            if (user) {
+                user.name = newName.value;
+                localStorage.setItem('user', JSON.stringify(user));
+            }
+
+            // Optionally, you can reload the page or update the UI without reloading
+            window.location.reload();
+        } else {
+            // Display error message from server response
+            Swal.fire('Error', response.message || 'Failed to update name, please try again.', 'error');
+        }
+
+    } catch (error) {
+        // Catch block for any other errors
+        console.error("Error updating name:", error);
+        Swal.fire('Error', error.response?.data?.message || 'An unexpected error occurred while updating the name', 'error');
+    }
+};
+
 
 const fetchOrgAddress = async () => {
     try {
@@ -441,12 +471,12 @@ const fetchOrgPhoneNumber = async () => {
         const response = await auth.fetchProtectedApi(`/api/phone-number/${userId}`, {}, 'GET');
         // Ensure the response status is true and data exists
         if (response.status && response.data) {
-            dialing_code_id.value = response.data.dialing_code_id || '';
+            dialing_code.value = response.data.dialing_code || '';
             phone_number.value = response.data.phone_number || '';
             phone_type.value = response.data.phone_type || '';
             statusPhone.value = response.data.status || '';
         } else {
-            Swal.fire('Error', 'Failed to fetch organization Phone Number', 'error');
+            //Swal.fire('Error', 'Failed to fetch organization Phone Number', 'error');
         }
     } catch (error) {
         console.error("Error fetching organization Phone Number:", error);
@@ -476,19 +506,28 @@ const updateOrgPhoneNumber = async () => {
 };
 
 
-
 const updateUserEmail = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/update-email/${userId}`, {
-            email: email.value,
+            email: newEmail.value,
         }, 'PUT');
         if (response.status) {
             Swal.fire('Success', 'Email updated successfully', 'success');
+            // Close the modal after successful update
+            closeEmailModal();
+
+            // Update the name in localStorage explicitly
+            let user = JSON.parse(localStorage.getItem('user'));
+            if (user) {
+                user.email = newEmail.value;
+                localStorage.setItem('user', JSON.stringify(user));
+            }
+            // Now refresh the current page
+            window.location.reload();
         } else {
             Swal.fire('Error', 'Failed to update email', 'error');
         }
-        closeUserEmailModal();
-        //user information auto mount korte hob e
+
     } catch (error) {
         console.error("Error updating email:", error);
         Swal.fire('Error', 'Failed to update email', 'error');
@@ -500,14 +539,7 @@ const handleImageUpload = (event) => {
 };
 
 
-// const closeModal = () => {
-//     isModalVisible.value = false;
-// };
-
-
-
 //for Address
-
 const openAddressModal = () => {
 
     if (address_user_id.value === null) {
@@ -520,11 +552,6 @@ const openAddressModal = () => {
     //console.log('bahire', address_user_id)
     modalVisibleAddress.value = true;
 };
-
-// const openAddressModal = () => {
-//     isEditMode.value = true; //updateAddress() will work 
-//     modalVisibleAddress.value = true;
-// };
 
 const closeAddressModal = () => {
     modalVisibleAddress.value = false;
@@ -542,6 +569,7 @@ const closePhoneModal = () => {
 
 const openNameModal = () => {
     modalVisibleName.value = true;
+    newName.value = name;
 };
 
 const closeNameModal = () => {
@@ -549,11 +577,12 @@ const closeNameModal = () => {
 };
 
 //Email Address
-const openUserEmailModal = () => {
+const openEmailModal = () => {
     modalVisibleUserEmail.value = true;
+    newEmail.value = email;
 };
 
-const closeUserEmailModal = () => {
+const closeEmailModal = () => {
     modalVisibleUserEmail.value = false;
 };
 
