@@ -20,10 +20,15 @@
         <div class="space-y-4">
 
             <h3 class="text-lg font-bold mb-4 left-color-shade py-2">Name</h3>
+            <div class="flex justify-between">
+                <div>
+                    <p class="ml-5 pb-9">{{ name }}
+                    </p>
+                </div>
+                <div><button @click="openNameModal()" class="text-blue-500 pl-9 pr-2">Edit</button></div>
+            </div>
 
-            <p class="ml-5 pb-9">{{ name }}
-                <button @click="openNameModal()" class="text-blue-500 pl-9">Edit</button>
-            </p>
+
         </div>
 
         <!-- User name Modal -->
@@ -61,12 +66,17 @@
     <section>
         <div class="space-y-4">
             <h3 class="text-lg font-bold mb-4 left-color-shade py-2">Address</h3>
+            <div class="flex justify-between">
+                <div>
+                    <p class="ml-5 pb-9"><span>{{ address_line_one }}</span>,{{ address_line_two }}, {{ city }}, {{
+                        state_or_region }}, {{ postal_code }}, {{ country_name }}
+                    </p>
+                </div>
+                <div><button @click="openAddressModal()" class="text-blue-500 pl-9 pr-2">Edit</button></div>
+            </div>
 
-            <p class="ml-5 pb-9"><span>{{ address_line_one }}</span>,{{ address_line_two }}, {{ city }}, {{
-                state_or_region }}, {{
-                    postal_code }}, {{ country_id }}
-                <button @click="openAddressModal()" class="text-blue-500 pl-9">Edit</button>
-            </p>
+
+
         </div>
 
         <!-- Modal -->
@@ -156,15 +166,18 @@
                         <span>{{ dialing_code }}{{ phone_number }}</span>
                         <span class="ml-16">Type:
                             {{ phone_type === 1 ? 'Mobile' : phone_type === 2 ? 'Work' : phone_type === 3 ? 'Home' :
-                            'Others' }}
+                                'Others' }}
                         </span>,
-                        <span class="ml-16">{{ statusPhone }}</span>
+                        <span class="ml-16">Status: {{ statusPhone === 1 ? 'Private' : statusPhone === 2 ?
+                            'Connected organisation and only for connected organisations member' : statusPhone === 3 ?
+                                'Public' :
+                            'Others' }}</span>
                     </p>
 
                 </div>
 
                 <div>
-                    <button @click="openPhoneModal()" class="text-blue-500 pl-9 ml-16">Edit</button>
+                    <button @click="openPhoneModal()" class="text-blue-500 pl-9 ml-16 pr-2">Edit</button>
 
                 </div>
             </div>
@@ -179,20 +192,40 @@
                     {{ isEditModePhone ? 'Edit mobile number' : 'Add Mobile Number' }}
                 </h2>
 
-                <div class="mb-4">
+                <!-- <div class="mb-4">
                     <label for="dialing_code_id" class="block text-sm font-medium text-gray-700">dialing_code_id</label>
                     <input v-model="dialing_code_id" type="text" id="dialing_code_id"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         required />
                     <p v-if="auth.errors?.dialing_code_id" class="text-red-500 text-sm mt-1">{{
                         auth.errors?.dialing_code_id[0] }}</p>
+                </div> -->
+
+                
+                <div class="mb-4">
+                    <label for="dialing_code_id" class="block text-sm font-medium text-gray-700">Dialing Code</label>
+                    <select v-model="dialing_code_id" id="dialing_code_id"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        required>
+                        <option disabled value="">Select</option>
+                        <option v-for="dialing_code in allDialingCodes" :key="dialing_code.id" :value="dialing_code.id">
+                            {{ dialing_code.dialing_code }} - ({{ dialing_code.country_name }})
+                        </option>
+                    </select>
+                    <p v-if="auth.errors?.dialing_code_id" class="text-red-500 text-sm mt-1">
+                        {{ auth.errors?.dialing_code_id[0] }}
+                    </p>
                 </div>
+
 
                 <div class="mb-4">
                     <label for="phone_number" class="block text-sm font-medium text-gray-700">phone_number (number
                         only)</label>
+
                     <input v-model="phone_number" type="text" id="phone_number"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        @input="phone_number = phone_number.replace(/\D/g, '')" required />
+
                     <p v-if="auth.errors?.phone_number" class="text-red-500 text-sm mt-1">{{
                         auth.errors?.phone_number[0] }}</p>
                 </div>
@@ -237,13 +270,16 @@
     <section>
         <div class="space-y-4">
             <h3 class="text-lg font-bold mb-2 left-color-shade py-2">User Email</h3>
-
             <div class="flex justify-between">
                 <div>
                     <p class="ml-5 pb-9">{{ email }}
+                        <span class="ml-16">Status: {{ statusPhone === 1 ? 'Private' : statusPhone === 2 ?
+                            'Connected organisation and only for connected organisations member' : statusPhone === 3 ?
+                                'Public' :
+                            'Others' }}</span>
                     </p>
                 </div>
-                <div><button @click="openEmailModal()" class="text-blue-500 pl-9">Edit</button></div>
+                <div><button @click="openEmailModal()" class="text-blue-500 pl-9 pr-2">Edit</button></div>
             </div>
 
         </div>
@@ -309,6 +345,7 @@ const city = ref('');
 const state_or_region = ref('');
 const postal_code = ref('');
 const country_id = ref('');
+const country_name = ref('');
 const modalVisibleAddress = ref(false);
 const isEditMode = ref('');
 
@@ -320,6 +357,8 @@ const phone_type = ref('');
 const statusPhone = ref(''); //status defined in address
 const modalVisiblePhone = ref(false);
 const isEditModePhone = ref(false);
+
+const allDialingCodes = ref([]);
 
 
 // Org Name Change
@@ -396,7 +435,6 @@ const updateName = async () => {
     }
 };
 
-
 const fetchOrgAddress = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/address/${userId}`, {}, 'GET');
@@ -409,7 +447,7 @@ const fetchOrgAddress = async () => {
             city.value = response.data.city || '';
             state_or_region.value = response.data.state_or_region || '';
             postal_code.value = response.data.postal_code || '';
-            country_id.value = response.data.country_id || '';
+            country_name.value = response.data.country_name || '';
         } else {
             Swal.fire('Error', 'Failed to fetch organization address', 'error');
         }
@@ -505,6 +543,23 @@ const updateOrgPhoneNumber = async () => {
     }
 };
 
+const fetchDialingCode = async () => {
+    try {
+        const response = await auth.fetchProtectedApi("/api/dialing-codes/", {}, 'GET');
+        // Ensure the response status is true and data exists
+        if (response.status && response.data) {
+            allDialingCodes.value = response.data;
+            console.log(allDialingCodes);
+            // country_id.value = response.data.country_id || '';
+            // dialing_code.value = response.data.dialing_code || '';
+        } else {
+            //Swal.fire('Error', 'Failed to fetch dialing code', 'error');
+        }
+    } catch (error) {
+        console.error("Error fetching dialing code:", error);
+        Swal.fire('Error', 'Failed to fetch dialing code', 'error');
+    }
+};
 
 const updateUserEmail = async () => {
     try {
@@ -586,6 +641,7 @@ const closeEmailModal = () => {
     modalVisibleUserEmail.value = false;
 };
 
+onMounted(fetchDialingCode);
 onMounted(fetchOrgAddress);
 onMounted(fetchOrgPhoneNumber);
 onMounted(fetchLogo);
