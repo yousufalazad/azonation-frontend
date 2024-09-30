@@ -40,6 +40,8 @@ import UpcomingEvents from "../views/Org/Event/EventList.vue";
 import CreateProject from "../views/Org/Project/Create.vue";
 import Projects from "../views/Org/Project/Index.vue";
 
+import Founders from "../views/Org/Founder/Create.vue";
+
 //SuperAdmin
 import SuperAdminRegister from "../views/SuperAdmin/Profile/Register.vue";
 import SuperAdminDashboard from "../views/SuperAdmin/Profile/SuperAdminDashboard.vue";
@@ -173,6 +175,12 @@ const routes = [
         path: "projects",
         name: "projects",
         component: Projects,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "founders",
+        name: "founders",
+        component: Founders,
         meta: { requiresAuth: true },
       },
     ],

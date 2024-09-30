@@ -1,15 +1,7 @@
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
-import Quill from 'quill';
-import 'quill/dist/quill.snow.css'; // Import Quill CSS
-
-// Quill
-let quillRequirements = null;
-let quillNote = null;
-let quillShortDescription = null;
-let quillDescription = null;
 
 const auth = authStore;
 const userId = auth.user.id; // Assuming the org ID is stored in the logged-in user
@@ -67,29 +59,6 @@ const openModal = (project = null) => {
     conduct_type.value = '';
   }
   modalVisible.value = true;
-  // Delay to ensure modal is visible, then initialize Quill
-  nextTick(() => {
-    if (!quillRequirements) {
-      quillRequirements = new Quill('#requirements-editor', { theme: 'snow' });
-    }
-    if (!quillNote) {
-      quillNote = new Quill('#note-editor', { theme: 'snow' });
-    }
-    if (!quillShortDescription) {
-      quillShortDescription = new Quill('#short-description-editor', { theme: 'snow' });
-    }
-    if (!quillDescription) {
-      quillDescription = new Quill('#description-editor', { theme: 'snow' });
-    }
-
-    // Set existing values to Quill editor if editing
-    if (isEditMode.value) {
-      quillRequirements.root.innerHTML = requirements.value || '';
-      quillNote.root.innerHTML = note.value || '';
-      quillShortDescription.root.innerHTML = short_description.value || '';
-      quillDescription.root.innerHTML = description.value || '';
-    }
-  });
 };
 
 const closeModal = () => {
@@ -97,11 +66,6 @@ const closeModal = () => {
 };
 
 const createProject = async () => {
-  requirements.value = quillRequirements.root.innerHTML;
-  note.value = quillNote.root.innerHTML;
-  short_description.value = quillShortDescription.root.innerHTML;
-  description.value = quillDescription.root.innerHTML;
-
   try {
     await auth.createProject(userId, title.value, short_description.value, description.value, start_date.value, end_date.value, start_time.value, end_time.value, venue_name.value, venue_address.value, requirements.value, note.value, status.value, conduct_type.value);
     Swal.fire({
@@ -118,11 +82,6 @@ const createProject = async () => {
 };
 
 const updateProject = async () => {
-  requirements.value = quillRequirements.root.innerHTML;
-  note.value = quillNote.root.innerHTML;
-  short_description.value = quillShortDescription.root.innerHTML;
-  description.value = quillDescription.root.innerHTML;
-
   try {
     await auth.updateProject(selectedProject.value.id, title.value, short_description.value, description.value, start_date.value, end_date.value, start_time.value, end_time.value, venue_name.value, venue_address.value, requirements.value, note.value, status.value, conduct_type.value);
     Swal.fire({
@@ -195,24 +154,16 @@ onMounted(fetchProjectList);
               <tr v-for="project in projectList" :key="project.id" class="hover:bg-gray-50">
                 <td class="px-4 py-3 text-sm text-gray-700">{{ project.id }}</td>
                 <td class="px-4 py-3 text-sm text-gray-700">{{ project.title }}</td>
-                <!-- <td class="px-4 py-3 text-sm text-gray-700">{{ project.short_description }}</td>
-                <td class="px-4 py-3 text-sm text-gray-700">{{ project.description }}</td> -->
-
-                <td class="px-4 py-3 text-sm text-gray-700" v-html="project.short_description"></td>
-                <td class="px-4 py-3 text-sm text-gray-700" v-html="project.description"></td>
-
+                <td class="px-4 py-3 text-sm text-gray-700">{{ project.short_description }}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">{{ project.description }}</td>
                 <td class="px-4 py-3 text-sm text-gray-700">{{ project.start_date }}</td>
                 <td class="px-4 py-3 text-sm text-gray-700">{{ project.end_date }}</td>
                 <td class="px-4 py-3 text-sm text-gray-700">{{ project.start_time }}</td>
                 <td class="px-4 py-3 text-sm text-gray-700">{{ project.end_time }}</td>
                 <td class="px-4 py-3 text-sm text-gray-700">{{ project.venue_name }}</td>
                 <td class="px-4 py-3 text-sm text-gray-700">{{ project.venue_address }}</td>
-                <!-- <td class="px-4 py-3 text-sm text-gray-700">{{ project.requirements }}</td>
-                <td class="px-4 py-3 text-sm text-gray-700">{{ project.note }}</td> -->
-
-                <td class="px-4 py-3 text-sm text-gray-700" v-html="project.requirements"></td>
-                <td class="px-4 py-3 text-sm text-gray-700" v-html="project.note"></td>
-
+                <td class="px-4 py-3 text-sm text-gray-700">{{ project.requirements }}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">{{ project.note }}</td>
                 <td class="px-4 py-3 text-sm text-gray-700">{{ project.status }}</td>
                 <td class="px-4 py-3 text-sm text-gray-700">{{ project.conduct_type }}</td>
                 <td class="px-4 py-3">
@@ -248,21 +199,20 @@ onMounted(fetchProjectList);
           </div>
 
           <!-- Short Description -->
-          <!-- <div>
+          <div>
             <label for="short_description" class="block text-sm font-medium text-gray-700">Short Description</label>
             <input v-model="short_description" type="text" id="short_description"
               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-8"
               placeholder="Brief description">
-          </div> -->
+          </div>
 
           <!-- Description -->
-
-          <!-- <div>
+          <div>
             <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
             <input v-model="description" type="text" id="description"
               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-8"
               placeholder="Detailed description">
-          </div> -->
+          </div>
 
           <!-- Venue Information -->
           <div>
@@ -335,7 +285,8 @@ onMounted(fetchProjectList);
         </div>
 
         <!-- Large Text Areas -->
-        <!-- <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <!-- Requirements -->
           <div class="lg:col-span-2">
             <label for="requirements" class="block text-sm font-medium text-gray-700">Requirements</label>
             <textarea v-model="requirements" id="requirements" rows="3"
@@ -343,37 +294,14 @@ onMounted(fetchProjectList);
               placeholder="Enter any specific requirements"></textarea>
           </div>
 
+          <!-- Note -->
           <div class="lg:col-span-2">
             <label for="note" class="block text-sm font-medium text-gray-700">Note</label>
             <textarea v-model="note" id="note" rows="4"
               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               placeholder="Additional notes"></textarea>
           </div>
-        </div> -->
-
-        <!-- Quill editor for Requirements -->
-        <div class="lg:col-span-2">
-            <label for="requirements" class="block text-sm font-medium text-gray-700">Requirements</label>
-            <div id="requirements-editor" class="mt-1 h-40"></div>
-          </div>
-
-          <!-- Quill editor for Note -->
-          <div class="lg:col-span-2">
-            <label for="note" class="block text-sm font-medium text-gray-700">Note</label>
-            <div id="note-editor" class="mt-1 h-40"></div>
-          </div>
-
-          <!-- Quill editor for description -->
-          <div class="lg:col-span-2">
-            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-            <div id="description-editor" class="mt-1 h-40"></div>
-          </div>
-
-          <!-- Quill editor for short-description-editor -->
-          <div class="lg:col-span-2">
-            <label for="short-description" class="block text-sm font-medium text-gray-700">Short Description</label>
-            <div id="short-description-editor" class="mt-1 h-40"></div>
-          </div>
+        </div>
 
         <!-- Action Buttons -->
         <div class="flex justify-end gap-4">
