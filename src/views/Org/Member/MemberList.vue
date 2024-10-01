@@ -33,36 +33,36 @@ onMounted(fetchMemberList);
       <div>
 
         <a href="/org-dashboard/add-member">
-          <button class="text-md text-white font-semibold bg-blue-600 p-2 rounded mr-2">
+          <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mr-2">
             Full list
           </button>
         </a>
 
         <a href="/org-dashboard/add-member">
-          <button class="text-md text-white font-semibold bg-blue-600 p-2 rounded mx-2">
+          <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
             Print
           </button>
         </a>
 
         <a href="/org-dashboard/add-member">
-          <button class="text-md text-white font-semibold bg-blue-600 p-2 rounded mx-2">
+          <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
             PDF
           </button>
         </a>
 
         <a href="/org-dashboard/add-member">
-          <button class="text-md text-white font-semibold bg-blue-600 p-2 rounded mx-2">
+          <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
             Excel
           </button>
         </a>
 
         <a href="/org-dashboard/add-member">
-          <button class="text-md text-white font-semibold bg-blue-600 p-2 rounded mx-2">
+          <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
             Settings
           </button>
         </a>
         <a href="/org-dashboard/add-member">
-          <button class="text-md text-white font-semibold bg-blue-600 p-2 rounded mx-2">
+          <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
             Past members
           </button>
         </a>
@@ -115,25 +115,25 @@ onMounted(fetchMemberList);
       <div>
 
 <a href="/org-dashboard/add-member">
-  <button class="text-md text-white font-semibold bg-blue-600 p-2 rounded mr-2">
+  <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mr-2">
     Print
   </button>
 </a>
 
 <a href="/org-dashboard/add-member">
-  <button class="text-md text-white font-semibold bg-blue-600 p-2 rounded mx-2">
+  <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
     PDF
   </button>
 </a>
 
 <a href="/org-dashboard/add-member">
-  <button class="text-md text-white font-semibold bg-blue-600 p-2 rounded mx-2">
+  <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
     Excel
   </button>
 </a>
 
 <a href="/org-dashboard/add-member">
-  <button class="text-md text-white font-semibold bg-blue-600 p-2 rounded mx-2">
+  <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
     Settings
   </button>
 </a>

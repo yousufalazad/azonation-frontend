@@ -1,3 +1,4 @@
+<!-- AddMember.vue -->
 <script setup>
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
@@ -26,13 +27,9 @@ const getFounders = async () => {
     }
 };
 
-// Open edit modal and show name for all
+// Open edit modal
 const openEditModal = (founder) => {
-    selectedFounder.value = {
-        id: founder.id,
-        name: founder.founders && founder.founders.name ? founder.founders.name : founder.name,
-        designation: founder.designation
-    }; // Set founder's name and designation
+    selectedFounder.value = { ...founder }; // Clone founder's data
     isEditModalOpen.value = true;
 };
 
@@ -57,7 +54,7 @@ const updateDesignation = async () => {
         if (result.isConfirmed) {
             const response = await authStore.fetchProtectedApi(`/api/update-founder/${selectedFounder.value.id}`, {
                 designation: selectedFounder.value.designation
-            }, 'PUT');
+            }, 'POST');
 
             if (response.status) {
                 await Swal.fire('Updated!', 'Founder designation updated successfully.', 'success');
@@ -79,9 +76,7 @@ const updateDesignation = async () => {
 
 // Fetch founders when the component is mounted
 onMounted(getFounders);
-
 </script>
-
 
 
 

@@ -1,17 +1,24 @@
+<!-- AddMember.vue -->
 <script setup>
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
 
 const auth = authStore;
+const searchQuery = ref('');
+const searchResults = ref([]);
+const selectedIndividual = ref(null);
 const userId = auth.user.id; // Assuming the org ID is stored in the logged-in user
+const baseURL = 'http://localhost:8000';
 
-// Data properties
 const founderList = ref([]);
-const isEditModalOpen = ref(false); // Controls the display of the edit modal
-const selectedFounder = ref({ id: null, name: '', designation: '' }); // Stores the selected founder's info
+const addedFounder = ref([]);
+const name = ref('');
+const designation = ref('');
 
-// Fetch founders list
+const showForm = ref(false); // initially, the form is hidden
+const showAddFounderSection = ref(false); // controls the display of "Search and Add Founder" section
+
 const getFounders = async () => {
     try {
         const response = await authStore.fetchProtectedApi(`/api/get-founder/${userId}`, {}, 'GET');
@@ -21,69 +28,107 @@ const getFounders = async () => {
             founderList.value = [];
         }
     } catch (error) {
-        console.error("Error fetching founders list:", error);
+        console.error("Error fetching member list:", error);
         founderList.value = [];
     }
 };
 
-// Open edit modal and show name for all
-const openEditModal = (founder) => {
-    selectedFounder.value = {
-        id: founder.id,
-        name: founder.founders && founder.founders.name ? founder.founders.name : founder.name,
-        designation: founder.designation
-    }; // Set founder's name and designation
-    isEditModalOpen.value = true;
+const searchIndividuals = async () => {
+    try {
+        const response = await auth.fetchPublicApi('/api/search_individual', { query: searchQuery.value }, 'POST');
+        if (response.status) {
+            searchResults.value = response.data;
+            //console.log(response.data);
+        } else {
+            searchResults.value = [];
+        }
+    } catch (error) {
+        console.error("Error searching individuals:", error);
+        searchResults.value = [];
+    }
 };
 
-// Close edit modal
-const closeEditModal = () => {
-    isEditModalOpen.value = false;
-    selectedFounder.value = { id: null, name: '', designation: '' }; // Reset selected founder data
-};
-
-// Update founder's designation
-const updateDesignation = async () => {
+const addFounder = async (individualTypeUserId) => {
+    //console.log('Founder user id:', individualTypeUserId);
     try {
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: "Do you want to update this founder's designation?",
+            text: "Do you want to add as a founder?",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Yes, update it!',
+            confirmButtonText: 'Yes, add it!',
             cancelButtonText: 'No, cancel!'
         });
 
         if (result.isConfirmed) {
-            const response = await authStore.fetchProtectedApi(`/api/update-founder/${selectedFounder.value.id}`, {
-                designation: selectedFounder.value.designation
-            }, 'PUT');
-
+            const response = await auth.fetchProtectedApi('/api/create-founder', { user_id: userId, founder_user_id: individualTypeUserId }, 'POST');
             if (response.status) {
-                await Swal.fire('Updated!', 'Founder designation updated successfully.', 'success');
-                // Update the founderList after successful edit
-                const index = founderList.value.findIndex(f => f.id === selectedFounder.value.id);
-                if (index !== -1) {
-                    founderList.value[index].designation = selectedFounder.value.designation;
-                }
-                closeEditModal();
+                await Swal.fire(
+                    'Added!',
+                    'Founder added successfully.',
+                    'success'
+                );
+                window.location.reload();
             } else {
-                Swal.fire('Failed!', 'Failed to update designation.', 'error');
+                Swal.fire(
+                    'Failed!',
+                    'Failed to add founder.',
+                    'error'
+                );
             }
         }
     } catch (error) {
-        console.error("Error updating designation:", error);
-        Swal.fire('Error!', 'Failed to update designation.', 'error');
+        console.error("Error adding founder:", error);
+        Swal.fire(
+            'Error!',
+            'Failed to add founder.',
+            'error'
+        );
     }
 };
 
-// Fetch founders when the component is mounted
+const addUnlinkFounder = async () => {
+    try {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "Do you want to add as a founder?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, add it!',
+            cancelButtonText: 'No, cancel!'
+        });
+        if (result.isConfirmed) {
+            const response = await authStore.fetchProtectedApi('/api/create-founder', { user_id: userId, name: name.value, designation: designation.value }, 'POST');
+            if (response.status && response.data) {
+                addedFounder.value = response.data;
+                //console.log(addedFounder);
+                await Swal.fire(
+                    'Added!',
+                    // addedFounder.name - addedFounder.designation,
+                    'Founder added successfully.',
+                    'success'
+                );
+                window.location.reload();
+
+            } else {
+                addedFounder.value = [];
+                Swal.fire(
+                    'Failed!',
+                    'Failed to add founder.',
+                    'error'
+                );
+            }
+        }
+    } catch (error) {
+        console.error("Error fetching member list:", error);
+        addedFounder.value = [];
+    }
+};
+
+
 onMounted(getFounders);
 
 </script>
-
-
-
 
 <template>
     <!-- Search and Add Founder section - initially hidden, toggled by the button -->
