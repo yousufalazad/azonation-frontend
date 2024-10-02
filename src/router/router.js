@@ -18,14 +18,19 @@ import OrgRegister from "../views/Org/Profile/Register.vue";
 import OrgDashboard from "../views/Org/Layouts/Dashboard/Index.vue";
 import OrgDashboardInitialContent from "@/views/Org/Layouts/Dashboard/InitialContent.vue";
 
-// Profile
+// Org Profile
 import Profile from "../views/Org/Profile/Profile.vue";
-import Settings from "../views/Org/Profile/Settings.vue";
 import fundamentalInfo from "../views/Org/Profile/FundamentalInfo.vue";
+import MyAccount from "../views/Org/Profile/MyAccount.vue";
+import OrgSecurity from "../views/Org/Profile/Security.vue";
+import OrgSettings from "../views/Org/Profile/Settings.vue";
 
+
+//Org Member
 import AddMember from "../views/Org/Member/AddMember.vue";
 import MemberList from "../views/Org/Member/MemberList.vue";
 
+//Committee
 import CommitteeList from "../views/Org/Committee/CommitteeList.vue";
 import CreateCommittee from "../views/Org/Committee/CreateCommittee.vue";
 import FormerCommitteeList from "../views/Org/Committee/FormerCommitteeList.vue";
@@ -88,21 +93,9 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "profile",
-        name: "profile",
-        component: Profile,
-        meta: { requiresAuth: true },
-      },
-      {
         path: "fundamental-info",
         name: "fundamental-info",
         component: fundamentalInfo,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "settings",
-        name: "settings",
-        component: Settings,
         meta: { requiresAuth: true },
       },
       {
@@ -183,6 +176,35 @@ const routes = [
         component: Founders,
         meta: { requiresAuth: true },
       },
+      {
+        path: "my-account",
+        name: "my-account",
+        component: MyAccount,
+        meta: { requiresAuth: true },
+
+      children: 
+      [
+        {
+          path: "profile",
+          name: "profile",
+          component: Profile,
+          meta: { requiresAuth: true },
+        },
+        
+        {
+          path: "org-security",
+          name: "org-security",
+          component: OrgSecurity,
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "org-settings",
+          name: "org-settings",
+          component: OrgSettings,
+          meta: { requiresAuth: true },
+        },
+      ],
+    },
     ],
   },
 
@@ -215,6 +237,12 @@ const routes = [
         path: "individual-profile-update",
         name: "individual-profile-update",
         component: IndividualProfileUpdate,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "my-account-individual",
+        name: "my-account-individual",
+        component: MyAccount,
         meta: { requiresAuth: true },
       },
     ],
