@@ -9,13 +9,13 @@ const auth = authStore;
 const userId = auth.user.id; // Assuming the user ID is stored in the logged-in user
 const title = ref('');
 const image = ref(null);
-const document = ref(null); // Document file for upload
+const document = ref(null);
 const history = ref(''); // This will be managed by Quill
 const status = ref(1); // Default to Active (1)
 const quillInstance = ref(null);
 const isEditMode = ref(false); // Toggle between add and edit modes
 const selectedRecordId = ref(null); // Store the ID of the record to edit
-const recordList = ref([]); // Data list for the table
+const recordList = ref([]); // Data list for table
 
 // Fetch list of records
 const getRecords = async () => {
@@ -56,7 +56,6 @@ const initializeQuill = () => {
 const resetForm = () => {
     title.value = '';
     image.value = null;
-    document.value = null;
     quillInstance.value.root.innerHTML = ''; // Reset Quill content
     status.value = 1; // Default to Active
     isEditMode.value = false;
@@ -66,11 +65,6 @@ const resetForm = () => {
 // Handle image file change
 const handleImageChange = (event) => {
     image.value = event.target.files[0]; // Store the uploaded file
-};
-
-// Handle document file change
-const handleDocumentChange = (event) => {
-    document.value = event.target.files[0]; // Store the uploaded document
 };
 
 // Add or update a record
@@ -202,10 +196,10 @@ onMounted(() => {
                     <div id="history-editor" class="w-full border border-gray-300 rounded-md" style="min-height: 150px;"></div>
                 </div>
 
-                 <!-- Document input -->
+                 <!-- document input -->
                  <div class="mb-4">
-                    <label for="document" class="block text-gray-700 font-semibold mb-2">Upload Document</label>
-                    <input @change="handleDocumentChange" type="file" id="document" class="w-full border border-gray-300 rounded-md py-2 px-4" accept=".pdf,.doc,.docx,.xlsx" />
+                    <label for="document" class="block text-gray-700 font-semibold mb-2">Upload document</label>
+                    <input @change="handleDocumentUpload" type="file" id="document" class="w-full border border-gray-300 rounded-md py-2 px-4" accept="image/*" />
                 </div>
 
                 <!-- Status dropdown -->
@@ -227,34 +221,37 @@ onMounted(() => {
         <!-- Record list -->
         <section>
             <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold">Organizational History Records</h5>
+                <h5 class="text-md font-semibold mt-2">Organizational Histories List</h5>
             </div>
-
-            <div class="overflow-auto">
-                <table class="min-w-full border-collapse block md:table">
-                    <thead class="block md:table-header-group">
-                        <tr class="border border-gray-300 md:border-none block md:table-row">
-                            <th class="p-2 md:border md:border-gray-300 text-left block md:table-cell">#</th>
-                            <th class="p-2 md:border md:border-gray-300 text-left block md:table-cell">Title</th>
-                            <th class="p-2 md:border md:border-gray-300 text-left block md:table-cell">History</th>
-                            <th class="p-2 md:border md:border-gray-300 text-left block md:table-cell">Status</th>
-                            <th class="p-2 md:border md:border-gray-300 text-left block md:table-cell">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody class="block md:table-row-group">
-                        <tr v-for="(record, index) in recordList" :key="record.id" class="border border-gray-300 md:border-none block md:table-row">
-                            <td class="p-2 md:border md:border-gray-300 block md:table-cell">{{ index + 1 }}</td>
-                            <td class="p-2 md:border md:border-gray-300 block md:table-cell">{{ record.title }}</td>
-                            <td class="p-2 md:border md:border-gray-300 block md:table-cell" v-html="sanitize(record.history)"></td>
-                            <td class="p-2 md:border md:border-gray-300 block md:table-cell">{{ record.status === 1 ? 'Active' : 'Disabled' }}</td>
-                            <td class="p-2 md:border md:border-gray-300 block md:table-cell">
-                                <button @click="editRecord(record)" class="text-blue-600 hover:text-blue-800">Edit</button>
-                                <button @click="deleteRecord(record.id)" class="text-red-600 hover:text-red-800 ml-4">Delete</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <table class="min-w-full table-auto border-collapse border border-gray-300 text-left">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="border px-4 py-2">SL</th>
+                        <th class="py-2 px-4 border border-gray-300">User</th>
+                        <th class="py-2 px-4 border border-gray-300">Title</th>
+                        <th class="py-2 px-4 border border-gray-300">History</th>
+                        <th class="py-2 px-4 border border-gray-300">Status</th>
+                        <th class="py-2 px-4 border border-gray-300">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(record, index) in recordList" :key="record.id">
+                        <td class="py-2 px-4 border border-gray-300">{{ index + 1 }}</td>
+                        <td class="py-2 px-4 border border-gray-300">{{ record.user.name }}</td>
+                        <td class="py-2 px-4 border border-gray-300">{{ record.title }}</td>
+                        <td class="py-2 px-4 border border-gray-300" v-html="sanitize(record.history)"></td>
+                        <td class="py-2 px-4 border border-gray-300">
+                            <span :class="record.status ? 'text-green-600' : 'text-red-600'">
+                                {{ record.status ? 'Active' : 'Disabled' }}
+                            </span>
+                        </td>
+                        <td class="py-2 px-4 border border-gray-300">
+                            <button @click="editRecord(record)" class="bg-yellow-500 hover:bg-yellow-600 text-white rounded-md py-1 px-3 mr-2">Edit</button>
+                            <button @click="deleteRecord(record.id)" class="bg-red-600 hover:bg-red-700 text-white rounded-md py-1 px-3">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </section>
     </div>
 </template>
