@@ -77,10 +77,10 @@
 
           <!-- Menu Links -->
           <ul class="pt-2">
-            <li><a href="/org-dashboard/my-account" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">My
+            <li><a href="/org-dashboard/my-account/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">My
                 account</a>
             </li>
-            <li><a href="/org-dashboard/settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
+            <li><a href="/org-dashboard/my-account/org-settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
             </li>
             <li><a href="/org-dashboard/subscription"
                 class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Subscriptions</a></li>

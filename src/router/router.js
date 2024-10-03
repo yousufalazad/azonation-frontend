@@ -24,8 +24,14 @@ import History from "../views/Org/History/Index.vue";
 //StrategicPlan
 import StrategicPlan from "../views/Org/StrategicPlan/Index.vue";
 
+//Year plan
+import YearPlan from "../views/Org/YearPlan/Index.vue"
+
 //Success Story
 import SuccessStory from "../views/Org/SuccessStory/Index.vue";
+
+//Recognition
+import Recognition from "../views/Org/Recognition/Index.vue"
 
 // Org Profile
 import Profile from "../views/Org/Profile/Profile.vue";
@@ -44,17 +50,30 @@ import CommitteeList from "../views/Org/Committee/CommitteeList.vue";
 import CreateCommittee from "../views/Org/Committee/CreateCommittee.vue";
 import FormerCommitteeList from "../views/Org/Committee/FormerCommitteeList.vue";
 
+//Meeting
 import CreateMeeting from "../views/Org/Meeting/Create.vue";
 import OrgPreviousMeetingList from "../views/Org/Meeting/PastMeetingList.vue";
 import InviteMeeting from "../views/Org/Meeting/InviteMeeting.vue";
 
+//Event
 import CreateEvent from "../views/Org/Event/CreateEvent.vue";
 import UpcomingEvents from "../views/Org/Event/EventList.vue";
 
+//Project
 import CreateProject from "../views/Org/Project/Create.vue";
 import Projects from "../views/Org/Project/Index.vue";
 
+//Founder
 import Founders from "../views/Org/Founder/Create.vue";
+
+//Report
+import OrgReport from "../views/Org/Report/Index.vue";
+
+//Record
+import OfficeRecord from "../views/Org/OfficeRecord/Index.vue";
+
+//Accounts
+import Accounts from "../views/Org/Accounts/Index.vue";
 
 //SuperAdmin
 import SuperAdminRegister from "../views/SuperAdmin/Profile/Register.vue";
@@ -192,6 +211,12 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
+        path: "year-plan",
+        name: "year-plan",
+        component: YearPlan,
+        meta: { requiresAuth: true },
+      },
+      {
         path: "strategic-plan",
         name: "strategic-plan",
         component: StrategicPlan,
@@ -201,6 +226,30 @@ const routes = [
         path: "success-story",
         name: "success-story",
         component: SuccessStory,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "recognition",
+        name: "recognition",
+        component: Recognition,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "accounts",
+        name: "accounts",
+        component: Accounts,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "org-report",
+        name: "org-report",
+        component: OrgReport,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "office-record",
+        name: "office-record",
+        component: OfficeRecord,
         meta: { requiresAuth: true },
       },
       {

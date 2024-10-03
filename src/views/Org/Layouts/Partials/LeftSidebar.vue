@@ -44,20 +44,20 @@
             <span v-if="isSidebarExpanded">Projects</span>
             <span v-else class="hidden">Projects</span>
           </router-link>
-          
-          <router-link to="/org-dashboard/profile" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
-            <span v-if="isSidebarExpanded">Records</span>
-            <span v-else class="hidden">Records</span>
-          </router-link>
 
-          <router-link to="/org-dashboard/profile" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+          <router-link to="/org-dashboard/accounts" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Accounts</span>
             <span v-else class="hidden">Accounts</span>
           </router-link>
-
-          <router-link to="/org-dashboard/profile" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+          
+          <router-link to="/org-dashboard/org-report" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Reports</span>
             <span v-else class="hidden">Reports</span>
+          </router-link>
+
+          <router-link to="/org-dashboard/office-record" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+            <span v-if="isSidebarExpanded">Records</span>
+            <span v-else class="hidden">Records</span>
           </router-link>
 
           <!-- Reports Section -->
@@ -98,7 +98,7 @@
             </button>
             <div v-if="isSectionOpen('profile') && isSidebarExpanded" class="space-y-1">
               
-              <router-link to="/org-dashboard/profile"
+              <router-link to="/org-dashboard/my-account/profile"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Profile</router-link>
 
               <router-link to="/org-dashboard/fundamental-info"
@@ -110,8 +110,8 @@
               <router-link to="/org-dashboard/strategic-plan"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Strategic plan</router-link>
 
-              <router-link to="/org-dashboard/profile"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Recognitions</router-link>
+              <router-link to="/org-dashboard/recognition"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Recognition</router-link>
 
               <router-link to="/org-dashboard/success-story"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Success story</router-link>
@@ -119,18 +119,10 @@
               <router-link to="/org-dashboard/history"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">History</router-link>
 
-              <router-link to="/org-dashboard/profile"
+              <router-link to="/org-dashboard/year-plan"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Year plan</router-link>
             </div>
           </div>
-
-          <!-- <router-link to="/org-dashboard/profile" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
-            <span v-if="isSidebarExpanded">Settings</span>
-            <span v-else class="hidden">Settings</span>
-          </router-link> -->
-
-
-
         </nav>
       </div>
     </aside>
