@@ -18,6 +18,15 @@ import OrgRegister from "../views/Org/Profile/Register.vue";
 import OrgDashboard from "../views/Org/Layouts/Dashboard/Index.vue";
 import OrgDashboardInitialContent from "@/views/Org/Layouts/Dashboard/InitialContent.vue";
 
+//History
+import History from "../views/Org/History/Index.vue";
+
+//StrategicPlan
+import StrategicPlan from "../views/Org/StrategicPlan/Index.vue";
+
+//Success Story
+import SuccessStory from "../views/Org/SuccessStory/Index.vue";
+
 // Org Profile
 import Profile from "../views/Org/Profile/Profile.vue";
 import fundamentalInfo from "../views/Org/Profile/FundamentalInfo.vue";
@@ -174,6 +183,24 @@ const routes = [
         path: "founders",
         name: "founders",
         component: Founders,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "history",
+        name: "history",
+        component: History,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "strategic-plan",
+        name: "strategic-plan",
+        component: StrategicPlan,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "success-story",
+        name: "success-story",
+        component: SuccessStory,
         meta: { requiresAuth: true },
       },
       {

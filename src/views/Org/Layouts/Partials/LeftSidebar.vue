@@ -107,16 +107,16 @@
               <router-link to="/org-dashboard/founders"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Founders</router-link>
 
-              <router-link to="/org-dashboard/profile"
+              <router-link to="/org-dashboard/strategic-plan"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Strategic plan</router-link>
 
               <router-link to="/org-dashboard/profile"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Recognitions</router-link>
 
-              <router-link to="/org-dashboard/profile"
+              <router-link to="/org-dashboard/success-story"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Success story</router-link>
 
-              <router-link to="/org-dashboard/profile"
+              <router-link to="/org-dashboard/history"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">History</router-link>
 
               <router-link to="/org-dashboard/profile"
