@@ -64,12 +64,12 @@ const resetForm = () => {
 };
 
 // Handle image file change
-const handleImageChange = (event) => {
+const handleImage = (event) => {
     image.value = event.target.files[0]; // Store the uploaded file
 };
 
 // Handle document file change
-const handleDocumentChange = (event) => {
+const handleDocument = (event) => {
     document.value = event.target.files[0]; // Store the uploaded document
 };
 
@@ -193,7 +193,7 @@ onMounted(() => {
                 <!-- Image input -->
                 <div class="mb-4">
                     <label for="image" class="block text-gray-700 font-semibold mb-2">Upload Image</label>
-                    <input @change="handleImageChange" type="file" id="image" class="w-full border border-gray-300 rounded-md py-2 px-4" accept="image/*" />
+                    <input @change="handleImage" type="file" id="image" class="w-full border border-gray-300 rounded-md py-2 px-4" accept="image/*" />
                 </div>
 
                 <!-- History Quill editor -->
@@ -205,7 +205,7 @@ onMounted(() => {
                  <!-- Document input -->
                  <div class="mb-4">
                     <label for="document" class="block text-gray-700 font-semibold mb-2">Upload Document</label>
-                    <input @change="handleDocumentChange" type="file" id="document" class="w-full border border-gray-300 rounded-md py-2 px-4" accept=".pdf,.doc,.docx,.xlsx" />
+                    <input @change="handleDocument" type="file" id="document" class="w-full border border-gray-300 rounded-md py-2 px-4" accept=".pdf,.doc,.docx,.xlsx" />
                 </div>
 
                 <!-- Status dropdown -->
