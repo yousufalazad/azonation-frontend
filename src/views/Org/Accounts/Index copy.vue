@@ -8,7 +8,7 @@ import { authStore } from '../../../store/authStore';
 const auth = authStore;
 const userId = auth.user.id;
 const transaction_date = ref('');
-const transaction_type = ref(''); // Default to "In"
+const transaction_type = ref('in'); // Default to "In"
 const transaction_amount = ref(0);
 const description = ref(''); // Managed by Quill
 const quillInstance = ref(null);
@@ -54,7 +54,7 @@ const initializeQuill = () => {
 // Reset form fields
 const resetForm = () => {
     transaction_date.value = '';
-    transaction_type.value = '';
+    transaction_type.value = 'in';
     transaction_amount.value = 0;
     quillInstance.value.root.innerHTML = '';
     isEditMode.value = false;
@@ -178,8 +178,8 @@ onMounted(() => {
                 <div class="mb-4">
                     <label for="transaction_type" class="block text-gray-700 font-semibold mb-2">Transaction Type</label>
                     <select v-model="transaction_type" id="transaction_type" class="w-full border border-gray-300 rounded-md py-2 px-4">
-                        <option value="income">income</option>
-                        <option value="expense">expense</option>
+                        <option value="in">In</option>
+                        <option value="out">Out</option>
                     </select>
                 </div>
 
