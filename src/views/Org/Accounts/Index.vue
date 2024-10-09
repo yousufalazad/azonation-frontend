@@ -10,7 +10,7 @@ const userId = auth.user.id;
 const transaction_date = ref('');
 const transaction_type = ref(''); // Default to "In"
 const transaction_amount = ref(0);
-const description = ref(''); // Managed by Quill
+const description = ref(''); // Managed by Quill 
 const quillInstance = ref(null);
 const isEditMode = ref(false);
 const selectedTransactionId = ref(null);
@@ -174,6 +174,16 @@ onMounted(() => {
                     <input v-model="transaction_date" type="date" id="transaction_date" class="w-full border border-gray-300 rounded-md py-2 px-4" required />
                 </div>
 
+                <!-- Fund name dropdown -->
+                <div class="mb-4">
+                    <label for="transaction_type" class="block text-gray-700 font-semibold mb-2">From/To which fund</label>
+                    <select v-model="transaction_type" id="transaction_type" class="w-full border border-gray-300 rounded-md py-2 px-4">
+                        <option value="income">Overall</option>
+                        <option value="expense">Fund name 1</option>
+                        <option value="expense">Fund name 2</option>
+                    </select>
+                </div>
+
                 <!-- Transaction Type dropdown -->
                 <div class="mb-4">
                     <label for="transaction_type" class="block text-gray-700 font-semibold mb-2">Transaction Type</label>
@@ -211,6 +221,7 @@ onMounted(() => {
                 <thead class="bg-gray-100">
                     <tr>
                         <th class="border px-4 py-2">SL</th>
+                        <th class="py-2 px-4 border border-gray-300">Transaction ID</th>
                         <th class="py-2 px-4 border border-gray-300">Transaction Date</th>
                         <th class="py-2 px-4 border border-gray-300">Transaction Type</th>
                         <th class="py-2 px-4 border border-gray-300">Amount</th>
