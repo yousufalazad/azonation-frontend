@@ -178,9 +178,9 @@ onMounted(() => {
                 <div class="mb-4">
                     <label for="transaction_type" class="block text-gray-700 font-semibold mb-2">From/To which fund</label>
                     <select v-model="transaction_type" id="transaction_type" class="w-full border border-gray-300 rounded-md py-2 px-4">
-                        <option value="income">Overall</option>
-                        <option value="expense">Fund name 1</option>
-                        <option value="expense">Fund name 2</option>
+                        <option value="">Select fund</option>
+                        <option value="1">Fund name 1</option>
+                        <option value="2">Fund name 2</option>
                     </select>
                 </div>
 
