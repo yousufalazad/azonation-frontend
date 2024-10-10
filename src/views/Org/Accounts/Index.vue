@@ -170,23 +170,24 @@ onMounted(() => {
             <form @submit.prevent="submitForm">
                 <!-- Transaction Date -->
                 <div class="mb-4">
-                    <label for="transaction_date" class="block text-gray-700 font-semibold mb-2">Transaction Date</label>
+                    <label for="transaction_date" class="block text-gray-700 font-semibold mb-2">Transaction date</label>
                     <input v-model="transaction_date" type="date" id="transaction_date" class="w-full border border-gray-300 rounded-md py-2 px-4" required />
                 </div>
 
                 <!-- Fund name dropdown -->
                 <div class="mb-4">
-                    <label for="transaction_type" class="block text-gray-700 font-semibold mb-2">From/To which fund</label>
+                    <label for="transaction_type" class="block text-gray-700 font-semibold mb-2">Fund</label>
                     <select v-model="transaction_type" id="transaction_type" class="w-full border border-gray-300 rounded-md py-2 px-4">
                         <option value="">Select fund</option>
                         <option value="1">Fund name 1</option>
                         <option value="2">Fund name 2</option>
+                        <option value="2">Create fund</option>
                     </select>
                 </div>
 
                 <!-- Transaction Type dropdown -->
                 <div class="mb-4">
-                    <label for="transaction_type" class="block text-gray-700 font-semibold mb-2">Transaction Type</label>
+                    <label for="transaction_type" class="block text-gray-700 font-semibold mb-2">Transaction type</label>
                     <select v-model="transaction_type" id="transaction_type" class="w-full border border-gray-300 rounded-md py-2 px-4">
                         <option value="income">income</option>
                         <option value="expense">expense</option>
@@ -222,8 +223,8 @@ onMounted(() => {
                     <tr>
                         <th class="border px-4 py-2">SL</th>
                         <th class="py-2 px-4 border border-gray-300">Transaction ID</th>
-                        <th class="py-2 px-4 border border-gray-300">Transaction Date</th>
-                        <th class="py-2 px-4 border border-gray-300">Transaction Type</th>
+                        <th class="py-2 px-4 border border-gray-300">Transaction date</th>
+                        <th class="py-2 px-4 border border-gray-300">Transaction type</th>
                         <th class="py-2 px-4 border border-gray-300">Amount</th>
                         <th class="py-2 px-4 border border-gray-300">Description</th>
                         <th class="py-2 px-4 border border-gray-300">Actions</th>
