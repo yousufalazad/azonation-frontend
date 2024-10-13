@@ -206,7 +206,6 @@ onMounted(() => {
                 <th class="py-2 px-4 border border-gray-300">Income</th>
                 <th class="py-2 px-4 border border-gray-300">Expense</th>
                 <th class="py-2 px-4 border border-gray-300">Balance</th>
-
                 <th class="py-2 px-4 border border-gray-300">Actions</th>
             </tr>
         </thead>
