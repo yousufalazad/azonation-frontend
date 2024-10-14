@@ -364,18 +364,11 @@ const toggleShowConfirmPassword = () => {
 
 const openPasswordModal = () => {
     modalVisibleUserPassword.value = true;
-    oldPassword.value = '';
-    newPassword.value = '';
-    confirmPassword.value = '';
-    oldPasswordError.value = '';
+    oldPasswordError.value = ''; // Clear any previous error
 };
 
 const closePasswordModal = () => {
     modalVisibleUserPassword.value = false;
-    oldPassword.value = '';
-    newPassword.value = '';
-    confirmPassword.value = '';
-    oldPasswordError.value = ''; // Reset errors on close
 };
 
 // Status Message for email (replace with actual logic dynamically)

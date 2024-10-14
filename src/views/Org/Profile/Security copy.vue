@@ -62,23 +62,6 @@
             <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
                 <h2 class="text-2xl font-bold mb-4 text-center">Change Password</h2>
 
-                <!-- Old Password -->
-                <div class="mb-4 relative">
-                    <label for="oldPassword" class="block text-sm font-medium text-gray-700">Current Password</label>
-                    <input :type="showOldPassword ? 'text' : 'password'" v-model="oldPassword" id="oldPassword"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        required />
-                    <!-- Show/Hide Password Button -->
-                    <button type="button" @click="toggleShowOldPassword"
-                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
-                        <span v-if="showOldPassword" class="text-gray-600">Hide</span>
-                        <span v-else class="text-gray-600">Show</span>
-                    </button>
-                    <p v-if="auth.errors?.oldPassword" class="text-red-500 text-sm mt-1">{{ auth.errors?.oldPassword[0]
-                        }}</p>
-                </div>
-
-
                 <!-- New Password -->
                 <div class="mb-4 relative">
                     <label for="newPassword" class="block text-sm font-medium text-gray-700">New Password</label>
@@ -165,11 +148,6 @@ const confirmPasswordError = ref('');
 const showNewPassword = ref(false);
 const showConfirmPassword = ref(false);
 
-const oldPassword = ref('');
-const showOldPassword = ref(false);
-const oldPasswordError = ref(''); // Add a new state for the old password error
-
-
 const modalVisibleUserPassword = ref(false);
 
 // Password strength logic
@@ -228,16 +206,11 @@ const updateUserEmail = async () => {
 };
 
 const updateUserPassword = async () => {
-    if (!oldPassword.value) {
-        Swal.fire('Error', 'Current password is required.', 'error');
-        return;
-    }
-
-    // Check if all conditions are met for the new password
+    // Check if all conditions are met
     if (!passwordRequirements.value.length || !passwordRequirements.value.uppercase ||
         !passwordRequirements.value.lowercase || !passwordRequirements.value.number ||
         !passwordRequirements.value.special) {
-        Swal.fire('Error', 'New password must meet all requirements.', 'error');
+        Swal.fire('Error', 'Password must meet all requirements.', 'error');
         return;
     }
 
@@ -250,108 +223,16 @@ const updateUserPassword = async () => {
 
     try {
         const response = await auth.fetchProtectedApi(`/api/update-password/${userId}`, {
-            old_password: oldPassword.value,  // Pass old password for validation
-            password: newPassword.value,       // New password
-            password_confirmation: confirmPassword.value,  // Pass password confirmation
+            password: newPassword.value,
         }, 'PUT');
-
         if (response.status) {
             Swal.fire('Success', 'Password updated successfully', 'success');
             closePasswordModal();
         }
     } catch (error) {
-        //Handle old password mismatch
-        if (error.response && error.response.status === 422 && error.response.data.errors?.oldPassword) {
-            Swal.fire('Error', error.response.data.errors.oldPassword[0], 'error');
-        } else {
-            Swal.fire('Error', 'Failed to update password', 'error');
-        }
-
-        // In the catch block
-        // if (error.response && error.response.status === 422 && error.response.data.errors?.oldPassword) {
-        //     oldPasswordError.value = error.response.data.errors.oldPassword[0];
-        // } else {
-        //     oldPasswordError.value = 'Failed to update password'; // Default error message
-        // }
+        console.log(error);
+        Swal.fire('Error', 'Failed to update password', 'error');
     }
-};
-
-
-//------------Working -------------------------
-// const updateUserPassword = async () => {
-//     if (!oldPassword.value) {
-//         Swal.fire('Error', 'Current password is required.', 'error');
-//         return;
-//     }
-
-//     // Check if all conditions are met for the new password
-//     if (!passwordRequirements.value.length || !passwordRequirements.value.uppercase ||
-//         !passwordRequirements.value.lowercase || !passwordRequirements.value.number ||
-//         !passwordRequirements.value.special) {
-//         Swal.fire('Error', 'New password must meet all requirements.', 'error');
-//         return;
-//     }
-
-//     if (newPassword.value !== confirmPassword.value) {
-//         confirmPasswordError.value = 'Passwords do not match.';
-//         return;
-//     }
-
-//     confirmPasswordError.value = '';
-
-//     try {
-//         const response = await auth.fetchProtectedApi(`/api/update-password/${userId}`, {
-//             old_password: oldPassword.value,  // Pass old password for validation
-//             password: newPassword.value,       // New password
-//             password_confirmation: confirmPassword.value,  // Pass password confirmation
-//         }, 'PUT');
-
-//         if (response.status) {
-//             Swal.fire('Success', 'Password updated successfully', 'success');
-//             closePasswordModal();
-//         }
-//     } catch (error) {
-//         console.log(error);
-//         Swal.fire('Error', 'Failed to update password', 'error');
-//     }
-// };
-
-//--
-
-
-// const updateUserPassword = async () => {
-//     // Check if all conditions are met
-//     if (!passwordRequirements.value.length || !passwordRequirements.value.uppercase ||
-//         !passwordRequirements.value.lowercase || !passwordRequirements.value.number ||
-//         !passwordRequirements.value.special) {
-//         Swal.fire('Error', 'Password must meet all requirements.', 'error');
-//         return;
-//     }
-
-//     if (newPassword.value !== confirmPassword.value) {
-//         confirmPasswordError.value = 'Passwords do not match.';
-//         return;
-//     }
-
-//     confirmPasswordError.value = '';
-
-//     try {
-//         const response = await auth.fetchProtectedApi(`/api/update-password/${userId}`, {
-//             password: newPassword.value,
-//         }, 'PUT');
-//         if (response.status) {
-//             Swal.fire('Success', 'Password updated successfully', 'success');
-//             closePasswordModal();
-//         }
-//     } catch (error) {
-//         console.log(error);
-//         Swal.fire('Error', 'Failed to update password', 'error');
-//     }
-// };
-
-// Toggle function for showing/hiding the old password
-const toggleShowOldPassword = () => {
-    showOldPassword.value = !showOldPassword.value;
 };
 
 const toggleShowNewPassword = () => {
@@ -364,18 +245,10 @@ const toggleShowConfirmPassword = () => {
 
 const openPasswordModal = () => {
     modalVisibleUserPassword.value = true;
-    oldPassword.value = '';
-    newPassword.value = '';
-    confirmPassword.value = '';
-    oldPasswordError.value = '';
 };
 
 const closePasswordModal = () => {
     modalVisibleUserPassword.value = false;
-    oldPassword.value = '';
-    newPassword.value = '';
-    confirmPassword.value = '';
-    oldPasswordError.value = ''; // Reset errors on close
 };
 
 // Status Message for email (replace with actual logic dynamically)
