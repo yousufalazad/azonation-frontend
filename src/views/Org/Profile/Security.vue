@@ -66,7 +66,7 @@
                 <div class="mb-4 relative">
                     <label for="oldPassword" class="block text-sm font-medium text-gray-700">Current Password</label>
                     <input :type="showOldPassword ? 'text' : 'password'" v-model="oldPassword" id="oldPassword"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" style="min-height: 40px;"
                         required />
                     <!-- Show/Hide Password Button -->
                     <button type="button" @click="toggleShowOldPassword"
@@ -83,7 +83,7 @@
                 <div class="mb-4 relative">
                     <label for="newPassword" class="block text-sm font-medium text-gray-700">New Password</label>
                     <input :type="showNewPassword ? 'text' : 'password'" v-model="newPassword" id="newPassword"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" style="min-height: 40px;"
                         required @input="checkPasswordStrength" />
                     <!-- Show/Hide Password Button -->
                     <button type="button" @click="toggleShowNewPassword"
@@ -114,11 +114,11 @@
 
                 <!-- Confirm Password -->
                 <div class="mb-4 relative">
-                    <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm
+                    <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm New
                         Password</label>
                     <input :type="showConfirmPassword ? 'text' : 'password'" v-model="confirmPassword"
                         id="confirmPassword"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" style="min-height: 40px;"
                         required />
                     <!-- Show/Hide Password Button -->
                     <button type="button" @click="toggleShowConfirmPassword"

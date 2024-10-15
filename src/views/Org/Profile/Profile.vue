@@ -15,7 +15,7 @@
         </div>
     </section>
 
-    <!-- User name section -->
+    <!-- Org name section -->
     <section>
         <div class="space-y-4">
 
@@ -31,7 +31,7 @@
 
         </div>
 
-        <!-- User name Modal -->
+        <!-- Org name Modal -->
         <div v-if="modalVisibleName" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
                 <h2 class="text-2xl font-bold mb-4 text-center">
@@ -55,6 +55,53 @@
                     </button>
 
                     <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" @click="updateName()">
+                        Update
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Username section -->
+    <section>
+        <div class="space-y-4">
+
+            <h3 class="text-lg font-bold mb-4 left-color-shade py-2">Username</h3>
+            <div class="flex justify-between">
+                <div>
+                    <p class="ml-5 pb-9">{{ username }}
+                    </p>
+                </div>
+                <div><button @click="openUsernameModal()" class="text-blue-500 pl-9 pr-2">Edit</button></div>
+            </div>
+
+
+        </div>
+
+        <!-- Username Modal -->
+        <div v-if="modalVisibleUsername" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
+                <h2 class="text-2xl font-bold mb-4 text-center">
+                    Edit Name
+                </h2>
+
+                <div class="mb-4">
+                    <label for="newUsername" class="block text-sm font-medium text-gray-700">New Name</label>
+                    <input v-model="newUsername" type="text" id="newUsername"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        required />
+                    <p v-if="auth.errors?.newUsername" class="text-red-500 text-sm mt-1">{{
+                        auth.errors?.newUsername[0] }}</p>
+                </div>
+
+
+                <div class="flex justify-end">
+                    <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
+                        @click="closeUsernameModal">
+                        Close
+                    </button>
+
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" @click="updateUsername()">
                         Update
                     </button>
                 </div>
@@ -171,7 +218,7 @@
                         <span class="ml-16">Status: {{ statusPhone === 1 ? 'Private' : statusPhone === 2 ?
                             'Connected organisation and only for connected organisations member' : statusPhone === 3 ?
                                 'Public' :
-                            'Others' }}</span>
+                                'Others' }}</span>
                     </p>
 
                 </div>
@@ -192,10 +239,11 @@
                     {{ isEditModePhone ? 'Edit mobile number' : 'Add Mobile Number' }}
                 </h2>
 
-               
-                
+
+
                 <div class="mb-4">
-                    <label for="dialing_code_id" class="block text-sm font-medium text-gray-700 required">Dialing Code</label>
+                    <label for="dialing_code_id" class="block text-sm font-medium text-gray-700 required">Dialing
+                        Code</label>
                     <select v-model="dialing_code_id" id="dialing_code_id"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         required>
@@ -233,10 +281,10 @@
                         <option value="2">Work</option>
                         <option value="3">Home</option>
                         <option value="4">Other</option>
-                                                
+
                     </select>
 
-                    
+
                     <p v-if="auth.errors?.phone_type" class="text-red-500 text-sm mt-1">{{ auth.errors?.phone_type[0] }}
                     </p>
                 </div>
@@ -279,7 +327,7 @@
                         <span class="ml-16">Status: {{ statusPhone === 1 ? 'Private' : statusPhone === 2 ?
                             'Connected organisation and only for connected organisations member' : statusPhone === 3 ?
                                 'Public' :
-                            'Others' }}</span>
+                                'Others' }}</span>
                     </p>
                 </div>
                 <div><button @click="openEmailModal()" class="text-blue-500 pl-9 pr-2">Edit</button></div>
@@ -332,6 +380,7 @@ const auth = authStore;
 const userId = auth.user.id;
 const name = auth.user.name;
 const email = auth.user.email;
+const username = auth.user.username;
 const baseURL = 'http://localhost:8000';
 
 
@@ -367,6 +416,10 @@ const allDialingCodes = ref([]);
 // Org Name Change
 const modalVisibleName = ref(false);
 const newName = ref('');
+
+// Org username Change
+const modalVisibleUsername = ref(false);
+const newUsername = ref('');
 
 
 // Org User Email Change
@@ -438,6 +491,86 @@ const updateName = async () => {
     }
 };
 
+//Update username
+const updateUsername = async () => {
+    try {
+        const response = await auth.fetchProtectedApi(`/api/update-username/${userId}`, {
+            username: newUsername.value,
+        }, 'PUT');
+
+        if (response.status) {
+            // Success handling
+            Swal.fire('Success', response.message || 'Username updated successfully', 'success');
+
+            // Close the modal after successful update
+            closeUsernameModal();
+
+            // Update the name in localStorage explicitly
+            let user = JSON.parse(localStorage.getItem('user'));
+            if (user) {
+                user.username = newUsername.value;
+                localStorage.setItem('user', JSON.stringify(user));
+            }
+
+            // Optionally, you can reload the page or update the UI without reloading
+            window.location.reload();
+        } else {
+            // Handle other non-validation-related errors
+            Swal.fire('Error', response.message || 'Failed to update username, please try again.', 'error');
+        }
+
+    } catch (error) {
+        // Check for validation errors
+        if (error.response?.status === 422) {
+            const validationErrors = error.response.data.errors;
+            if (validationErrors?.username) {
+                // Display validation error specific to the username field
+                Swal.fire('Validation Error', validationErrors.username[0], 'error');
+            } else {
+                // General validation error message
+                Swal.fire('Validation Error', 'The provided data is invalid.', 'error');
+            }
+        } else {
+            // Handle any other errors
+            console.error("Error updating username:", error);
+            Swal.fire('Error', error.response?.data?.message || 'An unexpected error occurred while updating the username', 'error');
+        }
+    }
+};
+
+// const updateUsername = async () => {
+//     try {
+//         const response = await auth.fetchProtectedApi(`/api/update-username/${userId}`, {
+//             username: newUsername.value,
+//         }, 'PUT');
+//         if (response.status) {
+//             // Success handling
+//             Swal.fire('Success', response.message || 'Username updated successfully', 'success');
+
+//             // Close the modal after successful update
+//             closeUsernameModal();
+
+//             // Update the name in localStorage explicitly
+//             let user = JSON.parse(localStorage.getItem('user'));
+//             if (user) {
+//                 user.username = newUsername.value;
+//                 localStorage.setItem('user', JSON.stringify(user));
+//             }
+
+//             // Optionally, you can reload the page or update the UI without reloading
+//             window.location.reload();
+//         } else {
+//             // Display error message from server response
+//             Swal.fire('Error', response.message || 'Failed to update username, please try again.', 'error');
+//         }
+
+//     } catch (error) {
+//         // Catch block for any other errors
+//         console.error("Error updating username:", error);
+//         Swal.fire('Error', error.response?.data?.message || 'An unexpected error occurred while updating the username', 'error');
+//     }
+// };
+
 const fetchOrgAddress = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/address/${userId}`, {}, 'GET');
@@ -452,11 +585,11 @@ const fetchOrgAddress = async () => {
             postal_code.value = response.data.postal_code || '';
             country_name.value = response.data.country_name || '';
         } else {
-            Swal.fire('Error', 'Failed to fetch organization address', 'error');
+            Swal.fire('Error', 'Failed to fetch organization address try-else', 'error');
         }
     } catch (error) {
         console.error("Error fetching organization address:", error);
-        Swal.fire('Error', 'Failed to fetch organization address', 'error');
+        Swal.fire('Error', 'Failed to fetch organization address catch', 'error');
     }
 };
 
@@ -632,6 +765,15 @@ const openNameModal = () => {
 
 const closeNameModal = () => {
     modalVisibleName.value = false;
+};
+
+const openUsernameModal = () => {
+    modalVisibleUsername.value = true;
+    newUsername.value = username;
+};
+
+const closeUsernameModal = () => {
+    modalVisibleUsername.value = false;
 };
 
 //Email Address
