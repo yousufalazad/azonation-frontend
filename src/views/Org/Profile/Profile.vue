@@ -367,8 +367,6 @@
             </div>
         </div>
     </section>
-
-
 </template>
 
 <script setup>
@@ -382,7 +380,6 @@ const name = auth.user.name;
 const email = auth.user.email;
 const username = auth.user.username;
 const baseURL = 'http://localhost:8000';
-
 
 
 // Org logo
