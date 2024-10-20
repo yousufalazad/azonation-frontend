@@ -43,10 +43,10 @@
             allMonths[index].total_expense = item.total_expense;
           }
         });
-  
-        // Set the labels and expense data
-        const labels = allMonths.map(item => item.month);
-        const expenses = allMonths.map(item => item.total_expense);
+
+        // Set the labels and expenses data in ascending order
+      const labels = allMonths.map(item => item.month).reverse(); // Reverse the labels
+      const expenses = allMonths.map(item => item.total_expense).reverse(); // Reverse the income data
   
         // Set chart data
         chartData.value = {

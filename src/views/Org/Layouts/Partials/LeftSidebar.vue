@@ -42,16 +42,34 @@
             <span v-if="isSidebarExpanded">Accounts</span>
             <span v-else class="hidden">Accounts</span>
           </router-link>
-          <router-link to="/org-dashboard/org-report"
-            class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
-            <span v-if="isSidebarExpanded">Reports</span>
-            <span v-else class="hidden">Reports</span>
-          </router-link>
+          
           <router-link to="/org-dashboard/office-record"
             class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Records</span>
             <span v-else class="hidden">Records</span>
           </router-link>
+          <!-- Report section -->
+          <div>
+            <button @click="toggleSection('reports')"
+              class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
+              <span v-if="isSidebarExpanded">Reports</span>
+              <svg v-if="isSectionOpen('reports')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+            <div v-if="isSectionOpen('reports') && isSidebarExpanded" class="space-y-1">
+              <router-link to="/org-dashboard/org-report"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Income</router-link>
+              <router-link to="/org-dashboard/org-expense-report"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Expense</router-link>
+              
+            </div>
+          </div>
 
           <!-- Profile Section -->
           <div>
