@@ -68,6 +68,8 @@ import Founders from "../views/Org/Founder/Create.vue";
 
 //Report
 import OrgReport from "../views/Org/Report/Index.vue";
+import OrgExpenseReport from "../views/Org/Report/Expense.vue";
+
 
 //Record
 import OfficeRecord from "../views/Org/OfficeRecord/Index.vue";
@@ -244,6 +246,12 @@ const routes = [
         path: "org-report",
         name: "org-report",
         component: OrgReport,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "org-expense-report",
+        name: "org-expense-report",
+        component: OrgExpenseReport,
         meta: { requiresAuth: true },
       },
       {

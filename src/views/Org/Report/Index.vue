@@ -1,7 +1,9 @@
 <template>
   <div>
     <h2>Income Report (Past 12 Months)</h2>
-    <line-chart v-if="chartData" :chart-data="chartData" />
+    <div style="width: 600px; height: 400px;">
+      <line-chart v-if="chartData" :chart-data="chartData" />
+    </div>
   </div>
 </template>
 
@@ -11,23 +13,41 @@ import { Line } from 'vue-chartjs';
 import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale } from 'chart.js';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
+import moment from 'moment'; // Make sure you have moment.js installed
 
 // Register Chart.js components
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale);
 
 const auth = authStore;
-const userId = auth.user.id;
 const chartData = ref(null);
 
 // Fetch report data for the past 12 months
 const fetchReportData = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/reports', {}, 'GET'); // Adjust the API endpoint if necessary
+    // Clear existing chart data
+    chartData.value = null;
 
+    const response = await auth.fetchProtectedApi('/api/reports', {}, 'GET'); // Adjust the API endpoint if necessary
+    console.log(response);
     if (response.status) {
-      // Format data for Chart.js
-      const labels = response.data.map(item => `${item.year}-${item.month}`);
-      const income = response.data.map(item => item.total_income);
+      // Prepare array for all months in the last 12 months
+      const allMonths = Array.from({ length: 12 }, (_, i) => {
+        const month = moment().subtract(i, 'months').format('YYYY-MM');
+        return { month, total_income: 0 };
+      });
+
+      // Populate with actual income data
+      response.data.forEach(item => {
+        const index = allMonths.findIndex(m => m.month === `${item.year}-${String(item.month).padStart(2, '0')}`);
+        if (index !== -1) {
+          allMonths[index].total_income = item.total_income;
+        }
+      });
+
+      // Set the labels and income data in ascending order
+      const labels = allMonths.map(item => item.month).reverse(); // Reverse the labels
+      const income = allMonths.map(item => item.total_income).reverse(); // Reverse the income data
+
 
       // Set chart data
       chartData.value = {
@@ -35,7 +55,7 @@ const fetchReportData = async () => {
         datasets: [
           {
             label: 'Income',
-            backgroundColor: '#4CAF50',
+            backgroundColor: '#4CAF58',
             borderColor: '#4CAF50',
             data: income,
             fill: false,
@@ -58,14 +78,44 @@ onMounted(() => {
 
 // Line chart component
 const LineChart = {
-  extends: Line,
-  props: ['chartData'],
-  mounted() {
-    this.renderChart(this.chartData, {
+  props: {
+    chartData: {
+      type: Object,
+      required: true
+    }
+  },
+  components: {
+    Line
+  },
+  setup(props) {
+    const chartOptions = {
       responsive: true,
-      maintainAspectRatio: false,
-    });
-  }
+      maintainAspectRatio: true, // Maintain aspect ratio
+      scales: {
+        y: {
+          beginAtZero: true, // Ensure the y-axis starts at 0
+          ticks: {
+            stepSize: 1000, // Adjust based on your income range
+            max: Math.max(...props.chartData.datasets[0].data) + 1000 // Adjusting max to make space
+          }
+        },
+        x: {
+          title: {
+            display: true,
+            text: 'Months'
+          }
+        }
+      }
+    };
+
+    return { chartOptions };
+  },
+  template: `
+    <Line
+      :data="chartData"
+      :options="chartOptions"
+    />
+  `
 };
 </script>
 

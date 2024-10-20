@@ -56,7 +56,7 @@ onMounted(fetchMemberList);
         </div>
 
         <div class="bg-white shadow rounded-lg p-6">
-          <h5 class="text-lg font-semibold">Events</h5>
+          <h5 class="text-lg font-semibold">Balance</h5>
           <p class="text-2xl font-bold">{{ totalOrgMember }}</p>
           <a href="#" class="text-blue-500 hover:underline">See all</a>
         </div>
