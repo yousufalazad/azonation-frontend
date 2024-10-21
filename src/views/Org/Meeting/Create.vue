@@ -1,10 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
+import { authStore } from '../../../store/authStore';
 
 const auth = authStore;
+const userId = auth.user.id;
 
+// Form Fields
 const name = ref('');
 const short_name = ref('');
 const subject = ref('');
@@ -15,170 +17,331 @@ const address = ref('');
 const agenda = ref('');
 const requirements = ref('');
 const note = ref('');
-const status = ref('');
+const status = ref(0); // Default to Active (0)
 const conduct_type = ref('');
-const meetingList = ref([]);
 
-const user_id = auth.user.id;
+// State Management
+const isEditMode = ref(false);
+const selectedRecordId = ref(null);
+const recordList = ref([]);
 
-const createMeeting = async () => {
+// Fetch list of meetings
+const getRecords = async () => {
   try {
-    await auth.createMeeting(
-      user_id, name.value, short_name.value, subject.value, date.value, time.value, 
-      description.value, address.value, agenda.value, requirements.value, note.value, 
-      status.value, conduct_type.value
-    );
-    Swal.fire({
-      icon: 'success',
-      title: 'Meeting created successfully',
-      showConfirmButton: false,
-      timer: 1000
+    const response = await auth.fetchProtectedApi(`/api/get-org-meetings/${userId}`, {}, 'GET');
+
+    if (response.status) {
+      recordList.value = response.data;
+      console.log(response.data);
+    } else {
+      recordList.value = [];
+    }
+  } catch (error) {
+    console.error('Error fetching meetings:', error);
+    recordList.value = [];
+  }
+};
+
+// Reset form fields
+const resetForm = () => {
+  name.value = '';
+  short_name.value = '';
+  subject.value = '';
+  date.value = '';
+  time.value = '';
+  description.value = '';
+  address.value = '';
+  agenda.value = '';
+  requirements.value = '';
+  note.value = '';
+  status.value = 0;
+  conduct_type.value = '';
+  isEditMode.value = false;
+  selectedRecordId.value = null;
+};
+
+// Add or update meeting
+const submitForm = async () => {
+  const payload = {
+    user_id: userId,
+    name: name.value,
+    short_name: short_name.value,
+    subject: subject.value,
+    date: date.value,
+    time: time.value,
+    description: description.value,
+    address: address.value,
+    agenda: agenda.value,
+    requirements: requirements.value,
+    note: note.value,
+    status: status.value,
+    conduct_type: conduct_type.value,
+  };
+
+  try {
+    let apiUrl = '/api/create-meeting';
+    let method = 'POST';
+
+    if (isEditMode.value && selectedRecordId.value) {
+      apiUrl = `/api/update-meeting/${selectedRecordId.value}`;
+      method = 'PUT';
+    }
+
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this meeting?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, save it!',
+      cancelButtonText: 'No, cancel!'
     });
+
+    if (result.isConfirmed) {
+      const response = await auth.fetchProtectedApi(apiUrl, payload, method);
+
+      if (response.status) {
+        await Swal.fire('Success!', `Meeting ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
+        getRecords();
+        resetForm();
+      } else {
+        Swal.fire('Failed!', 'Failed to save meeting.', 'error');
+      }
+    }
   } catch (error) {
-    console.error('Error creating meeting', error);
+    console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} meeting:`, error);
+    Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} meeting.`, 'error');
   }
 };
 
-const fetchMeetingList = async () => {
+// Edit record
+const editRecord = (record) => {
+  name.value = record.name;
+  short_name.value = record.short_name;
+  subject.value = record.subject;
+  date.value = record.date;
+  time.value = record.time;
+  description.value = record.description;
+  address.value = record.address;
+  agenda.value = record.agenda;
+  requirements.value = record.requirements;
+  note.value = record.note;
+  status.value = record.status;
+  conduct_type.value = record.conduct_type;
+  selectedRecordId.value = record.id;
+  isEditMode.value = true;
+};
+
+// Delete record
+const deleteRecord = async (id) => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/meeting-list/${user_id}`, {}, 'GET');
-    meetingList.value = response.status ? response.data : [];
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to delete this meeting?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'No, cancel!'
+    });
+
+    if (result.isConfirmed) {
+      const response = await auth.fetchProtectedApi(`/api/delete-meeting/${id}`, {}, 'DELETE');
+
+      if (response.status) {
+        await Swal.fire('Deleted!', 'Meeting has been deleted.', 'success');
+        getRecords();
+      } else {
+        Swal.fire('Failed!', 'Failed to delete meeting.', 'error');
+      }
+    }
   } catch (error) {
-    console.error('Error fetching meeting list:', error);
-    meetingList.value = [];
+    console.error('Error deleting meeting:', error);
+    Swal.fire('Error!', 'Failed to delete meeting.', 'error');
   }
 };
 
-const onEnterKey = (event) => {
-  if (event.key === 'Enter') {
-    createMeeting();
-  }
-};
-
-onMounted(fetchMeetingList);
+// Fetch records on mount
+onMounted(() => {
+  getRecords();
+});
 </script>
 
 <template>
-  <div class="container mx-auto mt-6">
-    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-      <h2 class="text-2xl font-bold mb-4">Create and Edit Meeting</h2>
-      <div v-if="meetingList.length">
-        <table class="min-w-full bg-white border border-gray-300">
+  <div class="max-w-7xl mx-auto w-10/12">
+    <section class="mb-5">
+      <div class="flex justify-between left-color-shade py-2 my-3">
+        <div>
+          <h5 class="text-md font-semibold mt-2">{{ isEditMode ? 'Edit' : 'Add' }} Meeting</h5>
+        </div>
+      </div>
+      <form @submit.prevent="submitForm">
+        <!-- Name -->
+        <div class="mb-4">
+          <label for="name" class="block text-gray-700 font-semibold mb-2">Name</label>
+          <input v-model="name" type="text" id="name" class="w-full border border-gray-300 rounded-md py-2 px-4"
+            required>
+        </div>
+
+        <!-- Short Name -->
+        <div class="mb-4">
+          <label for="short_name" class="block text-gray-700 font-semibold mb-2">Short Name</label>
+          <input v-model="short_name" type="text" id="short_name"
+            class="w-full border border-gray-300 rounded-md py-2 px-4" />
+        </div>
+
+        <!-- Subject -->
+        <div class="mb-4">
+          <label for="subject" class="block text-gray-700 font-semibold mb-2">Subject</label>
+          <input v-model="subject" type="text" id="subject"
+            class="w-full border border-gray-300 rounded-md py-2 px-4" />
+        </div>
+
+        <!-- Date -->
+        <div class="mb-4">
+          <label for="date" class="block text-gray-700 font-semibold mb-2">Date</label>
+          <input v-model="date" type="date" id="date" class="w-full border border-gray-300 rounded-md py-2 px-4" />
+        </div>
+
+        <!-- Time -->
+        <div class="mb-4">
+          <label for="time" class="block text-gray-700 font-semibold mb-2">Time</label>
+          <input v-model="time" type="time" id="time" class="w-full border border-gray-300 rounded-md py-2 px-4" />
+        </div>
+
+        <!-- Description -->
+        <div class="mb-4">
+          <label for="description" class="block text-gray-700 font-semibold mb-2">Description</label>
+          <textarea v-model="description" id="description"
+            class="w-full border border-gray-300 rounded-md py-2 px-4"></textarea>
+        </div>
+
+        <!-- Address -->
+        <div class="mb-4">
+          <label for="address" class="block text-gray-700 font-semibold mb-2">Address</label>
+          <textarea v-model="address" id="address"
+            class="w-full border border-gray-300 rounded-md py-2 px-4"></textarea>
+        </div>
+
+        <!-- Agenda -->
+        <div class="mb-4">
+          <label for="agenda" class="block text-gray-700 font-semibold mb-2">Agenda</label>
+          <input v-model="agenda" type="text" id="agenda" class="w-full border border-gray-300 rounded-md py-2 px-4" />
+        </div>
+
+        <!-- Requirements -->
+        <div class="mb-4">
+          <label for="requirements" class="block text-gray-700 font-semibold mb-2">Requirements</label>
+          <input v-model="requirements" type="text" id="requirements"
+            class="w-full border border-gray-300 rounded-md py-2 px-4" />
+        </div>
+
+        <!-- Note -->
+        <div class="mb-4">
+          <label for="note" class="block text-gray-700 font-semibold mb-2">Note</label>
+          <input v-model="note" type="text" id="note" class="w-full border border-gray-300 rounded-md py-2 px-4" />
+        </div>
+
+        <!-- Status -->
+        <div class="mb-4">
+          <label for="status" class="block text-gray-700 font-semibold mb-2">Status</label>
+          <select v-model="status" id="status" class="w-full border border-gray-300 rounded-md py-2 px-4">
+            <option value="0">Active</option>
+            <option value="1">Disable</option>
+          </select>
+        </div>
+
+        <!-- Conduct Type -->
+        <div class="mb-4">
+          <label for="conduct_type" class="block text-gray-700 font-semibold mb-2">Conduct Type</label>
+          <input v-model="conduct_type" type="text" id="conduct_type"
+            class="w-full border border-gray-300 rounded-md py-2 px-4" />
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex justify-end">
+          <button type="submit" class="bg-blue-500 text-white font-semibold py-2 px-6 rounded-md">
+            {{ isEditMode ? 'Update Meeting' : 'Add Meeting' }}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section>
+      <h5 class="text-lg font-semibold mb-4">Meeting List</h5>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
           <thead>
-            <tr class="bg-gray-100 text-left">
-              <th class="p-2">#</th>
-              <th class="p-2">User ID</th>
-              <th class="p-2">Meeting Name</th>
-              <th class="p-2">Short Name</th>
-              <th class="p-2">Subject</th>
-              <th class="p-2">Date</th>
-              <th class="p-2">Time</th>
-              <th class="p-2">Description</th>
-              <th class="p-2">Address</th>
-              <th class="p-2">Agenda</th>
-              <th class="p-2">Requirements</th>
-              <th class="p-2">Note</th>
-              <th class="p-2">Status</th>
-              <th class="p-2">Conduct Type</th>
+            <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+              <th class="border px-6 py-3 text-left"> ID</th>
+              <th class="border px-6 py-3 text-left"> Name</th>
+              <th class="border px-6 py-3 text-left">Short Name</th>
+              <th class="border px-6 py-3 text-left">Subject</th>
+              <th class="border px-6 py-3 text-left">Date</th>
+              <th class="border px-6 py-3 text-left">Time</th>
+              <th class="border px-6 py-3 text-left">Description</th>
+              <th class="border px-6 py-3 text-left">Address</th>
+              <th class="border px-6 py-3 text-left">Agenda</th>
+              <th class="border px-6 py-3 text-left">Requirements</th>
+              <th class="border px-6 py-3 text-left">Note</th>
+              <th class="border px-6 py-3 text-left">Status</th>
+              <th class="border px-6 py-3 text-left">Conduct Type</th>
+              <th class="border px-6 py-3 text-left">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="meeting in meetingList" :key="meeting.id" class="hover:bg-gray-50">
-              <td class="p-2">{{ meeting.id }}</td>
-              <td class="p-2">{{ meeting.user_id }}</td>
-              <td class="p-2">{{ meeting.name }}</td>
-              <td class="p-2">{{ meeting.short_name }}</td>
-              <td class="p-2">{{ meeting.subject }}</td>
-              <td class="p-2">{{ meeting.date }}</td>
-              <td class="p-2">{{ meeting.time }}</td>
-              <td class="p-2">{{ meeting.description }}</td>
-              <td class="p-2">{{ meeting.address }}</td>
-              <td class="p-2">{{ meeting.agenda }}</td>
-              <td class="p-2">{{ meeting.requirements }}</td>
-              <td class="p-2">{{ meeting.note }}</td>
-              <td class="p-2">{{ meeting.status }}</td>
-              <td class="p-2">{{ meeting.conduct_type }}</td>
+          <tbody class="text-gray-600 text-md font-medium">
+            <tr v-for="(record, index) in recordList" :key="index"
+              class="border-b border-gray-200 hover:bg-gray-100 transition duration-200">
+              <td class="border px-6 py-4">{{ record.user_id }}</td>
+              <td class="border px-6 py-4">{{ record.name }}</td>
+              <td class="border px-6 py-4">{{ record.short_name }}</td>
+              <td class="border px-6 py-4">{{ record.subject }}</td>
+              <td class="border px-6 py-4">{{ record.date }}</td>
+              <td class="border px-6 py-4">{{ record.time }}</td>
+              <td class="border px-6 py-4">{{ record.description }}</td>
+              <td class="border px-6 py-4">{{ record.address }}</td>
+              <td class="border px-6 py-4">{{ record.agenda }}</td>
+              <td class="border px-6 py-4">{{ record.requirements }}</td>
+              <td class="border px-6 py-4">{{ record.note }}</td>
+              <td class="border px-6 py-4">{{ record.status === 0 ? 'Active' : 'Disabled' }}</td>
+              <td class="border px-6 py-4">{{ record.conduct_type }}</td>
+              <td class="border px-6 py-4">
+                <button @click="editRecord(record)"
+                  class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 m-2 rounded">Edit</button>
+                <button @click="deleteRecord(record.id)"
+                  class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">Delete</button>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
-      <div v-else>
-        <p class="text-gray-500">No meeting found.</p>
-      </div>
-    </div>
+    </section>
 
-    <div class="bg-white shadow-md rounded-lg p-6">
-      <h2 class="text-xl font-semibold text-center mb-4">Create Meeting</h2>
-      
-      <form @keydown.enter="onEnterKey" class="space-y-4">
-        <div>
-          <label for="name" class="block text-sm font-medium text-gray-700">Meeting Name</label>
-          <input v-model="name" type="text" id="name" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter meeting name" required>
-        </div>
-        
-        <div>
-          <label for="short_name" class="block text-sm font-medium text-gray-700">Meeting Short Name</label>
-          <input v-model="short_name" type="text" id="short_name" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter short name">
-        </div>
-        
-        <div>
-          <label for="subject" class="block text-sm font-medium text-gray-700">Subject</label>
-          <input v-model="subject" type="text" id="subject" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter subject">
-        </div>
 
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
-            <input v-model="date" type="date" id="date" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-          </div>
-          <div>
-            <label for="time" class="block text-sm font-medium text-gray-700">Time</label>
-            <input v-model="time" type="time" id="time" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-          </div>
-        </div>
-        
-        <div>
-          <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-          <textarea v-model="description" id="description" rows="4" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Write meeting description"></textarea>
-        </div>
-
-        <div>
-          <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
-          <input v-model="address" type="text" id="address" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter address">
-        </div>
-
-        <div>
-          <label for="agenda" class="block text-sm font-medium text-gray-700">Agenda</label>
-          <input v-model="agenda" type="text" id="agenda" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter agenda">
-        </div>
-
-        <div>
-          <label for="requirements" class="block text-sm font-medium text-gray-700">Requirements</label>
-          <input v-model="requirements" type="text" id="requirements" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter requirements">
-        </div>
-
-        <div>
-          <label for="note" class="block text-sm font-medium text-gray-700">Note</label>
-          <input v-model="note" type="text" id="note" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter note">
-        </div>
-
-        <div>
-          <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-          <input v-model="status" type="text" id="status" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter status (Postponed, Cancelled, Hold)">
-        </div>
-
-        <div>
-          <label for="conduct_type" class="block text-sm font-medium text-gray-700">Meeting Conduct Type</label>
-          <input v-model="conduct_type" type="text" id="conduct_type" class="mt-1 block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter conduct type">
-        </div>
-
-        <div class="text-right">
-          <button @click.prevent="createMeeting" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            Create Meeting
-          </button>
-        </div>
-      </form>
-    </div>
   </div>
-  <div class="m-5 p-5"></div>
 </template>
+
+<style scoped>
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  padding: 12px;
+  text-align: left;
+}
+
+th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+td {
+  border-bottom: 1px solid #ddd;
+}
+
+button {
+  margin-right: 5px;
+}
+</style>

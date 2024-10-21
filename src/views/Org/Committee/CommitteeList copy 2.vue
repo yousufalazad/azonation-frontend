@@ -101,32 +101,6 @@ const handleKeyDown = (event) => {
   }
 };
 
-const deleteCommittee = async (id) => {
-    try {
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'Do you want to delete this committee?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, cancel!'
-        });
-
-        if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/org-committee/${id}`, {}, 'DELETE');
-
-            if (response.status) {
-                await Swal.fire('Deleted!', 'committee has been deleted.', 'success');
-                fetchCommitteeList();
-            } else {
-                Swal.fire('Failed!', 'Failed to delete committee.', 'error');
-            }
-        }
-    } catch (error) {
-        console.error('Error deleting committee:', error);
-        Swal.fire('Error!', 'Failed to delete committee.', 'error');
-    }
-};
 onMounted(fetchCommitteeList);
 </script>
 
@@ -166,9 +140,6 @@ onMounted(fetchCommitteeList);
             <td class="py-2 px-4">
               <button @click="openModal(committee)" class="bg-yellow-500 text-white px-4 py-1 rounded-md hover:bg-yellow-600">
                 Edit
-              </button>
-              <button @click="deleteCommittee(committee.id)" class="bg-red-500 text-white px-4 py-1 rounded-md hover:bg-red-600 ml-2">
-                Delete
               </button>
             </td>
           </tr>
