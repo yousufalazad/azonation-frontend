@@ -69,16 +69,44 @@ const authStore = reactive({
   //   const response = await res.data;
   //   return response;
   // },
-  async uploadProtectedApi(endPoint = "", params = {}) {
+  // async uploadProtectedApi(endPoint = "", params = {}) {
+  //   const token = authStore.getUserToken();
+
+  //   const res = await axios.post(authStore.apiBase + endPoint, params, {
+  //     headers: {
+  //       "Content-Type": "multipart/form-data",
+  //       Authorization: `Bearer ${token}`,
+  //     },
+  //   });
+
+  //   return res.data;
+  // },
+
+  //--------NEW by Ourself------------
+  async uploadProtectedApi(endPoint = "", params = {}, requestType = "POST") {
     const token = authStore.getUserToken();
 
-    const res = await axios.post(authStore.apiBase + endPoint, params, {
+    // Prepare the request configuration
+    let request = {
+      method: requestType.toUpperCase(), // Handle both POST and PUT
       headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data", // Multipart form-data for file uploads
+        Authorization: `Bearer ${token}`, // Add the authorization header
       },
-    });
+    };
 
+    // Add the params as the body for POST and PUT requests
+    if (
+      requestType.toUpperCase() === "POST" ||
+      requestType.toUpperCase() === "PUT"
+    ) {
+      request.data = params; // Use data instead of body for axios
+    }
+
+    // Make the axios request
+    const res = await axios(authStore.apiBase + endPoint, request);
+
+    // Return the response data
     return res.data;
   },
 

@@ -18,6 +18,10 @@ import OrgRegister from "../views/Org/Profile/Register.vue";
 import OrgDashboard from "../views/Org/Layouts/Dashboard/Index.vue";
 import OrgDashboardInitialContent from "@/views/Org/Layouts/Dashboard/InitialContent.vue";
 
+
+//Asset Management
+import AssetManagement from "../views/Org/Asset/Index.vue";
+
 //History
 import History from "../views/Org/History/Index.vue";
 
@@ -258,6 +262,12 @@ const routes = [
         path: "office-record",
         name: "office-record",
         component: OfficeRecord,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "asset-management",
+        name: "asset-management",
+        component: AssetManagement,
         meta: { requiresAuth: true },
       },
       {
