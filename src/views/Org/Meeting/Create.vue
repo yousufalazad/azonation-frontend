@@ -63,7 +63,7 @@ const resetForm = () => {
 // Add or update meeting
 const submitForm = async () => {
   const payload = {
-    user_id: userId,
+    // user_id: userId,
     name: name.value,
     short_name: short_name.value,
     subject: subject.value,

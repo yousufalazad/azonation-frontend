@@ -135,108 +135,51 @@ const authStore = reactive({
       });
   },
 
-  // authenticate(username, password, remember_token) {
-  //   authStore
-  //     .fetchPublicApi(
-  //       "/api/login",
-  //       { email: username, password: password, remember_token: remember_token },
-  //       "POST"
-  //     )
-  //     .then((res) => {
-  //       if (res.status === "success") {
-  //         authStore.isAuthenticated = true;
-  //         authStore.user = res.data;
-  //         sessionStorage.setItem("auth", 1);
-  //         sessionStorage.setItem("user", JSON.stringify(res.data));
-
-  //         if ("individual" == res.data.type) {
-  //           //this.individualData(res.data.id);
-  //           router.push({ name: "individual-dashboard-initial-content" });
-  //         } else if ("organisation" == res.data.type) {
-  //           //this.orgData(res.data.id);
-  //           router.push({ name: "dashboard-initial-content" });
-  //         } else if ("superadmin" == res.data.type) {
-  //           this.superAdminUserData(res.data.id);
-  //           router.push({ name: "super-admin-dashboard" });
-  //         } else {
-  //           router.push("/");
-  //         }
-  //         Swal.fire({
-  //           icon: "success",
-  //           title: "Login Successful",
-  //           text: "You have successfully logged in.",
-  //           timer: 1500,
-  //           timerProgressBar: true,
-  //           showConfirmButton: false,
-  //         });
-  //       } else {
-  //         // Handle login errors here
-  //         authStore.errors = res.errors;
-  //         Swal.fire({
-  //           icon: "error",
-  //           title: "Login Failed",
-  //           text: res.message,
-  //         });
-  //       }
-  //     });
-  // },
-
-  async authenticate(username, password, remember_token) {
-    try {
-      const res = await authStore.fetchPublicApi(
+  authenticate(username, password, remember_token) {
+    authStore
+      .fetchPublicApi(
         "/api/login",
-        { email: username, password: password, remember_token: remember_token },
+        { email: username, password: password, remember: remember_token },
         "POST"
-      );
-  
-      if (res.status === "success") {
-        authStore.isAuthenticated = true;
-        authStore.user = res.data;
-        sessionStorage.setItem("auth", 1);
-        sessionStorage.setItem("user", JSON.stringify(res.data));
-  
-        // Redirect based on user type
-        switch (res.data.type) {
-          case "individual":
+      )
+      .then((res) => {
+        if (res.status === "success") {
+          authStore.isAuthenticated = true;
+          authStore.user = res.data;
+          sessionStorage.setItem("auth", 1);
+          sessionStorage.setItem("user", JSON.stringify(res.data));
+
+          if ("individual" == res.data.type) {
+            //this.individualData(res.data.id);
             router.push({ name: "individual-dashboard-initial-content" });
-            break;
-          case "organisation":
+          } else if ("organisation" == res.data.type) {
+            //this.orgData(res.data.id);
             router.push({ name: "dashboard-initial-content" });
-            break;
-          case "superadmin":
+          } else if ("superadmin" == res.data.type) {
             this.superAdminUserData(res.data.id);
             router.push({ name: "super-admin-dashboard" });
-            break;
-          default:
+          } else {
             router.push("/");
+          }
+          Swal.fire({
+            icon: "success",
+            title: "Login Successful",
+            text: "You have successfully logged in.",
+            timer: 1500,
+            timerProgressBar: true,
+            showConfirmButton: false,
+          });
+        } else {
+          // Handle login errors here
+          authStore.errors = res.errors;
+          Swal.fire({
+            icon: "error",
+            title: "Login Failed",
+            text: res.message,
+          });
         }
-  
-        Swal.fire({
-          icon: "success",
-          title: "Login Successful",
-          text: "You have successfully logged in.",
-          timer: 1500,
-          timerProgressBar: true,
-          showConfirmButton: false,
-        });
-      } else {
-        authStore.errors = res.errors || "An error occurred during login.";
-        Swal.fire({
-          icon: "error",
-          title: "Login Failed",
-          text: res.message || "Invalid login credentials",
-        });
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Login Error",
-        text: "An unexpected error occurred. Please try again.",
       });
-    }
   },
-  
 
   logout() {
     Swal.fire({

@@ -5,6 +5,8 @@ import { authStore } from '../../store/authStore';
 const auth = authStore
 const username = ref('')
 const password = ref('')
+const remember_token = ref(false)
+
 
 </script>
 <template>
@@ -50,15 +52,15 @@ const password = ref('')
             placeholder="••••••••" required>
         </div>
         <div class="flex items-center">
-          <input id="remember" type="checkbox"
-            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" required>
-          <label for="remember" class="ml-2 block text-sm text-gray-900">Remember me</label>
+          <input v-model="remember_token" id="remember_token" type="checkbox"
+            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+          <label for="remember_token" class="ml-2 block text-sm text-gray-900">remember me</label>
         </div>
         
         <div class="text-center mt-4">
           <router-link to="/org-register" class="text-indigo-600 hover:underline font-medium">Create new account</router-link>
           <br><br>
-          <button @click="auth.authenticate(username, password)"
+          <button @click="auth.authenticate(username, password, remember_token)"
             class="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
             Login
           </button>

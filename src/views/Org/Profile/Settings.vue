@@ -49,7 +49,7 @@ import { authStore } from '../../../store/authStore';
 import Swal from "sweetalert2";
 
 const auth = authStore;
-const name = auth.user.name;
+const name = auth?.user?.name;
 </script>
 
 <style scoped>

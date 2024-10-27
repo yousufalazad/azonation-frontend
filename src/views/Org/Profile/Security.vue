@@ -214,10 +214,10 @@ const updateUserEmail = async () => {
         if (response.status) {
             Swal.fire('Success', 'Email updated successfully', 'success');
             closeEmailModal();
-            let user = JSON.parse(localStorage.getItem('user'));
+            let user = JSON.parse(sessionStorage.getItem('user'));
             if (user) {
                 user.email = newEmail.value;
-                localStorage.setItem('user', JSON.stringify(user));
+                sessionStorage.setItem('user', JSON.stringify(user));
             }
             window.location.reload();
         }

@@ -467,11 +467,11 @@ const updateName = async () => {
             // Close the modal after successful update
             closeNameModal();
 
-            // Update the name in localStorage explicitly
-            let user = JSON.parse(localStorage.getItem('user'));
+            // Update the name in sessionStorage explicitly
+            let user = JSON.parse(sessionStorage.getItem('user'));
             if (user) {
                 user.name = newName.value;
-                localStorage.setItem('user', JSON.stringify(user));
+                sessionStorage.setItem('user', JSON.stringify(user));
             }
 
             // Optionally, you can reload the page or update the UI without reloading
@@ -502,11 +502,11 @@ const updateUsername = async () => {
             // Close the modal after successful update
             closeUsernameModal();
 
-            // Update the name in localStorage explicitly
-            let user = JSON.parse(localStorage.getItem('user'));
+            // Update the name in sessionStorage explicitly
+            let user = JSON.parse(sessionStorage.getItem('user'));
             if (user) {
                 user.username = newUsername.value;
-                localStorage.setItem('user', JSON.stringify(user));
+                sessionStorage.setItem('user', JSON.stringify(user));
             }
 
             // Optionally, you can reload the page or update the UI without reloading
@@ -547,11 +547,11 @@ const updateUsername = async () => {
 //             // Close the modal after successful update
 //             closeUsernameModal();
 
-//             // Update the name in localStorage explicitly
-//             let user = JSON.parse(localStorage.getItem('user'));
+//             // Update the name in sessionStorage explicitly
+//             let user = JSON.parse(sessionStorage.getItem('user'));
 //             if (user) {
 //                 user.username = newUsername.value;
-//                 localStorage.setItem('user', JSON.stringify(user));
+//                 sessionStorage.setItem('user', JSON.stringify(user));
 //             }
 
 //             // Optionally, you can reload the page or update the UI without reloading
@@ -704,11 +704,11 @@ const updateUserEmail = async () => {
             // Close the modal after successful update
             closeEmailModal();
 
-            // Update the name in localStorage explicitly
-            let user = JSON.parse(localStorage.getItem('user'));
+            // Update the name in sessionStorage explicitly
+            let user = JSON.parse(sessionStorage.getItem('user'));
             if (user) {
                 user.email = newEmail.value;
-                localStorage.setItem('user', JSON.stringify(user));
+                sessionStorage.setItem('user', JSON.stringify(user));
             }
             // Now refresh the current page
             window.location.reload();

@@ -89,7 +89,7 @@ import SuperAdminProfileUpdate from "../views/SuperAdmin/Profile/SuperAdminProfi
 // Mock authentication function
 function isAuthenticated() {
   // Replace this with your actual authentication logic
-  return !!localStorage.getItem("auth");
+  return !!sessionStorage.getItem("auth");
 }
 
 const routes = [
