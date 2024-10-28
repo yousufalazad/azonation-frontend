@@ -6,7 +6,7 @@
       <div class="h-full flex flex-col">
         <!-- Sidebar Menu -->
         <nav class="flex-1 px-2 py-4 space-y-2">
-
+          <!-- v-if="auth.isAuthenticated && userType == 'organisation'" -->
           <!-- Static Links -->
           <router-link to="/org-dashboard/dashboard-initial-content"
             class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
@@ -43,11 +43,12 @@
             <span v-else class="hidden">Accounts</span>
           </router-link>
 
-          <router-link to="/org-dashboard/asset-management" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+          <router-link to="/org-dashboard/asset-management"
+            class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Assets</span>
             <span v-else class="hidden">Assets</span>
           </router-link>
-          
+
           <router-link to="/org-dashboard/office-record"
             class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Records</span>
@@ -72,7 +73,7 @@
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Income</router-link>
               <router-link to="/org-dashboard/org-expense-report"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Expense</router-link>
-              
+
             </div>
           </div>
 
@@ -132,6 +133,7 @@
 <script>
 export default {
   data() {
+    
     return {
       isSidebarExpanded: true,
       openSections: [],

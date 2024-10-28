@@ -215,7 +215,7 @@ const authStore = reactive({
           icon: "success",
           title: "Login Successful",
           text: "You have successfully logged in.",
-          timer: 1500,
+          timer: 1000,
           timerProgressBar: true,
           showConfirmButton: false,
         });
