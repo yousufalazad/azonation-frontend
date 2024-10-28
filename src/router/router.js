@@ -1,4 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { authStore } from '../store/authStore';
+
 
 //Auth
 import Login from "../views/Auth/Login.vue";
@@ -118,7 +120,9 @@ const routes = [
     path: "/org-dashboard",
     name: "org-dashboard",
     component: OrgDashboard,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true,
+      type: 'organisation',
+    },
     children: [
       {
         path: "dashboard-initial-content",
@@ -359,21 +363,36 @@ const routes = [
   },
 ];
 
+// const router = createRouter({
+//   history: createWebHistory(import.meta.env.BASE_URL),
+//   routes,
+// });
+
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes,
-});
+  history: createWebHistory(),
+  routes
+})
+
+// router.beforeEach((to, from, next) => {
+//   if (to.matched.some((record) => record.meta.requiresAuth)) {
+//     if (!isAuthenticated()) {
+//       next({ name: "login" });
+//     } else {
+//       next();
+//     }
+//   } else {
+//     next();
+//   }
+// });
 
 router.beforeEach((to, from, next) => {
-  if (to.matched.some((record) => record.meta.requiresAuth)) {
-    if (!isAuthenticated()) {
-      next({ name: "login" });
-    } else {
-      next();
-    }
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+      next('/login')
+  } else if (to.meta.requiresAuth && to.meta.type != authStore.getUserType()) {
+      next('/')
   } else {
-    next();
+      next()
   }
-});
+})
 
 export default router;

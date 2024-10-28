@@ -40,7 +40,7 @@ onMounted(fetchMemberList);
 
 <template>
   <div class="mt-4 p-4">
-    <div v-if="auth.isAuthenticated && auth.user?.type == 'organisation'">
+    <div>
       <!-- First Row for Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-white shadow rounded-lg p-6">

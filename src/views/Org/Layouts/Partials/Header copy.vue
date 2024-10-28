@@ -1,5 +1,6 @@
 <template>
-  <header class="sticky top-0 z-50 flex items-center justify-between bg-white shadow  py-3 px-6">
+  <header class="sticky top-0 z-50 flex items-center justify-between bg-white shadow  py-3 px-6"
+    v-if="auth.isAuthenticated && userType == 'organisation'">
     <div>
       <!-- Organization/Brand Name -->
       <a href="/org-dashboard/dashboard-initial-content" class="text-xl font-semibold text-gray-600">
