@@ -367,10 +367,6 @@ const authStore = reactive({
     return authStore.user?.accessToken;
   },
 
-  // getUserToken() {
-  //   return this.user?.token || ""; // Ensure token is fetched from session storage
-  // },
-
   getUserType() {
     return authStore.user?.type;
   },

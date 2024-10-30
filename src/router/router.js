@@ -387,7 +387,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-      next('/login')
+      next({name: "login"})
   } else if (to.meta.requiresAuth && to.meta.type != authStore.getUserType()) {
       next('/')
   } else {

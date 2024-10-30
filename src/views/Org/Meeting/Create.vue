@@ -4,7 +4,6 @@ import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
 
 const auth = authStore;
-const userId = auth.user.id;
 
 // Form Fields
 const name = ref('');
@@ -25,10 +24,15 @@ const isEditMode = ref(false);
 const selectedRecordId = ref(null);
 const recordList = ref([]);
 
+function isAuthenticated() {
+    return !!sessionStorage.getItem('authToken');
+}
+
+
 // Fetch list of meetings
 const getRecords = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-org-meetings/${userId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/get-org-meetings`, {}, 'GET');
 
     if (response.status) {
       recordList.value = response.data;
