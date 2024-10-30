@@ -111,6 +111,7 @@ import { authStore } from "../../../../store/authStore";
 
 const auth = authStore;
 const userId = auth.user.id;
+// const userId = 2;
 const baseURL = 'http://localhost:8000';
 const name = computed(() => auth.user?.name);
 const userType = computed(() => auth.user?.type);
@@ -127,6 +128,7 @@ const createdAtDate = computed(() => {
 // Org logo
 const logoPath = ref('');
 
+//Notification
 const notifications = ref([]);
 const unreadCount = computed(() => notifications.value.filter(notification => notification.read_at === null).length);
 

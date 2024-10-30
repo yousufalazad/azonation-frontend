@@ -1,13 +1,15 @@
 <!-- OrgDashboard.vue -->
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { authStore } from '../../../../store/authStore';
 
 const auth = authStore;
 const userId = auth.user.id;
 const totalOrgMember = ref('');
 const memberList = ref([]);
+const userType = computed(() => auth.user?.type);
+
 
 const totalOrgMemberCount = async () => {
   try {
@@ -40,7 +42,7 @@ onMounted(fetchMemberList);
 
 <template>
   <div class="mt-4 p-4">
-    <div>
+    <div v-if="auth.isAuthenticated && userType == 'organisation'">
       <!-- First Row for Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-white shadow rounded-lg p-6">

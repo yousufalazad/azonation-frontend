@@ -1,13 +1,15 @@
 <!-- OrgDashboard.vue -->
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { authStore } from '../../../../store/authStore';
 
 const auth = authStore;
 const userId = auth.user.id;
 const totalOrgMember = ref('');
 const memberList = ref([]);
+const userType = computed(() => auth.user?.type);
+
 
 const totalOrgMemberCount = async () => {
   try {
@@ -39,7 +41,7 @@ onMounted(fetchMemberList);
 </script>
 
 <template>
-  <div v-if="auth.isAuthenticated && auth.user?.type == 'individual'" class="space-y-8 mt-4">
+  <div v-if="auth.isAuthenticated && userType == 'individual'" class="space-y-8 mt-4">
     <!-- Connected Organization Stats -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       <div class="bg-white shadow rounded-lg p-4">

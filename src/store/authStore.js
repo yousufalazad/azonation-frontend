@@ -120,12 +120,12 @@ const authStore = reactive({
       .then((res) => {
         if (res.status) {
           authStore.errors = null;
-          router.push("/");
+          router.push({name: "login"});
           Swal.fire({
             icon: "success",
-            title: "Registration Successful",
+            title: "Registration successful",
             text: "You have successfully registered.",
-            timer: 5000,
+            timer: 1000,
             timerProgressBar: true,
             showConfirmButton: false,
           });
@@ -135,51 +135,6 @@ const authStore = reactive({
       });
   },
 
-  // authenticate(username, password, remember_token) {
-  //   authStore
-  //     .fetchPublicApi(
-  //       "/api/login",
-  //       { email: username, password: password, remember_token: remember_token },
-  //       "POST"
-  //     )
-  //     .then((res) => {
-  //       if (res.status === "success") {
-  //         authStore.isAuthenticated = true;
-  //         authStore.user = res.data;
-  //         sessionStorage.setItem("auth", 1);
-  //         sessionStorage.setItem("user", JSON.stringify(res.data));
-
-  //         if ("individual" == res.data.type) {
-  //           //this.individualData(res.data.id);
-  //           router.push({ name: "individual-dashboard-initial-content" });
-  //         } else if ("organisation" == res.data.type) {
-  //           //this.orgData(res.data.id);
-  //           router.push({ name: "dashboard-initial-content" });
-  //         } else if ("superadmin" == res.data.type) {
-  //           this.superAdminUserData(res.data.id);
-  //           router.push({ name: "super-admin-dashboard" });
-  //         } else {
-  //           router.push("/");
-  //         }
-  //         Swal.fire({
-  //           icon: "success",
-  //           title: "Login Successful",
-  //           text: "You have successfully logged in.",
-  //           timer: 1500,
-  //           timerProgressBar: true,
-  //           showConfirmButton: false,
-  //         });
-  //       } else {
-  //         // Handle login errors here
-  //         authStore.errors = res.errors;
-  //         Swal.fire({
-  //           icon: "error",
-  //           title: "Login Failed",
-  //           text: res.message,
-  //         });
-  //       }
-  //     });
-  // },
 
   async authenticate(username, password, remember_token) {
     try {
@@ -208,7 +163,7 @@ const authStore = reactive({
             router.push({ name: "super-admin-dashboard" });
             break;
           default:
-            router.push("/");
+            router.push({name: "login"});
         }
   
         Swal.fire({
@@ -223,7 +178,7 @@ const authStore = reactive({
         authStore.errors = res.errors || "An error occurred during login.";
         Swal.fire({
           icon: "error",
-          title: "Login Failed",
+          title: "Login failed",
           text: res.message || "Invalid login credentials",
         });
       }
@@ -231,13 +186,12 @@ const authStore = reactive({
       console.error("Login error:", error);
       Swal.fire({
         icon: "error",
-        title: "Login Error",
+        title: "Login error",
         text: "An unexpected error occurred. Please try again.",
       });
     }
   },
   
-
   logout() {
     Swal.fire({
       title: "Are you sure?",
@@ -246,24 +200,113 @@ const authStore = reactive({
       showCancelButton: true,
       confirmButtonText: "Yes, log out!",
       cancelButtonText: "Cancel",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        authStore.isAuthenticated = false;
-        authStore.user = {};
-        sessionStorage.setItem("auth", 0);
-        sessionStorage.setItem("user", "{}");
-        router.push("/");
-        Swal.fire({
-          icon: "success",
-          title: "Logged Out",
-          text: "You have been logged out successfully.",
-          timer: 2000,
-          timerProgressBar: true,
-          showConfirmButton: false,
-        });
+        try {
+          await authStore.fetchProtectedApi("/api/logout",{},"POST")
+
+          // Clear frontend authentication status
+          authStore.isAuthenticated = false;
+          authStore.user = {};
+          sessionStorage.setItem("auth", 0);
+          sessionStorage.setItem("user", "{}");
+          router.push({ name: "login" });
+
+          Swal.fire({
+            icon: "success",
+            title: "Logged Out",
+            text: "You have been logged out successfully.",
+            timer: 1000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+          });
+        } catch (error) {
+          console.error("Logout failed:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Logout Failed",
+            text: "There was an issue logging out. Please try again.",
+          });
+        }
       }
     });
   },
+
+  // logout() {
+  //   Swal.fire({
+  //     title: "Are you sure?",
+  //     text: "You will be logged out.",
+  //     icon: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonText: "Yes, log out!",
+  //     cancelButtonText: "Cancel",
+  //   }).then(async (result) => {
+  //     if (result.isConfirmed) {
+  //       try {
+  //         // Call the backend logout API endpoint
+  //         const token = authStore.getUserToken();
+  //         await fetch(`${authStore.apiBase}/logout`, {
+  //           method: "POST",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //             "Authorization": `Bearer ${token}`
+  //           },
+  //         });
+
+  //         // Clear frontend authentication status
+  //         authStore.isAuthenticated = false;
+  //         authStore.user = {};
+  //         sessionStorage.setItem("auth", 0);
+  //         sessionStorage.setItem("user", "{}");
+  //         router.push({ name: "login" });
+
+  //         Swal.fire({
+  //           icon: "success",
+  //           title: "Logged Out",
+  //           text: "You have been logged out successfully.",
+  //           timer: 1000,
+  //           timerProgressBar: true,
+  //           showConfirmButton: false,
+  //         });
+  //       } catch (error) {
+  //         console.error("Logout failed:", error);
+  //         Swal.fire({
+  //           icon: "error",
+  //           title: "Logout Failed",
+  //           text: "There was an issue logging out. Please try again.",
+  //         });
+  //       }
+  //     }
+  //   });
+  // },
+
+
+  // logout() {
+  //   Swal.fire({
+  //     title: "Are you sure?",
+  //     text: "You will be logged out.",
+  //     icon: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonText: "Yes, log out!",
+  //     cancelButtonText: "Cancel",
+  //   }).then((result) => {
+  //     if (result.isConfirmed) {
+  //       authStore.isAuthenticated = false;
+  //       authStore.user = {};
+  //       sessionStorage.setItem("auth", 0);
+  //       sessionStorage.setItem("user", "{}");
+  //       router.push({name: "login"});
+  //       Swal.fire({
+  //         icon: "success",
+  //         title: "Logged Out",
+  //         text: "You have been logged out successfully.",
+  //         timer: 1000,
+  //         timerProgressBar: true,
+  //         showConfirmButton: false,
+  //       });
+  //     }
+  //   });
+  // },
 
   // individualData(userId) {
   //   this.fetchPublicApi(`/api/individual_profile_data/${userId}`, {}, "GET").then((res) => {
@@ -323,6 +366,10 @@ const authStore = reactive({
   getUserToken() {
     return authStore.user?.accessToken;
   },
+
+  // getUserToken() {
+  //   return this.user?.token || ""; // Ensure token is fetched from session storage
+  // },
 
   getUserType() {
     return authStore.user?.type;

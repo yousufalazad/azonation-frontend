@@ -96,7 +96,7 @@ function isAuthenticated() {
 
 const routes = [
   {
-    path: "/",
+    path: "/login",
     name: "login",
     component: Login,
   },
@@ -311,7 +311,7 @@ const routes = [
     path: "/individual-dashboard",
     name: "individual-dashboard",
     component: IndividualDashboard,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, type: 'individual'},
     children: [
       {
         path: "individual-dashboard-initial-content",
@@ -363,15 +363,15 @@ const routes = [
   },
 ];
 
-// const router = createRouter({
-//   history: createWebHistory(import.meta.env.BASE_URL),
-//   routes,
-// });
-
 const router = createRouter({
-  history: createWebHistory(),
-  routes
-})
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes,
+});
+
+// const router = createRouter({
+//   history: createWebHistory(),
+//   routes
+// })
 
 // router.beforeEach((to, from, next) => {
 //   if (to.matched.some((record) => record.meta.requiresAuth)) {
