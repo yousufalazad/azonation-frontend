@@ -83,10 +83,38 @@ import OfficeRecord from "../views/Org/OfficeRecord/Index.vue";
 //Accounts
 import Accounts from "../views/Org/Accounts/Index.vue";
 
+//Invite Friend
+import InviteFriend from "../views/Org/InviteFriend/Index.vue";
+
+//Billing
+import Package from "../views/Org/Billing/Package.vue";
+import Subscription from "../views/Org/Billing/Subscription.vue";
+import InvoiceList from "../views/Org/Billing/InvoiceList.vue";
+import ViewInvoice from "../views/Org/Billing/ViewInvoice.vue";
+import ReceiptList from "../views/Org/Billing/ReceiptList.vue";
+import ViewReceipt from "../views/Org/Billing/ViewReceipt.vue";
+
+
+// ------------------------SuperAdmin----------------------------
 //SuperAdmin
 import SuperAdminRegister from "../views/SuperAdmin/Profile/Register.vue";
 import SuperAdminDashboard from "../views/SuperAdmin/Profile/SuperAdminDashboard.vue";
 import SuperAdminProfileUpdate from "../views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue";
+
+//Package
+import EditPackage from "../views/SuperAdmin/Billing/Package/Edit.vue";
+import IndexPackage from "../views/SuperAdmin/Billing/Package/Index.vue";
+import ViewPackage from "../views/SuperAdmin/Billing/Package/View.vue";
+
+//Subscription
+import EditSubscription from "../views/SuperAdmin/Billing/Subscription/Edit.vue";
+import IndexSubscription from "../views/SuperAdmin/Billing/Subscription/Index.vue";
+import ViewSubscription from "../views/SuperAdmin/Billing/Subscription/View.vue";
+
+//Price
+import EditPrice from "../views/SuperAdmin/Billing/Price/Edit.vue";
+import IndexPrice from "../views/SuperAdmin/Billing/Price/Index.vue";
+import ViewPrice from "../views/SuperAdmin/Billing/Price/View.vue";
 
 // Mock authentication function
 function isAuthenticated() {
@@ -288,7 +316,6 @@ const routes = [
           component: Profile,
           meta: { requiresAuth: true },
         },
-        
         {
           path: "org-security",
           name: "org-security",
@@ -299,6 +326,48 @@ const routes = [
           path: "org-settings",
           name: "org-settings",
           component: OrgSettings,
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "package",
+          name: "package",
+          component: Package,
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "subscription",
+          name: "subscription",
+          component: Subscription,
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "invoice-list",
+          name: "invoice-list",
+          component: InvoiceList,
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "view-invoice",
+          name: "view-invoice",
+          component: ViewInvoice,
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "receipt-list",
+          name: "receipt-list",
+          component: ReceiptList,
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "view-receipt",
+          name: "view-receipt",
+          component: ViewReceipt,
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "invite-friend",
+          name: "invite-friend",
+          component: InviteFriend,
           meta: { requiresAuth: true },
         },
       ],
@@ -359,6 +428,61 @@ const routes = [
         component: SuperAdminProfileUpdate,
         meta: { requiresAuth: true },
       },
+      {
+        path: "edit-package",
+        name: "edit-package",
+        component: EditPackage,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "index-package",
+        name: "index-package",
+        component: IndexPackage,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "view-package",
+        name: "view-package",
+        component: ViewPackage,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "edit-price",
+        name: "edit-price",
+        component: EditPrice,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "index-price",
+        name: "index-price",
+        component: IndexPrice,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "view-price",
+        name: "view-price",
+        component: ViewPrice,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "edit-subscription",
+        name: "edit-subscription",
+        component: EditSubscription,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "index-subscription",
+        name: "index-subscription",
+        component: IndexSubscription,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "view-subscription",
+        name: "view-subscription",
+        component: ViewSubscription,
+        meta: { requiresAuth: true },
+      },
+
     ],
   },
 ];

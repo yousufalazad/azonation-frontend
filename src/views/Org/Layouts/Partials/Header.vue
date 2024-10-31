@@ -81,11 +81,11 @@
             </li>
             <li><a href="/org-dashboard/my-account/org-settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
             </li>
-            <li><a href="/org-dashboard/subscription"
+            <li><a href="/org-dashboard/my-account/subscription"
                 class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Subscriptions</a></li>
-            <li><a href="#/org-dashboard/billing" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Billing</a>
+            <li><a href="/org-dashboard/my-account/invoice-list" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Billing</a>
             </li>
-            <li><a href="/org-dashboard/invite-friends"
+            <li><a href="/org-dashboard/my-account/invite-friend"
                 class="block px-4 py-2 mb-3 text-gray-700 hover:bg-gray-100">Invite
                 friends</a></li>
             <li class="border-t">
@@ -164,7 +164,7 @@ const notificationHandleClickOutside = (event) => {
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside);
   document.addEventListener('mousedown', notificationHandleClickOutside);
-  getNotifications();
+  //getNotifications();
   fetchLogo();
 });
 

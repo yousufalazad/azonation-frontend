@@ -1,9 +1,6 @@
 
 <script setup>
 import { RouterView } from 'vue-router';
-import Profile from '../Profile/Profile.vue';
-import Security from '../Profile/Security.vue';
-import Settings from '../Profile/Settings.vue';
 
 </script>
 
@@ -28,6 +25,48 @@ import Settings from '../Profile/Settings.vue';
               Settings
             </router-link>
           </li>
+          
+          <li>
+            <router-link to="#" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+              Temporary
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/org-dashboard/my-account/package" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+              Package
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/org-dashboard/my-account/subscription" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+              Subscription
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/org-dashboard/my-account/invoice-list" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+              Invoice list
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/org-dashboard/my-account/view-invoice" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+              View Invoice
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/org-dashboard/my-account/receipt-list" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+              Receipt List
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/org-dashboard/my-account/view-receipt" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+              View Receipt
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/org-dashboard/my-account/invite-friend" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+             Invite Friend
+            </router-link>
+          </li>
+
         </ul>
       </div>
   

@@ -3,5 +3,5 @@
 </script>
 
 <template>
-  <h1>View receipt page</h1>
+  <h1>Invite friend page</h1>
 </template>
