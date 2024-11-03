@@ -35,13 +35,7 @@
             <p class="font-bold"><strong>Approximate Bill:</strong> £{{ approximateBill.toFixed(2) }}</p>
         </div>
 
-        <!-- Separate Section for Previous Month Bill Calculation -->
-        <div class="bg-gray-100 p-4 rounded-lg shadow-md mb-4">
-            <h2 class="text-xl font-semibold mb-2">Actual Bill Calculation for Previous Month</h2>
-            <p><strong>Price Rate:</strong> £{{ previousPriceRate.toFixed(2) }}</p>
-            <p><strong>Total Active Members:</strong> {{ previousTotalActiveMembers }}</p>
-            <p class="font-bold"><strong>Total Bill Amount:</strong> £{{ previousTotalBillAmount.toFixed(2) }}</p>
-        </div>
+        
 
         <!-- Previous Month Active Member Counts Section -->
         <h1 class="text-2xl font-bold mb-4">Active Member Counts for Previous Month</h1>
@@ -70,6 +64,14 @@
                 </tr>
             </tbody>
         </table>
+
+        <!-- Separate Section for Previous Month Bill Calculation -->
+        <div class="bg-gray-100 p-4 rounded-lg shadow-md mb-4">
+            <h2 class="text-xl font-semibold mb-2">Actual Bill Calculation for Previous Month</h2>
+            <p><strong>Price Rate:</strong> £{{ previousPriceRate.toFixed(2) }}</p>
+            <p><strong>Total Active Members:</strong> {{ previousTotalActiveMembers }}</p>
+            <p class="font-bold"><strong>Total Bill Amount:</strong> £{{ previousTotalBillAmount.toFixed(2) }}</p>
+        </div>
     </div>
 </template>
 
