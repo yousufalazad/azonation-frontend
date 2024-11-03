@@ -179,6 +179,13 @@ onMounted(() => {
                                 <div class="text-center">{{ pkg.status ? 'Active' : 'Inactive' }}</div>
                             </td>
                         </tr>
+                        <tr>
+                            <td class=""></td>
+                            <td class="border border-gray-300 p-4 font-semibold text-center text-blue-600" v-for="pkg in packageList" :key="pkg.id">
+                                <button @click="seletedPackage(pkg.id)">Subscribe</button>
+                            </td>
+                            
+                        </tr>
                     </tbody>
                 </table>
             </div>

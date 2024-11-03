@@ -93,6 +93,7 @@ import InvoiceList from "../views/Org/Billing/InvoiceList.vue";
 import ViewInvoice from "../views/Org/Billing/ViewInvoice.vue";
 import ReceiptList from "../views/Org/Billing/ReceiptList.vue";
 import ViewReceipt from "../views/Org/Billing/ViewReceipt.vue";
+import BillCalculation from "@/views/Org/Billing/BillCalculation.vue";
 
 
 // ------------------------SuperAdmin----------------------------
@@ -338,6 +339,12 @@ const routes = [
           path: "subscription",
           name: "subscription",
           component: Subscription,
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "bill-calculation",
+          name: "bill-calculation",
+          component: BillCalculation,
           meta: { requiresAuth: true },
         },
         {

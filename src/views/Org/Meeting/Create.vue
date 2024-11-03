@@ -36,7 +36,7 @@ const getRecords = async () => {
 
     if (response.status) {
       recordList.value = response.data;
-      console.log(response.data);
+      //console.log(response.data);
     } else {
       recordList.value = [];
     }
