@@ -8,18 +8,18 @@ const auth = authStore;
 const userId = auth.user.id;
 const name = ref('');
 const description = ref('');
-const is_long_term = ref(1); // Default to 1 (true)
+const is_long_term = ref(true);
 const quantity = ref(1);
 const value_amount = ref(0);
 const inkind_value = ref(0);
-const is_tangible = ref(1); // Default to 1 (true)
+const is_tangible = ref(true);
 const responsible_user_id = ref(null);
 const assignment_start_date = ref('');
 const assignment_end_date = ref('');
 const note = ref('');
 const asset_lifecycle_statuses_id = ref(null);
 const privacy_setup_id = ref(null);
-const is_active = ref(1); // Default to 1 (true)
+const is_active = ref(true);
 
 // State Management
 const isEditMode = ref(false);
@@ -54,18 +54,18 @@ const getRecords = async () => {
 const resetForm = () => {
     name.value = '';
     description.value = '';
-    is_long_term.value = 1;
+    is_long_term.value = true;
     quantity.value = 1;
     value_amount.value = 0;
     inkind_value.value = 0;
-    is_tangible.value = 1;
+    is_tangible.value = true;
     responsible_user_id.value = null;
     assignment_start_date.value = '';
     assignment_end_date.value = '';
     note.value = '';
     asset_lifecycle_statuses_id.value = null;
     privacy_setup_id.value = null;
-    is_active.value = 1;
+    is_active.value = true;
     isEditMode.value = false;
     selectedRecordId.value = null;
 };
@@ -85,18 +85,18 @@ const submitForm = async () => {
         user_id: userId,
         name: name.value,
         description: description.value,
-        is_long_term: !!is_long_term.value,
+        is_long_term: is_long_term.value,
         quantity: quantity.value,
         value_amount: value_amount.value,
         inkind_value: inkind_value.value,
-        is_tangible: !!is_tangible.value,
+        is_tangible: is_tangible.value,
         responsible_user_id: responsible_user_id.value,
         assignment_start_date: assignment_start_date.value,
         assignment_end_date: assignment_end_date.value,
         note: note.value,
         asset_lifecycle_statuses_id: asset_lifecycle_statuses_id.value,
         privacy_setup_id: privacy_setup_id.value,
-        is_active: !!is_active.value
+        is_active: is_active.value
     };
 
     try {
@@ -130,18 +130,18 @@ const submitForm = async () => {
 const editRecord = (record) => {
     name.value = record.name;
     description.value = record.description;
-    is_long_term.value = record.is_long_term ? 1 : 0;
+    is_long_term.value = record.is_long_term;
     quantity.value = record.quantity;
     value_amount.value = record.value_amount;
     inkind_value.value = record.inkind_value;
-    is_tangible.value = record.is_tangible ? 1 : 0;
+    is_tangible.value = record.is_tangible;
     responsible_user_id.value = record.responsible_user_id;
     assignment_start_date.value = record.assignment_start_date;
     assignment_end_date.value = record.assignment_end_date;
     note.value = record.note;
     asset_lifecycle_statuses_id.value = record.asset_lifecycle_statuses_id;
     privacy_setup_id.value = record.privacy_setup_id;
-    is_active.value = record.is_active ? 1 : 0;
+    is_active.value = record.is_active;
     selectedRecordId.value = record.id;
     isEditMode.value = true;
 };
@@ -182,7 +182,6 @@ onMounted(() => {
 
 <template>
     <div class="max-w-7xl mx-auto w-10/12">
-        <!-- Asset Form Section -->
         <section class="mb-5">
             <div class="flex justify-between left-color-shade py-2 my-3">
                 <div>
@@ -193,77 +192,64 @@ onMounted(() => {
             <form @submit.prevent="submitForm">
                 <div class="mb-4">
                     <label for="name" class="block text-gray-700 font-semibold mb-2">Name</label>
-                    <input v-model="name" type="text" id="name" class="w-full border-gray-300 rounded-md py-2 px-4"
-                        required />
+                    <input v-model="name" type="text" id="name" class="w-full border-gray-300 rounded-md py-2 px-4" required />
                 </div>
 
                 <div class="mb-4">
                     <label for="description" class="block text-gray-700 font-semibold mb-2">Description</label>
-                    <input v-model="description" type="text" id="description"
-                        class="w-full border-gray-300 rounded-md py-2 px-4" required />
+                    <input v-model="description" type="text" id="description" class="w-full border-gray-300 rounded-md py-2 px-4" required />
                 </div>
 
                 <div class="grid grid-cols-3 gap-4 mb-4">
                     <div>
                         <label for="quantity" class="block text-gray-700 font-semibold mb-2">Quantity</label>
-                        <input v-model="quantity" type="number" id="quantity" min="0"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required />
+                        <input v-model="quantity" type="number" id="quantity" min="0" class="w-full border-gray-300 rounded-md py-2 px-4" required />
                     </div>
                     <div>
                         <label for="value_amount" class="block text-gray-700 font-semibold mb-2">Value Amount</label>
-                        <input v-model="value_amount" type="number" id="value_amount" min="0"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required />
+                        <input v-model="value_amount" type="number" id="value_amount" min="0" class="w-full border-gray-300 rounded-md py-2 px-4" required />
                     </div>
                     <div>
                         <label for="inkind_value" class="block text-gray-700 font-semibold mb-2">In-Kind Value</label>
-                        <input v-model="inkind_value" type="number" id="inkind_value" min="0"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required />
+                        <input v-model="inkind_value" type="number" id="inkind_value" min="0" class="w-full border-gray-300 rounded-md py-2 px-4" required />
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
                         <label for="is_long_term" class="block text-gray-700 font-semibold mb-2">Is Long Term?</label>
-                        <select v-model="is_long_term" id="is_long_term"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required>
-                            <option :value="1">Yes</option>
-                            <option :value="0">No</option>
+                        <select v-model="is_long_term" id="is_long_term" class="w-full border-gray-300 rounded-md py-2 px-4" required>
+                            <option :value="true">Yes</option>
+                            <option :value="false">No</option>
                         </select>
                     </div>
 
                     <div>
                         <label for="is_tangible" class="block text-gray-700 font-semibold mb-2">Is Tangible?</label>
-                        <select v-model="is_tangible" id="is_tangible"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required>
-                            <option :value="1">Yes</option>
-                            <option :value="0">No</option>
+                        <select v-model="is_tangible" id="is_tangible" class="w-full border-gray-300 rounded-md py-2 px-4" required>
+                            <option :value="true">Yes</option>
+                            <option :value="false">No</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <label for="responsible_user_id" class="block text-gray-700 font-semibold mb-2">Responsible
-                        User</label>
-                    <select v-model="responsible_user_id" id="responsible_user_id"
-                        class="w-full border-gray-300 rounded-md py-2 px-4" required>
+                    <label for="responsible_user_id" class="block text-gray-700 font-semibold mb-2">Responsible User</label>
+                    <select v-model="responsible_user_id" id="responsible_user_id" class="w-full border-gray-300 rounded-md py-2 px-4" required>
                         <option value="" disabled>Select Responsible User</option>
-                        <option v-for="user in responsibleUsers" :key="user.individual.id" :value="user.individual.id">
-                            {{ user.individual.name }}</option>
+                        <option v-for="user in responsibleUsers" :key="user.id" :value="user.id">{{ user.individual.name }}</option>
                     </select>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                        <label for="assignment_start_date" class="block text-gray-700 font-semibold mb-2">Start
-                            Date</label>
-                        <input v-model="assignment_start_date" type="date" id="assignment_start_date"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required />
+                        <label for="assignment_start_date" class="block text-gray-700 font-semibold mb-2">Start Date</label>
+                        <input v-model="assignment_start_date" type="date" id="assignment_start_date" class="w-full border-gray-300 rounded-md py-2 px-4" required />
                     </div>
 
                     <div>
                         <label for="assignment_end_date" class="block text-gray-700 font-semibold mb-2">End Date</label>
-                        <input v-model="assignment_end_date" type="date" id="assignment_end_date"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required />
+                        <input v-model="assignment_end_date" type="date" id="assignment_end_date" class="w-full border-gray-300 rounded-md py-2 px-4" required />
                     </div>
                 </div>
 
@@ -271,44 +257,36 @@ onMounted(() => {
                     <label for="note" class="block text-gray-700 font-semibold mb-2">Note</label>
                     <input v-model="note" type="text" id="note"
                         class="w-full border border-gray-300 rounded-md py-2 px-4" placeholder="Optional note" />
+                    <!-- <textarea v-model="note" id="note" class="w-full border-gray-300 rounded-md py-2 px-4" rows="3"></textarea> -->
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                        <label for="asset_lifecycle_statuses_id"
-                            class="block text-gray-700 font-semibold mb-2">Lifecycle Status</label>
-                        <select v-model="asset_lifecycle_statuses_id" id="asset_lifecycle_statuses_id"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required>
+                        <label for="asset_lifecycle_statuses_id" class="block text-gray-700 font-semibold mb-2">Lifecycle Status</label>
+                        <select v-model="asset_lifecycle_statuses_id" id="asset_lifecycle_statuses_id" class="w-full border-gray-300 rounded-md py-2 px-4" required>
                             <option value="" disabled>Select Lifecycle Status</option>
-                            <option v-for="status in assetLifecycleSetups" :key="status.id" :value="status.id">{{
-                                status.name }}</option>
+                            <option v-for="status in assetLifecycleSetups" :key="status.id" :value="status.id">{{ status.name }}</option>
                         </select>
                     </div>
 
                     <div>
-                        <label for="privacy_setup_id" class="block text-gray-700 font-semibold mb-2">Privacy
-                            Setup</label>
-                        <select v-model="privacy_setup_id" id="privacy_setup_id"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required>
+                        <label for="privacy_setup_id" class="block text-gray-700 font-semibold mb-2">Privacy Setup</label>
+                        <select v-model="privacy_setup_id" id="privacy_setup_id" class="w-full border-gray-300 rounded-md py-2 px-4" required>
                             <option value="" disabled>Select Privacy Setup</option>
-                            <option v-for="setup in privacySetups" :key="setup.id" :value="setup.id">{{ setup.name }}
-                            </option>
+                            <option v-for="setup in privacySetups" :key="setup.id" :value="setup.id">{{ setup.name }}</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="mb-4">
                     <label for="is_active" class="block text-gray-700 font-semibold mb-2">Is Active?</label>
-                    <select v-model="is_active" id="is_active" class="w-full border-gray-300 rounded-md py-2 px-4"
-                        required>
-                        <option :value="1">Yes</option>
-                        <option :value="0">No</option>
+                    <select v-model="is_active" id="is_active" class="w-full border-gray-300 rounded-md py-2 px-4" required>
+                        <option :value="true">Yes</option>
+                        <option :value="false">No</option>
                     </select>
                 </div>
 
-                <div class="flex justify-end space-x-3">
-                    <button type="button" @click="resetForm"
-                        class="bg-gray-500 hover:bg-gray-400 text-white py-2 px-4 rounded-md">Reset</button>
+                <div class="flex justify-end">
                     <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded-md">
                         {{ isEditMode ? 'Update' : 'Add' }} Asset
                     </button>
@@ -316,7 +294,6 @@ onMounted(() => {
             </form>
         </section>
 
-        <!-- Asset List Section -->
         <section>
             <h5 class="text-md font-semibold mt-5 mb-3">Assets List</h5>
             <table class="table-auto w-full text-left border-collapse">
@@ -328,65 +305,18 @@ onMounted(() => {
                         <th class="p-3 border">Quantity</th>
                         <th class="p-3 border">Value</th>
                         <th class="p-3 border">Actions</th>
-                        <th class="p-3 border">Actions</th>
-
-                        <th class="p-3 border">Actions</th>
-
-                        <th class="p-3 border">Actions</th>
-
-                        <th class="p-3 border">Actions</th>
-
-                        <th class="p-3 border">Actions</th>
-
-                        <th class="p-3 border">Actions</th>
-
-                        <th class="p-3 border">Actions</th>
-
-                        <th class="p-3 border">Actions</th>
-                        <th class="p-3 border">Actions</th>
-
-
                     </tr>
                 </thead>
                 <tbody>
-
-                  <!-- a.user_id AS user_id,
-        a.name AS name,
-        a.description AS description,
-        a.is_long_term AS is_long_term,
-        a.quantity AS quantity,
-        a.value_amount AS value_amount,
-        a.inkind_value AS inkind_value,
-        a.is_tangible AS is_tangible,
-        ps.name AS privacy_setup_name,
-        a.is_active AS is_active,
-        u.name AS responsible_user_name,
-        aal.assignment_start_date AS assignment_start_date,
-        aal.assignment_end_date AS assignment_end_date,
-        als.name AS asset_lifecycle_statuses_name,
-        aal.note AS note -->
-
                     <tr v-for="(record, index) in recordList" :key="record.id">
                         <td class="p-3 border">{{ index + 1 }}</td>
                         <td class="p-3 border">{{ record.name }}</td>
                         <td class="p-3 border">{{ record.description }}</td>
                         <td class="p-3 border">{{ record.quantity }}</td>
                         <td class="p-3 border">{{ record.value_amount }}</td>
-                        <td class="p-3 border">{{ record.inkind_value }}</td>
-                        <td class="p-3 border">{{ record.is_tangible }}</td>
-                        <td class="p-3 border">{{ record.privacy_setup_name }}</td>
-                        <td class="p-3 border">{{ record.is_active }}</td>
-                        <td class="p-3 border">{{ record.responsible_user_name }}</td>
-                        <td class="p-3 border">{{ record.assignment_start_date }}</td>
-                        <td class="p-3 border">{{ record.assignment_end_date }}</td>
-                        <td class="p-3 border">{{ record.asset_lifecycle_statuses_name }}</td>
-                        <td class="p-3 border">{{ record.note }}</td>
-                        
                         <td class="p-3 border">
-                            <button @click="editRecord(record)"
-                                class="text-white bg-blue-500 hover:bg-blue-400 py-1 px-2 rounded-md mr-2">Edit</button>
-                            <button @click="deleteRecord(record.id)"
-                                class="text-white bg-red-500 hover:bg-red-400 py-1 px-2 rounded-md">Delete</button>
+                            <button @click="editRecord(record)" class="text-blue-600 hover:underline mr-3">Edit</button>
+                            <button @click="deleteRecord(record.id)" class="text-red-600 hover:underline">Delete</button>
                         </td>
                     </tr>
                 </tbody>

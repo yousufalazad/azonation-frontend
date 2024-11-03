@@ -328,60 +328,15 @@ onMounted(() => {
                         <th class="p-3 border">Quantity</th>
                         <th class="p-3 border">Value</th>
                         <th class="p-3 border">Actions</th>
-                        <th class="p-3 border">Actions</th>
-
-                        <th class="p-3 border">Actions</th>
-
-                        <th class="p-3 border">Actions</th>
-
-                        <th class="p-3 border">Actions</th>
-
-                        <th class="p-3 border">Actions</th>
-
-                        <th class="p-3 border">Actions</th>
-
-                        <th class="p-3 border">Actions</th>
-
-                        <th class="p-3 border">Actions</th>
-                        <th class="p-3 border">Actions</th>
-
-
                     </tr>
                 </thead>
                 <tbody>
-
-                  <!-- a.user_id AS user_id,
-        a.name AS name,
-        a.description AS description,
-        a.is_long_term AS is_long_term,
-        a.quantity AS quantity,
-        a.value_amount AS value_amount,
-        a.inkind_value AS inkind_value,
-        a.is_tangible AS is_tangible,
-        ps.name AS privacy_setup_name,
-        a.is_active AS is_active,
-        u.name AS responsible_user_name,
-        aal.assignment_start_date AS assignment_start_date,
-        aal.assignment_end_date AS assignment_end_date,
-        als.name AS asset_lifecycle_statuses_name,
-        aal.note AS note -->
-
                     <tr v-for="(record, index) in recordList" :key="record.id">
                         <td class="p-3 border">{{ index + 1 }}</td>
                         <td class="p-3 border">{{ record.name }}</td>
                         <td class="p-3 border">{{ record.description }}</td>
                         <td class="p-3 border">{{ record.quantity }}</td>
                         <td class="p-3 border">{{ record.value_amount }}</td>
-                        <td class="p-3 border">{{ record.inkind_value }}</td>
-                        <td class="p-3 border">{{ record.is_tangible }}</td>
-                        <td class="p-3 border">{{ record.privacy_setup_name }}</td>
-                        <td class="p-3 border">{{ record.is_active }}</td>
-                        <td class="p-3 border">{{ record.responsible_user_name }}</td>
-                        <td class="p-3 border">{{ record.assignment_start_date }}</td>
-                        <td class="p-3 border">{{ record.assignment_end_date }}</td>
-                        <td class="p-3 border">{{ record.asset_lifecycle_statuses_name }}</td>
-                        <td class="p-3 border">{{ record.note }}</td>
-                        
                         <td class="p-3 border">
                             <button @click="editRecord(record)"
                                 class="text-white bg-blue-500 hover:bg-blue-400 py-1 px-2 rounded-md mr-2">Edit</button>
