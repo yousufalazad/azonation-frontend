@@ -35,10 +35,8 @@
             <p class="font-bold"><strong>Approximate Bill:</strong> £{{ approximateBill.toFixed(2) }}</p>
         </div>
 
-        
-
         <!-- Previous Month Active Member Counts Section -->
-        <h1 class="text-2xl font-bold mb-4">Active Member Counts for Previous Month</h1>
+        <h1 class="text-2xl font-bold mb-4">Active Member Counts for {{ previousMonthName }}</h1>
         
         <table class="min-w-full bg-white border border-gray-300 mb-4">
             <thead>
@@ -55,7 +53,7 @@
                     <td class="border-b border-gray-300 px-4 py-2">{{ count.is_billable ? 'Yes' : 'No' }}</td>
                 </tr>
                 <tr v-if="PreviousMonthActiveMemberCounts.length === 0">
-                    <td colspan="3" class="border-b border-gray-300 px-4 py-2 text-center text-gray-500">There are no active members for the previous month</td>
+                    <td colspan="3" class="border-b border-gray-300 px-4 py-2 text-center text-gray-500">There are no active members for {{ previousMonthName }}</td>
                 </tr>
                 <tr v-if="PreviousMonthActiveMemberCounts.length > 0" class="font-bold">
                     <td class="border-t border-gray-300 px-4 py-2 text-right" colspan="1">Total Active Members:</td>
@@ -67,7 +65,7 @@
 
         <!-- Separate Section for Previous Month Bill Calculation -->
         <div class="bg-gray-100 p-4 rounded-lg shadow-md mb-4">
-            <h2 class="text-xl font-semibold mb-2">Actual Bill Calculation for Previous Month</h2>
+            <h2 class="text-xl font-semibold mb-2">Actual Bill Calculation for {{ previousMonthName }}</h2>
             <p><strong>Price Rate:</strong> £{{ previousPriceRate.toFixed(2) }}</p>
             <p><strong>Total Active Members:</strong> {{ previousTotalActiveMembers }}</p>
             <p class="font-bold"><strong>Total Bill Amount:</strong> £{{ previousTotalBillAmount.toFixed(2) }}</p>
@@ -89,22 +87,26 @@ const previousTotalActiveMembers = ref(0);
 const previousTotalBillAmount = ref(0);
 const previousPriceRate = ref(0);
 const currentMonthName = ref('');
+const previousMonthName = ref('');
 
 const getCurrentMonthName = () => {
     const options = { month: 'long' };
     currentMonthName.value = new Date().toLocaleDateString(undefined, options);
 };
 
+const getPreviousMonthName = () => {
+    const previousMonth = new Date();
+    previousMonth.setMonth(previousMonth.getMonth() - 1);
+    const options = { month: 'long' };
+    previousMonthName.value = previousMonth.toLocaleDateString(undefined, options);
+};
+
 const getActiveMemberCounts = async () => {
     const firstDayOfMonth = new Date();
     firstDayOfMonth.setDate(1);
-    const today = new Date();
 
     try {
-        const response = await auth.fetchProtectedApi('/api/active-member-counts', {
-            start_date: firstDayOfMonth.toISOString().split('T')[0],
-            end_date: today.toISOString().split('T')[0]
-        });
+        const response = await auth.fetchProtectedApi('/api/active-member-counts');
 
         if (response.status) {
             activeMemberCounts.value = response.data;
@@ -145,6 +147,7 @@ const getPreviousMonthBillCalculation = async () => {
 
 onMounted(() => {
     getCurrentMonthName();
+    getPreviousMonthName();
     getActiveMemberCounts();
     getPreviousMonthBillCalculation(); // Call the new method
 });
