@@ -16,27 +16,23 @@
       <table v-else class="min-w-full bg-white border">
           <thead>
               <tr>
+                  <th class="py-2 px-4 border">Sl</th>
                   <th class="py-2 px-4 border">Invoice ID</th>
-                  <th class="py-2 px-4 border">Billing ID</th>
-                  <th class="py-2 px-4 border">Generate Date</th>
+                  <th class="py-2 px-4 border">Item</th>
                   <th class="py-2 px-4 border">Issue Date</th>
                   <th class="py-2 px-4 border">Due Date</th>
-                  <th class="py-2 px-4 border">Sub Total</th>
-                  <th class="py-2 px-4 border">Discount</th>
-                  <th class="py-2 px-4 border">Total</th>
+                  <th class="py-2 px-4 border">Amount</th>
                   <th class="py-2 px-4 border">Status</th>
               </tr>
           </thead>
           <tbody>
               <tr v-for="invoice in invoices" :key="invoice.id">
-                  <td class="py-2 px-4 border">{{ invoice.invoice_id }}</td>
-                  <td class="py-2 px-4 border">{{ invoice.billing_id }}</td>
-                  <td class="py-2 px-4 border">{{ formatDate(invoice.generate_date) }}</td>
+                  <td class="py-2 px-4 border">{{ invoice.invoice_id }}</td> <!-- for serial number -->
+                  <td class="py-2 px-4 border">{{ invoice.invoice_id }}</td> 
+                  <td class="py-2 px-4 border">{{ invoice.item }}</td>
                   <td class="py-2 px-4 border">{{ formatDate(invoice.issue_date) }}</td>
                   <td class="py-2 px-4 border">{{ formatDate(invoice.due_date) }}</td>
-                  <!-- <td class="py-2 px-4 border">£{{ invoice.sub_total.toFixed(2) }}</td>
-                  <td class="py-2 px-4 border">£{{ invoice.discount.toFixed(2) }}</td>
-                  <td class="py-2 px-4 border">£{{ invoice.total.toFixed(2) }}</td> -->
+                  <td class="py-2 px-4 border">£{{ invoice.total }}</td>
                   <td class="py-2 px-4 border">{{ invoice.status }}</td>
               </tr>
           </tbody>

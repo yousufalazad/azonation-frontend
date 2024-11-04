@@ -19,8 +19,6 @@ const selectedRecordId = ref(null); // Store the ID of the record to edit
 const recordList = ref([]); // Data list for the table
 const baseURL = 'http://localhost:8000/storage/'; // Adjust baseURL as per your setup
 
-
-
 // Fetch list of records
 const getRecords = async () => {
     try {
@@ -72,29 +70,53 @@ const handleDocument = (event) => {
     document.value = event.target.files[0]; // Store the uploaded document
 };
 
-// Handle multiple image file change
+// Handle multiple image file change and show preview
 const handleImages = (event) => {
-    images.value = [...event.target.files]; // Store the uploaded images
+    const uploadedFiles = Array.from(event.target.files);
+    uploadedFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            images.value.push({
+                file,
+                preview: e.target.result
+            });
+        };
+        reader.readAsDataURL(file);
+    });
+};
+
+// Remove image from the list
+const removeImage = (index) => {
+    images.value.splice(index, 1);
 };
 
 // Add or update a record
-const submitForm = async () => {
+const __submitForm = async () => {
     const formData = new FormData();
     formData.append('user_id', userId);
     formData.append('title', title.value);
     formData.append('description', description.value);
     formData.append('status', privacySetupId.value);
+    formData.append('_method', 'PUT');
 
     if (document.value) {
         formData.append('document', document.value); // Handle document upload
     }
     if (images.value.length) {
         images.value.forEach((img, index) => {
-            formData.append(`images[${index}]`, img); // Handle multiple image upload
+            formData.append(`images[${index}]`, img.file); // Handle multiple image upload
         });
     }
 
     try {
+        // let apiUrl = '/api/create-office-record';
+        // let method = 'POST';
+
+        // if (isEditMode.value && selectedRecordId.value) {
+        //     apiUrl = `/api/update-office-record/${selectedRecordId.value}`;
+        //     method = 'PUT';
+        // }
+
         let apiUrl = '/api/create-office-record';
         let method = 'POST';
 
@@ -130,6 +152,63 @@ const submitForm = async () => {
         Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} record.`, 'error');
     }
 };
+const submitForm = async () => {
+    const formData = new FormData();
+    formData.append('user_id', userId);
+    formData.append('title', title.value);
+    formData.append('description', description.value);
+    formData.append('status', privacySetupId.value);
+
+    if (document.value) {
+        formData.append('document', document.value); // Handle document upload
+    }
+    if (images.value.length) {
+        images.value.forEach((img, index) => {
+            formData.append(`images[${index}]`, img.file); // Handle multiple image upload
+        });
+    }
+
+    // Add _method='PUT' only if editing
+    if (isEditMode.value) {
+        formData.append('_method', 'PUT');
+    }
+
+    try {
+        let apiUrl = '/api/create-office-record';
+        let method = 'POST';
+
+        if (isEditMode.value && selectedRecordId.value) {
+            apiUrl = `/api/update-office-record/${selectedRecordId.value}`;
+        }
+
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this record?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, save it!',
+            cancelButtonText: 'No, cancel!'
+        });
+
+        if (result.isConfirmed) {
+            const response = await auth.uploadProtectedApi(apiUrl, formData, 'POST', {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
+            if (response.status) {
+                await Swal.fire('Success!', `Record ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
+                getRecords(); // Refresh the record list
+                resetForm(); // Reset the form fields
+            } else {
+                Swal.fire('Failed!', 'Failed to save record.', 'error');
+            }
+        }
+    } catch (error) {
+        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} record:`, error);
+        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} record.`, 'error');
+    }
+};
+
 
 // Edit record
 const editRecord = (record) => {
@@ -163,7 +242,6 @@ const viewImages = (record) => {
         Swal.fire('No Images', 'This record does not have images attached.', 'info');
     }
 };
-
 
 // Delete record
 const deleteRecord = async (id) => {
@@ -221,11 +299,22 @@ onMounted(() => {
                         class="w-full border border-gray-300 rounded-md py-2 px-4" placeholder="Enter title" required />
                 </div>
 
-                <!-- Image input -->
+                <!-- Image input with preview and remove button -->
                 <div class="mb-4">
                     <label for="images" class="block text-gray-700 font-semibold mb-2">Upload Images</label>
                     <input @change="handleImages" type="file" id="images"
                         class="w-full border border-gray-300 rounded-md py-2 px-4" accept="image/*" multiple />
+
+                    <!-- Image preview -->
+                    <div class="mt-3 flex flex-wrap">
+                        <div v-for="(img, index) in images" :key="index" class="relative group w-32 h-32 mr-2 mb-2">
+                            <img :src="img.preview" class="w-full h-full object-cover rounded-md">
+                            <button @click="removeImage(index)"
+                                class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                &times;
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Description Quill editor -->
@@ -259,61 +348,42 @@ onMounted(() => {
             </form>
         </section>
 
-        <!-- Table for displaying records -->
-        <section>
-            <h5 class="text-md font-semibold mt-2">Office Records List</h5>
-            <table class="min-w-full border-collapse border border-gray-300">
+        <!-- Records table -->
+        <section class="mt-8">
+            <h5 class="text-md font-semibold mb-4">Office Records List</h5>
+            <table class="w-full table-auto border-collapse border border-gray-300">
                 <thead>
-                    <tr>
-                        <th class="border border-gray-300 p-2">Title</th>
-                        <th class="border border-gray-300 p-2">Description</th>
-                        <th class="border border-gray-300 p-2">Document</th>
-                        <th class="border border-gray-300 p-2">Images</th>
-                        <th class="border border-gray-300 p-2">Actions</th>
+                    <tr class="bg-gray-100">
+                        <th class="border border-gray-300 px-4 py-2">Title</th>
+                        <th class="border border-gray-300 px-4 py-2">Description</th>
+                        <th class="border border-gray-300 px-4 py-2">Document</th>
+                        <th class="border border-gray-300 px-4 py-2">Images</th>
+                        <th class="border border-gray-300 px-4 py-2">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="record in recordList" :key="record.id">
-                        <td class="border border-gray-300 p-2">{{ record.title }}</td>
-                        <td class="border border-gray-300 p-2" v-html="sanitize(record.description)"></td>
-                        
-                        <!-- View Document -->
-                        <td class="border border-gray-300 p-2">
-                            <div v-if="record.document">
-                                <button @click="viewDocument(record)"
-                                    class="bg-blue-500 text-white rounded-md py-1 px-3 hover:bg-blue-600 transition">
-                                    View Document
-                                </button>
-                            </div>
-                            <div v-else>
-                                <!-- Empty when no document -->
-                            </div>
+                        <td class="border border-gray-300 px-4 py-2">{{ record.title }}</td>
+                        <td class="border border-gray-300 px-4 py-2" v-html="sanitize(record.description)"></td>
+                        <td class="border border-gray-300 px-4 py-2 text-center">
+                            <button @click="viewDocument(record)" class="bg-blue-500 text-white px-2 py-1 rounded-md">
+                                View Document
+                            </button>
                         </td>
-
-
-                        <!-- View Images -->
-                        <td class="border border-gray-300 p-2">
-                            <div v-if="record.images && record.images.length">
-                                <!-- Display only one image -->
-                                <img :src="`${baseURL}${record.images[0].image}`" alt="Image"
-                                    class="rounded-md w-20 h-20 object-cover mr-2" />
-
-                                <!-- Show 'View All' button if there are multiple images -->
-                                <button v-if="record.images.length > 1" @click="viewImages(record)"
-                                    class="bg-green-500 text-white rounded-md py-1 px-3 hover:bg-green-600 transition">
-                                    View All
-                                </button>
-                            </div>
-                            <div v-else>
-                            </div>
+                        <td class="border border-gray-300 px-4 py-2 text-center">
+                            <button @click="viewImages(record)" class="bg-blue-500 text-white px-2 py-1 rounded-md">
+                                View Images
+                            </button>
                         </td>
-                        <td class="border border-gray-300 p-2">
-                            <button @click="editRecord(record)"
-                                class="bg-yellow-500 text-white rounded-md py-1 px-3 hover:bg-yellow-600 transition">Edit</button>
+                        <td class="border border-gray-300 px-4 py-2 text-center">
+                            <button @click="editRecord(record)" class="bg-green-500 text-white px-2 py-1 rounded-md">
+                                Edit
+                            </button>
                             <button @click="deleteRecord(record.id)"
-                                class="bg-red-500 text-white rounded-md py-1 px-3 hover:bg-red-600 transition ml-2">Delete</button>
+                                class="bg-red-500 text-white px-2 py-1 rounded-md ml-2">
+                                Delete
+                            </button>
                         </td>
-
                     </tr>
                 </tbody>
             </table>
@@ -322,5 +392,8 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Add styles for your component here */
+/* Add hover effect for delete button on image preview */
+.group:hover .group-hover\:opacity-100 {
+    opacity: 1;
+}
 </style>
