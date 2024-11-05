@@ -370,10 +370,26 @@ onMounted(() => {
                                 View Document
                             </button>
                         </td>
-                        <td class="border border-gray-300 px-4 py-2 text-center">
+                        <!-- <td class="border border-gray-300 px-4 py-2 text-center">
                             <button @click="viewImages(record)" class="bg-blue-500 text-white px-2 py-1 rounded-md">
                                 View Images
                             </button>
+                        </td> -->
+                        <!-- View Images -->
+                        <td class="border border-gray-300 p-2">
+                            <div v-if="record.images && record.images.length">
+                                <!-- Display only one image -->
+                                <!-- <img :src="`${baseURL}${record.images[0].image}`" alt="Image"
+                                    class="rounded-md w-20 h-20 object-cover mr-2" /> -->
+
+                                <!-- Show 'View All' button if there are multiple images -->
+                                <button v-if="record.images.length > 0" @click="viewImages(record)"
+                                    class="bg-green-500 text-white rounded-md py-1 px-3 hover:bg-green-600 transition">
+                                    View Image
+                                </button>
+                            </div>
+                            <div v-else>
+                            </div>
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-center">
                             <button @click="editRecord(record)" class="bg-green-500 text-white px-2 py-1 rounded-md">
