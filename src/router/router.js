@@ -82,6 +82,7 @@ import OfficeRecord from "../views/Org/OfficeRecord/Index.vue";
 
 //Accounts
 import Accounts from "../views/Org/Accounts/Index.vue";
+import AccountsFunds from "../views/Org/Accounts/Fund.vue";
 
 //Invite Friend
 import InviteFriend from "../views/Org/InviteFriend/Index.vue";
@@ -104,6 +105,8 @@ import SuperAdminDashboard from "../views/SuperAdmin/Layouts/Dashboard/Index.vue
 import SuperAdminDashboardInitialContent from "../views/SuperAdmin/Layouts/Dashboard/InitialContent.vue";
 import SuperAdminProfileUpdate from "../views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue";
 
+
+// Financial
 //Package
 import EditPackage from "../views/SuperAdmin/Financial/Package/Edit.vue";
 import IndexPackage from "../views/SuperAdmin/Financial/Package/Index.vue";
@@ -113,8 +116,6 @@ import ViewPackage from "../views/SuperAdmin/Financial/Package/View.vue";
 import EditSubscription from "../views/SuperAdmin/Financial/Subscription/Edit.vue";
 import IndexSubscription from "../views/SuperAdmin/Financial/Subscription/Index.vue";
 import ViewSubscription from "../views/SuperAdmin/Financial/Subscription/View.vue";
-
-// ----------------Financial--------------
 
 //Billing
 import SuperAdminBillingList from "../views/SuperAdmin/Financial/Billing/Index.vue";
@@ -300,6 +301,12 @@ const routes = [
         path: "accounts",
         name: "accounts",
         component: Accounts,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "accounts-fund",
+        name: "accounts-fund",
+        component: AccountsFunds,
         meta: { requiresAuth: true },
       },
       {

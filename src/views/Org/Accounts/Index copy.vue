@@ -1,73 +1,66 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import Quill from 'quill';
 import Swal from 'sweetalert2';
-import DOMPurify from 'dompurify';
 import { authStore } from '../../../store/authStore';
 
 const auth = authStore;
 const userId = auth.user.id;
-const transaction_date = ref('');
-const transaction_type = ref(''); // Default to "In"
-const transaction_amount = ref(0);
-const description = ref(''); // Managed by Quill 
-const quillInstance = ref(null);
+const date = ref('');
+const type = ref('');
+const transaction_title = ref('');
+const amount = ref(0);
+const fund_id = ref(''); 
+const description = ref(''); 
 const isEditMode = ref(false);
 const selectedTransactionId = ref(null);
 const transactionList = ref([]);
+const fundList = ref([]);
 
-// Fetch list of transactions
+
+// Fetch funds
+const getFunds = async () => {
+    try {
+        const response = await auth.fetchProtectedApi('/api/get-funds', {}, 'GET');
+        fundList.value = response.status ? response.data : [];
+    } catch (error) {
+        console.error('Error fetching funds:', error);
+        fundList.value = [];
+    }
+};
+
+// Fetch transactions
 const getTransactions = async () => {
     try {
         const response = await auth.fetchProtectedApi('/api/get-transactions', {}, 'GET');
-        if (response.status) {
-            transactionList.value = response.data;
-        } else {
-            transactionList.value = [];
-        }
+        transactionList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching transactions:', error);
         transactionList.value = [];
     }
 };
 
-// Initialize Quill editor
-const initializeQuill = () => {
-    quillInstance.value = new Quill('#description-editor', {
-        theme: 'snow',
-        placeholder: 'Enter description...',
-        modules: {
-            toolbar: [
-                [{ header: [1, 2, false] }],
-                ['bold', 'italic', 'underline'],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link']
-            ]
-        }
-    });
-
-    quillInstance.value.on('text-change', () => {
-        description.value = quillInstance.value.root.innerHTML;
-    });
-};
-
 // Reset form fields
 const resetForm = () => {
-    transaction_date.value = '';
-    transaction_type.value = '';
-    transaction_amount.value = 0;
-    quillInstance.value.root.innerHTML = '';
+    date.value = '';
+    type.value = '';
+    transaction_title.value = '';
+    description.value = '';
+    fund_id.value = '';
+    amount.value = 0;
     isEditMode.value = false;
     selectedTransactionId.value = null;
 };
 
-// Add or update a transaction
+// Add or update transaction
 const submitForm = async () => {
     const payload = {
         user_id: userId,
-        transaction_date: transaction_date.value,
-        transaction_type: transaction_type.value,
-        transaction_amount: transaction_amount.value,
+        date: date.value,
+        transaction_title: transaction_title.value,
+        description: description.value,
+        type: type.value,
+        fund_id: fund_id.value,
+        amount: amount.value,
         description: description.value
     };
 
@@ -108,10 +101,12 @@ const submitForm = async () => {
 
 // Edit transaction
 const editTransaction = (transaction) => {
-    transaction_date.value = transaction.transaction_date;
-    transaction_type.value = transaction.transaction_type;
-    transaction_amount.value = transaction.transaction_amount;
-    quillInstance.value.root.innerHTML = transaction.description;
+   date.value = transaction.transaction_date;
+   transaction_title.value = transaction.title;
+    description.value = transaction.description;
+    type.value = transaction.transaction_type;
+    fund_id.value = transaction.fund_id;
+    amount.value = transaction.transaction_amount;
     selectedTransactionId.value = transaction.id;
     isEditMode.value = true;
 };
@@ -144,17 +139,9 @@ const deleteTransaction = async (id) => {
     }
 };
 
-// Sanitize the HTML content
-const sanitize = (html) => {
-    return DOMPurify.sanitize(html, {
-        ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'a', 'ul', 'ol', 'li', 'strong', 'em', 'u', 'br', 'img'],
-        ALLOWED_ATTR: ['href', 'src', 'alt', 'title'],
-    });
-};
-
-// Initialize Quill and fetch transactions on mount
+//fetch transactions on mount
 onMounted(() => {
-    initializeQuill();
+    getFunds();
     getTransactions();
 });
 </script>
@@ -168,43 +155,57 @@ onMounted(() => {
                 </div>
             </div>
             <form @submit.prevent="submitForm">
+                
                 <!-- Transaction Date -->
                 <div class="mb-4">
-                    <label for="transaction_date" class="block text-gray-700 font-semibold mb-2">Transaction date</label>
-                    <input v-model="transaction_date" type="date" id="transaction_date" class="w-full border border-gray-300 rounded-md py-2 px-4" required />
+                    <label for="date" class="block text-gray-700 font-semibold mb-2">Date</label>
+                    <input v-model="date" type="date" id="date" class="w-full border border-gray-300 rounded-md py-2 px-4" :max="new Date().toISOString().split('T')[0]" required />
                 </div>
 
-                <!-- Fund name dropdown -->
+                <!-- transaction_title -->
                 <div class="mb-4">
-                    <label for="transaction_type" class="block text-gray-700 font-semibold mb-2">Fund</label>
-                    <select v-model="transaction_type" id="transaction_type" class="w-full border border-gray-300 rounded-md py-2 px-4">
-                        <option value="">Select fund</option>
-                        <option value="1">Fund name 1</option>
-                        <option value="2">Fund name 2</option>
-                        <option value="2">Create fund</option>
-                    </select>
+                    <label for="transaction_title" class="block text-gray-700 font-semibold mb-2">Title</label>
+                    <input v-model="transaction_title"  id="transaction_title" type="text" class="w-full border border-gray-300 rounded-md" style="min-height: 50px;" required></input>
                 </div>
 
+                <!-- Description -->
+                <div class="mb-4">
+                    <label for="description" class="block text-gray-700 font-semibold mb-2">Description</label>
+                    <input v-model="description"  id="description" type="text" class="w-full border border-gray-300 rounded-md" style="min-height: 50px;"></input>
+                </div>
+
+                <!-- Fund dropdown -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="fund_id"
+                            class="block text-gray-700 font-semibold mb-2">Fund</label>
+                        <select v-model="fund_id" id="fund"
+                            class="w-full border-gray-300 rounded-md py-2 px-4" required>
+                            <option value="" disabled>Select Fund</option>
+                            <option v-for="fund in fundList" :key="fund.id" :value="fund.id">{{
+                                fund.name }}</option>
+                        </select>
+                    </div>
+                </div>
+
+            
                 <!-- Transaction Type dropdown -->
                 <div class="mb-4">
-                    <label for="transaction_type" class="block text-gray-700 font-semibold mb-2">Transaction type</label>
-                    <select v-model="transaction_type" id="transaction_type" class="w-full border border-gray-300 rounded-md py-2 px-4">
-                        <option value="income">income</option>
-                        <option value="expense">expense</option>
+                    <label for="type" class="block text-gray-700 font-semibold mb-2">Transaction type</label>
+                    <select v-model="type" id="type" class="w-full border border-gray-300 rounded-md py-2 px-4" required>
+                        <option value="">Select type</option>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
                     </select>
                 </div>
 
                 <!-- Transaction Amount input -->
                 <div class="mb-4">
-                    <label for="transaction_amount" class="block text-gray-700 font-semibold mb-2">Amount</label>
-                    <input v-model="transaction_amount" type="number" id="transaction_amount" class="w-full border border-gray-300 rounded-md py-2 px-4" required />
+                    <label for="amount" class="block text-gray-700 font-semibold mb-2">Amount</label>
+                    <input v-model="amount" type="number" id="amount" class="w-full border border-gray-300 rounded-md py-2 px-4" min="0" required />
                 </div>
 
-                <!-- Description Quill editor -->
-                <div class="mb-4">
-                    <label for="description-editor" class="block text-gray-700 font-semibold mb-2">Description</label>
-                    <div id="description-editor" class="w-full border border-gray-300 rounded-md" style="min-height: 150px;"></div>
-                </div>
+                
 
                 <!-- Submit button -->
                 <div>
@@ -215,44 +216,57 @@ onMounted(() => {
 
         <!-- Transaction list -->
         <section>
-            <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">Transaction List</h5>
-            </div>
-            <table class="min-w-full table-auto border-collapse border border-gray-300 text-left">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="border px-4 py-2">SL</th>
-                        <th class="py-2 px-4 border border-gray-300">Transaction ID</th>
-                        <th class="py-2 px-4 border border-gray-300">Transaction date</th>
-                        <!-- <th class="py-2 px-4 border border-gray-300">Fund</th> -->
-                        <th class="py-2 px-4 border border-gray-300">Transaction type</th>
-                        <th class="py-2 px-4 border border-gray-300">Amount</th>
-                        <th class="py-2 px-4 border border-gray-300">Description</th>
-                        <th class="py-2 px-4 border border-gray-300">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(transaction, index) in transactionList" :key="transaction.id">
-                        <td class="border px-4 py-2">{{ index + 1 }}</td>
-                        <td class="py-2 px-4 border border-gray-300">{{ transaction.transaction_id }}</td>
-                        <td class="py-2 px-4 border border-gray-300">{{ transaction.transaction_date }}</td>
-                        <!-- <td class="py-2 px-4 border border-gray-300">{{ transaction.account_fund_id }}</td> -->
-                        <td class="py-2 px-4 border border-gray-300">{{ transaction.transaction_type }}</td>
-                        <td class="py-2 px-4 border border-gray-300">{{ transaction.transaction_amount }}</td>
-                        <td class="py-2 px-4 border border-gray-300" v-html="sanitize(transaction.description)"></td>
-                        <td class="py-2 px-4 border border-gray-300">
-                            <button @click="editTransaction(transaction)" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Edit</button>
-                            <button @click="deleteTransaction(transaction.id)" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 ml-2">Delete</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
+    <div class="flex justify-between left-color-shade py-2 my-3">
+        <h5 class="text-md font-semibold mt-2">Transaction List</h5>
+    </div>
+    <table class="min-w-full table-auto border-collapse border border-gray-300 text-left">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="border px-4 py-2">SL</th>
+                <th class="py-2 px-4 border border-gray-300">Date</th>
+                <th class="py-2 px-4 border border-gray-300">Transaction ID</th>
+                <th class="py-2 px-4 border border-gray-300">Title</th>
+                <th class="py-2 px-4 border border-gray-300">Description</th>
+                <th class="py-2 px-4 border border-gray-300">Fund</th>
+                <th class="py-2 px-4 border border-gray-300">Income</th>
+                <th class="py-2 px-4 border border-gray-300">Expense</th>
+                <th class="py-2 px-4 border border-gray-300">Balance</th>
+                <th class="py-2 px-4 border border-gray-300">Actions</th>
+            </tr>
+        </thead>
+        
+        <tbody>
+            <tr v-for="(transaction, index) in transactionList" :key="transaction.id">
+                <td class="py-2 px-4 border">{{ index + 1 }}</td>
+                <td class="py-2 px-4 border">{{ transaction.date }}</td>
+                <td class="py-2 px-4 border">{{ transaction.transaction_code }}</td>
+                <td class="py-2 px-4 border">{{ transaction.transaction_title }}</td>
+                <td class="py-2 px-4 border">{{ transaction.description }}</td>
+                <td class="py-2 px-4 border">{{ transaction.fund_id }}</td>
+                <td class="py-2 px-4 border" v-if="transaction.type === 'income'">
+                    {{ transaction.amount }}
+                </td>
+                <td class="py-2 px-4 border" v-else></td>
+                <td class="py-2 px-4 border" v-if="transaction.type === 'expense'">
+                    {{ transaction.amount }}
+                </td>
+                <td class="py-2 px-4 border" v-else></td>
+                <td class="py-2 px-4 border">{{ transaction.balance_after }}</td>
+
+                <td class="py-2 px-4 border flex gap-2">
+                    <button @click="editTransaction(transaction)" class="bg-yellow-400 text-white rounded-md py-1 px-2 hover:bg-yellow-500">Edit</button>
+                    <button @click="deleteTransaction(transaction.id)" class="bg-red-600 text-white rounded-md py-1 px-2 hover:bg-red-700">Delete</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
     </div>
 </template>
 
 <style scoped>
 .left-color-shade {
-    border-left: 5px solid #4C51BF;
+    background-color: rgba(76, 175, 80, 0.1); /* Slightly green background */
 }
 </style>
