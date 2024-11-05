@@ -3,5 +3,5 @@
 </script>
 
 <template>
-  <h1>Price index page</h1>
+  <h1>Payment edit page</h1>
 </template>

@@ -5,13 +5,15 @@
         <table class="min-w-full bg-white border border-gray-300 mb-4">
             <thead>
                 <tr>
+                    <th class="border-b-2 border-gray-300 px-4 py-2">SL</th>
                     <th class="border-b-2 border-gray-300 px-4 py-2">Date</th>
                     <th class="border-b-2 border-gray-300 px-4 py-2">Active Members</th>
                     <th class="border-b-2 border-gray-300 px-4 py-2">Billable</th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="count in activeMemberCounts" :key="count.date">
+                <tr v-for="(count, index) in activeMemberCounts" :key="count.date">
+                    <td class="border-b border-gray-300 px-4 py-2">{{ index + 1 }}</td>
                     <td class="border-b border-gray-300 px-4 py-2">{{ count.date }}</td>
                     <td class="border-b border-gray-300 px-4 py-2">{{ count.active_member }}</td>
                     <td class="border-b border-gray-300 px-4 py-2">{{ count.is_billable ? 'Yes' : 'No' }}</td>
@@ -30,7 +32,7 @@
         <!-- Approximate Bill Calculation Section for Current Month -->
         <div class="bg-gray-100 p-4 rounded-lg shadow-md mb-4">
             <h2 class="text-xl font-semibold mb-2">Approximate Bill Calculation for {{ currentMonthName }}</h2>
-            <p><strong>Price Rate:</strong> £{{ priceRate.toFixed(2) }}</p>
+            <p><strong>Price Rate:</strong> change £{{ priceRate.toFixed(2) }}</p>
             <p><strong>Total Active Members:</strong> {{ totalActiveMembers }}</p>
             <p class="font-bold"><strong>Approximate Bill:</strong> £{{ approximateBill.toFixed(2) }}</p>
         </div>
@@ -41,13 +43,15 @@
         <table class="min-w-full bg-white border border-gray-300 mb-4">
             <thead>
                 <tr>
+                    <th class="border-b-2 border-gray-300 px-2 py-2">SL</th>
                     <th class="border-b-2 border-gray-300 px-4 py-2">Date</th>
                     <th class="border-b-2 border-gray-300 px-4 py-2">Active Members</th>
                     <th class="border-b-2 border-gray-300 px-4 py-2">Billable</th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="count in PreviousMonthActiveMemberCounts" :key="count.date">
+                <tr v-for="(count, index) in PreviousMonthActiveMemberCounts" :key="count.date">
+                    <td class="border-b border-gray-300 px-2 py-2">{{ index + 1 }}</td>
                     <td class="border-b border-gray-300 px-4 py-2">{{ count.date }}</td>
                     <td class="border-b border-gray-300 px-4 py-2">{{ count.active_member }}</td>
                     <td class="border-b border-gray-300 px-4 py-2">{{ count.is_billable ? 'Yes' : 'No' }}</td>
@@ -66,7 +70,7 @@
         <!-- Separate Section for Previous Month Bill Calculation -->
         <div class="bg-gray-100 p-4 rounded-lg shadow-md mb-4">
             <h2 class="text-xl font-semibold mb-2">Actual Bill Calculation for {{ previousMonthName }}</h2>
-            <p><strong>Price Rate:</strong> £{{ previousPriceRate.toFixed(2) }}</p>
+            <p><strong>Price Rate:</strong> change £{{ previousPriceRate.toFixed(2) }}</p>
             <p><strong>Total Active Members:</strong> {{ previousTotalActiveMembers }}</p>
             <p class="font-bold"><strong>Total Bill Amount:</strong> £{{ previousTotalBillAmount.toFixed(2) }}</p>
         </div>

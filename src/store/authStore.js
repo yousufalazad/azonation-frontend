@@ -138,20 +138,20 @@ const authStore = reactive({
 
   async authenticate(username, password, remember_token) {
     try {
-      const res = await authStore.fetchPublicApi(
+      const response = await authStore.fetchPublicApi(
         "/api/login",
         { email: username, password: password, remember_token: remember_token },
         "POST"
       );
   
-      if (res.status === "success") {
+      if (response.status === "success") {
         authStore.isAuthenticated = true;
-        authStore.user = res.data;
+        authStore.user = response.data;
         sessionStorage.setItem("auth", 1);
-        sessionStorage.setItem("user", JSON.stringify(res.data));
+        sessionStorage.setItem("user", JSON.stringify(response.data));
   
         // Redirect based on user type
-        switch (res.data.type) {
+        switch (response.data.type) {
           case "individual":
             router.push({ name: "individual-dashboard-initial-content" });
             break;
@@ -159,8 +159,8 @@ const authStore = reactive({
             router.push({ name: "dashboard-initial-content" });
             break;
           case "superadmin":
-            this.superAdminUserData(res.data.id);
-            router.push({ name: "super-admin-dashboard" });
+            //this.superAdminUserData(response.data.id); no needed
+            router.push({ name: "initial-content" });
             break;
           default:
             router.push({name: "login"});
@@ -175,11 +175,11 @@ const authStore = reactive({
           showConfirmButton: false,
         });
       } else {
-        authStore.errors = res.errors || "An error occurred during login.";
+        authStore.errors = response.errors || "An error occurred during login.";
         Swal.fire({
           icon: "error",
           title: "Login failed",
-          text: res.message || "Invalid login credentials",
+          text: response.message || "Invalid login credentials",
         });
       }
     } catch (error) {
@@ -348,20 +348,20 @@ const authStore = reactive({
   //   );
   // },
 
-  superAdminUserData(id) {
-    // console.log("user_id", id);
-    this.fetchPublicApi(`/api/super_admin_user_data/${id}`, {}, "GET").then(
-      (res) => {
-        if (res.status) {
-          this.superadmin = res.data;
-          sessionStorage.setItem("superadmin", JSON.stringify(res.data));
-          // console.log("superAdmin Data:", res.data);
-        } else {
-          this.errors = res.message;
-        }
-      }
-    );
-  },
+  // superAdminUserData(id) {
+  //   // console.log("user_id", id);
+  //   this.fetchPublicApi(`/api/super_admin_user_data/${id}`, {}, "GET").then(
+  //     (response) => {
+  //       if (response.status) {
+  //         this.superadmin = response.data;
+  //         sessionStorage.setItem("superadmin", JSON.stringify(response.data));
+  //         // console.log("superAdmin Data:", response.data);
+  //       } else {
+  //         this.errors = response.message;
+  //       }
+  //     }
+  //   );
+  // },
 
   getUserToken() {
     return authStore.user?.accessToken;
@@ -394,12 +394,12 @@ const authStore = reactive({
         },
         "POST"
       )
-      .then((res) => {
-        if (res.status) {
+      .then((response) => {
+        if (response.status) {
           authStore.errors = null;
           router.push("/committees");
         } else {
-          authStore.errors = res.errors;
+          authStore.errors = response.errors;
         }
       });
   },
@@ -427,12 +427,12 @@ const authStore = reactive({
         },
         "PUT"
       )
-      .then((res) => {
-        if (res.status) {
+      .then((response) => {
+        if (response.status) {
           authStore.errors = null;
           router.push("/committees");
         } else {
-          authStore.errors = res.errors;
+          authStore.errors = response.errors;
         }
       })
       .catch((error) => {
@@ -475,12 +475,12 @@ const authStore = reactive({
         },
         "POST"
       )
-      .then((res) => {
-        if (res.status) {
+      .then((response) => {
+        if (response.status) {
           authStore.errors = null;
           router.push("/create-meeting");
         } else {
-          authStore.errors = res.errors;
+          authStore.errors = response.errors;
         }
       });
   },
@@ -520,12 +520,12 @@ const authStore = reactive({
         },
         "POST"
       )
-      .then((res) => {
-        if (res.status) {
+      .then((response) => {
+        if (response.status) {
           authStore.errors = null;
           router.push("/create-event");
         } else {
-          authStore.errors = res.errors;
+          authStore.errors = response.errors;
         }
       });
   },
@@ -567,11 +567,11 @@ const authStore = reactive({
         },
         "POST"
       )
-      .then((res) => {
-        if (res.status) {
+      .then((response) => {
+        if (response.status) {
           authStore.errors = null;
         } else {
-          authStore.errors = res.errors;
+          authStore.errors = response.errors;
         }
       });
   },
@@ -612,11 +612,11 @@ const authStore = reactive({
         },
         "PUT"
       )
-      .then((res) => {
-        if (res.status) {
+      .then((response) => {
+        if (response.status) {
           authStore.errors = null;
         } else {
-          authStore.errors = res.errors;
+          authStore.errors = response.errors;
         }
       });
   },

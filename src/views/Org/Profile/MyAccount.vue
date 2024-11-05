@@ -47,6 +47,11 @@ import { RouterView } from 'vue-router';
             </router-link>
           </li>
           <li>
+            <router-link to="/org-dashboard/my-account/billing-list" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+              Bills
+            </router-link>
+          </li>
+          <li>
             <router-link to="/org-dashboard/my-account/invoice-list" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
               Invoice list
             </router-link>

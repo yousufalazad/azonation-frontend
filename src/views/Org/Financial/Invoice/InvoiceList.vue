@@ -26,14 +26,14 @@
               </tr>
           </thead>
           <tbody>
-              <tr v-for="invoice in invoices" :key="invoice.id">
-                  <td class="py-2 px-4 border">{{ invoice.invoice_id }}</td> <!-- for serial number -->
-                  <td class="py-2 px-4 border">{{ invoice.invoice_id }}</td> 
-                  <td class="py-2 px-4 border">{{ invoice.item }}</td>
-                  <td class="py-2 px-4 border">{{ formatDate(invoice.issue_date) }}</td>
-                  <td class="py-2 px-4 border">{{ formatDate(invoice.due_date) }}</td>
-                  <td class="py-2 px-4 border">£{{ invoice.total }}</td>
-                  <td class="py-2 px-4 border">{{ invoice.status }}</td>
+              <tr v-for="(invoice, index) in invoices" :key="invoice.id">
+                  <td class="py-2 px-4 border">{{ index +1 }}</td>
+                  <td class="py-2 px-4 border">{{ invoice.invoice_code }}</td> 
+                  <td class="py-2 px-4 border">{{ invoice.item_name }}</td>
+                  <td class="py-2 px-4 border">{{ formatDate(invoice.issued_at) }}</td>
+                  <td class="py-2 px-4 border">{{ formatDate(invoice.due_at) }}</td>
+                  <td class="py-2 px-4 border">{{ invoice.total_amount_due }}</td>
+                  <td class="py-2 px-4 border">{{ invoice.payment_status }}</td>
               </tr>
           </tbody>
       </table>
@@ -42,7 +42,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { authStore } from '../../../store/authStore';
+import { authStore } from '../../../../store/authStore';
 const auth = authStore;
 const invoices = ref([]); // Initialize as an empty array
 const errorMessage = ref(null);

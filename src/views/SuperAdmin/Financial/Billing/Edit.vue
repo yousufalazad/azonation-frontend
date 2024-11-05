@@ -3,5 +3,5 @@
 </script>
 
 <template>
-  <h1>Package index page</h1>
+  <h1>SA Billing list index page</h1>
 </template>

@@ -87,35 +87,58 @@ import Accounts from "../views/Org/Accounts/Index.vue";
 import InviteFriend from "../views/Org/InviteFriend/Index.vue";
 
 //Billing
-import Package from "../views/Org/Billing/Package.vue";
-import Subscription from "../views/Org/Billing/Subscription.vue";
-import InvoiceList from "../views/Org/Billing/InvoiceList.vue";
-import ViewInvoice from "../views/Org/Billing/ViewInvoice.vue";
-import ReceiptList from "../views/Org/Billing/ReceiptList.vue";
-import ViewReceipt from "../views/Org/Billing/ViewReceipt.vue";
-import BillCalculation from "@/views/Org/Billing/BillCalculation.vue";
+import Package from "../views/Org/Financial/Package.vue";
+import Subscription from "../views/Org/Financial/Subscription.vue";
+import OrgInvoiceList from "../views/Org/Financial/Invoice/InvoiceList.vue";
+import ViewInvoice from "../views/Org/Financial/Invoice/ViewInvoice.vue";
+import ReceiptList from "../views/Org/Financial/Receipt/ReceiptList.vue";
+import ViewReceipt from "../views/Org/Financial/Receipt/ViewReceipt.vue";
+import BillCalculation from "@/views/Org/Financial/BillCalculation.vue";
+import BillingList from "../views/Org/Financial/BillingList.vue";
 
 
-// ------------------------SuperAdmin----------------------------
+// ------------------------SUPER ADMIN----------------------------
 //SuperAdmin
 import SuperAdminRegister from "../views/SuperAdmin/Profile/Register.vue";
-import SuperAdminDashboard from "../views/SuperAdmin/Profile/SuperAdminDashboard.vue";
+import SuperAdminDashboard from "../views/SuperAdmin/Layouts/Dashboard/Index.vue";
+import SuperAdminDashboardInitialContent from "../views/SuperAdmin/Layouts/Dashboard/InitialContent.vue";
 import SuperAdminProfileUpdate from "../views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue";
 
 //Package
-import EditPackage from "../views/SuperAdmin/Billing/Package/Edit.vue";
-import IndexPackage from "../views/SuperAdmin/Billing/Package/Index.vue";
-import ViewPackage from "../views/SuperAdmin/Billing/Package/View.vue";
+import EditPackage from "../views/SuperAdmin/Financial/Package/Edit.vue";
+import IndexPackage from "../views/SuperAdmin/Financial/Package/Index.vue";
+import ViewPackage from "../views/SuperAdmin/Financial/Package/View.vue";
 
 //Subscription
-import EditSubscription from "../views/SuperAdmin/Billing/Subscription/Edit.vue";
-import IndexSubscription from "../views/SuperAdmin/Billing/Subscription/Index.vue";
-import ViewSubscription from "../views/SuperAdmin/Billing/Subscription/View.vue";
+import EditSubscription from "../views/SuperAdmin/Financial/Subscription/Edit.vue";
+import IndexSubscription from "../views/SuperAdmin/Financial/Subscription/Index.vue";
+import ViewSubscription from "../views/SuperAdmin/Financial/Subscription/View.vue";
+
+// ----------------Financial--------------
+
+//Billing
+import SuperAdminBillingList from "../views/SuperAdmin/Financial/Billing/Index.vue";
+import SuperAdminBillingEdit from "../views/SuperAdmin/Financial/Billing/Edit.vue";
+import SuperAdminBillingCreate from "../views/SuperAdmin/Financial/Billing/Create.vue";
+
+//Receipt
+import SuperAdminReceiptList from "@/views/SuperAdmin/Financial/Receipt/Index.vue";
+
+//Invoice
+import SuperAdminInvoiceList from "../views/SuperAdmin/Financial/Invoice/Index.vue";
+
+//Subscription
+import SuperAdminSubscriptionList from "../views/SuperAdmin/Financial/Subscription/Index.vue";
+
+//Payment Log
+import SuperAdminPaymentLog from "../views/SuperAdmin/Financial/Payment/Index.vue";
+
 
 //Price
-import EditPrice from "../views/SuperAdmin/Billing/Price/Edit.vue";
-import IndexPrice from "../views/SuperAdmin/Billing/Price/Index.vue";
-import ViewPrice from "../views/SuperAdmin/Billing/Price/View.vue";
+import EditPrice from "../views/SuperAdmin/Financial/Price/Edit.vue";
+import IndexPrice from "../views/SuperAdmin/Financial/Price/Index.vue";
+import ViewPrice from "../views/SuperAdmin/Financial/Price/View.vue";
+
 
 // Mock authentication function
 function isAuthenticated() {
@@ -342,6 +365,12 @@ const routes = [
           meta: { requiresAuth: true },
         },
         {
+          path: "billing-list",
+          name: "billing-list",
+          component: BillingList,
+          meta: { requiresAuth: true },
+        },
+        {
           path: "bill-calculation",
           name: "bill-calculation",
           component: BillCalculation,
@@ -350,7 +379,7 @@ const routes = [
         {
           path: "invoice-list",
           name: "invoice-list",
-          component: InvoiceList,
+          component: OrgInvoiceList,
           meta: { requiresAuth: true },
         },
         {
@@ -424,11 +453,19 @@ const routes = [
 
   //SUPERADMIN
   {
-    path: "/super-admin-dashboard",
-    name: "super-admin-dashboard",
+    path: "/superadmin-dashboard",
+    name: "superadmin-dashboard",
     component: SuperAdminDashboard,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true,
+      type: 'superadmin',
+     },
     children: [
+      {
+        path: "initial-content",
+        name: "initial-content",
+        component: SuperAdminDashboardInitialContent,
+        meta: { requiresAuth: true },
+      },
       {
         path: "super-admin-profile-update",
         name: "super-admin-profile-update",
@@ -442,8 +479,8 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "index-package",
-        name: "index-package",
+        path: "super-admin-packages",
+        name: "super-admin-packages",
         component: IndexPackage,
         meta: { requiresAuth: true },
       },
@@ -472,21 +509,45 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
+        path: "super-admin-payment-log",
+        name: "super-admin-payment-log",
+        component: SuperAdminPaymentLog,
+        meta: { requiresAuth: true },
+      },
+      {
         path: "edit-subscription",
         name: "edit-subscription",
         component: EditSubscription,
         meta: { requiresAuth: true },
       },
       {
-        path: "index-subscription",
-        name: "index-subscription",
-        component: IndexSubscription,
+        path: "super-admin-subscription-list",
+        name: "super-admin-subscription-list",
+        component: SuperAdminSubscriptionList,
         meta: { requiresAuth: true },
       },
       {
-        path: "view-subscription",
-        name: "view-subscription",
+        path: "super-admin-view-subscription",
+        name: "super-admin-view-subscription",
         component: ViewSubscription,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-billing-list",
+        name: "super-admin-billing-list",
+        component: SuperAdminBillingList,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-invoice-list",
+        name: "super-admin-invoice-list",
+        component: SuperAdminInvoiceList,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-receipt-list",
+        name: "super-admin-receipt-list",
+        component: SuperAdminReceiptList,
         meta: { requiresAuth: true },
       },
 
