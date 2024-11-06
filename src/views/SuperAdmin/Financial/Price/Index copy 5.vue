@@ -20,7 +20,7 @@
           <tr>
             <th class="py-2 px-4 border">Region \ Package</th>
             <th v-for="priceRate in priceRates" :key="priceRate.id" class="py-2 px-4 border">
-              Package {{ priceRate.package_id }}
+              {{ priceRate.package_id }}
             </th>
             <th class="py-2 px-4 border">Action</th>
           </tr>
@@ -53,7 +53,7 @@
         
         <div v-for="priceRate in priceRates" :key="priceRate.id" class="mb-3">
           <label class="block text-sm font-medium mb-1">
-            Package {{ priceRate.package_id }}
+            {{ priceRate.package_id }}
           </label>
           <input
             v-model="priceRate[`region${editingRegion}`]"
@@ -74,6 +74,7 @@
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted } from 'vue';
@@ -109,23 +110,17 @@ const closeModal = () => {
 
 const saveChanges = async () => {
   try {
-    const response = await auth.fetchProtectedApi(
-      '/api/price-rate/update',
-      { priceRates: priceRates.value }, // Pass parameters here
-      'PUT' // Specify the request type as PUT
-    );
-    
-    if (response.status) {
-      isModalOpen.value = false;
-    } else {
-      errorMessage.value = response.message || "Failed to update price rates.";
-    }
+    // Make an API call to save updated priceRates
+    await auth.fetchProtectedApi('/api/price-rate/update', {
+      method: 'PUT',
+      body: JSON.stringify(priceRates.value),
+    });
+    isModalOpen.value = false;
   } catch (error) {
     console.error("Error saving changes:", error);
     errorMessage.value = "Error saving changes. Please try again later.";
   }
 };
-
 
 const regions = [
   { index: 1, label: "Region 1 (Rest of the World, currency: USD)" },
@@ -149,6 +144,7 @@ const regions = [
   { index: 19, label: "Region 19 (Reserved, currency: USD)" },
   { index: 20, label: "Region 20 (Reserved, currency: USD)" },
 ];
+
 
 onMounted(fetchPriceRate);
 </script>

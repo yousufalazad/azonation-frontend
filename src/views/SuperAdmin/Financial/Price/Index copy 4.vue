@@ -20,19 +20,19 @@
           <tr>
             <th class="py-2 px-4 border">Region \ Package</th>
             <th v-for="priceRate in priceRates" :key="priceRate.id" class="py-2 px-4 border">
-              Package {{ priceRate.package_id }}
+              {{ priceRate.package_id }}
             </th>
             <th class="py-2 px-4 border">Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="region in regions" :key="region.index">
-            <td class="py-2 px-4 border">{{ region.label }}</td>
+          <tr v-for="regionIndex in 20" :key="regionIndex">
+            <td class="py-2 px-4 border">Region {{ regionIndex }}</td>
             <td v-for="priceRate in priceRates" :key="priceRate.id" class="py-2 px-4 border">
-              {{ priceRate[`region${region.index}`] }}
+              {{ priceRate[`region${regionIndex}`] }}
             </td>
             <td class="py-2 px-4 border text-center">
-              <button @click="openEditModal(region.index)" class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700">
+              <button @click="openEditModal(regionIndex)" class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700">
                 Edit
               </button>
             </td>
@@ -53,7 +53,7 @@
         
         <div v-for="priceRate in priceRates" :key="priceRate.id" class="mb-3">
           <label class="block text-sm font-medium mb-1">
-            Package {{ priceRate.package_id }}
+            {{ priceRate.package_id }}
           </label>
           <input
             v-model="priceRate[`region${editingRegion}`]"
@@ -109,46 +109,17 @@ const closeModal = () => {
 
 const saveChanges = async () => {
   try {
-    const response = await auth.fetchProtectedApi(
-      '/api/price-rate/update',
-      { priceRates: priceRates.value }, // Pass parameters here
-      'PUT' // Specify the request type as PUT
-    );
-    
-    if (response.status) {
-      isModalOpen.value = false;
-    } else {
-      errorMessage.value = response.message || "Failed to update price rates.";
-    }
+    // Make an API call to save updated priceRates
+    await auth.fetchProtectedApi('/api/price-rate/update', {
+      method: 'POST',
+      body: JSON.stringify(priceRates.value),
+    });
+    isModalOpen.value = false;
   } catch (error) {
     console.error("Error saving changes:", error);
     errorMessage.value = "Error saving changes. Please try again later.";
   }
 };
-
-
-const regions = [
-  { index: 1, label: "Region 1 (Rest of the World, currency: USD)" },
-  { index: 2, label: "Region 2 (UK, currency: GBP)" },
-  { index: 3, label: "Region 3 (USA, currency: USD)" },
-  { index: 4, label: "Region 4 (Canada, currency: CAD)" },
-  { index: 5, label: "Region 5 (European Union, currency: EUR)" },
-  { index: 6, label: "Region 6 (China, currency: CNY)" },
-  { index: 7, label: "Region 7 (Bangladesh, currency: BDT)" },
-  { index: 8, label: "Region 8 (India, currency: INR)" },
-  { index: 9, label: "Region 9 (Japan, currency: JPY)" },
-  { index: 10, label: "Region 10 (Malaysia, currency: MYR)" },
-  { index: 11, label: "Region 11 (Russia, currency: RUB)" },
-  { index: 12, label: "Region 12 (Australia and New Zealand, currency: AUD)" },
-  { index: 13, label: "Region 13 (Nordic countries, currency: EUR)" },
-  { index: 14, label: "Region 14 (South America, currency: USD)" },
-  { index: 15, label: "Region 15 (Middle East, currency: USD)" },
-  { index: 16, label: "Region 16 (Asia excluding Bangladesh, China, Malaysia, India, currency: USD)" },
-  { index: 17, label: "Region 17 (Africa, currency: USD)" },
-  { index: 18, label: "Region 18 (Reserved, currency: USD)" },
-  { index: 19, label: "Region 19 (Reserved, currency: USD)" },
-  { index: 20, label: "Region 20 (Reserved, currency: USD)" },
-];
 
 onMounted(fetchPriceRate);
 </script>
