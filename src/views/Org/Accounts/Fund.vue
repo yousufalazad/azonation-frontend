@@ -6,7 +6,6 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const auth = authStore;
-const userId = auth.user.id;
 const name = ref('');
 const status = ref('1'); // Default to 'Active' status
 const isEditMode = ref(false);

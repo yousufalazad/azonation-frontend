@@ -74,7 +74,7 @@ const status = ref(true);
 
 const getSubscriptions = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/subscription', {}, 'GET');
+    const response = await auth.fetchProtectedApi('/api/subscription-plans', {}, 'GET');
     subscriptions.value = response.status ? response.data : [];
   } catch (error) {
     console.error('Error fetching subscriptions:', error);

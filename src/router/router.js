@@ -112,6 +112,12 @@ import EditPackage from "../views/SuperAdmin/Financial/Package/Edit.vue";
 import IndexPackage from "../views/SuperAdmin/Financial/Package/Index.vue";
 import ViewPackage from "../views/SuperAdmin/Financial/Package/View.vue";
 
+//Currency
+import IndexCurrency from "../views/SuperAdmin/Financial/Currency/Index.vue";
+import UserCurrency from "../views/SuperAdmin/Financial/UserCurrency/Index.vue";
+
+//Payment Method
+
 //Subscription
 import EditSubscription from "../views/SuperAdmin/Financial/Subscription/Edit.vue";
 import IndexSubscription from "../views/SuperAdmin/Financial/Subscription/Index.vue";
@@ -555,6 +561,18 @@ const routes = [
         path: "super-admin-receipt-list",
         name: "super-admin-receipt-list",
         component: SuperAdminReceiptList,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "index-currency",
+        name: "index-currency",
+        component: IndexCurrency,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "user-currency",
+        name: "user-currency",
+        component: UserCurrency,
         meta: { requiresAuth: true },
       },
 
