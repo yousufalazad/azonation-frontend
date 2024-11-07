@@ -57,9 +57,10 @@ import CreateCommittee from "../views/Org/Committee/CreateCommittee.vue";
 import FormerCommitteeList from "../views/Org/Committee/FormerCommitteeList.vue";
 
 //Meeting
+import IndexMeeting from "../views/Org/Meeting/Index.vue";
 import CreateMeeting from "../views/Org/Meeting/Create.vue";
-import OrgPreviousMeetingList from "../views/Org/Meeting/PastMeetingList.vue";
-import InviteMeeting from "../views/Org/Meeting/InviteMeeting.vue";
+import EditMeeting from "../views/Org/Meeting/Edit.vue";
+import ViewMeeting from "../views/Org/Meeting/View.vue";
 
 //Event
 import CreateEvent from "../views/Org/Event/CreateEvent.vue";
@@ -226,23 +227,31 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "create-meeting",
+        path: 'meetings',
+        name: "index-meeting",
+        component: IndexMeeting,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'meeting/create',
         name: "create-meeting",
         component: CreateMeeting,
         meta: { requiresAuth: true },
       },
-      {
-        path: "previous-meeting-list",
-        name: "previous-meeting-list",
-        component: OrgPreviousMeetingList,
+      { 
+        path: 'meeting/edit/:id',
+        name: 'edit-meeting',
+        component: EditMeeting,
         meta: { requiresAuth: true },
-      },
-      {
-        path: "invite-meeting",
-        name: "invite-meeting",
-        component: InviteMeeting,
+        props: true
+       },
+      { 
+        path: 'meeting/view/:id',
+        name: 'view-meeting',
+        component: ViewMeeting,
         meta: { requiresAuth: true },
-      },
+        props: true
+       },
       {
         path: "create-event",
         name: "create-event",

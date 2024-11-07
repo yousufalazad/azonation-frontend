@@ -23,7 +23,7 @@
             <span v-if="isSidebarExpanded">Committees</span>
             <span v-else class="hidden">Committees</span>
           </router-link>
-          <router-link to="/org-dashboard/create-meeting"
+          <router-link to="/org-dashboard/meetings"
             class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Meetings</span>
             <span v-else class="hidden">Meetings</span>
