@@ -23,6 +23,9 @@ import OrgDashboardInitialContent from "@/views/Org/Layouts/Dashboard/InitialCon
 
 //Asset Management
 import AssetManagement from "../views/Org/Asset/Index.vue";
+import CreateAsset from "../views/Org/Asset/Create.vue";
+import EditAsset from "../views/Org/Asset/Edit.vue";
+import ViewAsset from "../views/Org/Asset/View.vue";
 
 //History
 import History from "../views/Org/History/Index.vue";
@@ -63,7 +66,10 @@ import EditMeeting from "../views/Org/Meeting/Edit.vue";
 import ViewMeeting from "../views/Org/Meeting/View.vue";
 
 //Event
-import CreateEvent from "../views/Org/Event/CreateEvent.vue";
+import IndexEvent from "../views/Org/Event/Index.vue";
+import CreateEvent from "../views/Org/Event/Create.vue";
+import EditEvent from "../views/Org/Event/Edit.vue";
+import ViewEvent from "../views/Org/Event/View.vue";
 import UpcomingEvents from "../views/Org/Event/EventList.vue";
 
 //Project
@@ -80,6 +86,8 @@ import OrgExpenseReport from "../views/Org/Report/Expense.vue";
 
 //Record
 import OfficeRecord from "../views/Org/OfficeRecord/Index.vue";
+import CreateRecord from "../views/Org/OfficeRecord/Create.vue";
+import EditRecord from "../views/Org/OfficeRecord/Edit.vue";
 
 //Accounts
 import Accounts from "../views/Org/Accounts/Index.vue";
@@ -252,11 +260,31 @@ const routes = [
         meta: { requiresAuth: true },
         props: true
        },
+       {
+        path: 'events',
+        name: 'index-event',
+        component: IndexEvent,
+        meta: { requiresAuth: true },
+      },
       {
-        path: "create-event",
-        name: "create-event",
+        path: 'event/create',
+        name: 'create-event',
         component: CreateEvent,
         meta: { requiresAuth: true },
+      },
+      {
+        path: 'event/edit/:id',
+        name: 'edit-event',
+        component: EditEvent,
+        meta: { requiresAuth: true },
+        props: true
+      },
+      {
+        path: 'event/view/:id',
+        name: 'view-event',
+        component: ViewEvent,
+        meta: { requiresAuth: true },
+        props: true
       },
       {
         path: "upcoming-events",
@@ -338,15 +366,47 @@ const routes = [
       },
       {
         path: "office-record",
-        name: "office-record",
+        name: "index-record",
         component: OfficeRecord,
         meta: { requiresAuth: true },
       },
       {
+        path: 'record/create',
+        name: 'create-record',
+        component: CreateRecord,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'record/edit/:id',
+        name: 'edit-record',
+        component: EditRecord,
+        meta: { requiresAuth: true },
+      },
+      {
         path: "asset-management",
-        name: "asset-management",
+        name: "index-asset",
         component: AssetManagement,
         meta: { requiresAuth: true },
+      },
+      {
+        path: 'asset/create',
+        name: 'create-asset',
+        component: CreateAsset,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'asset/edit/:id',
+        name: 'edit-asset',
+        component: EditAsset,
+        meta: { requiresAuth: true },
+        props: true
+      },
+      {
+        path: 'asset/view/:id',
+        name: 'view-asset',
+        component: ViewAsset,
+        meta: { requiresAuth: true },
+        props: true
       },
       {
         path: "my-account",

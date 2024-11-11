@@ -1,11 +1,15 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
+import { useRoute, useRouter } from 'vue-router';
+const route = useRoute();
+const router = useRouter();
 
-// Form Fields
 const auth = authStore;
 const userId = auth.user.id;
+
+// Form Fields
 const name = ref('');
 const description = ref('');
 const is_long_term = ref(1); // Default to 1 (true)
@@ -20,11 +24,6 @@ const note = ref('');
 const asset_lifecycle_statuses_id = ref(null);
 const privacy_setup_id = ref(null);
 const is_active = ref(1); // Default to 1 (true)
-
-// State Management
-const isEditMode = ref(false);
-const selectedRecordId = ref(null);
-const recordList = ref([]);
 
 // Dropdown Data
 const responsibleUsers = ref([]);
@@ -41,16 +40,7 @@ const fetchDropdownData = async (url, stateRef) => {
     }
 };
 
-const getRecords = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/get-assets/${userId}`, {}, 'GET');
-        recordList.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching assets:', error);
-        recordList.value = [];
-    }
-};
-
+// Reset form fields
 const resetForm = () => {
     name.value = '';
     description.value = '';
@@ -66,7 +56,6 @@ const resetForm = () => {
     asset_lifecycle_statuses_id.value = null;
     privacy_setup_id.value = null;
     is_active.value = 1;
-    isEditMode.value = false;
     selectedRecordId.value = null;
 };
 
@@ -78,6 +67,7 @@ const validateForm = () => {
     return true;
 };
 
+// Submit form (create event)
 const submitForm = async () => {
     if (!validateForm()) return;
 
@@ -100,11 +90,9 @@ const submitForm = async () => {
     };
 
     try {
-        const apiUrl = isEditMode.value ? `/api/update-asset/${selectedRecordId.value}` : '/api/create-asset';
-        const method = isEditMode.value ? 'PUT' : 'POST';
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this asset?`,
+            text: 'Do you want to add this event?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, save it!',
@@ -112,63 +100,20 @@ const submitForm = async () => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(apiUrl, payload, method);
+            const response = await auth.fetchProtectedApi('/api/create-asset', payload, 'POST');
+
             if (response.status) {
-                await Swal.fire('Success!', `Asset ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
-                getRecords();
-                resetForm();
+                Swal.fire('Success!', 'Event added successfully.', 'success').then(() => {
+                    // Redirect to event list
+                    router.push({ name: 'index-asset' });
+                });
             } else {
-                Swal.fire('Failed!', 'Failed to save asset.', 'error');
-            }
+                Swal.fire('Failed!', 'Failed to added event.', 'error');
+            } 
         }
     } catch (error) {
-        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} asset:`, error);
-        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} asset.`, 'error');
-    }
-};
-
-const editRecord = (record) => {
-    name.value = record.name;
-    description.value = record.description;
-    is_long_term.value = record.is_long_term ? 1 : 0;
-    quantity.value = record.quantity;
-    value_amount.value = record.value_amount;
-    inkind_value.value = record.inkind_value;
-    is_tangible.value = record.is_tangible ? 1 : 0;
-    responsible_user_id.value = record.responsible_user_id;
-    assignment_start_date.value = record.assignment_start_date;
-    assignment_end_date.value = record.assignment_end_date;
-    note.value = record.note;
-    asset_lifecycle_statuses_id.value = record.asset_lifecycle_statuses_id;
-    privacy_setup_id.value = record.privacy_setup_id;
-    is_active.value = record.is_active ? 1 : 0;
-    selectedRecordId.value = record.id;
-    isEditMode.value = true;
-};
-
-const deleteRecord = async (id) => {
-    try {
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'Do you want to delete this asset?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, cancel!'
-        });
-
-        if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-asset/${id}`, {}, 'DELETE');
-            if (response.status) {
-                await Swal.fire('Deleted!', 'Asset has been deleted.', 'success');
-                getRecords();
-            } else {
-                Swal.fire('Failed!', 'Failed to delete asset.', 'error');
-            }
-        }
-    } catch (error) {
-        console.error('Error deleting asset:', error);
-        Swal.fire('Error!', 'Failed to delete asset.', 'error');
+        console.error('Error adding event:', error);
+        Swal.fire('Error!', 'Failed to add event.', 'error');
     }
 };
 
@@ -176,48 +121,47 @@ onMounted(() => {
     fetchDropdownData(`/api/org-member-list/${userId}`, responsibleUsers);
     fetchDropdownData('/api/asset-lifecycle-setups', assetLifecycleSetups);
     fetchDropdownData('/api/privacy-setups', privacySetups);
-    getRecords();
 });
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-10/12">
-        <!-- Asset Form Section -->
-        <section class="mb-5">
-            <div class="flex justify-between left-color-shade py-2 my-3">
-                <div>
-                    <h5 class="text-md font-semibold mt-2">{{ isEditMode ? 'Edit' : 'Add' }} Asset</h5>
-                </div>
-            </div>
+    <div class="container mx-auto max-w-7xl mx-auto w-10/12 p-6 bg-white rounded-lg shadow-md mt-10">
+        <div class="flex justify-between items-center mb-6">
+            <h5 class="text-xl font-semibold">Add New Asset</h5>
+            <button @click="$router.push({ name: 'index-asset' })"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
+                Back to Asset List
+            </button>
+        </div>
 
-            <form @submit.prevent="submitForm">
+        <form @submit.prevent="submitForm">
                 <div class="mb-4">
                     <label for="name" class="block text-gray-700 font-semibold mb-2">Name</label>
-                    <input v-model="name" type="text" id="name" class="w-full border-gray-300 rounded-md py-2 px-4"
+                    <input v-model="name" type="text" id="name" class="w-full border border-gray-300 rounded-md py-2 px-4"
                         required />
                 </div>
 
                 <div class="mb-4">
                     <label for="description" class="block text-gray-700 font-semibold mb-2">Description</label>
                     <input v-model="description" type="text" id="description"
-                        class="w-full border-gray-300 rounded-md py-2 px-4" required />
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
                 </div>
 
                 <div class="grid grid-cols-3 gap-4 mb-4">
                     <div>
                         <label for="quantity" class="block text-gray-700 font-semibold mb-2">Quantity</label>
                         <input v-model="quantity" type="number" id="quantity" min="0"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required />
+                            class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
                     </div>
                     <div>
                         <label for="value_amount" class="block text-gray-700 font-semibold mb-2">Value Amount</label>
                         <input v-model="value_amount" type="number" id="value_amount" min="0"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required />
+                            class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
                     </div>
                     <div>
                         <label for="inkind_value" class="block text-gray-700 font-semibold mb-2">In-Kind Value</label>
                         <input v-model="inkind_value" type="number" id="inkind_value" min="0"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required />
+                            class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
                     </div>
                 </div>
 
@@ -225,7 +169,7 @@ onMounted(() => {
                     <div>
                         <label for="is_long_term" class="block text-gray-700 font-semibold mb-2">Is Long Term?</label>
                         <select v-model="is_long_term" id="is_long_term"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required>
+                            class="w-full  border border-gray-300 rounded-md py-2 px-4" required>
                             <option :value="1">Yes</option>
                             <option :value="0">No</option>
                         </select>
@@ -234,7 +178,7 @@ onMounted(() => {
                     <div>
                         <label for="is_tangible" class="block text-gray-700 font-semibold mb-2">Is Tangible?</label>
                         <select v-model="is_tangible" id="is_tangible"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required>
+                            class="w-full  border border-gray-300 rounded-md py-2 px-4" required>
                             <option :value="1">Yes</option>
                             <option :value="0">No</option>
                         </select>
@@ -245,7 +189,7 @@ onMounted(() => {
                     <label for="responsible_user_id" class="block text-gray-700 font-semibold mb-2">Responsible
                         User</label>
                     <select v-model="responsible_user_id" id="responsible_user_id"
-                        class="w-full border-gray-300 rounded-md py-2 px-4" required>
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required>
                         <option value="" disabled>Select Responsible User</option>
                         <option v-for="user in responsibleUsers" :key="user.individual.id" :value="user.individual.id">
                             {{ user.individual.name }}</option>
@@ -257,13 +201,13 @@ onMounted(() => {
                         <label for="assignment_start_date" class="block text-gray-700 font-semibold mb-2">Start
                             Date</label>
                         <input v-model="assignment_start_date" type="date" id="assignment_start_date"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required />
+                            class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
                     </div>
 
                     <div>
                         <label for="assignment_end_date" class="block text-gray-700 font-semibold mb-2">End Date</label>
                         <input v-model="assignment_end_date" type="date" id="assignment_end_date"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required />
+                            class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
                     </div>
                 </div>
 
@@ -278,7 +222,7 @@ onMounted(() => {
                         <label for="asset_lifecycle_statuses_id"
                             class="block text-gray-700 font-semibold mb-2">Lifecycle Status</label>
                         <select v-model="asset_lifecycle_statuses_id" id="asset_lifecycle_statuses_id"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required>
+                            class="w-full  border border-gray-300 rounded-md py-2 px-4" required>
                             <option value="" disabled>Select Lifecycle Status</option>
                             <option v-for="status in assetLifecycleSetups" :key="status.id" :value="status.id">{{
                                 status.name }}</option>
@@ -289,7 +233,7 @@ onMounted(() => {
                         <label for="privacy_setup_id" class="block text-gray-700 font-semibold mb-2">Privacy
                             Setup</label>
                         <select v-model="privacy_setup_id" id="privacy_setup_id"
-                            class="w-full border-gray-300 rounded-md py-2 px-4" required>
+                            class="w-full  border border-gray-300 rounded-md py-2 px-4" required>
                             <option value="" disabled>Select Privacy Setup</option>
                             <option v-for="setup in privacySetups" :key="setup.id" :value="setup.id">{{ setup.name }}
                             </option>
@@ -299,53 +243,17 @@ onMounted(() => {
 
                 <div class="mb-4">
                     <label for="is_active" class="block text-gray-700 font-semibold mb-2">Is Active?</label>
-                    <select v-model="is_active" id="is_active" class="w-full border-gray-300 rounded-md py-2 px-4"
+                    <select v-model="is_active" id="is_active" class="w-full  border border-gray-300 rounded-md py-2 px-4"
                         required>
                         <option :value="1">Yes</option>
                         <option :value="0">No</option>
                     </select>
                 </div>
 
-                <div class="flex justify-end space-x-3">
-                    <button type="button" @click="resetForm"
-                        class="bg-gray-500 hover:bg-gray-400 text-white py-2 px-4 rounded-md">Reset</button>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded-md">
-                        {{ isEditMode ? 'Update' : 'Add' }} Asset
-                    </button>
-                </div>
+                <div class="flex justify-end gap-4">
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Add Asset</button>
+                <button type="button" @click="resetForm" class="px-6 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500">Reset</button>
+            </div>
             </form>
-        </section>
-
-        <!-- Asset List Section -->
-        <section>
-            <h5 class="text-md font-semibold mt-5 mb-3">Assets List</h5>
-            <table class="table-auto w-full text-left border-collapse">
-                <thead class="bg-gray-200">
-                    <tr>
-                        <th class="p-3 border">#</th>
-                        <th class="p-3 border">Name</th>
-                        <th class="p-3 border">Description</th>
-                        <th class="p-3 border">Quantity</th>
-                        <th class="p-3 border">Value</th>
-                        <th class="p-3 border">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(record, index) in recordList" :key="record.id">
-                        <td class="p-3 border">{{ index + 1 }}</td>
-                        <td class="p-3 border">{{ record.name }}</td>
-                        <td class="p-3 border">{{ record.description }}</td>
-                        <td class="p-3 border">{{ record.quantity }}</td>
-                        <td class="p-3 border">{{ record.value_amount }}</td>
-                        <td class="p-3 border">
-                            <button @click="editRecord(record)"
-                                class="text-white bg-blue-500 hover:bg-blue-400 py-1 px-2 rounded-md mr-2">Edit</button>
-                            <button @click="deleteRecord(record.id)"
-                                class="text-white bg-red-500 hover:bg-red-400 py-1 px-2 rounded-md">Delete</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
     </div>
 </template>
