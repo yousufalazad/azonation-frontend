@@ -114,7 +114,6 @@ import SuperAdminDashboard from "../views/SuperAdmin/Layouts/Dashboard/Index.vue
 import SuperAdminDashboardInitialContent from "../views/SuperAdmin/Layouts/Dashboard/InitialContent.vue";
 import SuperAdminProfileUpdate from "../views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue";
 
-
 // Financial
 //Package
 import EditPackage from "../views/SuperAdmin/Financial/Package/Edit.vue";
@@ -148,6 +147,14 @@ import SuperAdminSubscriptionList from "../views/SuperAdmin/Financial/Subscripti
 
 //Payment Log
 import SuperAdminPaymentLog from "../views/SuperAdmin/Financial/Payment/Index.vue";
+
+//SuperAdmin Master Setting
+import Country from "../views/SuperAdmin/MasterSetting/Country.vue";
+import UserCountry from "../views/SuperAdmin/MasterSetting/UserCountry.vue";
+import DialingCode from "../views/SuperAdmin/MasterSetting/DialingCode.vue";
+import MeetingConductType from "../views/SuperAdmin/MasterSetting/MeetingConductType.vue";
+import MeetingAttendanceType from "../views/SuperAdmin/MasterSetting/MeetingAttendanceType.vue";
+import MembershipType from "../views/SuperAdmin/MasterSetting/MembershipType.vue";
 
 
 //Price
@@ -542,6 +549,42 @@ const routes = [
       type: 'superadmin',
      },
     children: [
+      {
+        path: "country",
+        name: "country",
+        component: Country,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "user-country",
+        name: "user-country",
+        component: UserCountry,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "dialing-code",
+        name: "dialing-code",
+        component: DialingCode,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "meeting-conduct-type",
+        name: "meeting-conduct-type",
+        component: MeetingConductType,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "meeting-attendance-type",
+        name: "meeting-attendance-type",
+        component: MeetingAttendanceType,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "membership-type",
+        name: "membership-type",
+        component: MembershipType,
+        meta: { requiresAuth: true },
+      },
       {
         path: "initial-content",
         name: "initial-content",

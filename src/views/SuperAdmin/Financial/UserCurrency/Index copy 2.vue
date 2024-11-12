@@ -1,7 +1,7 @@
 <template>
     <div class="p-4">
         <h2 class="text-2xl font-bold mb-4">User Currencies</h2>
-        <button @click="openModal()" class="bg-green-500 text-white px-4 py-2 rounded-md mb-4">Add User Currency</button>
+        <button @click="openModal" class="bg-green-500 text-white px-4 py-2 rounded-md mb-4">Add User Currency</button>
 
         <div v-if="errorMessage" class="text-red-500">{{ errorMessage }}</div>
 
@@ -124,21 +124,7 @@ const fetchData = async () => {
     }
 };
 
-const openModal = (userCurrency = null) => {
-    if (userCurrency) {
-        userId.value = userCurrency.user_id;
-        currencyId.value = userCurrency.currency_id;
-        status.value = userCurrency.status;
-        editMode.value = true;
-        isModalOpen.value = false;
-    } else {
-        userId.value = null;
-        currencyId.value = "";
-        status.value = false;
-        editMode.value = false;
-        isModalOpen.value = true;
-    }
-};
+
 
 const closeModal = () => {
     isModalOpen.value = false;
@@ -229,4 +215,20 @@ const confirmDelete = async (id) => {
 };
 
 onMounted(fetchData);
+
+const openModal = (userCurrency = null) => {
+    if (userCurrency) {
+        userId.value = userCurrency.user_id;
+        currencyId.value = userCurrency.currency_id;
+        status.value = userCurrency.status;
+        editMode.value = true;
+        isModalOpen.value = false;
+    } else {
+        userId.value = null;
+        currencyId.value = "";
+        status.value = false;
+        editMode.value = false;
+        isModalOpen.value = true;
+    }
+};
 </script>
