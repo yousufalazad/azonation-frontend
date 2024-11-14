@@ -22,6 +22,17 @@ const note = ref('');
 const status = ref(0); // Default to Active
 const conduct_type = ref('');
 
+const conductTypeList = ref([]);
+const getConductTypes = async () => {
+  try {
+    const response = await auth.fetchProtectedApi('/api/get-meeting-conduct-types', {}, 'GET');
+    conductTypeList.value = response.status ? response.data : [];
+  } catch (error) {
+    console.error('Error fetching funds:', error);
+    conductTypeList.value = [];
+  }
+};
+
 // Selected Record ID
 const selectedRecordId = ref(route.params.id);
 
@@ -99,6 +110,7 @@ const updateMeeting = async () => {
 
 // Fetch the meeting details on component mount
 onMounted(() => {
+  getConductTypes();
   fetchMeetingDetails();
 });
 </script>
@@ -164,10 +176,10 @@ onMounted(() => {
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Conduct Type</label>
-          <select v-model="conduct_type" id="conduct_type" class="input">
-            <option value="1">In Person</option>
-            <option value="2">Remote</option>
-            <option value="3">Hybrid</option>
+          <select v-model="conduct_type" id="conduct_type" class="w-full border border-gray-300 rounded-md p-2" required>
+            <option value="">Select Conduct Type</option>
+            <option v-for="conductType in conductTypeList" :key="conductType.id" :value="conductType.id">{{ conductType.name }}
+            </option>
           </select>
         </div>
         <div>

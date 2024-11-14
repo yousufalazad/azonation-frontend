@@ -1,26 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
+const router = useRouter();
 
 const auth = authStore;
 const route = useRoute();
-const router = useRouter();
 const record = ref([]);
-// Form Fields
-const name = ref('');
-const short_name = ref('');
-const subject = ref('');
-const date = ref('');
-const time = ref('');
-const description = ref('');
-const address = ref('');
-const agenda = ref('');
-const requirements = ref('');
-const note = ref('');
-const status = ref(0); // Default to Active
-const conduct_type = ref('');
 
 // Selected Record ID
 const selectedRecordId = ref(route.params.id);
@@ -117,7 +103,7 @@ onMounted(() => {
       <tr>
         <td class="px-2 py-2 text-left font-semibold w-36">Conduct Type</td>
         <td>:</td>
-        <td class="px-2 py-2 text-left">{{ record.conduct_type === 1 ? 'In Person' : record.conduct_type === 2 ? 'Remote' : record.conduct_type === 3 ? 'Hybrid' : '' }}</td>
+        <td class="px-2 py-2 text-left">{{ record.conduct_type_name }}</td>
       </tr>
     </tbody>
   </table>

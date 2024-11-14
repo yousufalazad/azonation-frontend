@@ -155,6 +155,9 @@ import DialingCode from "../views/SuperAdmin/MasterSetting/DialingCode.vue";
 import MeetingConductType from "../views/SuperAdmin/MasterSetting/MeetingConductType.vue";
 import MeetingAttendanceType from "../views/SuperAdmin/MasterSetting/MeetingAttendanceType.vue";
 import MembershipType from "../views/SuperAdmin/MasterSetting/MembershipType.vue";
+import Designation from "../views/SuperAdmin/MasterSetting/Designation.vue";
+import LanguageList from "../views/SuperAdmin/MasterSetting/LanguageList.vue";
+import TimeZoneSetup from "../views/SuperAdmin/MasterSetting/TimeZoneSetup.vue";
 
 
 //Price
@@ -583,6 +586,24 @@ const routes = [
         path: "membership-type",
         name: "membership-type",
         component: MembershipType,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "designation",
+        name: "designation",
+        component: Designation,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "language-list",
+        name: "language-list",
+        component: LanguageList,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "time-zone-setup",
+        name: "time-zone-setup",
+        component: TimeZoneSetup,
         meta: { requiresAuth: true },
       },
       {

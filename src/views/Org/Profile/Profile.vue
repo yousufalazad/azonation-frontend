@@ -367,6 +367,53 @@
             </div>
         </div>
     </section>
+
+    <!-- User primary country section -->
+    <section>
+        <div class="space-y-4">
+            <h3 class="text-lg font-bold mb-2 left-color-shade py-2">User primary country</h3>
+            <div class="flex justify-between">
+                <div>
+                    <p class="ml-5 pb-9">{{ country_name }}
+                    </p>
+                </div>
+                <div><button @click="openEmailModal()" class="text-blue-500 pl-9 pr-2">Edit</button></div>
+            </div>
+
+        </div>
+
+        <!-- User primary country Modal -->
+        <div v-if="modalVisibleUserEmail"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
+                <h2 class="text-2xl font-bold mb-4 text-center">
+                    Edit User Email
+                </h2>
+
+                <div class="mb-4">
+                    <label for="newEmail" class="block text-sm font-medium text-gray-700">User email address</label>
+                    <input v-model="newEmail" type="newEmail" id="newEmail"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        required />
+                    <p v-if="auth.errors?.newEmail" class="text-red-500 text-sm mt-1">{{
+                        auth.errors?.newEmail[0] }}</p>
+                </div>
+
+
+                <div class="flex justify-end">
+                    <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
+                        @click="closeEmailModal">
+                        Close
+                    </button>
+
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                        @click="updateUserEmail()">
+                        Update
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
 </template>
 
 <script setup>

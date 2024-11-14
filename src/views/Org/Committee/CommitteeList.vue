@@ -147,9 +147,6 @@ onMounted(fetchCommitteeList);
             <th class="py-2 px-4 text-left">newName</th>
             <th class="py-2 px-4 text-left">Start Date</th>
             <th class="py-2 px-4 text-left">End Date</th>
-            <th class="py-2 px-4 text-left">Status</th>
-            <th class="py-2 px-4 text-left">Description</th>
-            <th class="py-2 px-4 text-left">Note</th>
             <th class="py-2 px-4 text-left">Action</th>
           </tr>
         </thead>
@@ -160,13 +157,18 @@ onMounted(fetchCommitteeList);
             <td class="py-2 px-4">{{ committee.name }}</td>
             <td class="py-2 px-4">{{ committee.start_date }}</td>
             <td class="py-2 px-4">{{ committee.end_date }}</td>
-            <td class="py-2 px-4">{{ committee.status }}</td>
-            <td class="py-2 px-4">{{ committee.short_description }}</td>
-            <td class="py-2 px-4">{{ committee.note }}</td>
             <td class="py-2 px-4">
+              <button @click="openModal(committee)" class="bg-yellow-500 text-white px-4 py-1 mx-2 rounded-md hover:bg-yellow-600">
+                Committee member
+              </button>
+
+             
+
               <button @click="openModal(committee)" class="bg-yellow-500 text-white px-4 py-1 rounded-md hover:bg-yellow-600">
                 Edit
               </button>
+
+
               <button @click="deleteCommittee(committee.id)" class="bg-red-500 text-white px-4 py-1 rounded-md hover:bg-red-600 ml-2">
                 Delete
               </button>

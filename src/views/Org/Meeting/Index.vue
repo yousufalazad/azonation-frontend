@@ -71,9 +71,19 @@ onMounted(() => {
     <section class="mb-5">
       <div class="flex justify-between left-color-shade py-2 my-3">
         <h5 class="text-md font-semibold mt-2">Meeting List</h5>
-        <button @click="goToCreateMeeting" class="bg-blue-500 text-white font-semibold py-2 px-2 rounded-md">
-          Add Meeting
+        <div>
+          <button @click="goToCreateMeeting" class="bg-blue-500 text-white font-semibold py-2 px-2 rounded-md">
+          Create meeting
         </button>
+
+        <button @click="goToCreateMeeting" class="bg-blue-500 text-white font-semibold py-2 px-2 mx-2 rounded-md">
+          Meeting minutes list
+        </button>
+
+        <button @click="goToCreateMeeting" class="bg-blue-500 text-white font-semibold py-2 px-2 mx-2 rounded-md">
+          Meeting attendance list
+        </button>
+        </div>
       </div>
       <div class="overflow-x-auto">
         <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
@@ -85,7 +95,7 @@ onMounted(() => {
               <th class="border px-1 py-3 text-left">Subject</th>
               <th class="border px-1 py-3 text-left">Date</th>
               <th class="border px-1 py-3 text-left">Time</th>
-              <th class="border px-1 py-3 text-left">Status</th>
+              <!-- <th class="border px-1 py-3 text-left">Status</th> -->
               <th class="border px-1 py-3 text-left">Conduct Type</th>
               <th class="border px-1 py-3 text-left">Actions</th>
             </tr>
@@ -99,12 +109,20 @@ onMounted(() => {
               <td class="border px-1 py-2">{{ record.subject }}</td>
               <td class="border px-1 py-2">{{ record.date }}</td>
               <td class="border px-1 py-2">{{ record.time }}</td>
-              <td class="border px-1 py-2">{{ record.status === 0 ? 'Active' : 'Disabled' }}</td>
-              <td class="border px-1 py-2 text-left">{{ record.conduct_type === 1 ? 'In Person' : record.conduct_type === 2 ? 'Remote' : record.conduct_type === 3 ? 'Hybrid' : '' }}</td>
+              <!-- <td class="border px-1 py-2">{{ record.status === 0 ? 'Active' : 'Disabled' }}</td> -->
+              <td class="border px-1 py-2">{{ record.conduct_type_name }}</td>
 
               <td class="border px-1 py-2 w-50">
                 <button @click="editRecord(record.id)"
+                  class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">+ Minutes</button>
+
+                  <button @click="editRecord(record.id)"
+                  class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">+ Attendance</button>
+
+                  <button @click="editRecord(record.id)"
                   class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">Edit</button>
+
+
                 <button @click="viewRecord(record.id)"
                   class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 m-2 rounded">View</button>
                 <button @click="deleteRecord(record.id)"

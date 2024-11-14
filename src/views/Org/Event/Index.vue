@@ -71,7 +71,7 @@ onMounted(() => getRecords());
                             <th class="border px-4 py-2">Venue</th>
                             <!-- <th class="border px-4 py-2">Venue Address</th>
                             <th class="border px-4 py-2">Note</th> -->
-                            <th class="border px-4 py-2">Status</th>
+                            <!-- <th class="border px-4 py-2">Status</th> -->
                             <th class="border px-4 py-2">Actions</th>
                         </tr>
                     </thead>
@@ -87,13 +87,18 @@ onMounted(() => getRecords());
                             <td class="border px-4 py-2">{{ record.venue_name }}</td>
                             <!-- <td class="border px-4 py-2">{{ record.venue_address }}</td>
                             <td class="border px-4 py-2">{{ record.note }}</td> -->
-                            <td class="border px-4 py-2">{{ record.status === 0 ? 'Active' : 'Disable' }}</td>
+                            <!-- <td class="border px-4 py-2">{{ record.status === 0 ? 'Active' : 'Disable' }}</td> -->
 
                             <td class="border px-1 py-2 w-50">
                                 <button @click="$router.push({ name: 'edit-event', params: { id: record.id } })"
+                                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">+ Attendance</button>
+
+                                <button @click="$router.push({ name: 'edit-event', params: { id: record.id } })"
                                     class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">Edit</button>
+
                                 <button @click="$router.push({ name: 'view-event', params: { id: record.id } })"
                                     class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 m-2 rounded">View</button>
+                                
                                 <button @click="deleteRecord(record.id)"
                                     class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">Delete</button>
                             </td>

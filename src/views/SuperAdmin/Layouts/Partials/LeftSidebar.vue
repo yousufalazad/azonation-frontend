@@ -47,6 +47,15 @@
               <router-link to="/superadmin-dashboard/membership-type"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Membership Type
               </router-link>
+              <router-link to="/superadmin-dashboard/designation"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Designation
+              </router-link>
+              <router-link to="/superadmin-dashboard/language-list"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Language List
+              </router-link>
+              <router-link to="/superadmin-dashboard/time-zone-setup"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Time Zone Setup
+              </router-link>
             </div>
           </div>
 
