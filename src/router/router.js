@@ -65,6 +65,13 @@ import CreateMeeting from "../views/Org/Meeting/Create.vue";
 import EditMeeting from "../views/Org/Meeting/Edit.vue";
 import ViewMeeting from "../views/Org/Meeting/View.vue";
 
+import IndexMeetingMinutes from "../views/Org/MeetingMinutes/Index.vue";
+import CreateMeetingMinutes from "../views/Org/MeetingMinutes/Create.vue";
+import EditMeetingMinutes from "../views/Org/MeetingMinutes/Edit.vue";
+import ViewMeetingMinutes from "../views/Org/MeetingMinutes/View.vue";
+
+import MeetingAttendances from "../views/Org/Meeting/MeetingAttendances.vue";
+
 //Event
 import IndexEvent from "../views/Org/Event/Index.vue";
 import CreateEvent from "../views/Org/Event/Create.vue";
@@ -267,6 +274,39 @@ const routes = [
         path: 'meeting/view/:id',
         name: 'view-meeting',
         component: ViewMeeting,
+        meta: { requiresAuth: true },
+        props: true
+       },
+      {
+        path: 'meeting-minutes',
+        name: "index-meeting-minutes",
+        component: IndexMeetingMinutes,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'meeting-minutes/create',
+        name: "create-meeting-minutes",
+        component: CreateMeetingMinutes,
+        meta: { requiresAuth: true },
+      },
+      { 
+        path: 'meeting-minutes/edit/:id',
+        name: 'edit-meeting-minutes',
+        component: EditMeetingMinutes,
+        meta: { requiresAuth: true },
+        props: true
+       },
+      { 
+        path: 'meeting-minutes/view/:id',
+        name: 'view-meeting-minutes',
+        component: ViewMeetingMinutes,
+        meta: { requiresAuth: true },
+        props: true
+       },
+      { 
+        path: 'meeting/attendances/:id',
+        name: 'meeting-attendances',
+        component: MeetingAttendances,
         meta: { requiresAuth: true },
         props: true
        },

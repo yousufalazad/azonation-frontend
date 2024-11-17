@@ -69,12 +69,6 @@ onMounted(() => {
 <template>
   <div class="max-w-7xl mx-auto w-10/12">
     <section class="mb-5">
-      <!-- <div class="flex justify-between left-color-shade py-2 my-3">
-        <h5 class="text-md font-semibold mt-2">Meeting List</h5>
-        <button @click="goToCreateMeeting" class="bg-blue-500 text-white font-semibold py-2 px-2 rounded-md">
-          Add Meeting
-        </button>
-      </div> -->
       <div class="flex justify-between left-color-shade py-2 my-3">
         <h5 class="text-md font-semibold mt-2">Meeting List</h5>
         <div>
@@ -91,6 +85,7 @@ onMounted(() => {
         </button>
         </div>
       </div>
+      
       <div class="overflow-x-auto">
         <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
           <thead>
@@ -103,7 +98,7 @@ onMounted(() => {
               <th class="border px-1 py-3 text-left">Time</th>
               <th class="border px-1 py-3 text-left">Status</th>
               <th class="border px-1 py-3 text-left">Conduct Type</th>
-              <th class="border px-1 py-3 text-left w-42">Actions</th>
+              <th class="border px-1 py-3 text-left">Actions</th>
             </tr>
           </thead>
           <tbody class="text-gray-600 text-md ">
@@ -118,11 +113,9 @@ onMounted(() => {
               <td class="border px-1 py-2">{{ record.status === 0 ? 'Active' : 'Disabled' }}</td>
               <td class="border px-1 py-2">{{ record.conduct_type_name }}</td>
 
-              <td class="border px-1 py-2">
-                <button @click="$router.push({ name: 'index-meeting-minutes', params: { id: record.id } })"
-                  class="bg-sky-500 hover:bg-sky-600 text-white px-2 py-1 m-2 rounded">Meeting Minutes </button>
+              <td class="border px-1 py-2 w-50">
                 <button @click="$router.push({ name: 'meeting-attendances', params: { id: record.id } })"
-                  class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 m-2 rounded">Attendances </button>
+                  class="bg-yellow-500 hover:bg-blue-600 text-white px-2 py-1 m-2 rounded">Attendances </button>
                 <button @click="editRecord(record.id)"
                   class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">Edit</button>
                 <button @click="viewRecord(record.id)"
