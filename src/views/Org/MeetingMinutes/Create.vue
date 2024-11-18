@@ -7,8 +7,10 @@ import { authStore } from '../../../store/authStore';
 const auth = authStore;
 const router = useRouter();
 const route = useRoute();
+// Error Message State
+const errorMessage = ref(''); // Define errorMessage as a reactive variable
 // Selected Meeting ID
-// const meetingId = ref(route.params.id);
+const meetingId = ref(route.params.meetingId);
 
 const minutes = ref('');
 const decisions = ref('');
@@ -21,31 +23,70 @@ const action_items = ref('');
 const file_attachments = ref('');
 const video_link = ref('');
 const meeting_location = ref('');
-const confidentiality = ref('');
+const prepared_by = ref('');
+const reviewed_by = ref('');
+const privacy_setup_id = ref('');
+const is_publish = ref('');
 const approval_status = ref('');
-const status = ref('');
+const is_active = ref('1');
 
-// const resetForm = () => {
-//   minutes.value = '';
-//   decisions.value = '';
-//   note.value = '';
-//   start_time.value = '';
-//   end_time.value = '';
-//   follow_up_tasks.value = '';
-//   tags.value = '';
-//   action_items.value = '';
-//   file_attachments.value = '';
-//   video_link.value = '';
-//   meeting_location.value = '';
-//   confidentiality.value = 0;
-//   approval_status.value = 0;
-//   status.value = 0;
-// };
+console.log(meetingId.value);
+
+// Dropdown Data
+const orgMemberList = ref([]);
+const privacySetups = ref([]);
+const fetchData = async () => {
+  try {
+    const [orgMemberListResponse, privacySetupResponse] = await Promise.all([
+      auth.fetchProtectedApi('/api/individual-users'),
+      // auth.fetchProtectedApi(`/api/org-member-list/${userId}`),
+      auth.fetchProtectedApi('/api/privacy-setups'),
+    ]);
+    // console.log('Users:', orgMemberListResponse.data);
+    // Ensure we handle cases where the API response might not be as expected.
+    if (orgMemberListResponse.status) {
+      orgMemberList.value = orgMemberListResponse.data;
+    } else {
+      errorMessage.value = 'Error loading users.';
+    }
+    
+    if (privacySetupResponse.status) {
+      privacySetups.value = privacySetupResponse.data;
+    } else {
+      errorMessage.value = 'Error loading currencies.';
+    }
+
+    console.log(orgMemberListResponse.data);
+    console.log(privacySetupResponse.data);
+  } catch (error) {
+    errorMessage.value = 'Error loading data. Please try again later.';
+  }
+};
+
+const resetForm = () => {
+  minutes.value = '';
+  decisions.value = '';
+  note.value = '';
+  start_time.value = '';
+  end_time.value = '';
+  follow_up_tasks.value = '';
+  tags.value = '';
+  action_items.value = '';
+  file_attachments.value = '';
+  video_link.value = '';
+  meeting_location.value = '';
+  reviewed_by.value = '';
+  prepared_by.value = '';
+  privacy_setup_id.value = '';
+  is_publish.value = '';
+  approval_status.value = '';
+  is_active.value = 1;
+};
 
 const submitForm = async () => {
   try {
     const payload = {
-      meeting_id: 3,
+      meeting_id: meetingId.value,
       minutes: minutes.value,
       decisions: decisions.value,
       note: note.value,
@@ -57,26 +98,31 @@ const submitForm = async () => {
       file_attachments: file_attachments.value,
       video_link: video_link.value,
       meeting_location: meeting_location.value,
-      confidentiality: confidentiality.value,
+      reviewed_by: reviewed_by.value,
+      prepared_by: prepared_by.value,
+      privacy_setup_id: privacy_setup_id.value,
+      is_publish: is_publish.value,
       approval_status: approval_status.value,
-      status: status.value,
+      is_active: is_active.value,
     };
     const response = await auth.fetchProtectedApi('/api/create-meeting-minutes', payload, 'POST');
     if (response.status) {
-      await Swal.fire('Success!', 'Meeting added successfully.', 'success');
+      await Swal.fire('Success!', 'Meeting Minutes added successfully.', 'success');
       router.push({ name: 'index-meeting-minutes' });
     } else {
-      Swal.fire('Failed!', 'Failed to save meeting.', 'error');
+      Swal.fire('Failed!', 'Failed to save meeting minutes.', 'error');
     }
   } catch (error) {
     Swal.fire('Error!', 'Failed to add meeting.', 'error');
   }
 };
 
+onMounted(fetchData);
+
 // Fetch transactions on mount
-onMounted(() => {
-  
-});
+// onMounted(() => {
+//   fetchData();
+// });
 </script>
 
 <template>
@@ -102,20 +148,20 @@ onMounted(() => {
         <input v-model="note" class="textarea" rows="2"></input>
       </div>
       <div class="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Start Time</label>
-            <input v-model="start_time" type="time" class="input" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Time</label>
-            <input v-model="end_time" type="time" class="input" />
-          </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Start Time</label>
+          <input v-model="start_time" type="time" class="input" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">End Time</label>
+          <input v-model="end_time" type="time" class="input" />
+        </div>
       </div>
       <div class="mb-4">
         <label class="block text-sm font-medium text-gray-700">Follow Up Tasks</label>
         <input v-model="follow_up_tasks" class="textarea" rows="2"></input>
       </div>
-      
+
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Tags</label>
@@ -136,15 +182,45 @@ onMounted(() => {
           <input v-model="video_link" type="text" class="input" />
         </div>
       </div>
-      
+
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Meeting Location</label>
           <input v-model="meeting_location" type="text" class="input" />
         </div>
+
         <div>
-          <label class="block text-sm font-medium text-gray-700">Confidentiality</label>
-          <select v-model="confidentiality" class="input">
+          <label class="block text-sm font-medium text-gray-700">Privacy Setup</label>
+          <select v-model="privacy_setup_id" id="privacy_setup_id"
+            class="w-full  border border-gray-300 rounded-md py-2 px-4" required>
+            <option value="1">Select Privacy Setup</option>
+            <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{ privacy.name }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Reviewed By</label>
+          <select v-model="reviewed_by" id="reviewed_by"
+            class="w-full  border border-gray-300 rounded-md py-2 px-4" required>
+            <option value="1">Select Reviewed By</option>
+            <option v-for="orgMember in orgMemberList" :key="orgMember.id" :value="orgMember.id">{{ orgMember.name }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Prepared By</label>
+          <select v-model="prepared_by" id="prepared_by"
+            class="w-full  border border-gray-300 rounded-md py-2 px-4" required>
+            <option value="1">Select Prepared By</option>
+            <option v-for="orgMember in orgMemberList" :key="orgMember.id" :value="orgMember.id">{{ orgMember.name }}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Publish Status</label>
+          <select v-model="is_publish" class="input">
+            <option value="">Select Publish Status</option>
             <option value="0">No</option>
             <option value="1">Yes</option>
           </select>
@@ -152,6 +228,7 @@ onMounted(() => {
         <div>
           <label class="block text-sm font-medium text-gray-700">Approval Status</label>
           <select v-model="approval_status" class="input">
+            <option value="">Select Approval Status</option>
             <option value="0">Pending</option>
             <option value="1">Approved</option>
             <option value="2">Rejected</option>
@@ -159,9 +236,9 @@ onMounted(() => {
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700">Status</label>
-          <select v-model="status" class="input">
-            <option value="0">Active</option>
-            <option value="1">Disable</option>
+          <select v-model="is_active" class="input">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
           </select>
         </div>
       </div>

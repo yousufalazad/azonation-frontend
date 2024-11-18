@@ -119,7 +119,7 @@ onMounted(() => {
               <td class="border px-1 py-2">{{ record.conduct_type_name }}</td>
 
               <td class="border px-1 py-2">
-                <button @click="$router.push({ name: 'index-meeting-minutes', params: { id: record.id } })"
+                <button @click="$router.push({ name: 'create-meeting-minutes', params: { meetingId: record.id } })"
                   class="bg-sky-500 hover:bg-sky-600 text-white px-2 py-1 m-2 rounded">Meeting Minutes </button>
                 <button @click="$router.push({ name: 'meeting-attendances', params: { id: record.id } })"
                   class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 m-2 rounded">Attendances </button>

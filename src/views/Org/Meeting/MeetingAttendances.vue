@@ -8,7 +8,7 @@ const route = useRoute();
 
 const auth = authStore;
 const user_id = ref("");
-const attendance_type = ref("");
+const meeting_attendance_type_id = ref("");
 const date = ref('');
 const time = ref('');
 const note = ref('');
@@ -69,7 +69,7 @@ const getMeetingAttendanceList = async () => {
 // Reset form fields
 const resetForm = () => {
     user_id.value = "";
-    attendance_type.value = "";
+    meeting_attendance_type_id.value = "";
     date.value = '';
     time.value = '';
     note.value = '';
@@ -83,7 +83,7 @@ const submitForm = async () => {
     const payload = {
         meeting_id: meetingId.value,
         user_id: user_id.value,
-        attendance_type: attendance_type.value,
+        meeting_attendance_type_id: meeting_attendance_type_id.value,
         date: date.value,
         time: time.value,
         note: note.value,
@@ -125,7 +125,7 @@ const submitForm = async () => {
 // Edit meetingAttendance
 const editMeetingAttendance = (meetingAttendance) => {
     user_id.value = meetingAttendance.user_id;
-    attendance_type.value = meetingAttendance.attendance_type;
+    meeting_attendance_type_id.value = meetingAttendance.meeting_attendance_type_id;
     date.value = meetingAttendance.date;
     time.value = meetingAttendance.time;
     note.value = meetingAttendance.note;
@@ -194,10 +194,11 @@ onMounted(() => {
                             <option v-for="user in userList" :key="user.id" :value="user.id">{{ user.name }}</option>
                         </select>
                     </div>
-                    <!-- Country Country Name -->
+                    
+                    <!-- Meeting attendance type name and id -->
                     <div class="col-span-4 mb-4">
-                        <label for="attendance_type" class="block text-gray-700 font-semibold mb-2">Type Name</label>
-                        <select v-model="attendance_type" id="attendance_type"
+                        <label for="meeting_attendance_type_id" class="block text-gray-700 font-semibold mb-2">Type Name</label>
+                        <select v-model="meeting_attendance_type_id" id="meeting_attendance_type_id"
                             class="w-full border border-gray-300 rounded-md p-2" required>
                             <option value="">Select Attendance Type</option>
                             <option v-for="meetingAttendanceType in meetingAttendanceTypeList" :key="meetingAttendanceType.id" :value="meetingAttendanceType.id">

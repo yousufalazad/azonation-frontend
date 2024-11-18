@@ -143,6 +143,9 @@ import SuperAdminBillingList from "../views/SuperAdmin/Financial/Billing/Index.v
 import SuperAdminBillingEdit from "../views/SuperAdmin/Financial/Billing/Edit.vue";
 import SuperAdminBillingCreate from "../views/SuperAdmin/Financial/Billing/Create.vue";
 
+//UserPrice
+import UserPriceRate from "../views/SuperAdmin/Financial/UserPriceRate/Index.vue";
+
 //Receipt
 import SuperAdminReceiptList from "@/views/SuperAdmin/Financial/Receipt/Index.vue";
 
@@ -284,7 +287,7 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: 'meeting-minutes/create',
+        path: 'meeting-minutes/create/:meetingId',
         name: "create-meeting-minutes",
         component: CreateMeetingMinutes,
         meta: { requiresAuth: true },
@@ -716,6 +719,12 @@ const routes = [
         path: "super-admin-view-subscription",
         name: "super-admin-view-subscription",
         component: ViewSubscription,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "user-price-rate",
+        name: "user-price-rate",
+        component: UserPriceRate,
         meta: { requiresAuth: true },
       },
       {

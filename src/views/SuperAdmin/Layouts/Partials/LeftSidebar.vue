@@ -80,6 +80,9 @@
 
               <router-link to="/superadmin-dashboard/super-admin-subscription-list"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Subscription</router-link>
+                
+              <router-link to="/superadmin-dashboard/user-price-rate"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">User price rate</router-link>
 
               <router-link to="/superadmin-dashboard/super-admin-billing-list"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Billing</router-link>
