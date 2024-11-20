@@ -3,14 +3,14 @@
       <h2 class="text-2xl font-bold mb-6">User Price Rates</h2>
       
       <!-- Search Input -->
-      <!-- <input
+      <input
         v-model="searchQuery"
         @input="filterResults"
         type="text"
         placeholder="Search by user or package"
         class="border p-2 rounded w-1/3 mb-6"
-      /> -->
-  
+      />
+
       <!-- Error Message -->
       <div v-if="errorMessage" class="text-red-500 mb-4">{{ errorMessage }}</div>
   
@@ -28,11 +28,11 @@
         <tbody>
           <!-- <tr v-for="userPrice in filteredUserPriceRates" :key="userPrice.id"> -->
             <tr v-for="userPrice in userPriceRates" :key="userPrice.id">
-            <td class="border px-4 py-2">{{ userPrice.name }}</td>
-            <td class="border px-4 py-2">{{ userPrice.package }}</td>
-            <td class="border px-4 py-2">{{ userPrice.country }}</td>
-            <td class="border px-4 py-2">{{ userPrice.currency }}</td>
-            <td class="border px-4 py-2">{{ userPrice.price_rate }}</td>
+            <td class="border px-4 py-2">{{ userPrice.subscription.user_id }}</td>
+            <td class="border px-4 py-2">{{ userPrice.subscription.package_id }}</td>
+            <td class="border px-4 py-2">{{ userPrice.country.name }}</td>
+            <td class="border px-4 py-2">{{ userPrice.currency.name }}</td>
+            <td class="border px-4 py-2">{{ userPrice.rate }}</td>
           </tr>
         </tbody>
       </table>

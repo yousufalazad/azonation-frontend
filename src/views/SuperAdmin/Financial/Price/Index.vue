@@ -140,7 +140,7 @@ const regions = [
   { index: 10, label: "Region 10 (Malaysia, currency: MYR)" },
   { index: 11, label: "Region 11 (Russia, currency: RUB)" },
   { index: 12, label: "Region 12 (Australia and New Zealand, currency: AUD)" },
-  { index: 13, label: "Region 13 (Nordic countries, currency: EUR)" },
+  { index: 13, label: "Region 13 (3 non-EU members of the European Free Trade Association (EFTA), currency: EUR)" },
   { index: 14, label: "Region 14 (South America, currency: USD)" },
   { index: 15, label: "Region 15 (Middle East, currency: USD)" },
   { index: 16, label: "Region 16 (Asia excluding Bangladesh, China, Malaysia, India, currency: USD)" },
@@ -151,6 +151,143 @@ const regions = [
 ];
 
 onMounted(fetchPriceRate);
+/*
+European Union (EU) member countries:
+Austria
+Belgium
+Bulgaria
+Croatia
+Cyprus
+Czech Republic
+Denmark
+Estonia
+Finland
+France
+Germany
+Greece
+Hungary
+Ireland
+Italy
+Latvia
+Lithuania
+Luxembourg
+Malta
+Netherlands
+Poland
+Portugal
+Romania
+Slovakia
+Slovenia
+Spain
+Sweden
+
+3 non-EU members of the European Free Trade Association (EFTA): Norway, Iceland, and Liechtenstein.
+
+South American Countries (12 Total):
+Argentina
+Bolivia
+Brazil
+Chile
+Colombia
+Ecuador
+Guyana
+Paraguay
+Peru
+Suriname
+Uruguay
+Venezuela
+
+
+List of Middle Eastern Countries:
+The Middle East is a region that generally includes the following countries:
+
+Western Asia:
+Bahrain
+Cyprus
+Iran
+Iraq
+Israel
+Jordan
+Kuwait
+Lebanon
+Oman
+Palestine
+Qatar
+Saudi Arabia
+Syria
+Turkey
+United Arab Emirates (UAE)
+Yemen
+Sometimes Included:
+Egypt (due to its geographic and cultural ties to the Middle East).
+
+
+South Asian countries excluding Bangladesh, China, Malaysia, and India:
+Afghanistan
+Bhutan
+Nepal
+Pakistan
+Sri Lanka
+Maldives
+These countries are part of South Asia, but the ones you requested to exclude are left out. Let me know if you need more information!
+
+
+African countries:
+Algeria
+Angola
+Benin
+Botswana
+Burkina Faso
+Burundi
+Cabo Verde (Cape Verde)
+Cameroon
+Central African Republic
+Chad
+Comoros
+Democratic Republic of the Congo (DRC)
+Republic of the Congo (Congo)
+Djibouti
+Egypt
+Equatorial Guinea
+Eritrea
+Eswatini (Swaziland)
+Ethiopia
+Gabon
+Gambia
+Ghana
+Guinea
+Guinea-Bissau
+Ivory Coast (Côte d'Ivoire)
+Kenya
+Lesotho
+Liberia
+Libya
+Madagascar
+Malawi
+Mali
+Mauritania
+Mauritius
+Morocco
+Mozambique
+Namibia
+Niger
+Nigeria
+Rwanda
+São Tomé and Príncipe
+Senegal
+Seychelles
+Sierra Leone
+Somalia
+South Africa
+South Sudan
+Sudan
+Tanzania
+Togo
+Tunisia
+Uganda
+Zambia
+Zimbabwe
+*/
 </script>
 
 <style scoped>
