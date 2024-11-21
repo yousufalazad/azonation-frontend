@@ -79,9 +79,18 @@ import EditEvent from "../views/Org/Event/Edit.vue";
 import ViewEvent from "../views/Org/Event/View.vue";
 import UpcomingEvents from "../views/Org/Event/EventList.vue";
 
+import IndexEventSummary from "../views/Org/Event/EventSummary/Index.vue";
+import CreateEventSummary from "../views/Org/Event/EventSummary/Create.vue";
+import EditEventSummary from "../views/Org/Event/EventSummary/Edit.vue";
+import ViewEventSummary from "../views/Org/Event/EventSummary/View.vue";
+
+import EventAttendances from "../views/Org/Event/EventAttendances.vue";
+
 //Project
 import CreateProject from "../views/Org/Project/Create.vue";
-import Projects from "../views/Org/Project/Index.vue";
+import IndexProject from "../views/Org/Project/Index.vue";
+
+import ProjectAttendances from "../views/Org/Project/ProjectAttendances.vue";
 
 //Founder
 import Founders from "../views/Org/Founder/Create.vue";
@@ -138,13 +147,13 @@ import EditSubscription from "../views/SuperAdmin/Financial/Subscription/Edit.vu
 import IndexSubscription from "../views/SuperAdmin/Financial/Subscription/Index.vue";
 import ViewSubscription from "../views/SuperAdmin/Financial/Subscription/View.vue";
 
+//UserPrice
+import UserPriceRate from "../views/SuperAdmin/Financial/UserPriceRate/Index.vue";
+
 //Billing
 import SuperAdminBillingList from "../views/SuperAdmin/Financial/Billing/Index.vue";
 import SuperAdminBillingEdit from "../views/SuperAdmin/Financial/Billing/Edit.vue";
 import SuperAdminBillingCreate from "../views/SuperAdmin/Financial/Billing/Create.vue";
-
-//UserPrice
-import UserPriceRate from "../views/SuperAdmin/Financial/UserPriceRate/Index.vue";
 
 //Receipt
 import SuperAdminReceiptList from "@/views/SuperAdmin/Financial/Receipt/Index.vue";
@@ -162,8 +171,8 @@ import SuperAdminPaymentLog from "../views/SuperAdmin/Financial/Payment/Index.vu
 import Country from "../views/SuperAdmin/MasterSetting/Country.vue";
 import UserCountry from "../views/SuperAdmin/MasterSetting/UserCountry.vue";
 import DialingCode from "../views/SuperAdmin/MasterSetting/DialingCode.vue";
-import MeetingConductType from "../views/SuperAdmin/MasterSetting/MeetingConductType.vue";
-import MeetingAttendanceType from "../views/SuperAdmin/MasterSetting/MeetingAttendanceType.vue";
+import AttendanceType from "../views/SuperAdmin/MasterSetting/AttendanceType.vue";
+import ConductType from "../views/SuperAdmin/MasterSetting/ConductType.vue";
 import MembershipType from "../views/SuperAdmin/MasterSetting/MembershipType.vue";
 import Designation from "../views/SuperAdmin/MasterSetting/Designation.vue";
 import LanguageList from "../views/SuperAdmin/MasterSetting/LanguageList.vue";
@@ -346,6 +355,39 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
+        path: 'event-summary',
+        name: "index-event-summary",
+        component: IndexEventSummary,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'event-summary/create/:eventId',
+        name: "create-event-summary",
+        component: CreateEventSummary,
+        meta: { requiresAuth: true },
+      },
+      { 
+        path: 'event-summary/edit/:id',
+        name: 'edit-event-summary',
+        component: EditEventSummary,
+        meta: { requiresAuth: true },
+        props: true
+       },
+      { 
+        path: 'event-summary/view/:id',
+        name: 'view-event-summary',
+        component: ViewEventSummary,
+        meta: { requiresAuth: true },
+        props: true
+       },
+      { 
+        path: 'event/attendances/:id',
+        name: 'event-attendances',
+        component: EventAttendances,
+        meta: { requiresAuth: true },
+        props: true
+       },
+      {
         path: "create-project",
         name: "create-project",
         component: CreateProject,
@@ -353,10 +395,17 @@ const routes = [
       },
       {
         path: "projects",
-        name: "projects",
-        component: Projects,
+        name: "index-project",
+        component: IndexProject,
         meta: { requiresAuth: true },
       },
+      { 
+        path: 'project/attendances/:id',
+        name: 'project-attendances',
+        component: ProjectAttendances,
+        meta: { requiresAuth: true },
+        props: true
+       },
       {
         path: "founders",
         name: "founders",
@@ -614,15 +663,15 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "meeting-conduct-type",
-        name: "meeting-conduct-type",
-        component: MeetingConductType,
+        path: "conduct-type",
+        name: "conduct-type",
+        component: ConductType,
         meta: { requiresAuth: true },
       },
       {
-        path: "meeting-attendance-type",
-        name: "meeting-attendance-type",
-        component: MeetingAttendanceType,
+        path: "attendance-type",
+        name: "attendance-type",
+        component: AttendanceType,
         meta: { requiresAuth: true },
       },
       {
@@ -727,6 +776,7 @@ const routes = [
         component: UserPriceRate,
         meta: { requiresAuth: true },
       },
+
       {
         path: "super-admin-billing-list",
         name: "super-admin-billing-list",

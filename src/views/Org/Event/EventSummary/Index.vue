@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { useRouter } from 'vue-router';
-import { authStore } from '../../../store/authStore';
+import { authStore } from '../../../../store/authStore';
 
 const auth = authStore;
 const router = useRouter();
@@ -70,7 +70,7 @@ onMounted(() => {
           <thead>
             <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
               <!-- <th class="border px-1 py-3 text-left">ID</th> -->
-              <th class="border px-1 py-3 text-left">Meeting Id</th>
+              <th class="border px-1 py-3 text-left">Event Id</th>
               <th class="border px-1 py-3 text-left">Start Time</th>
               <th class="border px-1 py-3 text-left">End Time</th>
               <th class="border px-1 py-3 text-left">Publish</th>

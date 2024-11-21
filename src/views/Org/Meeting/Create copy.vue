@@ -1,14 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
+import { useRouter } from 'vue-router';
 import { authStore } from '../../../store/authStore';
-
 const auth = authStore;
-const route = useRoute();
 const router = useRouter();
 
-// Form Fields
 const name = ref('');
 const short_name = ref('');
 const subject = ref('');
@@ -19,13 +16,13 @@ const address = ref('');
 const agenda = ref('');
 const requirements = ref('');
 const note = ref('');
-const status = ref(0); // Default to Active
-const conduct_type = ref('');
+const conduct_type = ref("");
+const status = ref(0);
 
 const conductTypeList = ref([]);
 const getConductTypes = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/get-meeting-conduct-types', {}, 'GET');
+    const response = await auth.fetchProtectedApi('/api/get-conduct-types', {}, 'GET');
     conductTypeList.value = response.status ? response.data : [];
   } catch (error) {
     console.error('Error fetching funds:', error);
@@ -33,98 +30,65 @@ const getConductTypes = async () => {
   }
 };
 
-// Selected Record ID
-const selectedRecordId = ref(route.params.id);
+const resetForm = () => {
+  name.value = '';
+  short_name.value = '';
+  subject.value = '';
+  date.value = '';
+  time.value = '';
+  description.value = '';
+  address.value = '';
+  agenda.value = '';
+  requirements.value = '';
+  note.value = '';
+  conduct_type.value = "";
+  status.value = 0;
+};
 
-// Fetch meeting details on mount
-const fetchMeetingDetails = async () => {
+const submitForm = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-meeting/${selectedRecordId.value}`, {}, 'GET');
+    const payload = {
+      name: name.value,
+      short_name: short_name.value,
+      subject: subject.value,
+      date: date.value,
+      time: time.value,
+      description: description.value,
+      address: address.value,
+      agenda: agenda.value,
+      requirements: requirements.value,
+      note: note.value,
+      conduct_type: conduct_type.value,
+      status: status.value,
+    };
+    const response = await auth.fetchProtectedApi('/api/create-meeting', payload, 'POST');
     if (response.status) {
-      const record = response.data;
-      name.value = record.name;
-      short_name.value = record.short_name;
-      subject.value = record.subject;
-      date.value = record.date;
-      time.value = record.time;
-      description.value = record.description;
-      address.value = record.address;
-      agenda.value = record.agenda;
-      requirements.value = record.requirements;
-      note.value = record.note;
-      status.value = record.status;
-      conduct_type.value = record.conduct_type;
+      await Swal.fire('Success!', 'Meeting added successfully.', 'success');
+      router.push({ name: 'index-meeting' });
     } else {
-      Swal.fire('Error', 'Meeting not found!', 'error');
-      router.push({ name: 'index' });
+      Swal.fire('Failed!', 'Failed to save meeting.', 'error');
     }
   } catch (error) {
-    console.error('Error fetching meeting details:', error);
-    Swal.fire('Error', 'Failed to fetch meeting details.', 'error');
-    router.push({ name: 'index' });
+    Swal.fire('Error!', 'Failed to add meeting.', 'error');
   }
 };
 
-// Update meeting details
-const updateMeeting = async () => {
-  const payload = {
-    name: name.value,
-    short_name: short_name.value,
-    subject: subject.value,
-    date: date.value,
-    time: time.value,
-    description: description.value,
-    address: address.value,
-    agenda: agenda.value,
-    requirements: requirements.value,
-    note: note.value,
-    status: status.value,
-    conduct_type: conduct_type.value,
-  };
-
-  try {
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'Do you want to update this meeting?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, update it!',
-      cancelButtonText: 'No, cancel!',
-    });
-
-    if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/update-meeting/${selectedRecordId.value}`, payload, 'PUT');
-
-      if (response.status) {
-        await Swal.fire('Success', 'Meeting updated successfully.', 'success');
-        router.push({ name: 'index-meeting' });
-      } else {
-        Swal.fire('Failed', 'Failed to update meeting.', 'error');
-      }
-    }
-  } catch (error) {
-    console.error('Error updating meeting:', error);
-    Swal.fire('Error', 'Failed to update meeting.', 'error');
-  }
-};
-
-// Fetch the meeting details on component mount
+// Fetch transactions on mount
 onMounted(() => {
   getConductTypes();
-  fetchMeetingDetails();
 });
 </script>
 
 <template>
   <div class="container mx-auto max-w-7xl mx-auto w-10/12 p-6 bg-white rounded-lg shadow-md mt-10">
     <div class="flex justify-between items-center mb-6">
-      <h5 class="text-xl font-semibold">Edit Meeting</h5>
+      <h5 class="text-xl font-semibold">Add New Meeting</h5>
       <button @click="router.push({ name: 'index-meeting' })" class="btn-primary">
         Back to Meeting List
       </button>
     </div>
 
-    <form @submit.prevent="updateMeeting">
+    <form @submit.prevent="submitForm">
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Name</label>
@@ -132,7 +96,7 @@ onMounted(() => {
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700">Short Name</label>
-          <input v-model="short_name" type="text" class="input"  />
+          <input v-model="short_name" type="text" class="input"/>
         </div>
       </div>
       <div class="grid grid-cols-2 gap-4 mb-4">
@@ -191,7 +155,7 @@ onMounted(() => {
         </div>
       </div>
       <div class="flex justify-end">
-        <button type="submit" class="btn-primary">Update Meeting</button>
+        <button type="submit" class="btn-primary">Add Meeting</button>
       </div>
     </form>
   </div>

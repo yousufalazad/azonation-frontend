@@ -9,26 +9,15 @@ const route = useRoute();
 const auth = authStore;
 const user_id = ref("");
 const attendance_type_id = ref("");
-const date = ref('');
+// const date = ref('');
 const time = ref('');
 const note = ref('');
 const is_active = ref('1');
 const isEditMode = ref(false);
-const selectedMeetingAttendanceId = ref(null);
-// Selected Meeting ID
-const meetingId = ref(route.params.id);
+const selectedEventAttendanceId = ref(null);
+// Selected EventID
+const eventId = ref(route.params.id);
 
-const meetingDetails = ref([]);
-// Fetch meeting details on mount
-const fetchMeetingDetails = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/get-meeting/${meetingId.value}`, {}, 'GET');
-        meetingDetails.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching meetings:', error);
-        meetingDetails.value = [];
-    }
-};
 
 const userList = ref([]);
 // Fetch userList
@@ -43,7 +32,7 @@ const getOrgUserList = async () => {
 };
 
 const attendanceTypeList = ref([]);
-// Fetch attendance type list
+// Fetch getAttendanceTypeList
 const getAttendanceTypeList = async () => {
     try {
         const response = await auth.fetchProtectedApi('/api/get-attendance-types', {}, 'GET');
@@ -54,51 +43,64 @@ const getAttendanceTypeList = async () => {
     }
 };
 
-const meetingAttendanceList = ref([]);
-// Fetch getMeetingAttendanceList
-const getMeetingAttendanceList = async () => {
+const eventAttendanceList = ref([]);
+// Fetch geteventAttendanceList
+const getEventAttendanceList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-meeting-attendances', {}, 'GET');
-        meetingAttendanceList.value = response.status ? response.data : [];
+        const response = await auth.fetchProtectedApi('/api/get-event-attendances', {}, 'GET');
+        eventAttendanceList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
-        meetingAttendanceList.value = [];
+        eventAttendanceList.value = [];
     }
 };
+
+const eventDetails = ref([]);
+// Fetch Eventdetails on mount
+const fetchEventDetails = async () => {
+    try {
+        const response = await auth.fetchProtectedApi(`/api/get-event/${eventId.value}`, {}, 'GET');
+        eventDetails.value = response.status ? response.data : [];
+    } catch (error) {
+        console.error('Error fetching events:', error);
+        eventDetails.value = [];
+    }
+};
+
 
 // Reset form fields
 const resetForm = () => {
     user_id.value = "";
     attendance_type_id.value = "";
-    date.value = '';
+    // date.value = '';
     time.value = '';
     note.value = '';
     is_active.value = '1';
-    selectedMeetingAttendanceId.value = null;
+    selectedEventAttendanceId.value = null;
     isEditMode.value = false;
 };
 
-// Add or update meetingAttendance
+// Add or update eventAttendance
 const submitForm = async () => {
     const payload = {
-        meeting_id: meetingId.value,
+        org_event_id: eventId.value,
         user_id: user_id.value,
         attendance_type_id: attendance_type_id.value,
-        date: date.value,
+        // date: date.value,
         time: time.value,
         note: note.value,
         is_active: is_active.value
     };
     try {
-        let apiUrl = '/api/create-meeting-attendance';
+        let apiUrl = '/api/create-event-attendance';
         let method = 'POST';
-        if (isEditMode.value && selectedMeetingAttendanceId.value) {
-            apiUrl = `/api/update-meeting-attendance/${selectedMeetingAttendanceId.value}`;
+        if (isEditMode.value && selectedEventAttendanceId.value) {
+            apiUrl = `/api/update-event-attendance/${selectedEventAttendanceId.value}`;
             method = 'PUT';
         }
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this meeting attendance?`,
+            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this event attendance?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, save it!',
@@ -109,37 +111,37 @@ const submitForm = async () => {
             const response = await auth.fetchProtectedApi(apiUrl, payload, method);
 
             if (response.status) {
-                await Swal.fire('Success!', `meeting attendance ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
-                getMeetingAttendanceList();
+                await Swal.fire('Success!', `Event attendance ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
+                getEventAttendanceList();
                 resetForm();
             } else {
-                Swal.fire('Failed!', 'Failed to save meeting attendance.', 'error');
+                Swal.fire('Failed!', 'Failed to save Event attendance.', 'error');
             }
         }
     } catch (error) {
-        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} meeting attendance:`, error);
-        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} meeting attendance.`, 'error');
+        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} Event attendance:`, error);
+        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} Event attendance.`, 'error');
     }
 };
 
-// Edit meetingAttendance
-const editMeetingAttendance = (meetingAttendance) => {
-    user_id.value = meetingAttendance.user_id;
-    attendance_type_id.value = meetingAttendance.attendance_type_id;
-    date.value = meetingAttendance.date;
-    time.value = meetingAttendance.time;
-    note.value = meetingAttendance.note;
-    is_active.value = meetingAttendance.is_active;
-    selectedMeetingAttendanceId.value = meetingAttendance.id;
+// Edit eventAttendance
+const editEventAttendance = (eventAttendance) => {
+    user_id.value = eventAttendance.user_id;
+    attendance_type_id.value = eventAttendance.attendance_type_id;
+    // date.value = eventAttendance.date;
+    time.value = eventAttendance.time;
+    note.value = eventAttendance.note;
+    is_active.value = eventAttendance.is_active;
+    selectedEventAttendanceId.value = eventAttendance.id;
     isEditMode.value = true;
 };
 
-// Delete meetingAttendance
-const deleteMeetingAttendance = async (id) => {
+// Delete eventAttendance
+const deleteEventAttendance = async (id) => {
     try {
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: 'Do you want to delete this meeting attendance?',
+            text: 'Do you want to delete this Event attendance?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, delete it!',
@@ -147,28 +149,27 @@ const deleteMeetingAttendance = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-meeting-attendance/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/delete-event-attendance/${id}`, {}, 'DELETE');
 
             if (response.status) {
-                await Swal.fire('Deleted!', 'meeting attendance has been deleted.', 'success');
-                getMeetingAttendanceList();
+                await Swal.fire('Deleted!', 'event attendance has been deleted.', 'success');
+                getEventAttendanceList();
             } else {
-                Swal.fire('Failed!', 'Failed to delete meeting attendance.', 'error');
+                Swal.fire('Failed!', 'Failed to delete event attendance.', 'error');
             }
         }
     } catch (error) {
-        console.error('Error deleting meeting attendance:', error);
-        Swal.fire('Error!', 'Failed to delete meeting attendance.', 'error');
+        console.error('Error deleting event attendance:', error);
+        Swal.fire('Error!', 'Failed to delete event attendance.', 'error');
     }
 };
 
-
 // Fetch Dialing Codes on mount
 onMounted(() => {
-    fetchMeetingDetails();
     getOrgUserList();
     getAttendanceTypeList();
-    getMeetingAttendanceList();
+    getEventAttendanceList();
+    fetchEventDetails();
 });
 
 </script>
@@ -177,10 +178,10 @@ onMounted(() => {
     <div class="max-w-7xl mx-auto w-10/12">
         <section class="mb-5">
             <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-bold mt-2">Name:{{ meetingDetails.name }} - Date:{{ meetingDetails.date }} - Time:{{ meetingDetails.time }}</h5>
+                <h5 class="text-md font-bold mt-2">Name:{{ eventDetails.name }} - Time:{{ eventDetails.time }}</h5>
             </div>
             <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">{{ isEditMode ? 'Edit' : 'Add' }} Meeting Attendance</h5>
+                <h5 class="text-md font-semibold mt-2">{{ isEditMode ? 'Edit' : 'Add' }} Event Attendance</h5>
             </div>
             <form @submit.prevent="submitForm">
                 <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> -->
@@ -205,10 +206,10 @@ onMounted(() => {
                         </select>
                     </div>
                     <!-- date -->
-                    <div class="col-span-2 mb-4">
+                    <!-- <div class="col-span-2 mb-4">
                         <label for="date" class="block text-gray-700 font-semibold mb-2">Date</label>
-                        <input v-model="date" type="date" class="w-full border border-gray-300 rounded-md py-2 px-4"/>
-                    </div>
+                        <input v-model="date" type="date" class="w-full border border-gray-300 rounded-md py-2 px-4" required />
+                    </div> -->
                     <!-- time -->
                     <div class="col-span-2 mb-4">
                         <label for="time" class="block text-gray-700 font-semibold mb-2">Time</label>
@@ -237,8 +238,8 @@ onMounted(() => {
                             class="bg-yellow-600 text-white rounded-md py-2 px-4 mx-4 hover:bg-yellow-700">
                             Reset
                         </button>
-                        <button @click="router.push({ name: 'index-meeting' })" class="bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700">
-                            Back to Meeting List
+                        <button @click="router.push({ name: 'index-event' })" class="bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700">
+                            Back to Event List
                         </button>
                     </div>
                 </div>
@@ -247,7 +248,7 @@ onMounted(() => {
         <!-- country list -->
         <section>
             <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">Meeting Attendance List</h5>
+                <h5 class="text-md font-semibold mt-2">Event Attendance List</h5>
             </div>
             <table class="min-w-full table-auto border-collapse border border-gray-300 text-left">
                 <thead class="bg-gray-100">
@@ -261,20 +262,20 @@ onMounted(() => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(meetingAttendance, index) in meetingAttendanceList" :key="meetingAttendance.id">
+                    <tr v-for="(eventAttendance, index) in eventAttendanceList" :key="eventAttendance.id">
                         <td class="py-2 px-4 border">{{ index + 1 }}</td>
-                        <td class="py-2 px-4 border">{{ meetingAttendance.user_name }}</td>
-                        <td class="py-2 px-4 border">{{ meetingAttendance.attendance_types_name }}</td>
-                        <td class="py-2 px-4 border">{{ meetingAttendance.time }}</td>
+                        <td class="py-2 px-4 border">{{ eventAttendance.user_name }}</td>
+                        <td class="py-2 px-4 border">{{ eventAttendance.attendance_types_name }}</td>
+                        <td class="py-2 px-4 border">{{ eventAttendance.time }}</td>
                         <td class="py-2 px-4 border">
-                            <span :class="Number(meetingAttendance.is_active) === 0 ? 'text-red-500' : 'text-green-500'">
-                                {{ Number(meetingAttendance.is_active) === 0 ? "No" : "Yes" }}
+                            <span :class="Number(eventAttendance.is_active) === 0 ? 'text-red-500' : 'text-green-500'">
+                                {{ Number(eventAttendance.is_active) === 0 ? "No" : "Yes" }}
                             </span>
                         </td>
                         <td class="py-2 px-4 border flex gap-2">
-                            <button @click="editMeetingAttendance(meetingAttendance)"
+                            <button @click="editEventAttendance(eventAttendance)"
                                 class="bg-yellow-400 text-white rounded-md py-1 px-2 hover:bg-yellow-500">Edit</button>
-                            <button @click="deleteMeetingAttendance(meetingAttendance.id)"
+                            <button @click="deleteEventAttendance(eventAttendance.id)"
                                 class="bg-red-600 text-white rounded-md py-1 px-2 hover:bg-red-700">Delete</button>
                         </td>
                     </tr>

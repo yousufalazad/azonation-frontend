@@ -132,7 +132,7 @@ onMounted(() => {
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700">Short Name</label>
-          <input v-model="short_name" type="text" class="input"  />
+          <input v-model="short_name" type="text" class="input" required />
         </div>
       </div>
       <div class="grid grid-cols-2 gap-4 mb-4">
@@ -147,7 +147,7 @@ onMounted(() => {
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Time</label>
-            <input v-model="time" type="time" class="input"/>
+            <input v-model="time" type="time" class="input" required />
           </div>
         </div>
       </div>
@@ -176,7 +176,7 @@ onMounted(() => {
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Conduct Type</label>
-          <select v-model="conduct_type" id="conduct_type" class="w-full border border-gray-300 rounded-md p-2">
+          <select v-model="conduct_type" id="conduct_type" class="w-full border border-gray-300 rounded-md p-2" required>
             <option value="">Select Conduct Type</option>
             <option v-for="conductType in conductTypeList" :key="conductType.id" :value="conductType.id">{{ conductType.name }}
             </option>

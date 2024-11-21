@@ -33,7 +33,7 @@
             <span v-if="isSidebarExpanded">Events</span>
             <span v-else class="hidden">Events</span>
           </router-link>
-          <router-link to="/org-dashboard/projects"
+          <router-link to="/org-dashboard/create-project"
             class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Projects</span>
             <span v-else class="hidden">Projects</span>

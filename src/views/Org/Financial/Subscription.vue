@@ -1,60 +1,139 @@
 <template>
-  <div>
-    <h1 class="text-2xl font-bold mb-4">Subscriptions</h1>
-    <table class="min-w-full bg-white border border-gray-300">
-      <thead>
-        <tr>
-          <th class="border-b-2 border-gray-300 px-4 py-2">Package</th>
-          <th class="border-b-2 border-gray-300 px-4 py-2">Start Date</th>
-          <th class="border-b-2 border-gray-300 px-4 py-2">End Date</th>
-          <th class="border-b-2 border-gray-300 px-4 py-2">Status</th>
-          <th class="border-b-2 border-gray-300 px-4 py-2">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="subscription in subscriptions" :key="subscription.id">
-          <td class="border-b border-gray-300 px-4 py-2">{{ subscription.package_id }}</td>
-          <td class="border-b border-gray-300 px-4 py-2">{{ subscription.start_date }}</td>
-          <td class="border-b border-gray-300 px-4 py-2">{{ subscription.end_date }}</td>
-          <td class="border-b border-gray-300 px-4 py-2">{{ subscription.status ? 'Active' : 'Inactive' }}</td>
-          <td class="border-b border-gray-300 px-4 py-2">
-            <button @click="editSubscription(subscription)" class="text-blue-500">Edit</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="p-6">
+    <h1 class="text-3xl font-semibold mb-6">Subscriptions</h1>
 
-    <!-- Modal component for editing subscriptions -->
-    <div v-if="isModalOpen" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-      <div class="bg-white p-6 rounded-lg shadow-lg max-w-4xl w-1/3 mx-auto px-8 h-3/4 overflow-y-auto">
-        <h2 class="text-xl font-semibold mb-2 text-center">Edit Subscription</h2>
-        <p class="text-gray-500 text-center mb-6">The start date will be set to today by default.</p>
+    <!-- Subscriptions Table -->
+    <div class="overflow-x-auto shadow rounded-lg">
+      <table class="min-w-full bg-white border border-gray-200">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-4 py-3 text-left font-medium text-gray-700">Package</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-700">Start Date</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-700">End Date</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-700">Status</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-700">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="subscription in subscriptions"
+            :key="subscription.id"
+            class="hover:bg-gray-50"
+          >
+            <td class="px-4 py-3 border-t text-gray-600">{{ subscription.package_id }}</td>
+            <td class="px-4 py-3 border-t text-gray-600">{{ subscription.start_date }}</td>
+            <td class="px-4 py-3 border-t text-gray-600">{{ subscription.end_date }}</td>
+            <td class="px-4 py-3 border-t">
+              <span
+                :class="subscription.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
+                class="inline-block px-3 py-1 text-sm rounded-full"
+              >
+                {{ subscription.status ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="px-4 py-3 border-t">
+              <button
+                @click="editSubscription(subscription)"
+                class="text-blue-500 hover:underline"
+              >
+                Edit
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Edit Subscription Modal -->
+    <div
+      v-if="isModalOpen"
+      class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div class="bg-white w-full max-w-md mx-auto rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-semibold text-center mb-4">Edit Subscription</h2>
+        <p class="text-sm text-gray-500 text-center mb-6">
+          The start date will be set to today by default.
+        </p>
         <form @submit.prevent="updateSubscription">
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700">User ID</label>
-            <input type="text" v-model="user_id" class="mt-1 block w-full px-3 py-2 border rounded-md" required />
+            <label class="block text-sm font-medium text-gray-700 mb-1">User ID</label>
+            <input
+              type="text"
+              v-model="user_id"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
           </div>
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700">Package ID</label>
-            <input type="text" v-model="package_id" class="mt-1 block w-full px-3 py-2 border rounded-md" required />
+            <label class="block text-sm font-medium text-gray-700 mb-1">Package ID</label>
+            <input
+              type="text"
+              v-model="package_id"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
           </div>
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700">End Date</label>
-            <input type="date" v-model="end_date" class="mt-1 block w-full px-3 py-2 border rounded-md" />
+            <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+            <input
+              type="date"
+              v-model="end_date"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+            />
           </div>
-          <div class="mb-4">
-            <label class="inline-flex items-center">
-              <input type="checkbox" v-model="status" class="form-checkbox" />
-              <span class="ml-2">Active</span>
-            </label>
+          <div class="flex items-center mb-4">
+            <input
+              type="checkbox"
+              v-model="status"
+              class="form-checkbox border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span class="ml-2 text-sm text-gray-700">Active</span>
           </div>
-          <button @click="closeModal" class="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md">Cancel</button>
-          <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded mt-4">Update</button>
+          <div class="flex justify-end space-x-2">
+            <button
+              type="button"
+              @click="closeModal"
+              class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600"
+            >
+              Update
+            </button>
+          </div>
         </form>
       </div>
     </div>
+
+    <!-- Pricing Section -->
+    <section class="mt-12">
+      <h2 class="text-2xl font-semibold mb-4">Your Pricing</h2>
+      <div v-if="errorMessage" class="text-red-500 mb-4">{{ errorMessage }}</div>
+      <div class="bg-white shadow rounded-lg overflow-hidden">
+        <table class="min-w-full">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-4 py-3 text-left font-medium text-gray-700">Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="px-4 py-3 text-center text-gray-600">
+                <span class="font-bold">{{ userPriceRates.currency_code }} {{ userPriceRates.price }}</span>
+                <br />
+                <span class="text-sm">Per member per day</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted } from 'vue';
@@ -120,7 +199,29 @@ const updateSubscription = async () => {
   }
 };
 
+// User price rate ----------------------------------------------------------------
+const userPriceRates = ref([]);
+const errorMessage = ref('');
+
+// Fetch data from the API
+const fetchUserPriceRate = async () => {
+  try {
+    const response = await auth.fetchProtectedApi('/api/user-price-rates', {}, 'GET');
+    console.log(response.data);
+    if (response.status) {
+      userPriceRates.value = response.data;
+      // filteredUserPriceRates.value = data.data;
+    } else {
+      userPriceRates.value = [];
+    }
+  }
+  catch (error) {
+    errorMessage.value = error.message;
+  }
+};
+
 onMounted(() => {
   getSubscriptions();
+  fetchUserPriceRate();
 });
 </script>

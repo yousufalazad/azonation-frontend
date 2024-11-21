@@ -9,18 +9,18 @@ const auth = authStore;
 const name = ref('');
 const is_active = ref('1');
 const isEditMode = ref(false);
-const selectedMeetingConductTypeId = ref(null);
-const meetingConductTypeList = ref([]);
+const selectedConductTypeId = ref(null);
+const conductTypeList = ref([]);
 
 
-// Fetch meetingConductTypes
-const getMeetingConductTypes = async () => {
+// Fetch conductTypes
+const getConductTypes = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-meeting-conduct-types', {}, 'GET');
-        meetingConductTypeList.value = response.status ? response.data : [];
+        const response = await auth.fetchProtectedApi('/api/get-conduct-types', {}, 'GET');
+        conductTypeList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching countries:', error);
-        meetingConductTypeList.value = [];
+        conductTypeList.value = [];
     }
 };
 
@@ -28,11 +28,11 @@ const getMeetingConductTypes = async () => {
 const resetForm = () => {
     name.value = '';
     is_active.value = '1';
-    selectedMeetingConductTypeId.value = null;
+    selectedConductTypeId.value = null;
     isEditMode.value = false;
 };
 
-// Add or update meetingConductType
+// Add or update conductType
 const submitForm = async () => {
     const payload = {
         name: name.value,
@@ -40,17 +40,17 @@ const submitForm = async () => {
     };
 
     try {
-        let apiUrl = '/api/create-meeting-conduct-type';
+        let apiUrl = '/api/create-conduct-type';
         let method = 'POST';
 
-        if (isEditMode.value && selectedMeetingConductTypeId.value) {
-            apiUrl = `/api/update-meeting-conduct-type/${selectedMeetingConductTypeId.value}`;
+        if (isEditMode.value && selectedConductTypeId.value) {
+            apiUrl = `/api/update-conduct-type/${selectedConductTypeId.value}`;
             method = 'PUT';
         }
 
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this meeting conduct type?`,
+            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this conduct type?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, save it!',
@@ -61,33 +61,33 @@ const submitForm = async () => {
             const response = await auth.fetchProtectedApi(apiUrl, payload, method);
 
             if (response.status) {
-                await Swal.fire('Success!', `meeting conduct type ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
-                getMeetingConductTypes();
+                await Swal.fire('Success!', `conduct type ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
+                getConductTypes();
                 resetForm();
             } else {
-                Swal.fire('Failed!', 'Failed to save meeting conduct type.', 'error');
+                Swal.fire('Failed!', 'Failed to save conduct type.', 'error');
             }
         }
     } catch (error) {
-        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} meeting conduct type:`, error);
-        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} meeting conduct type.`, 'error');
+        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} conduct type:`, error);
+        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} conduct type.`, 'error');
     }
 };
 
-// Edit meetingConductType
-const editMeetingConductType = (meetingConductType) => {
-    name.value = meetingConductType.name;
-    is_active.value = meetingConductType.is_active;
-    selectedMeetingConductTypeId.value = meetingConductType.id;
+// Edit conductType
+const editConductType = (conductType) => {
+    name.value = conductType.name;
+    is_active.value = conductType.is_active;
+    selectedConductTypeId.value = conductType.id;
     isEditMode.value = true;
 };
 
-// Delete meetingConductType
-const deleteMeetingConductType = async (id) => {
+// Delete conductType
+const deleteConductType = async (id) => {
     try {
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: 'Do you want to delete this meeting conduct type?',
+            text: 'Do you want to delete this conduct type?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, delete it!',
@@ -95,24 +95,24 @@ const deleteMeetingConductType = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-meeting-conduct-type/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/delete-conduct-type/${id}`, {}, 'DELETE');
 
             if (response.status) {
-                await Swal.fire('Deleted!', 'meeting conduct type has been deleted.', 'success');
-                getMeetingConductTypes();
+                await Swal.fire('Deleted!', 'conduct type has been deleted.', 'success');
+                getConductTypes();
             } else {
-                Swal.fire('Failed!', 'Failed to delete meeting conduct type.', 'error');
+                Swal.fire('Failed!', 'Failed to delete conduct type.', 'error');
             }
         }
     } catch (error) {
-        console.error('Error deleting meeting conduct type:', error);
-        Swal.fire('Error!', 'Failed to delete meeting conduct type.', 'error');
+        console.error('Error deleting conduct type:', error);
+        Swal.fire('Error!', 'Failed to delete conduct type.', 'error');
     }
 };
 
 // Fetch Dialing Codes on mount
 onMounted(() => {
-    getMeetingConductTypes();
+    getConductTypes();
 });
 
 </script>
@@ -121,7 +121,7 @@ onMounted(() => {
     <div class="max-w-7xl mx-auto w-10/12">
         <section class="mb-5">
             <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">{{ isEditMode ? 'Edit' : 'Add' }} Meeting Conduct Type</h5>
+                <h5 class="text-md font-semibold mt-2">{{ isEditMode ? 'Edit' : 'Add' }} Conduct Type</h5>
             </div>
             <form @submit.prevent="submitForm">
                 <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> -->
@@ -159,7 +159,7 @@ onMounted(() => {
         <!-- country list -->
         <section>
             <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">Dialing Code List</h5>
+                <h5 class="text-md font-semibold mt-2">Conduct Type List</h5>
             </div>
             <table class="min-w-full table-auto border-collapse border border-gray-300 text-left">
                 <thead class="bg-gray-100">
@@ -167,22 +167,22 @@ onMounted(() => {
                         <th class="border px-4 py-2">SL</th>
                         <th class="py-2 px-4 border border-gray-300">Name</th>
                         <th class="py-2 px-4 border border-gray-300">Active</th>
-                        <th class="py-2 px-4 border border-gray-300">Actions</th>
+                        <th class="py-2 px-4 border border-gray-300 flex justify-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(meetingConductType, index) in meetingConductTypeList" :key="meetingConductType.id">
+                    <tr v-for="(conductType, index) in conductTypeList" :key="conductType.id">
                         <td class="py-2 px-4 border">{{ index + 1 }}</td>
-                        <td class="py-2 px-4 border">{{ meetingConductType.name }}</td>
+                        <td class="py-2 px-4 border">{{ conductType.name }}</td>
                         <td class="py-2 px-4 border">
-                            <span :class="meetingConductType.is_active === 0 ? 'text-red-500' : 'text-green-500'">
-                                {{ meetingConductType.is_active === 0 ? "No" : "Yes" }}
+                            <span :class="conductType.is_active === 0 ? 'text-red-500' : 'text-green-500'">
+                                {{ conductType.is_active === 0 ? "No" : "Yes" }}
                             </span>
                         </td>
-                        <td class="py-2 px-4 border flex gap-2">
-                            <button @click="editMeetingConductType(meetingConductType)"
+                        <td class="py-2 px-4 border flex justify-end gap-2">
+                            <button @click="editConductType(conductType)"
                                 class="bg-yellow-400 text-white rounded-md py-1 px-2 hover:bg-yellow-500">Edit</button>
-                            <button @click="deleteMeetingConductType(meetingConductType.id)"
+                            <button @click="deleteConductType(conductType.id)"
                                 class="bg-red-600 text-white rounded-md py-1 px-2 hover:bg-red-700">Delete</button>
                         </td>
                     </tr>

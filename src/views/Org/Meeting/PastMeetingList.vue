@@ -65,7 +65,7 @@ onMounted(fetchMeetingList);
                 <td>{{ meeting.requirements }}</td>
                 <td>{{ meeting.note }}</td>
                 <td>{{ meeting.status }}</td>
-                <td>{{ meeting.conduct_type }}</td>
+                <td>{{ meeting.conduct_type_name }}</td> <!-- relational data from conduct_types table -->
               </tr>
             </tbody>
           </table>

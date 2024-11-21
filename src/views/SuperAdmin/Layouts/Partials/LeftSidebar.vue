@@ -38,11 +38,12 @@
               <router-link to="/superadmin-dashboard/dialing-code"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Dialing Code
               </router-link>
-              <router-link to="/superadmin-dashboard/meeting-conduct-type"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Meeting Conduct Type
+              
+              <router-link to="/superadmin-dashboard/conduct-type"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Conduct Type
               </router-link>
-              <router-link to="/superadmin-dashboard/meeting-attendance-type"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Meeting Attendance Type
+              <router-link to="/superadmin-dashboard/attendance-type"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Attendance Type
               </router-link>
               <router-link to="/superadmin-dashboard/membership-type"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Membership Type
@@ -271,7 +272,6 @@
 <script>
 export default {
   data() {
-
     return {
       isSidebarExpanded: true,
       openSections: [],

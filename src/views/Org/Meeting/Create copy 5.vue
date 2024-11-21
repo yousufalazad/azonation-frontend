@@ -95,10 +95,9 @@ onMounted(() => {
   <div class="container mx-auto max-w-5xl p-6 bg-white shadow-md rounded-lg mt-10">
     <div class="flex justify-between items-center border-b pb-4 mb-6">
       <h1 class="text-2xl font-semibold text-gray-800">Create New Meeting</h1>
-      <button
+      <button 
         @click="router.push({ name: 'index-meeting' })"
-        class="text-sm text-gray-600 hover:text-gray-800 transition"
-      >
+        class="text-sm text-gray-600 hover:text-gray-800 transition">
         Back to Meetings
       </button>
     </div>
@@ -120,19 +119,19 @@ onMounted(() => {
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
           <label class="block text-sm font-medium text-gray-600">Date</label>
-          <input v-model="form.date" type="date" class="input" required />
+          <input v-model="form.date" type="date" class="input" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-600">Start Time</label>
-          <input v-model="form.start_time" type="time" class="input" required />
+          <input v-model="form.start_time" type="time" class="input" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-600">End Time</label>
-          <input v-model="form.end_time" type="time" class="input" required />
+          <input v-model="form.end_time" type="time" class="input" />
         </div>
       </div>
 
-      <!-- Row 3: Meeting Type, Mode, Duration -->
+      <!-- Row 3: Meeting Type, Mode and Duration -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
           <label class="block text-sm font-medium text-gray-600">Meeting Type</label>
@@ -153,57 +152,13 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Row 4: Priority, RSVP Status -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-600">Priority</label>
-          <select v-model="form.priority" class="input">
-            <option value="">Select Priority</option>
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-600">RSVP Status</label>
-          <select v-model="form.rsvp_status" class="input">
-            <option value="">Select RSVP Status</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-            <option value="Maybe">Maybe</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Row 5: Video Conference and Access Code -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-600">Video Conference Link</label>
-          <input v-model="form.video_conference_link" type="url" class="input" placeholder="e.g., Zoom link" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-600">Access Code</label>
-          <input v-model="form.access_code" type="text" class="input" placeholder="Enter access code" />
-        </div>
-      </div>
-
-      <!-- Row 6: Address -->
-      <div>
-        <label class="block text-sm font-medium text-gray-600">Address</label>
-        <textarea v-model="form.address" class="input h-24" placeholder="Enter meeting address"></textarea>
-      </div>
-
-      <!-- Row 7: Description, Agenda -->
+      <!-- Row 4: Description -->
       <div>
         <label class="block text-sm font-medium text-gray-600">Description</label>
         <textarea v-model="form.description" class="input h-24" placeholder="Provide a brief description"></textarea>
       </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-600">Agenda</label>
-        <textarea v-model="form.agenda" class="input h-24" placeholder="Meeting agenda"></textarea>
-      </div>
 
-      <!-- Row 8: Conduct Type and Privacy Setup -->
+      <!-- Row 5: Conduct Type and Privacy Setup -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label class="block text-sm font-medium text-gray-600">Conduct Type</label>
@@ -225,36 +180,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Row 9: Reminder Time, Repeat Frequency -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-600">Reminder Time (mins)</label>
-          <input v-model="form.reminder_time" type="number" class="input" placeholder="e.g., 15" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-600">Repeat Frequency</label>
-          <select v-model="form.repeat_frequency" class="input">
-            <option value="">Select Frequency</option>
-            <option value="None">None</option>
-            <option value="Daily">Daily</option>
-            <option value="Weekly">Weekly</option>
-            <option value="Monthly">Monthly</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Row 10: Note and Tags -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-600">Note</label>
-          <textarea v-model="form.note" class="input h-24" placeholder="Add any notes"></textarea>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-600">Tags</label>
-          <input v-model="form.tags" type="text" class="input" placeholder="e.g., meeting, workshop" />
-        </div>
-      </div>
-
       <!-- Submit Button -->
       <div class="flex justify-end">
         <button type="submit" class="btn-primary">Save Meeting</button>
@@ -262,7 +187,6 @@ onMounted(() => {
     </form>
   </div>
 </template>
-
 
 <style scoped>
 .input {

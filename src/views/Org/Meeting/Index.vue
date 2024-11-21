@@ -82,7 +82,7 @@ onMounted(() => {
           Create meeting
         </button>
 
-        <button @click="goToCreateMeeting" class="bg-blue-500 text-white font-semibold py-2 px-2 mx-2 rounded-md">
+        <button @click="$router.push({ name: 'index-meeting-minutes' })" class="bg-blue-500 text-white font-semibold py-2 px-2 mx-2 rounded-md">
           Meeting minutes list
         </button>
 
