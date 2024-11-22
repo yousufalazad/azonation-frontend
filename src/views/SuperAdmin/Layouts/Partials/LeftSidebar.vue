@@ -102,11 +102,6 @@
 
                 <router-link to="/superadmin-dashboard/index-currency"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Currency Index</router-link>
-                
-                <router-link to="/superadmin-dashboard/user-currency"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">User Currency</router-link>
-                
-              
 
             </div>
           </div>

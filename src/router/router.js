@@ -138,7 +138,6 @@ import ViewPackage from "../views/SuperAdmin/Financial/Package/View.vue";
 
 //Currency
 import IndexCurrency from "../views/SuperAdmin/Financial/Currency/Index.vue";
-import UserCurrency from "../views/SuperAdmin/Financial/UserCurrency/Index.vue";
 
 //Payment Method
 
@@ -800,13 +799,7 @@ const routes = [
         name: "index-currency",
         component: IndexCurrency,
         meta: { requiresAuth: true },
-      },
-      {
-        path: "user-currency",
-        name: "user-currency",
-        component: UserCurrency,
-        meta: { requiresAuth: true },
-      },
+      }
 
     ],
   },

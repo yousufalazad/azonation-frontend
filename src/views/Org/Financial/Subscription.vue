@@ -7,11 +7,10 @@
       <table class="min-w-full bg-white border border-gray-200">
         <thead class="bg-gray-100">
           <tr>
-            <th class="px-4 py-3 text-left font-medium text-gray-700">Package</th>
-            <th class="px-4 py-3 text-left font-medium text-gray-700">Start Date</th>
-            <th class="px-4 py-3 text-left font-medium text-gray-700">End Date</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-700">Package name</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-700">Started from</th>
             <th class="px-4 py-3 text-left font-medium text-gray-700">Status</th>
-            <th class="px-4 py-3 text-left font-medium text-gray-700">Actions</th>
+            <!-- <th class="px-4 py-3 text-left font-medium text-gray-700">Actions</th> -->
           </tr>
         </thead>
         <tbody>
@@ -20,9 +19,8 @@
             :key="subscription.id"
             class="hover:bg-gray-50"
           >
-            <td class="px-4 py-3 border-t text-gray-600">{{ subscription.package_id }}</td>
+            <td class="px-4 py-3 border-t text-gray-600">{{ subscription.package_name }}</td>
             <td class="px-4 py-3 border-t text-gray-600">{{ subscription.start_date }}</td>
-            <td class="px-4 py-3 border-t text-gray-600">{{ subscription.end_date }}</td>
             <td class="px-4 py-3 border-t">
               <span
                 :class="subscription.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
@@ -31,14 +29,14 @@
                 {{ subscription.status ? 'Active' : 'Inactive' }}
               </span>
             </td>
-            <td class="px-4 py-3 border-t">
+            <!-- <td class="px-4 py-3 border-t">
               <button
                 @click="editSubscription(subscription)"
                 class="text-blue-500 hover:underline"
               >
                 Edit
               </button>
-            </td>
+            </td> -->
           </tr>
         </tbody>
       </table>
@@ -122,7 +120,7 @@
           <tbody>
             <tr>
               <td class="px-4 py-3 text-center text-gray-600">
-                <span class="font-bold">{{ userPriceRates.currency_code }} {{ userPriceRates.price }}</span>
+                <span class="font-bold">{{ userPriceRate.currency_code }} {{ userPriceRate.price }}</span>
                 <br />
                 <span class="text-sm">Per member per day</span>
               </td>
@@ -200,19 +198,19 @@ const updateSubscription = async () => {
 };
 
 // User price rate ----------------------------------------------------------------
-const userPriceRates = ref([]);
+const userPriceRate = ref([]);
 const errorMessage = ref('');
 
 // Fetch data from the API
 const fetchUserPriceRate = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/user-price-rates', {}, 'GET');
+    const response = await auth.fetchProtectedApi('/api/user-price-rate', {}, 'GET');
     console.log(response.data);
     if (response.status) {
-      userPriceRates.value = response.data;
+      userPriceRate.value = response.data;
       // filteredUserPriceRates.value = data.data;
     } else {
-      userPriceRates.value = [];
+      userPriceRate.value = [];
     }
   }
   catch (error) {
