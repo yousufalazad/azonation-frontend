@@ -7,30 +7,28 @@
       <table class="min-w-full bg-white border border-gray-200">
         <thead class="bg-gray-100">
           <tr>
+            <th class="px-4 py-3 text-left font-medium text-gray-700">User name</th>
             <th class="px-4 py-3 text-left font-medium text-gray-700">Package name</th>
             <th class="px-4 py-3 text-left font-medium text-gray-700">Started from</th>
             <th class="px-4 py-3 text-left font-medium text-gray-700">Price rate <br> (Per member per day)</th>
-            <th class="px-4 py-3 text-left font-medium text-gray-700">Status</th>
+            <!-- <th class="px-4 py-3 text-left font-medium text-gray-700">Status</th> -->
             <!-- <th class="px-4 py-3 text-left font-medium text-gray-700">Actions</th> -->
           </tr>
         </thead>
+        
         <tbody>
-          <tr
-            v-for="subscription in subscriptions"
-            :key="subscription.id"
-            class="hover:bg-gray-50"
-          >
-            <td class="px-4 py-3 border-t text-gray-600">{{ subscription.package_name }}</td>
-            <td class="px-4 py-3 border-t text-gray-600">{{ subscription.start_date }}</td>
-            <td class="px-4 py-3 border-t text-gray-600 font-bold">{{ userPriceRate.currency_code }} {{ userPriceRate.price }}</td>
-            <td class="px-4 py-3 border-t">
-              <span
-                :class="subscription.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
-                class="inline-block px-3 py-1 text-sm rounded-full"
-              >
-                {{ subscription.status ? 'Active' : 'Inactive' }}
+          <tr v-for="userPackageAndPrice in allUserPackageAndPrice" :key="userPackageAndPrice.id" class="hover:bg-gray-50">
+            <td class="px-4 py-3 border-t text-gray-600">{{ userPackageAndPrice.user_name }}</td>
+            <td class="px-4 py-3 border-t text-gray-600">{{ userPackageAndPrice.package_name }}</td>
+            <td class="px-4 py-3 border-t text-gray-600">{{ userPackageAndPrice.subscription_start_date }}</td>
+            <td class="px-4 py-3 border-t text-gray-600 font-bold">{{ userPackageAndPrice.currency_code }} {{
+              userPackageAndPrice.price }}</td>
+            <!-- <td class="px-4 py-3 border-t">
+              <span :class="userPackageAndPrice.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
+                class="inline-block px-3 py-1 text-sm rounded-full">
+                {{ userPackageAndPrice.status ? 'Active' : 'Inactive' }}
               </span>
-            </td>
+            </td> -->
             <!-- <td class="px-4 py-3 border-t">
               <button
                 @click="editSubscription(subscription)"
@@ -44,11 +42,47 @@
       </table>
     </div>
 
+    
+
+    <!-- Subscriptions and price rate Table -->
+    <!-- <div class="overflow-x-auto shadow rounded-lg">
+      <table class="min-w-full bg-white border border-gray-200">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-4 py-3 text-left font-medium text-gray-700">Package name</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-700">Started from</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-700">Price rate <br> (Per member per day)</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-700">Status</th> -->
+            <!-- <th class="px-4 py-3 text-left font-medium text-gray-700">Actions</th> -->
+          <!-- </tr>
+        </thead>
+        <tbody>
+          <tr v-for="subscription in subscriptions" :key="subscription.id" class="hover:bg-gray-50">
+            <td class="px-4 py-3 border-t text-gray-600">{{ subscription.package_name }}</td>
+            <td class="px-4 py-3 border-t text-gray-600">{{ subscription.start_date }}</td>
+            <td class="px-4 py-3 border-t text-gray-600 font-bold">{{ userPriceRate.currency_code }} {{
+              userPriceRate.price }}</td>
+            <td class="px-4 py-3 border-t">
+              <span :class="subscription.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
+                class="inline-block px-3 py-1 text-sm rounded-full">
+                {{ subscription.status ? 'Active' : 'Inactive' }}
+              </span>
+            </td> -->
+            <!-- <td class="px-4 py-3 border-t">
+              <button
+                @click="editSubscription(subscription)"
+                class="text-blue-500 hover:underline"
+              >
+                Edit
+              </button>
+            </td> -->
+          <!-- </tr>
+        </tbody>
+      </table>
+    </div> -->
+
     <!-- Edit Subscription Modal -->
-    <div
-      v-if="isModalOpen"
-      class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
-    >
+    <div v-if="isModalOpen" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white w-full max-w-md mx-auto rounded-lg shadow-lg p-6">
         <h2 class="text-xl font-semibold text-center mb-4">Edit Subscription</h2>
         <p class="text-sm text-gray-500 text-center mb-6">
@@ -57,50 +91,31 @@
         <form @submit.prevent="updateSubscription">
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">User ID</label>
-            <input
-              type="text"
-              v-model="user_id"
+            <input type="text" v-model="user_id"
               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
+              required />
           </div>
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">Package ID</label>
-            <input
-              type="text"
-              v-model="package_id"
+            <input type="text" v-model="package_id"
               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
+              required />
           </div>
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-            <input
-              type="date"
-              v-model="end_date"
-              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+            <input type="date" v-model="end_date"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500" />
           </div>
           <div class="flex items-center mb-4">
-            <input
-              type="checkbox"
-              v-model="status"
-              class="form-checkbox border-gray-300 rounded focus:ring-blue-500"
-            />
+            <input type="checkbox" v-model="status" class="form-checkbox border-gray-300 rounded focus:ring-blue-500" />
             <span class="ml-2 text-sm text-gray-700">Active</span>
           </div>
           <div class="flex justify-end space-x-2">
-            <button
-              type="button"
-              @click="closeModal"
-              class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-            >
+            <button type="button" @click="closeModal"
+              class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300">
               Cancel
             </button>
-            <button
-              type="submit"
-              class="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600"
-            >
+            <button type="submit" class="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600">
               Update
             </button>
           </div>
@@ -175,20 +190,20 @@ const updateSubscription = async () => {
   }
 };
 
-// User price rate ----------------------------------------------------------------
-const userPriceRate = ref([]);
+// ------------------------------------------------------User price rate ----------------------------------------------------------------
+const allUserPackageAndPrice = ref([]);
 const errorMessage = ref('');
 
 // Fetch data from the API
-const fetchAllUserPriceRate = async () => {
+const fetchAllUserPackageAndPrice = async () => {
   try {
     const response = await auth.fetchProtectedApi('/api/all-user-price-rate', {}, 'GET');
     console.log(response.data);
     if (response.status) {
-      userPriceRate.value = response.data;
+      allUserPackageAndPrice.value = response.data;
       // filteredUserPriceRates.value = data.data;
     } else {
-      userPriceRate.value = [];
+      allUserPackageAndPrice.value = [];
     }
   }
   catch (error) {
@@ -198,6 +213,6 @@ const fetchAllUserPriceRate = async () => {
 
 onMounted(() => {
   getSubscriptions();
-  fetchAllUserPriceRate();
+  fetchAllUserPackageAndPrice();
 });
 </script>
