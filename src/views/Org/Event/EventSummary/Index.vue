@@ -1,3 +1,4 @@
+<!-- Index.vue, EventSummary -->
 <script setup>
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
@@ -11,7 +12,8 @@ const recordList = ref([]);
 // Fetch list of meetings
 const getRecords = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-meeting-minutes`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/get-event-summary`, {}, 'GET');
+    console.log('recordList', response.data);
     recordList.value = response.status ? response.data : [];
   } catch (error) {
     console.error('Error fetching meetings:', error);
@@ -35,7 +37,7 @@ const deleteRecord = async (recordId) => {
     });
 
     if (confirmed.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/delete-meeting-minutes/${recordId}`, {}, 'DELETE');
+      const response = await auth.fetchProtectedApi(`/api/delete-event-summary/${recordId}`, {}, 'DELETE');
       if (response.status) {
         recordList.value = recordList.value.filter(record => record.id !== recordId);
         Swal.fire('Deleted!', 'Meeting has been deleted.', 'success');
@@ -58,10 +60,10 @@ onMounted(() => {
   <div class="max-w-7xl mx-auto w-10/12">
     <section class="mb-5">
       <div class="flex justify-between left-color-shade py-2 my-3">
-        <h5 class="text-md font-semibold mt-2">Meeting Minutes List</h5>
+        <h5 class="text-md font-semibold mt-2">Event Summary List</h5>
         <div>
-          <button @click="$router.push({ name: 'index-meeting' })"
-            class="bg-blue-500 text-white font-semibold py-2 px-2 rounded-md">Back Meeting List
+          <button @click="$router.push({ name: 'index-event' })"
+            class="bg-blue-500 text-white font-semibold py-2 px-2 rounded-md">Back Event List
           </button>
         </div>
       </div>
@@ -71,9 +73,8 @@ onMounted(() => {
             <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
               <!-- <th class="border px-1 py-3 text-left">ID</th> -->
               <th class="border px-1 py-3 text-left">Event Id</th>
-              <th class="border px-1 py-3 text-left">Start Time</th>
-              <th class="border px-1 py-3 text-left">End Time</th>
-              <th class="border px-1 py-3 text-left">Publish</th>
+              <th class="border px-1 py-3 text-left">Total Member Attendance</th>
+              <th class="border px-1 py-3 text-left">Total Guest Attendance</th>
               <th class="border px-1 py-3 text-left">Active</th>
               <th class="border px-1 py-3 text-left">Actions</th>
             </tr>
@@ -84,14 +85,13 @@ onMounted(() => {
             <tr v-for="(record, index) in recordList" :key="index"
               class="border-b border-gray-200 hover:bg-gray-100 transition duration-200">
               <!-- <td class="border px-1 py-2">{{ record.user_id }}</td> -->
-              <td class="border px-1 py-2">{{ record.meeting_id }}</td>
-              <td class="border px-1 py-2">{{ record.start_time }}</td>
-              <td class="border px-1 py-2">{{ record.end_time }}</td>
-              <td class="border px-1 py-2">{{ record.is_publish === 0 ? 'No' : 'Yes' }}</td>
+              <td class="border px-1 py-2">{{ record.org_event_id }}</td>
+              <td class="border px-1 py-2">{{ record.total_member_attendance }}</td>
+              <td class="border px-1 py-2">{{ record.total_guest_attendance }}</td>
               <td class="border px-1 py-2">{{ record.is_active === 0 ? 'No' : 'Yes' }}</td>
 
               <td class="border px-1 py-2 w-50">
-                <button @click="$router.push({ name: 'edit-meeting-minutes', params: { id: record.id } })"
+                <button @click="$router.push({ name: 'edit-event-summary', params: { id: record.id } })"
                   class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">Edit </button>
                 <button @click="viewRecord(record.id)"
                   class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 m-2 rounded">View</button>

@@ -1,4 +1,4 @@
-
+<!-- Event Index.vue -->
 <script setup>
 import { onMounted, ref } from 'vue';
 import { authStore } from '../../../store/authStore';
@@ -52,10 +52,16 @@ onMounted(() => getRecords());
         <section>
             <div class="flex justify-between left-color-shade py-2 my-3">
                 <h5 class="text-md font-semibold mt-2">Event List</h5>
-                <button @click="$router.push({ name: 'create-event' })"
-                    class="bg-blue-500 text-white font-semibold py-2 px-2 mx-3 rounded-md">
-                    Add Event
-                </button>
+                <div>
+                    <button @click="$router.push({ name: 'create-event' })"
+                        class="bg-blue-500 text-white font-semibold py-2 px-2 mx-3 rounded-md">
+                        Add Event
+                    </button>
+                    <button @click="$router.push({ name: 'index-event-summary' })"
+                        class="bg-blue-500 text-white font-semibold py-2 px-2 mx-2 rounded-md">
+                        Event Summary List
+                    </button>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
@@ -89,11 +95,14 @@ onMounted(() => getRecords());
                             <td class="border px-4 py-2">{{ record.note }}</td> -->
                             <td class="border px-4 py-2">{{ record.status === 0 ? 'Active' : 'Disable' }}</td>
                             <td class="border px-1 py-2 w-50">
-                                <button @click="$router.push({ name: 'create-event-summary', params: { eventId: record.id } })"
-                                class="bg-sky-500 hover:bg-sky-600 text-white px-2 py-1 m-2 rounded">Event Summary </button>
-                                
+                                <button
+                                    @click="$router.push({ name: 'create-event-summary', params: { eventId: record.id } })"
+                                    class="bg-sky-500 hover:bg-sky-600 text-white px-2 py-1 m-2 rounded">Event Summary
+                                </button>
+
                                 <button @click="$router.push({ name: 'event-attendances', params: { id: record.id } })"
-                                class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 m-2 rounded">Attendances </button>
+                                    class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 m-2 rounded">Attendances
+                                </button>
 
                                 <button @click="$router.push({ name: 'edit-event', params: { id: record.id } })"
                                     class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">Edit</button>
@@ -109,4 +118,3 @@ onMounted(() => getRecords());
         </section>
     </div>
 </template>
-

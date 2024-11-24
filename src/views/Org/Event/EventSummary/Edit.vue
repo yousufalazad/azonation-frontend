@@ -11,113 +11,77 @@ const route = useRoute();
 // Error Message State
 const errorMessage = ref('');
 
-// Selected Meeting ID
+// Selected Event ID
 const id = ref(route.params.id || null);
 
-console.log('id', id.value)
 // Form Data States
-const meeting_id = ref('');
-const minutes = ref('');
-const decisions = ref('');
-const note = ref('');
-const start_time = ref('');
-const end_time = ref('');
-const follow_up_tasks = ref('');
-const tags = ref('');
-const action_items = ref('');
-const file_attachments = ref(null);
-const video_link = ref('');
-const meeting_location = ref('');
-const prepared_by = ref('');
-const reviewed_by = ref('');
+const org_event_id = ref('');
+const total_member_attendance = ref('');
+const total_guest_attendance = ref('');
+const summary = ref('');
+const highlights = ref('');
+const feedback = ref('');
+const challenges = ref('');
+const suggestions = ref('');
+const financial_overview = ref('');
+const total_expense = ref('');
+const next_steps = ref('');
 const privacy_setup_id = ref('');
 const is_publish = ref('');
-const approval_status = ref('');
 const is_active = ref('1');
 
+// File Attachments
+const image_attachment = ref(null);
+const file_attachment = ref(null);
+
 // Dropdown Data
-const orgMemberList = ref([]);
 const privacySetups = ref([]);
 
-// Fetch Existing Data for Editing
-const fetchMeetingMinutes = async () => {
-  try {
-    const response = await auth.fetchProtectedApi(`/api/get-meeting-minutes/${id.value}`, {}, 'GET');
-
-    if (response.status) {
-
-      const data = response.data;
-      meeting_id.value = data.meeting_id || '';
-      minutes.value = data.minutes || '';
-      decisions.value = data.decisions || '';
-      note.value = data.note || '';
-      start_time.value = data.start_time || '';
-      end_time.value = data.end_time || '';
-      follow_up_tasks.value = data.follow_up_tasks || '';
-      tags.value = data.tags || '';
-      action_items.value = data.action_items || '';
-      video_link.value = data.video_link || '';
-      meeting_location.value = data.meeting_location || '';
-      prepared_by.value = data.prepared_by || '';
-      reviewed_by.value = data.reviewed_by || '';
-      privacy_setup_id.value = data.privacy_setup_id || '';
-      is_publish.value = data.is_publish || '';
-      approval_status.value = data.approval_status || '';
-      is_active.value = data.is_active || '1';
-    } else {
-      errorMessage.value = 'Error loading meeting minutes.';
-    }
-  } catch (error) {
-    errorMessage.value = 'Failed to load meeting minutes. Please try again later.';
-  }
-};
-
-// const fetchMeetingMinutes = async () => {
-//   try {
-//     const response = await auth.fetchProtectedApi(`/api/get-meeting-minutes/${id.value}`, {}, 'GET');
-//     if (response.status) {
-//       const data = response.data;
-//       console.log('Fetched data:', data); // Debugging API data
-//       minutes.value = data.minutes || '';
-//       decisions.value = data.decisions || '';
-//       // ... other fields
-//     } else {
-//       errorMessage.value = 'Error loading meeting minutes.';
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     errorMessage.value = 'Failed to load meeting minutes. Please try again later.';
-//   }
-// };
-
-
 // Fetch Dropdown Data
-const fetchData = async () => {
+const fetchPrivacySetups = async () => {
   try {
-    const [orgMemberListResponse, privacySetupResponse] = await Promise.all([
-      auth.fetchProtectedApi('/api/individual-users'),
-      auth.fetchProtectedApi('/api/privacy-setups'),
-    ]);
-
-    if (orgMemberListResponse.status) {
-      orgMemberList.value = orgMemberListResponse.data;
-    } else {
-      errorMessage.value = 'Error loading user data.';
-    }
-
-    if (privacySetupResponse.status) {
-      privacySetups.value = privacySetupResponse.data;
+    const response = await auth.fetchProtectedApi('/api/privacy-setups');
+    if (response.status) {
+      privacySetups.value = response.data;
     } else {
       errorMessage.value = 'Error loading privacy setups.';
     }
   } catch (error) {
-    errorMessage.value = 'Failed to load dropdown data. Please try again later.';
+    errorMessage.value = 'Failed to load privacy setups. Please try again later.';
   }
 };
 
-// Form Validation
+// Fetch Existing Data for Editing
+const fetchEventSummary = async () => {
+  try {
+    const response = await auth.fetchProtectedApi(`/api/get-event-summary/${id.value}`);
+    if (response.status) {
+      const data = response.data;
+      org_event_id.value = data.org_event_id || '';
+      total_member_attendance.value = data.total_member_attendance || '';
+      total_guest_attendance.value = data.total_guest_attendance || '';
+      summary.value = data.summary || '';
+      highlights.value = data.highlights || '';
+      feedback.value = data.feedback || '';
+      challenges.value = data.challenges || '';
+      suggestions.value = data.suggestions || '';
+      financial_overview.value = data.financial_overview || '';
+      total_expense.value = data.total_expense || '';
+      next_steps.value = data.next_steps || '';
+      privacy_setup_id.value = data.privacy_setup_id || '';
+      is_publish.value = data.is_publish || '';
+      is_active.value = data.is_active || '1';
+    } else {
+      Swal.fire('Error!', 'Failed to load event summary details.', 'error');
+    }
+  } catch (error) {
+    Swal.fire('Error!', 'Failed to load event summary details.', 'error');
+  }
+};
+
+// Validate Form
 const validateForm = () => {
-  if (!minutes.value || !privacy_setup_id.value || !reviewed_by.value || !prepared_by.value) {
+  if (!summary.value || !privacy_setup_id.value) {
     Swal.fire('Error!', 'Please fill out all required fields.', 'error');
     return false;
   }
@@ -125,8 +89,12 @@ const validateForm = () => {
 };
 
 // Handle File Attachments
-const handleDocument = (event) => {
-  file_attachments.value = event.target.files[0];
+const handleImageAttachment = (event) => {
+  image_attachment.value = event.target.files[0];
+};
+
+const handleFileAttachment = (event) => {
+  file_attachment.value = event.target.files[0];
 };
 
 // Submit Form
@@ -134,176 +102,168 @@ const submitForm = async () => {
   if (!validateForm()) return;
 
   const formData = new FormData();
-  formData.append('meeting_id', meeting_id.value);
-  formData.append('minutes', minutes.value);
-  formData.append('decisions', decisions.value);
-  formData.append('note', note.value);
-  formData.append('start_time', start_time.value);
-  formData.append('end_time', end_time.value);
-  formData.append('follow_up_tasks', follow_up_tasks.value);
-  formData.append('tags', tags.value);
-  formData.append('action_items', action_items.value);
-  if (file_attachments.value) {
-    formData.append('file_attachments', file_attachments.value);
+  formData.append('org_event_id', org_event_id.value);
+  formData.append('total_member_attendance', total_member_attendance.value);
+  formData.append('total_guest_attendance', total_guest_attendance.value);
+  formData.append('summary', summary.value);
+  formData.append('highlights', highlights.value);
+  formData.append('feedback', feedback.value);
+  formData.append('challenges', challenges.value);
+  formData.append('suggestions', suggestions.value);
+  formData.append('financial_overview', financial_overview.value);
+  formData.append('total_expense', total_expense.value);
+  if (image_attachment.value) {
+    formData.append('image_attachment', image_attachment.value);
   }
-  formData.append('video_link', video_link.value);
-  formData.append('meeting_location', meeting_location.value);
-  formData.append('prepared_by', prepared_by.value);
-  formData.append('reviewed_by', reviewed_by.value);
+  if (file_attachment.value) {
+    formData.append('file_attachment', file_attachment.value);
+  }
+  formData.append('next_steps', next_steps.value);
   formData.append('privacy_setup_id', privacy_setup_id.value);
   formData.append('is_publish', is_publish.value);
-  formData.append('approval_status', approval_status.value);
   formData.append('is_active', is_active.value);
 
   try {
-    const response = await auth.uploadProtectedApi(`/api/update-meeting-minutes/${id.value}`, formData, 'POST', {
+    const response = await auth.uploadProtectedApi(`/api/update-event-summary/${id.value}`, formData, 'PUT', {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
     if (response.status) {
-      Swal.fire('Success!', 'Meeting Minutes updated successfully.', 'success');
-      router.push({ name: 'index-meeting-minutes' });
+      Swal.fire('Success!', 'Event summary updated successfully.', 'success');
+      router.push({ name: 'index-event-summary' });
     } else {
-      Swal.fire('Failed!', 'Could not update meeting minutes.', 'error');
+      Swal.fire('Failed!', 'Could not update event summary.', 'error');
     }
   } catch (error) {
-    Swal.fire('Error!', 'Failed to update meeting minutes.', 'error');
+    Swal.fire('Error!', 'Failed to update event summary.', 'error');
   }
 };
 
 // Fetch Data on Mounted
 onMounted(() => {
-  fetchData();
-  fetchMeetingMinutes();
+  fetchPrivacySetups();
+  if (id.value) fetchEventSummary();
 });
 </script>
 
 <template>
   <div class="container mx-auto max-w-7xl p-6 bg-white rounded-lg shadow-md mt-10">
     <div class="flex justify-between items-center mb-6">
-      <h5 class="text-xl font-semibold">Edit Meeting Minutes</h5>
+      <h5 class="text-xl font-semibold">Edit Event Summary</h5>
       <button 
-        @click="router.push({ name: 'index-meeting-minutes' })" 
+        @click="router.push({ name: 'index-event-summary' })" 
         class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium">
-        Back to Meeting Minutes List
+        Back to Event Summary List
       </button>
     </div>
 
     <form @submit.prevent="submitForm">
-      <div class="mb-4">
-        <input v-model="meeting_id" type="hidden" class="w-full p-2 border border-gray-300 rounded-md" />
+  <!-- Attendance Fields -->
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <input v-model="org_event_id" type="hidden" class="w-full p-2 border border-gray-300 rounded-md" />
+      <label class="block text-sm font-medium text-gray-700">Total Member Attendance</label>
+      <input v-model="total_member_attendance" type="number" class="w-full p-2 border border-gray-300 rounded-md" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Total Guest Attendance</label>
+      <input v-model="total_guest_attendance" type="number" class="w-full p-2 border border-gray-300 rounded-md" />
+    </div>
+  </div>
 
-        <label class="block text-sm font-medium text-gray-700">Minutes</label>
-        <textarea v-model="minutes" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
-      </div>
+  <!-- Summary -->
+  <div class="mb-4">
+    <label class="block text-sm font-medium text-gray-700">Summary</label>
+    <textarea v-model="summary" class="w-full p-2 border border-gray-300 rounded-md" rows="3"></textarea>
+  </div>
 
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700">Decisions</label>
-        <textarea v-model="decisions" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
-      </div>
+  <!-- Highlights and Feedback -->
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Highlights</label>
+      <textarea v-model="highlights" class="w-full p-2 border border-gray-300 rounded-md" rows="3"></textarea>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Feedback</label>
+      <textarea v-model="feedback" class="w-full p-2 border border-gray-300 rounded-md" rows="3"></textarea>
+    </div>
+  </div>
 
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700">Note</label>
-        <textarea v-model="note" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
-      </div>
+  <!-- Challenges and Suggestions -->
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Challenges</label>
+      <textarea v-model="challenges" class="w-full p-2 border border-gray-300 rounded-md" rows="3"></textarea>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Suggestions</label>
+      <textarea v-model="suggestions" class="w-full p-2 border border-gray-300 rounded-md" rows="3"></textarea>
+    </div>
+  </div>
 
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700">Follow Up Tasks</label>
-        <textarea v-model="follow_up_tasks" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
-      </div>
+  <!-- Financial Overview and Total Expense -->
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Financial Overview</label>
+      <textarea v-model="financial_overview" class="w-full p-2 border border-gray-300 rounded-md" rows="3"></textarea>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Next Steps</label>
+      <textarea v-model="next_steps" class="w-full p-2 border border-gray-300 rounded-md" rows="3"></textarea>
+    </div>
+  </div>
 
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700">Action Items</label>
-        <textarea v-model="action_items" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
-      </div>
+  <!-- Attachments -->
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Image Attachment</label>
+      <input @change="handleImageAttachment" type="file" class="w-full p-2 border border-gray-300 rounded-md" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700">File Attachment</label>
+      <input @change="handleFileAttachment" type="file" class="w-full p-2 border border-gray-300 rounded-md" />
+    </div>
+  </div>
 
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Start Time</label>
-          <input v-model="start_time" type="time" class="w-full p-2 border border-gray-300 rounded-md" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">End Time</label>
-          <input v-model="end_time" type="time" class="w-full p-2 border border-gray-300 rounded-md" />
-        </div>
-      </div>
+  <!-- Additional Fields -->
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Total Expense</label>
+      <input v-model="total_expense" type="number" class="w-full p-2 border border-gray-300 rounded-md" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Privacy Setup</label>
+      <select v-model="privacy_setup_id" class="w-full p-2 border border-gray-300 rounded-md" required>
+        <option value="">Select Privacy Setup</option>
+        <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{ privacy.name }}</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Publish Status</label>
+      <select v-model="is_publish" class="w-full p-2 border border-gray-300 rounded-md">
+        <option value="">Select Publish Status</option>
+        <option value="0">No</option>
+        <option value="1">Yes</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Status</label>
+      <select v-model="is_active" class="w-full p-2 border border-gray-300 rounded-md">
+        <option value="0">No</option>
+        <option value="1">Yes</option>
+      </select>
+    </div>
+  </div>
 
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">File Attachments</label>
-          <input 
-            @change="handleDocument" 
-            type="file" 
-            class="w-full p-2 border border-gray-300 rounded-md" 
-            accept=".pdf,.doc,.docx,.xlsx" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Tags</label>
-          <input v-model="tags" type="text" class="w-full p-2 border border-gray-300 rounded-md" />
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Video Link</label>
-          <input v-model="video_link" type="text" class="w-full p-2 border border-gray-300 rounded-md" />
-        </div>
-      
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Meeting Location</label>
-          <input v-model="meeting_location" type="text" class="w-full p-2 border border-gray-300 rounded-md" />
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Reviewed By</label>
-          <select v-model="reviewed_by" class="w-full p-2 border border-gray-300 rounded-md" required>
-            <option value="">Select Reviewed By</option>
-            <option v-for="orgMember in orgMemberList" :key="orgMember.id" :value="orgMember.id">{{ orgMember.name }}</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Prepared By</label>
-          <select v-model="prepared_by" class="w-full p-2 border border-gray-300 rounded-md" required>
-            <option value="">Select Prepared By</option>
-            <option v-for="orgMember in orgMemberList" :key="orgMember.id" :value="orgMember.id">{{ orgMember.name }}</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Privacy Setup</label>
-          <select v-model="privacy_setup_id" class="w-full p-2 border border-gray-300 rounded-md" required>
-            <option value="">Select Privacy Setup</option>
-            <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{ privacy.name }}</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Publish Status</label>
-          <select v-model="is_publish" class="w-full p-2 border border-gray-300 rounded-md">
-            <option value="">Select Publish Status</option>
-            <option value="0">No</option>
-            <option value="1">Yes</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Approval Status</label>
-          <select v-model="approval_status" class="w-full p-2 border border-gray-300 rounded-md">
-            <option value="">Select Approval Status</option>
-            <option value="0">Pending</option>
-            <option value="1">Approved</option>
-            <option value="2">Rejected</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Status</label>
-          <select v-model="is_active" class="w-full p-2 border border-gray-300 rounded-md">
-            <option value="0">No</option>
-            <option value="1">Yes</option>
-          </select>
-        </div>
-      </div>
+  <!-- Submit Button -->
+  <div class="text-center">
+    <button
+      type="submit"
+      class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 font-medium">
+      Submit
+    </button>
+  </div>
+</form>
 
-      <div class="flex justify-end">
-        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium">
-          Update Meeting Minutes
-        </button>
-      </div>
-    </form>
   </div>
 </template>

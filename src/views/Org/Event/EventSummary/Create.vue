@@ -12,7 +12,7 @@ const route = useRoute();
 const errorMessage = ref('');
 
 // Selected Event ID
-const meetingId = ref(route.params.meetingId || null);
+const eventId = ref(route.params.eventId || null);
 
 // Form Data States
 const total_member_attendance = ref('');
@@ -92,7 +92,7 @@ const submitForm = async () => {
   if (!validateForm()) return;
 
   const formData = new FormData();
-  formData.append('org_event_id', meetingId.value);
+  formData.append('org_event_id', eventId.value);
   formData.append('total_member_attendance', total_member_attendance.value);
   formData.append('total_guest_attendance', total_guest_attendance.value);
   formData.append('summary', summary.value);
