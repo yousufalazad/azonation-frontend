@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { authStore } from '../store/authStore';
 
+//Home
+import Home from "../views/Home.vue";
 
 //Auth
 import Login from "../views/Auth/Login.vue";
@@ -191,6 +193,11 @@ function isAuthenticated() {
 }
 
 const routes = [
+  {
+    path: "/",
+    name: "home",
+    component: Home,
+  },
   {
     path: "/login",
     name: "login",
