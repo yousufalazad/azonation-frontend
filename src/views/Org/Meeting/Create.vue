@@ -57,7 +57,7 @@ const getConductTypes = async () => {
 
 const getPrivacySetups = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/get-privacy-setups', {}, 'GET');
+    const response = await auth.fetchProtectedApi('/api/privacy-setups', {}, 'GET');
     privacySetupList.value = response.status ? response.data : [];
   } catch (error) {
     console.error('Error fetching privacy setups:', error);
@@ -96,9 +96,7 @@ onMounted(() => {
     <div class="flex justify-between items-center border-b pb-4 mb-6">
       <h1 class="text-2xl font-semibold text-gray-800">Create New Meeting</h1>
       <button
-        @click="router.push({ name: 'index-meeting' })"
-        class="text-sm text-gray-600 hover:text-gray-800 transition"
-      >
+        @click="router.push({ name: 'index-meeting' })" class="btn-primary">
         Back to Meetings
       </button>
     </div>

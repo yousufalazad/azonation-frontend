@@ -41,7 +41,7 @@ const privacySetups = ref([]);
 const fetchData = async () => {
   try {
     const [orgMemberListResponse, privacySetupResponse] = await Promise.all([
-      auth.fetchProtectedApi('/api/individual-users'),
+      auth.fetchProtectedApi('/api/org-all-member-list'),
       auth.fetchProtectedApi('/api/privacy-setups'),
     ]);
 
@@ -214,16 +214,16 @@ onMounted(fetchData);
         
         <div>
           <label class="block text-sm font-medium text-gray-700">Reviewed By</label>
-          <select v-model="reviewed_by" class="w-full p-2 border border-gray-300 rounded-md" required>
+          <select v-model="reviewed_by" class="w-full p-2 border border-gray-300 rounded-md">
             <option value="">Select Reviewed By</option>
-            <option v-for="orgMember in orgMemberList" :key="orgMember.id" :value="orgMember.id">{{ orgMember.name }}</option>
+            <option v-for="orgMember in orgMemberList" :key="orgMember.user_id" :value="orgMember.user_id">{{ orgMember.user_name }}</option>
           </select>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700">Prepared By</label>
           <select v-model="prepared_by" class="w-full p-2 border border-gray-300 rounded-md" required>
             <option value="">Select Prepared By</option>
-            <option v-for="orgMember in orgMemberList" :key="orgMember.id" :value="orgMember.id">{{ orgMember.name }}</option>
+            <option v-for="orgMember in orgMemberList" :key="orgMember.user_id" :value="orgMember.user_id">{{ orgMember.user_name }}</option>
           </select>
         </div>
         <div>
