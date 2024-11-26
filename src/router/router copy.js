@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import { authStore } from '../store/authStore';
 
 //Home
-import Home from "../views/Home.vue";
+import Home from '../views/Home.vue';
 
 //Auth
 import Login from "../views/Auth/Login.vue";
@@ -58,6 +58,7 @@ import MemberList from "../views/Org/Member/MemberList.vue";
 
 //Committee
 import CommitteeList from "../views/Org/Committee/CommitteeList.vue";
+import CommitteeMember from "../views/Org/Committee/CommitteeMember.vue";
 import CreateCommittee from "../views/Org/Committee/CreateCommittee.vue";
 import FormerCommitteeList from "../views/Org/Committee/FormerCommitteeList.vue";
 
@@ -73,6 +74,7 @@ import EditMeetingMinutes from "../views/Org/MeetingMinutes/Edit.vue";
 import ViewMeetingMinutes from "../views/Org/MeetingMinutes/View.vue";
 
 import MeetingAttendances from "../views/Org/Meeting/MeetingAttendances.vue";
+import MeetingGuestAttendances from "../views/Org/Meeting/MeetingGuestAttendances.vue";
 
 //Event
 import IndexEvent from "../views/Org/Event/Index.vue";
@@ -170,9 +172,6 @@ import SuperAdminPaymentLog from "../views/SuperAdmin/Financial/Payment/Index.vu
 
 //SuperAdmin Master Setting
 import Country from "../views/SuperAdmin/MasterSetting/Country.vue";
-import Region from "../views/SuperAdmin/MasterSetting/Region.vue";
-import RegionCurrency from "../views/SuperAdmin/MasterSetting/RegionCurrency.vue";
-import CountryRegion from "../views/SuperAdmin/MasterSetting/CountryRegion.vue";
 import UserCountry from "../views/SuperAdmin/MasterSetting/UserCountry.vue";
 import DialingCode from "../views/SuperAdmin/MasterSetting/DialingCode.vue";
 import AttendanceType from "../views/SuperAdmin/MasterSetting/AttendanceType.vue";
@@ -267,6 +266,12 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
+        path: "committee-member/:committeeId",
+        name: "index-committee-member",
+        component: CommitteeMember,
+        meta: { requiresAuth: true },
+      },
+      {
         path: "former-committee-list",
         name: "former-committee-list",
         component: FormerCommitteeList,
@@ -328,6 +333,13 @@ const routes = [
         path: 'meeting/attendances/:id',
         name: 'meeting-attendances',
         component: MeetingAttendances,
+        meta: { requiresAuth: true },
+        props: true
+       },
+      { 
+        path: 'meeting/guest-attendances/:id',
+        name: 'meeting-guest-attendances',
+        component: MeetingGuestAttendances,
         meta: { requiresAuth: true },
         props: true
        },
@@ -657,24 +669,6 @@ const routes = [
         path: "country",
         name: "country",
         component: Country,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "region",
-        name: "region",
-        component: Region,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "region-currency",
-        name: "region-currency",
-        component: RegionCurrency,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "country-region",
-        name: "country-region",
-        component: CountryRegion,
         meta: { requiresAuth: true },
       },
       {

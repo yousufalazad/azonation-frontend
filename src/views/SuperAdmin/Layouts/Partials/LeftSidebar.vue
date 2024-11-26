@@ -57,6 +57,13 @@
               <router-link to="/superadmin-dashboard/time-zone-setup"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Time Zone Setup
               </router-link>
+
+              <router-link to="/superadmin-dashboard/region"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Region
+              </router-link>
+              <router-link to="/superadmin-dashboard/country-region"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Country Region
+              </router-link>
             </div>
           </div>
 
@@ -101,7 +108,9 @@
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Price</router-link>
 
                 <router-link to="/superadmin-dashboard/index-currency"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Currency Index</router-link>
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Currency</router-link>
+                <router-link to="/superadmin-dashboard/region-currency"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Region Currency</router-link>
 
             </div>
           </div>
