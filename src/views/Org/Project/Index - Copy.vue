@@ -163,17 +163,14 @@ onMounted(fetchProjectList);
     <!-- Card container -->
     <div class="bg-white shadow-md rounded-lg overflow-hidden">
       <!-- Card header -->
-      <div class="flex justify-between left-color-shade py-2 my-3">
-        <h5 class="text-md font-semibold mt-2">Project List</h5>
-        <div>
-          <button @click="openModal()" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">Create
-            Project</button>
-          <button @click="$router.push({ name: 'index-project-summary' })"
-            class="bg-blue-500 text-white font-semibold py-2 px-2 mx-2 rounded-md">
-            Project Summary List
-          </button>
-        </div>
+      <div class="flex justify-between items-center p-4 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-800">Project List</h2>
+        <button @click="openModal()" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">Create Project</button>
+        <!-- <button @click="openModal" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">
+          Create Project
+        </button> -->
       </div>
+
       <!-- Table container inside the card body -->
       <div v-if="projectList.length" class="p-4">
         <div class="overflow-x-auto">
@@ -187,8 +184,7 @@ onMounted(fetchProjectList);
                 <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Start Time</th>
                 <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">End Time</th>
                 <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Conduct Type
-                </th>
+                <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Conduct Type</th>
                 <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
@@ -203,13 +199,9 @@ onMounted(fetchProjectList);
                 <td class="px-4 py-3 text-sm text-gray-700">{{ project.status }}</td>
                 <td class="px-4 py-3 text-sm text-gray-700">{{ project.conduct_type }}</td>
                 <td class="px-4 py-3">
-                  <button @click="$router.push({ name: 'create-project-summary', params: { projectId: project.id } })"
-                    class="bg-sky-500 hover:bg-sky-600 text-white px-2 py-1 m-2 rounded">Project Summary
-                  </button>
                   <button @click="$router.push({ name: 'project-attendances', params: { id: project.id } })"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 m-2 rounded">Attendances </button>
-                  <button @click="openModal(project)"
-                    class="bg-yellow-500 text-white py-1 px-3 rounded hover:bg-yellow-600">
+                  class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 m-2 rounded">Attendances </button>
+                  <button @click="openModal(project)" class="bg-yellow-500 text-white py-1 px-3 rounded hover:bg-yellow-600">
                     Edit
                   </button>
                 </td>
@@ -346,27 +338,27 @@ onMounted(fetchProjectList);
 
         <!-- Quill editor for Requirements -->
         <div class="lg:col-span-2">
-          <label for="requirements" class="block text-sm font-medium text-gray-700">Requirements</label>
-          <div id="requirements-editor" class="mt-1 h-40"></div>
-        </div>
+            <label for="requirements" class="block text-sm font-medium text-gray-700">Requirements</label>
+            <div id="requirements-editor" class="mt-1 h-40"></div>
+          </div>
 
-        <!-- Quill editor for Note -->
-        <div class="lg:col-span-2">
-          <label for="note" class="block text-sm font-medium text-gray-700">Note</label>
-          <div id="note-editor" class="mt-1 h-40"></div>
-        </div>
+          <!-- Quill editor for Note -->
+          <div class="lg:col-span-2">
+            <label for="note" class="block text-sm font-medium text-gray-700">Note</label>
+            <div id="note-editor" class="mt-1 h-40"></div>
+          </div>
 
-        <!-- Quill editor for description -->
-        <div class="lg:col-span-2">
-          <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-          <div id="description-editor" class="mt-1 h-40"></div>
-        </div>
+          <!-- Quill editor for description -->
+          <div class="lg:col-span-2">
+            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+            <div id="description-editor" class="mt-1 h-40"></div>
+          </div>
 
-        <!-- Quill editor for short-description-editor -->
-        <div class="lg:col-span-2">
-          <label for="short-description" class="block text-sm font-medium text-gray-700">Short Description</label>
-          <div id="short-description-editor" class="mt-1 h-40"></div>
-        </div>
+          <!-- Quill editor for short-description-editor -->
+          <div class="lg:col-span-2">
+            <label for="short-description" class="block text-sm font-medium text-gray-700">Short Description</label>
+            <div id="short-description-editor" class="mt-1 h-40"></div>
+          </div>
 
         <!-- Action Buttons -->
         <div class="flex justify-end gap-4">

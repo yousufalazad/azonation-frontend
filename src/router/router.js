@@ -88,11 +88,16 @@ import ViewEventSummary from "../views/Org/Event/EventSummary/View.vue";
 
 import EventAttendances from "../views/Org/Event/EventAttendances.vue";
 
-//Project
+//Project and Project Summary
 import CreateProject from "../views/Org/Project/Create.vue";
 import IndexProject from "../views/Org/Project/Index.vue";
-
 import ProjectAttendances from "../views/Org/Project/ProjectAttendances.vue";
+
+import IndexProjectSummary from "../views/Org/Project/ProjectSummary/Index.vue";
+import CreateProjectSummary from "../views/Org/Project/ProjectSummary/Create.vue";
+import EditProjectSummary from "../views/Org/Project/ProjectSummary/Edit.vue";
+import ViewProjectSummary from "../views/Org/Project/ProjectSummary/View.vue";
+
 
 //Founder
 import Founders from "../views/Org/Founder/Create.vue";
@@ -181,6 +186,8 @@ import MembershipType from "../views/SuperAdmin/MasterSetting/MembershipType.vue
 import Designation from "../views/SuperAdmin/MasterSetting/Designation.vue";
 import LanguageList from "../views/SuperAdmin/MasterSetting/LanguageList.vue";
 import TimeZoneSetup from "../views/SuperAdmin/MasterSetting/TimeZoneSetup.vue";
+import PrivacySetup from "../views/SuperAdmin/MasterSetting/PrivacySetup.vue";
+
 
 
 //Price
@@ -412,6 +419,32 @@ const routes = [
         path: 'project/attendances/:id',
         name: 'project-attendances',
         component: ProjectAttendances,
+        meta: { requiresAuth: true },
+        props: true
+       },
+       {
+        path: 'project-summary',
+        name: "index-project-summary",
+        component: IndexProjectSummary,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'project-summary/create/:projectId',
+        name: "create-project-summary",
+        component: CreateProjectSummary,
+        meta: { requiresAuth: true },
+      },
+      { 
+        path: 'project-summary/edit/:id',
+        name: 'edit-project-summary',
+        component: EditProjectSummary,
+        meta: { requiresAuth: true },
+        props: true
+       },
+      { 
+        path: 'project-summary/view/:id',
+        name: 'view-project-summary',
+        component: ViewProjectSummary,
         meta: { requiresAuth: true },
         props: true
        },
@@ -723,6 +756,12 @@ const routes = [
         path: "time-zone-setup",
         name: "time-zone-setup",
         component: TimeZoneSetup,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "privacy-setup",
+        name: "privacy-setup",
+        component: PrivacySetup,
         meta: { requiresAuth: true },
       },
       {

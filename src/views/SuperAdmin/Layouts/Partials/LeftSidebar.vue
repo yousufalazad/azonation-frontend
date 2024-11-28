@@ -64,6 +64,10 @@
               <router-link to="/superadmin-dashboard/country-region"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Country Region
               </router-link>
+
+              <router-link to="/superadmin-dashboard/privacy-setup"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Privacy Setup
+              </router-link>
             </div>
           </div>
 
