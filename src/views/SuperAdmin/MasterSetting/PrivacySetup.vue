@@ -16,7 +16,7 @@ const PrivacyList = ref([]);
 // Fetch countries
 const getPrivacy = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-privacy-setups', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/get-all-privacy-setups', {}, 'GET');
         PrivacyList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching countries:', error);

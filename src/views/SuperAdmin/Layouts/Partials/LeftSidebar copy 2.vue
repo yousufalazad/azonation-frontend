@@ -8,11 +8,11 @@
         <nav class="flex-1 px-2 py-4 space-y-2">
           <!-- v-if="auth.isAuthenticated && userType == 'superadmin'" -->
           <!-- Static Links -->
-          <!-- <router-link to="/superadmin-dashboard/initial-content"
+          <router-link to="/superadmin-dashboard/initial-content"
             class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">SuperAdmin Dashboard</span>
             <span v-else class="hidden">SuperAdmin Dashboard</span>
-          </router-link> -->
+          </router-link>
           
           <!-- Financial section -->
           <div>
@@ -64,10 +64,10 @@
 
           <!-- Org Reporting -->
           <div>
-            <button @click="toggleSection('org-reporting')"
+            <button @click="toggleSection('email')"
               class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
               <span v-if="isSidebarExpanded">Org Reporting</span>
-              <svg v-if="isSectionOpen('org-reporting')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+              <svg v-if="isSectionOpen('email')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                 viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
@@ -76,7 +76,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
               </svg>
             </button>
-            <div v-if="isSectionOpen('org-reporting') && isSidebarExpanded" class="space-y-1">
+            <div v-if="isSectionOpen('email') && isSidebarExpanded" class="space-y-1">
 
               <router-link to="/superadmin-dashboard/subscription-list"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Subscription</router-link>
@@ -98,10 +98,10 @@
 
           <!-- Individual Reporting -->
           <div>
-            <button @click="toggleSection('individual-reporting')"
+            <button @click="toggleSection('email')"
               class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
               <span v-if="isSidebarExpanded">Individual Reporting</span>
-              <svg v-if="isSectionOpen('individual-reporting')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+              <svg v-if="isSectionOpen('email')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                 viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
@@ -110,7 +110,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
               </svg>
             </button>
-            <div v-if="isSectionOpen('individual-reporting') && isSidebarExpanded" class="space-y-1">
+            <div v-if="isSectionOpen('email') && isSidebarExpanded" class="space-y-1">
 
               <router-link to="/superadmin-dashboard/subscription-list"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Subscription</router-link>
@@ -221,7 +221,110 @@
             </div>
           </div>
 
-          
+          <!-- <router-link to="/superadmin-dashboard/member-list"
+            class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+            <span v-if="isSidebarExpanded">Members</span>
+            <span v-else class="hidden">Members</span>
+          </router-link>
+
+          <router-link to="/superadmin-dashboard/committee-list"
+            class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+            <span v-if="isSidebarExpanded">Committees</span>
+            <span v-else class="hidden">Committees</span>
+          </router-link>
+
+          <router-link to="/superadmin-dashboard/create-meeting"
+            class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+            <span v-if="isSidebarExpanded">Meetings</span>
+            <span v-else class="hidden">Meetings</span>
+          </router-link>
+
+          <router-link to="/superadmin-dashboard/create-event"
+            class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+            <span v-if="isSidebarExpanded">Events</span>
+            <span v-else class="hidden">Events</span>
+          </router-link>
+
+          <router-link to="/superadmin-dashboard/create-project"
+            class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+            <span v-if="isSidebarExpanded">Projects</span>
+            <span v-else class="hidden">Projects</span>
+          </router-link>
+
+          <router-link to="/superadmin-dashboard/accounts"
+            class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+            <span v-if="isSidebarExpanded">Accounts</span>
+            <span v-else class="hidden">Accounts</span>
+          </router-link>
+
+          <router-link to="/superadmin-dashboard/asset-management"
+            class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+            <span v-if="isSidebarExpanded">Assets</span>
+            <span v-else class="hidden">Assets</span>
+          </router-link>
+
+          <router-link to="/superadmin-dashboard/office-record"
+            class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+            <span v-if="isSidebarExpanded">Records</span>
+            <span v-else class="hidden">Records</span>
+          </router-link> -->
+
+          <!-- Report section -->
+          <!-- <div>
+            <button @click="toggleSection('reports')"
+              class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
+              <span v-if="isSidebarExpanded">Reports</span>
+              <svg v-if="isSectionOpen('reports')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+            <div v-if="isSectionOpen('reports') && isSidebarExpanded" class="space-y-1">
+              <router-link to="/superadmin-dashboard/org-report"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Income</router-link>
+              <router-link to="/superadmin-dashboard/org-expense-report"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Expense</router-link>
+
+            </div>
+          </div> -->
+
+          <!-- Profile Section -->
+          <!-- <div>
+            <button @click="toggleSection('profile')"
+              class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
+              <span v-if="isSidebarExpanded">Profile</span>
+              <svg v-if="isSectionOpen('profile')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+            <div v-if="isSectionOpen('profile') && isSidebarExpanded" class="space-y-1">
+              <router-link to="/superadmin-dashboard/my-account/profile"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Profile</router-link>
+              <router-link to="/superadmin-dashboard/fundamental-info"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Fundamental Info</router-link>
+              <router-link to="/superadmin-dashboard/founders"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Founders</router-link>
+              <router-link to="/superadmin-dashboard/strategic-plan"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Strategic plan</router-link>
+              <router-link to="/superadmin-dashboard/recognition"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Recognition</router-link>
+              <router-link to="/superadmin-dashboard/success-story"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Success story</router-link>
+              <router-link to="/superadmin-dashboard/history"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">History</router-link>
+              <router-link to="/superadmin-dashboard/year-plan"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Year plan</router-link>
+            </div>
+          </div> -->
         </nav>
         <!-- Example target section -->
         <div class="py-10"></div>
