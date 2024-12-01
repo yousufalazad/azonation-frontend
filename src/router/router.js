@@ -71,8 +71,8 @@ import IndexMeetingMinutes from "../views/Org/MeetingMinutes/Index.vue";
 import CreateMeetingMinutes from "../views/Org/MeetingMinutes/Create.vue";
 import EditMeetingMinutes from "../views/Org/MeetingMinutes/Edit.vue";
 import ViewMeetingMinutes from "../views/Org/MeetingMinutes/View.vue";
-
 import MeetingAttendances from "../views/Org/Meeting/MeetingAttendances.vue";
+import MeetingGuestAttendance from "@/views/Org/Meeting/MeetingGuestAttendances.vue";
 
 //Event
 import IndexEvent from "../views/Org/Event/Index.vue";
@@ -335,6 +335,13 @@ const routes = [
         path: 'meeting/attendances/:id',
         name: 'meeting-attendances',
         component: MeetingAttendances,
+        meta: { requiresAuth: true },
+        props: true
+       },
+      { 
+        path: 'meeting/guest/attendance/:id',
+        name: 'meeting-guest-attendance',
+        component: MeetingGuestAttendance,
         meta: { requiresAuth: true },
         props: true
        },

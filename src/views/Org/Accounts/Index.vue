@@ -168,7 +168,7 @@ const submitForm = async () => {
                         Transaction</button>
                     <button @click="funds"
                         class="bg-yellow-500 text-white rounded-md p-2 mx-4 hover:bg-yellow-600">Add
-                        Found</button>
+                        Fund</button>
                 </div>
 
             </div>
@@ -272,7 +272,7 @@ const submitForm = async () => {
                 <th class="p-2 border border-gray-300 min-w-[100px]">Fund</th>
                 <th class="p-2 border border-gray-300 min-w-[100px]">Income</th>
                 <th class="p-2 border border-gray-300 min-w-[100px]">Expense</th>
-                <th class="p-2 border border-gray-300 min-w-[110px]">Balance</th>
+                <!-- <th class="p-2 border border-gray-300 min-w-[110px]">Balance</th> -->
                 <th class="p-2 border border-gray-300 min-w-[100px]">Actions</th>
             </tr>
         </thead>
@@ -293,7 +293,7 @@ const submitForm = async () => {
                     {{ transaction.amount }}
                 </td>
                 <td class="p-2 border" v-else></td>
-                <td class="p-2 border">{{ transaction.balance_after }}</td>
+                <!-- <td class="p-2 border">{{ transaction.balance_after }}</td> -->
 
                 <td class="p-2 border flex gap-2">
                     <button @click="openModal(transaction)" class="bg-green-600 text-white rounded-md py-1 px-2 hover:bg-green-700">

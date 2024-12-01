@@ -152,7 +152,7 @@ const accounts = () => {
                             Reset
                         </button>
                         <button type="button" @click="accounts" class="bg-yellow-500 text-white rounded-md py-2 px-4 hover:bg-yellow-600">
-                            Back Accounts
+                            Back to Accounts
                         </button>
                     </div>
                 </div>
