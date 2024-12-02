@@ -442,14 +442,14 @@ const routes = [
         meta: { requiresAuth: true },
       },
       { 
-        path: 'project-summary/edit/:id',
+        path: 'project-summary/edit/:summaryId',
         name: 'edit-project-summary',
         component: EditProjectSummary,
         meta: { requiresAuth: true },
         props: true
        },
       { 
-        path: 'project-summary/view/:id',
+        path: 'project-summary/view/:summaryId',
         name: 'view-project-summary',
         component: ViewProjectSummary,
         meta: { requiresAuth: true },

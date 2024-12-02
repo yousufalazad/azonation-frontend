@@ -12,7 +12,7 @@ const route = useRoute();
 const errorMessage = ref('');
 
 // Selected Project ID
-const id = ref(route.params.id || null);
+const summaryId = ref(route.params.summaryId || null);
 
 // Form Data States
 const org_project_id = ref('');
@@ -58,7 +58,7 @@ const fetchPrivacySetups = async () => {
 // Fetch Existing Project Summary Data
 const fetchProjectSummary = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-project-summary/${id.value}`);
+    const response = await auth.fetchProtectedApi(`/api/get-project-summary/${summaryId.value}`);
     if (response.status) {
       const data = response.data;
       org_project_id.value = data.org_project_id || '';
@@ -141,9 +141,10 @@ const submitForm = async () => {
   }
 
   try {
-    const response = await auth.uploadProtectedApi(`/api/update-project-summary/${id.value}`, formData, 'PUT', {
+    const response = await auth.uploadProtectedApi(`/api/update-project-summary/${summaryId.value}`, formData, 'PUT', {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
+
 
     if (response.status) {
       Swal.fire('Success!', 'Project summary updated successfully.', 'success');
@@ -176,7 +177,7 @@ const submitForm = async () => {
 // Fetch Data on Mounted
 onMounted(() => {
   fetchPrivacySetups();
-  if (id.value) fetchProjectSummary();
+  if (summaryId.value) fetchProjectSummary();
 });
 </script>
 <template>
@@ -184,7 +185,7 @@ onMounted(() => {
     <!-- Page Header -->
     <div class="flex justify-between items-center mb-6">
       <h5 class="text-xl font-semibold">Add New Project Summary</h5>
-      <button @click="router.push({ name: 'index-event-summary' })"
+      <button @click="router.push({ name: 'index-project-summary' })"
         class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium">
         Back to Project Summary List
       </button>
@@ -275,7 +276,7 @@ onMounted(() => {
       <div class="grid grid-cols-3 gap-4 mb-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Privacy Setup</label>
-          <select v-model="privacy_setup_id" class="w-full p-2 border border-gray-300 rounded-md" required>
+          <select v-model="privacy_setup_id" class="w-full p-2 border border-gray-300 rounded-md">
             <option value="">Select Privacy Setup</option>
             <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{ privacy.name }}</option>
           </select>

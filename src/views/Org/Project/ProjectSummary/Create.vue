@@ -153,9 +153,9 @@ onMounted(fetchPrivacySetups);
     <!-- Page Header -->
     <div class="flex justify-between items-center mb-6">
       <h5 class="text-xl font-semibold">Add New Project Summary</h5>
-      <button @click="router.push({ name: 'index-event-summary' })"
+      <button @click="router.push({ name: 'index-project' })"
         class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium">
-        Back to Project Summary List
+        Back to Project List
       </button>
     </div>
 
