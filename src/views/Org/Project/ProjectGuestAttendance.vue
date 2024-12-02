@@ -15,19 +15,19 @@ const time = ref('');
 const note = ref('');
 const is_active = ref('1');
 const isEditMode = ref(false);
-const selectedEventAttendanceId = ref(null);
-// Selected event ID
-const eventId = ref(route.params.id);
+const selectedProjectAttendanceId = ref(null);
+// Selected project ID
+const projectId = ref(route.params.id);
 
-const eventDetails = ref([]);
-// Fetch event details on mount
-const fetchEventDetails = async () => {
+const projectDetails = ref([]);
+// Fetch project details on mount
+const fetchProjectDetails = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-event/${eventId.value}`, {}, 'GET');
-        eventDetails.value = response.status ? response.data : [];
+        const response = await auth.fetchProtectedApi(`/api/get-project/${projectId.value}`, {}, 'GET');
+        projectDetails.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching meetings:', error);
-        eventDetails.value = [];
+        projectDetails.value = [];
     }
 };
 
@@ -43,15 +43,15 @@ const getAttendanceTypeList = async () => {
     }
 };
 
-const eventGuestAttendanceList = ref([]);
-// Fetch getEventGuestAttendanceList
-const getEventGuestAttendanceList = async () => {
+const projectGuestAttendanceList = ref([]);
+// Fetch getProjectGuestAttendanceList
+const getProjectGuestAttendanceList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-event-guest-attendances', {}, 'GET');
-        eventGuestAttendanceList.value = response.status ? response.data : [];
+        const response = await auth.fetchProtectedApi('/api/get-project-guest-attendances', {}, 'GET');
+        projectGuestAttendanceList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
-        eventGuestAttendanceList.value = [];
+        projectGuestAttendanceList.value = [];
     }
 };
 
@@ -64,14 +64,14 @@ const resetForm = () => {
     time.value = '';
     note.value = '';
     is_active.value = '1';
-    selectedEventAttendanceId.value = null;
+    selectedProjectAttendanceId.value = null;
     isEditMode.value = false;
 };
 
-// Add or update eventGuestAttendance
+// Add or update projectGuestAttendance
 const submitForm = async () => {
     const payload = {
-        org_event_id: eventId.value,
+        org_project_id: projectId.value,
         guest_name: guest_name.value,
         about_guest: about_guest.value,
         attendance_type_id: attendance_type_id.value,
@@ -81,15 +81,15 @@ const submitForm = async () => {
         is_active: is_active.value
     };
     try {
-        let apiUrl = '/api/create-event-guest-attendance';
+        let apiUrl = '/api/create-project-guest-attendance';
         let method = 'POST';
-        if (isEditMode.value && selectedEventAttendanceId.value) {
-            apiUrl = `/api/update-event-guest-attendance/${selectedEventAttendanceId.value}`;
+        if (isEditMode.value && selectedProjectAttendanceId.value) {
+            apiUrl = `/api/update-project-guest-attendance/${selectedProjectAttendanceId.value}`;
             method = 'PUT';
         }
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this event guest attendances?`,
+            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this project guest attendances?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, save it!',
@@ -100,38 +100,38 @@ const submitForm = async () => {
             const response = await auth.fetchProtectedApi(apiUrl, payload, method);
 
             if (response.status) {
-                await Swal.fire('Success!', `event guest attendances ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
-                getEventGuestAttendanceList();
+                await Swal.fire('Success!', `project guest attendances ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
+                getProjectGuestAttendanceList();
                 resetForm();
             } else {
-                Swal.fire('Failed!', 'Failed to save event guest attendances.', 'error');
+                Swal.fire('Failed!', 'Failed to save project guest attendances.', 'error');
             }
         }
     } catch (error) {
-        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} event guest attendances:`, error);
-        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} event guest attendances.`, 'error');
+        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} project guest attendances:`, error);
+        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} project guest attendances.`, 'error');
     }
 };
 
-// Edit eventGuestAttendance
-const editMeetingAttendance = (eventGuestAttendance) => {
-    guest_name.value = eventGuestAttendance.guest_name;
-    about_guest.value = eventGuestAttendance.about_guest;
-    attendance_type_id.value = eventGuestAttendance.attendance_type_id;
-    date.value = eventGuestAttendance.date;
-    time.value = eventGuestAttendance.time;
-    note.value = eventGuestAttendance.note;
-    is_active.value = eventGuestAttendance.is_active;
-    selectedEventAttendanceId.value = eventGuestAttendance.id;
+// Edit projectGuestAttendance
+const editMeetingAttendance = (projectGuestAttendance) => {
+    guest_name.value = projectGuestAttendance.guest_name;
+    about_guest.value = projectGuestAttendance.about_guest;
+    attendance_type_id.value = projectGuestAttendance.attendance_type_id;
+    date.value = projectGuestAttendance.date;
+    time.value = projectGuestAttendance.time;
+    note.value = projectGuestAttendance.note;
+    is_active.value = projectGuestAttendance.is_active;
+    selectedProjectAttendanceId.value = projectGuestAttendance.id;
     isEditMode.value = true;
 };
 
-// Delete eventGuestAttendance
+// Delete projectGuestAttendance
 const deleteMeetingAttendance = async (id) => {
     try {
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: 'Do you want to delete this event guest attendances?',
+            text: 'Do you want to delete this project guest attendances?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, delete it!',
@@ -139,27 +139,27 @@ const deleteMeetingAttendance = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-event-guest-attendance/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/delete-project-guest-attendance/${id}`, {}, 'DELETE');
 
             if (response.status) {
-                await Swal.fire('Deleted!', 'event guest attendances has been deleted.', 'success');
-                getEventGuestAttendanceList();
+                await Swal.fire('Deleted!', 'project guest attendances has been deleted.', 'success');
+                getProjectGuestAttendanceList();
             } else {
-                Swal.fire('Failed!', 'Failed to delete event guest attendances.', 'error');
+                Swal.fire('Failed!', 'Failed to delete project guest attendances.', 'error');
             }
         }
     } catch (error) {
-        console.error('Error deleting event guest attendances:', error);
-        Swal.fire('Error!', 'Failed to delete event guest attendances.', 'error');
+        console.error('Error deleting project guest attendances:', error);
+        Swal.fire('Error!', 'Failed to delete project guest attendances.', 'error');
     }
 };
 
 
 // Fetch Dialing Codes on mount
 onMounted(() => {
-    fetchEventDetails();
+    fetchProjectDetails();
     getAttendanceTypeList();
-    getEventGuestAttendanceList();
+    getProjectGuestAttendanceList();
 });
 
 </script>
@@ -168,11 +168,11 @@ onMounted(() => {
     <div class="max-w-7xl mx-auto w-10/12">
         <section class="mb-5">
             <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-bold mt-2">Name:{{ eventDetails.name }} - Date:{{ eventDetails.date }} -
-                    Time:{{ eventDetails.time }}</h5>
+                <h5 class="text-md font-bold mt-2">Name:{{ projectDetails.name }} - Date:{{ projectDetails.date }} -
+                    Time:{{ projectDetails.time }}</h5>
             </div>
             <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">{{ isEditMode ? 'Edit' : 'Add' }} event Guest Attendance</h5>
+                <h5 class="text-md font-semibold mt-2">{{ isEditMode ? 'Edit' : 'Add' }} project Guest Attendance</h5>
             </div>
             <form @submit.prevent="submitForm">
                 <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> -->
@@ -188,6 +188,7 @@ onMounted(() => {
                         <input v-model="about_guest" type="text"
                             class="w-full border border-gray-300 rounded-md py-2 px-4" />
                     </div>
+
                     <!-- Country Country Name -->
                     <div class="col-span-4 mb-2">
                         <label for="attendance_type_id" class="block text-gray-700 font-semibold mb-2">Type Name</label>
@@ -199,16 +200,19 @@ onMounted(() => {
                                 {{ attendanceType.name }}</option>
                         </select>
                     </div>
+
                     <!-- date -->
                     <div class="col-span-3 mb-2">
                         <label for="date" class="block text-gray-700 font-semibold mb-2">Date</label>
                         <input v-model="date" type="date" class="w-full border border-gray-300 rounded-md py-2 px-4" />
                     </div>
+
                     <!-- time -->
                     <div class="col-span-3 mb-2">
                         <label for="time" class="block text-gray-700 font-semibold mb-2">Time</label>
                         <input v-model="time" type="time" class="w-full border border-gray-300 rounded-md py-2 px-4" />
                     </div>
+
                     <!-- Country Country Name -->
                     <div class="col-span-4 mb-2">
                         <label for="note" class="block text-gray-700 font-semibold mb-2">Note</label>
@@ -224,6 +228,7 @@ onMounted(() => {
                             <option value="0">No</option>
                         </select>
                     </div>
+
                     <!-- Submit button -->
                     <div class="col-span-12 mb-2 flex items-end justify-end">
                         <button type="submit" class="bg-green-600 text-white rounded-md py-2 px-4 hover:bg-green-500">
@@ -233,18 +238,19 @@ onMounted(() => {
                             class="bg-yellow-600 text-white rounded-md py-2 px-4 mx-4 hover:bg-yellow-700">
                             Reset
                         </button>
-                        <button @click="router.push({ name: 'index-event' })"
+                        <button @click="router.push({ name: 'index-project' })"
                             class="bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700">
-                            Back to event List
+                            Back to project List
                         </button>
                     </div>
                 </div>
             </form>
         </section>
+
         <!-- country list -->
         <section>
             <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">event Guest Attendance List</h5>
+                <h5 class="text-md font-semibold mt-2">project Guest Attendance List</h5>
             </div>
             <table class="min-w-full table-auto border-collapse border border-gray-300 text-left">
                 <thead class="bg-gray-100">
@@ -259,23 +265,23 @@ onMounted(() => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(eventGuestAttendance, index) in eventGuestAttendanceList"
-                        :key="eventGuestAttendance.id">
+                    <tr v-for="(projectGuestAttendance, index) in projectGuestAttendanceList"
+                        :key="projectGuestAttendance.id">
                         <td class="py-2 px-4 border">{{ index + 1 }}</td>
-                        <td class="py-2 px-4 border">{{ eventGuestAttendance.guest_name }}</td>
-                        <td class="py-2 px-4 border">{{ eventGuestAttendance.about_guest }}</td>
-                        <td class="py-2 px-4 border">{{ eventGuestAttendance.attendance_types_name }}</td>
-                        <td class="py-2 px-4 border">{{ eventGuestAttendance.time }}</td>
+                        <td class="py-2 px-4 border">{{ projectGuestAttendance.guest_name }}</td>
+                        <td class="py-2 px-4 border">{{ projectGuestAttendance.about_guest }}</td>
+                        <td class="py-2 px-4 border">{{ projectGuestAttendance.attendance_types_name }}</td>
+                        <td class="py-2 px-4 border">{{ projectGuestAttendance.time }}</td>
                         <td class="py-2 px-4 border">
                             <span
-                                :class="Number(eventGuestAttendance.is_active) === 0 ? 'text-red-500' : 'text-green-500'">
-                                {{ Number(eventGuestAttendance.is_active) === 0 ? "No" : "Yes" }}
+                                :class="Number(projectGuestAttendance.is_active) === 0 ? 'text-red-500' : 'text-green-500'">
+                                {{ Number(projectGuestAttendance.is_active) === 0 ? "No" : "Yes" }}
                             </span>
                         </td>
                         <td class="py-2 px-4 border flex gap-2">
-                            <button @click="editMeetingAttendance(eventGuestAttendance)"
+                            <button @click="editMeetingAttendance(projectGuestAttendance)"
                                 class="bg-yellow-400 text-white rounded-md py-1 px-2 hover:bg-yellow-500">Edit</button>
-                            <button @click="deleteMeetingAttendance(eventGuestAttendance.id)"
+                            <button @click="deleteMeetingAttendance(projectGuestAttendance.id)"
                                 class="bg-red-600 text-white rounded-md py-1 px-2 hover:bg-red-700">Delete</button>
                         </td>
                     </tr>
