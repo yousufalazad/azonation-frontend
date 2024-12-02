@@ -89,8 +89,11 @@ import EventAttendances from "../views/Org/Event/EventAttendances.vue";
 import EventGuestAttendance from "../views/Org/Event/EventGuestAttendance.vue";
 
 //Project and Project Summary
-import CreateProject from "../views/Org/Project/Create.vue";
 import IndexProject from "../views/Org/Project/Index.vue";
+import CreateProject from "../views/Org/Project/Create.vue";
+import EditProject from "../views/Org/Project/Edit.vue";
+import ViewProject from "../views/Org/Project/View.vue";
+
 import ProjectAttendances from "../views/Org/Project/ProjectAttendances.vue";
 import ProjectGuestAttendance from "@/views/Org/Project/ProjectGuestAttendance.vue";
 
@@ -159,8 +162,8 @@ import UserPriceRate from "../views/SuperAdmin/Financial/UserPriceRate/Index.vue
 
 //Billing
 import SuperAdminBillingList from "../views/SuperAdmin/Financial/Billing/Index.vue";
-import SuperAdminBillingEdit from "../views/SuperAdmin/Financial/Billing/Edit.vue";
 import SuperAdminBillingCreate from "../views/SuperAdmin/Financial/Billing/Create.vue";
+import SuperAdminBillingEdit from "../views/SuperAdmin/Financial/Billing/Edit.vue";
 
 //Receipt
 import SuperAdminReceiptList from "@/views/SuperAdmin/Financial/Receipt/Index.vue";
@@ -418,17 +421,31 @@ const routes = [
         meta: { requiresAuth: true },
         props: true
        },
-      {
-        path: "create-project",
-        name: "create-project",
-        component: CreateProject,
-        meta: { requiresAuth: true },
-      },
-      {
+       {
         path: "projects",
         name: "index-project",
         component: IndexProject,
         meta: { requiresAuth: true },
+      },
+      {
+        path: 'project/create',
+        name: 'create-project',
+        component: CreateProject,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'project/edit/:id',
+        name: 'edit-project',
+        component: EditProject,
+        meta: { requiresAuth: true },
+        props: true
+      },
+      {
+        path: 'project/view/:id',
+        name: 'view-project',
+        component: ViewProject,
+        meta: { requiresAuth: true },
+        props: true
       },
       { 
         path: 'project/attendances/:id',
@@ -613,9 +630,21 @@ const routes = [
           meta: { requiresAuth: true },
         },
         {
-          path: "billing-list",
-          name: "billing-list",
-          component: BillingList,
+          path: "super-admin-billing-list",
+          name: "super-admin-billing-list",
+          component: SuperAdminBillingList,
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "super-admin-billing-create",
+          name: "super-admin-billing-create",
+          component: SuperAdminBillingCreate,
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "super-admin-billing-edit/:id",
+          name: "super-admin-billing-edit",
+          component: SuperAdminBillingEdit,
           meta: { requiresAuth: true },
         },
         {
