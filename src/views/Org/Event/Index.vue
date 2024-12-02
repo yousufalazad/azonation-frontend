@@ -103,6 +103,12 @@ onMounted(() => getRecords());
                                 <button @click="$router.push({ name: 'event-attendances', params: { id: record.id } })"
                                     class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 m-2 rounded">Attendances
                                 </button>
+                                
+                                <button
+                                    @click="$router.push({ name: 'event-guest-attendance', params: { id: record.id } })"
+                                    class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 m-2 rounded">Guest
+                                    Attendances </button>
+
 
                                 <button @click="$router.push({ name: 'edit-event', params: { id: record.id } })"
                                     class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">Edit</button>

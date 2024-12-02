@@ -85,13 +85,14 @@ import IndexEventSummary from "../views/Org/Event/EventSummary/Index.vue";
 import CreateEventSummary from "../views/Org/Event/EventSummary/Create.vue";
 import EditEventSummary from "../views/Org/Event/EventSummary/Edit.vue";
 import ViewEventSummary from "../views/Org/Event/EventSummary/View.vue";
-
 import EventAttendances from "../views/Org/Event/EventAttendances.vue";
+import EventGuestAttendance from "../views/Org/Event/EventGuestAttendance.vue";
 
 //Project and Project Summary
 import CreateProject from "../views/Org/Project/Create.vue";
 import IndexProject from "../views/Org/Project/Index.vue";
 import ProjectAttendances from "../views/Org/Project/ProjectAttendances.vue";
+import ProjectGuestAttendance from "@/views/Org/Project/ProjectGuestAttendance.vue";
 
 import IndexProjectSummary from "../views/Org/Project/ProjectSummary/Index.vue";
 import CreateProjectSummary from "../views/Org/Project/ProjectSummary/Create.vue";
@@ -410,6 +411,13 @@ const routes = [
         meta: { requiresAuth: true },
         props: true
        },
+       { 
+        path: 'event/guest/attendance/:id',
+        name: 'event-guest-attendance',
+        component: EventGuestAttendance,
+        meta: { requiresAuth: true },
+        props: true
+       },
       {
         path: "create-project",
         name: "create-project",
@@ -426,6 +434,13 @@ const routes = [
         path: 'project/attendances/:id',
         name: 'project-attendances',
         component: ProjectAttendances,
+        meta: { requiresAuth: true },
+        props: true
+       },
+      { 
+        path: 'project/guest/attendance/:id',
+        name: 'project-guest-attendance',
+        component: ProjectGuestAttendance,
         meta: { requiresAuth: true },
         props: true
        },

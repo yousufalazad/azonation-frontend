@@ -199,6 +199,12 @@ onMounted(fetchProjectList);
                   </button>
                   <button @click="$router.push({ name: 'project-attendances', params: { id: project.id } })"
                     class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 m-2 rounded">Attendances </button>
+
+                  <button @click="$router.push({ name: 'project-guest-attendance', params: { id: project.id } })"
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 m-2 rounded">Guest
+                    Attendances </button>
+
+
                   <button @click="openModal(project)"
                     class="bg-yellow-500 text-white py-1 px-3 rounded hover:bg-yellow-600">
                     Edit
