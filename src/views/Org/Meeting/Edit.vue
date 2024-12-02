@@ -9,27 +9,62 @@ const route = useRoute();
 const router = useRouter();
 
 // Form Fields
-const name = ref('');
-const short_name = ref('');
-const subject = ref('');
-const date = ref('');
-const time = ref('');
-const description = ref('');
-const address = ref('');
-const agenda = ref('');
-const requirements = ref('');
-const note = ref('');
-const status = ref(0); // Default to Active
-const conduct_type = ref('');
+const form = ref({
+  name: '',
+  short_name: '',
+  subject: '',
+  date: '',
+  start_time: '',
+  end_time: '',
+  meeting_type: '',
+  timezone: '',
+  meeting_mode: '',
+  duration: '',
+  priority: '',
+  video_conference_link: '',
+  access_code: '',
+  recording_link: '',
+  meeting_host: '',
+  max_participants: '',
+  rsvp_status: '',
+  participants: '',
+  description: '',
+  address: '',
+  agenda: '',
+  requirements: '',
+  note: '',
+  tags: '',
+  reminder_time: '',
+  repeat_frequency: '',
+  attachment: '',
+  conduct_type_id: '',
+  is_active: true,
+  privacy_setup_id: '',
+  cancellation_reason: '',
+  feedback_link: '',
+});
 
+// Conduct Type List
 const conductTypeList = ref([]);
+const privacySetupList = ref([]);
+
 const getConductTypes = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/get-meeting-conduct-types', {}, 'GET');
+    const response = await auth.fetchProtectedApi('/api/get-conduct-types', {}, 'GET');
     conductTypeList.value = response.status ? response.data : [];
   } catch (error) {
-    console.error('Error fetching funds:', error);
+    console.error('Error fetching conduct types:', error);
     conductTypeList.value = [];
+  }
+};
+
+const getPrivacySetups = async () => {
+  try {
+    const response = await auth.fetchProtectedApi('/api/privacy-setups', {}, 'GET');
+    privacySetupList.value = response.status ? response.data : [];
+  } catch (error) {
+    console.error('Error fetching privacy setups:', error);
+    privacySetupList.value = [];
   }
 };
 
@@ -41,47 +76,20 @@ const fetchMeetingDetails = async () => {
   try {
     const response = await auth.fetchProtectedApi(`/api/get-meeting/${selectedRecordId.value}`, {}, 'GET');
     if (response.status) {
-      const record = response.data;
-      name.value = record.name;
-      short_name.value = record.short_name;
-      subject.value = record.subject;
-      date.value = record.date;
-      time.value = record.time;
-      description.value = record.description;
-      address.value = record.address;
-      agenda.value = record.agenda;
-      requirements.value = record.requirements;
-      note.value = record.note;
-      status.value = record.status;
-      conduct_type.value = record.conduct_type;
+      Object.assign(form.value, response.data); // Populate form with API response
     } else {
       Swal.fire('Error', 'Meeting not found!', 'error');
-      router.push({ name: 'index' });
+      router.push({ name: 'index-meeting' });
     }
   } catch (error) {
     console.error('Error fetching meeting details:', error);
     Swal.fire('Error', 'Failed to fetch meeting details.', 'error');
-    router.push({ name: 'index' });
+    router.push({ name: 'index-meeting' });
   }
 };
 
 // Update meeting details
 const updateMeeting = async () => {
-  const payload = {
-    name: name.value,
-    short_name: short_name.value,
-    subject: subject.value,
-    date: date.value,
-    time: time.value,
-    description: description.value,
-    address: address.value,
-    agenda: agenda.value,
-    requirements: requirements.value,
-    note: note.value,
-    status: status.value,
-    conduct_type: conduct_type.value,
-  };
-
   try {
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -93,7 +101,7 @@ const updateMeeting = async () => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/update-meeting/${selectedRecordId.value}`, payload, 'PUT');
+      const response = await auth.fetchProtectedApi(`/api/update-meeting/${selectedRecordId.value}`, form.value, 'PUT');
 
       if (response.status) {
         await Swal.fire('Success', 'Meeting updated successfully.', 'success');
@@ -111,12 +119,14 @@ const updateMeeting = async () => {
 // Fetch the meeting details on component mount
 onMounted(() => {
   getConductTypes();
+  getPrivacySetups();
   fetchMeetingDetails();
 });
 </script>
 
+
 <template>
-  <div class="container mx-auto max-w-7xl mx-auto w-10/12 p-6 bg-white rounded-lg shadow-md mt-10">
+  <div class="container mx-auto max-w-5xl p-6 bg-white shadow-md rounded-lg mt-10">
     <div class="flex justify-between items-center mb-6">
       <h5 class="text-xl font-semibold">Edit Meeting</h5>
       <button @click="router.push({ name: 'index-meeting' })" class="btn-primary">
@@ -125,71 +135,158 @@ onMounted(() => {
     </div>
 
     <form @submit.prevent="updateMeeting">
-      <div class="grid grid-cols-2 gap-4 mb-4">
+      <!-- Row 1: Name and Short Name -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700">Name</label>
-          <input v-model="name" type="text" class="input" required />
+          <label class="block text-sm font-medium text-gray-600">Name</label>
+          <input v-model="form.name" type="text" class="input" placeholder="Enter meeting name"  />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Short Name</label>
-          <input v-model="short_name" type="text" class="input"  />
+          <label class="block text-sm font-medium text-gray-600">Short Name</label>
+          <input v-model="form.short_name" type="text" class="input" placeholder="Optional short name" />
         </div>
       </div>
-      <div class="grid grid-cols-2 gap-4 mb-4">
+
+      <!-- Row 2: Date and Time -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700">Subject</label>
-          <input v-model="subject" type="text" class="input" required />
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Date</label>
-            <input v-model="date" type="date" class="input" required />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Time</label>
-            <input v-model="time" type="time" class="input"/>
-          </div>
-        </div>
-      </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700">Description</label>
-        <input v-model="description" class="textarea" rows="2"></input>
-      </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700">Address</label>
-        <input v-model="address" class="textarea" rows="2"></input>
-      </div>
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Agenda</label>
-          <input v-model="agenda" type="text" class="input" />
+          <label class="block text-sm font-medium text-gray-600">Date</label>
+          <input v-model="form.date" type="date" class="input"  />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Requirements</label>
-          <input v-model="requirements" type="text" class="input" />
+          <label class="block text-sm font-medium text-gray-600">Start Time</label>
+          <input v-model="form.start_time" type="time" class="input"  />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600">End Time</label>
+          <input v-model="form.end_time" type="time" class="input"  />
         </div>
       </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700">Note</label>
-        <input v-model="note" class="textarea" rows="2"></input>
-      </div>
-      <div class="grid grid-cols-2 gap-4 mb-4">
+
+      <!-- Row 3: Meeting Type, Mode, Duration -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700">Conduct Type</label>
-          <select v-model="conduct_type" id="conduct_type" class="w-full border border-gray-300 rounded-md p-2">
-            <option value="">Select Conduct Type</option>
-            <option v-for="conductType in conductTypeList" :key="conductType.id" :value="conductType.id">{{ conductType.name }}
+          <label class="block text-sm font-medium text-gray-600">Meeting Type</label>
+          <input v-model="form.meeting_type" type="text" class="input" placeholder="e.g., Workshop" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600">Mode</label>
+          <select v-model="form.meeting_mode" class="input">
+            <option value="">Select Mode</option>
+            <option value="In-person">In-person</option>
+            <option value="Virtual">Virtual</option>
+            <option value="Hybrid">Hybrid</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600">Duration (mins)</label>
+          <input v-model="form.duration" type="number" class="input" placeholder="e.g., 90" />
+        </div>
+      </div>
+
+      <!-- Row 4: Priority, RSVP Status -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-600">Priority</label>
+          <select v-model="form.priority" class="input">
+            <option value="">Select Priority</option>
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600">RSVP Status</label>
+          <select v-model="form.rsvp_status" class="input">
+            <option value="">Select RSVP Status</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+            <option value="Maybe">Maybe</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Row 5: Video Conference and Access Code -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-600">Video Conference Link</label>
+          <input v-model="form.video_conference_link" type="url" class="input" placeholder="e.g., Zoom link" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600">Access Code</label>
+          <input v-model="form.access_code" type="text" class="input" placeholder="Enter access code" />
+        </div>
+      </div>
+
+      <!-- Row 6: Address -->
+      <div>
+        <label class="block text-sm font-medium text-gray-600">Address</label>
+        <textarea v-model="form.address" class="input h-24" placeholder="Enter meeting address"></textarea>
+      </div>
+
+      <!-- Row 7: Description, Agenda -->
+      <div>
+        <label class="block text-sm font-medium text-gray-600">Description</label>
+        <textarea v-model="form.description" class="input h-24" placeholder="Provide a brief description"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-600">Agenda</label>
+        <textarea v-model="form.agenda" class="input h-24" placeholder="Meeting agenda"></textarea>
+      </div>
+
+      <!-- Row 8: Conduct Type and Privacy Setup -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-600">Conduct Type</label>
+          <select v-model="form.conduct_type_id" class="input">
+            <option value="" disabled>Select Conduct Type</option>
+            <option v-for="type in conductTypeList" :key="type.id" :value="type.id">
+              {{ type.name }}
             </option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">Status</label>
-          <select v-model="status" class="input">
-            <option value="0">Active</option>
-            <option value="1">Disable</option>
+          <label class="block text-sm font-medium text-gray-600">Privacy Setup</label>
+          <select v-model="form.privacy_setup_id" class="input">
+            <option value="" disabled>Select Privacy Setup</option>
+            <option v-for="privacy in privacySetupList" :key="privacy.id" :value="privacy.id">
+              {{ privacy.name }}
+            </option>
           </select>
         </div>
       </div>
+
+      <!-- Row 9: Reminder Time, Repeat Frequency -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-600">Reminder Time (mins)</label>
+          <input v-model="form.reminder_time" type="number" class="input" placeholder="e.g., 15" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600">Repeat Frequency</label>
+          <select v-model="form.repeat_frequency" class="input">
+            <option value="">Select Frequency</option>
+            <option value="None">None</option>
+            <option value="Daily">Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Row 10: Note and Tags -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-600">Note</label>
+          <textarea v-model="form.note" class="input h-24" placeholder="Add any notes"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600">Tags</label>
+          <input v-model="form.tags" type="text" class="input" placeholder="e.g., meeting, workshop" />
+        </div>
+      </div>
+
+      <!-- Submit Button -->
       <div class="flex justify-end">
         <button type="submit" class="btn-primary">Update Meeting</button>
       </div>
@@ -200,9 +297,13 @@ onMounted(() => {
 <style scoped>
 .input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.75rem;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  border-radius: 0.375rem;
+  background-color: #f9fafb;
+  font-size: 0.875rem;
+  color: #374151;
+  transition: border-color 0.2s;
 }
 
 .textarea {
@@ -212,13 +313,20 @@ onMounted(() => {
   border-radius: 6px;
 }
 
+.input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background-color: #ffffff;
+}
+
 .btn-primary {
+  padding: 0.75rem 1.5rem;
   background-color: #3b82f6;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  color: #ffffff;
   font-weight: 600;
-  transition: background-color 0.3s;
+  text-transform: uppercase;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
 }
 
 .btn-primary:hover {

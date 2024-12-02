@@ -118,15 +118,15 @@ onMounted(() => {
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
           <label class="block text-sm font-medium text-gray-600">Date</label>
-          <input v-model="form.date" type="date" class="input" required />
+          <input v-model="form.date" type="date" class="input"  />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-600">Start Time</label>
-          <input v-model="form.start_time" type="time" class="input" required />
+          <input v-model="form.start_time" type="time" class="input"  />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-600">End Time</label>
-          <input v-model="form.end_time" type="time" class="input" required />
+          <input v-model="form.end_time" type="time" class="input"  />
         </div>
       </div>
 
