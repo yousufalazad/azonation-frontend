@@ -131,7 +131,7 @@ import ViewInvoice from "../views/Org/Financial/Invoice/ViewInvoice.vue";
 import ReceiptList from "../views/Org/Financial/Receipt/ReceiptList.vue";
 import ViewReceipt from "../views/Org/Financial/Receipt/ViewReceipt.vue";
 import BillCalculation from "@/views/Org/Financial/BillCalculation.vue";
-import BillingList from "../views/Org/Financial/BillingList.vue";
+import BillList from "../views/Org/Financial/BillingList.vue";
 
 
 // ------------------------SUPER ADMIN----------------------------
@@ -630,27 +630,15 @@ const routes = [
           meta: { requiresAuth: true },
         },
         {
-          path: "super-admin-billing-list",
-          name: "super-admin-billing-list",
-          component: SuperAdminBillingList,
-          meta: { requiresAuth: true },
-        },
-        {
-          path: "super-admin-billing-create",
-          name: "super-admin-billing-create",
-          component: SuperAdminBillingCreate,
-          meta: { requiresAuth: true },
-        },
-        {
-          path: "super-admin-billing-edit/:id",
-          name: "super-admin-billing-edit",
-          component: SuperAdminBillingEdit,
-          meta: { requiresAuth: true },
-        },
-        {
           path: "bill-calculation",
           name: "bill-calculation",
           component: BillCalculation,
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "bill-list",
+          name: "bill-list",
+          component: BillList,
           meta: { requiresAuth: true },
         },
         {
@@ -898,6 +886,18 @@ const routes = [
         path: "super-admin-billing-list",
         name: "super-admin-billing-list",
         component: SuperAdminBillingList,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-billing-create",
+        name: "super-admin-billing-create",
+        component: SuperAdminBillingCreate,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-billing-edit/:id",
+        name: "super-admin-billing-edit",
+        component: SuperAdminBillingEdit,
         meta: { requiresAuth: true },
       },
       {
