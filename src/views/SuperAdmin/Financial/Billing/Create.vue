@@ -11,7 +11,7 @@ const auth = authStore;
 const userId = auth.user.id;
 
 // Form fields
-const billing_code = ref('');
+//const billing_code = ref('');
 const description = ref('');
 const billing_address = ref('');
 const item_name = ref('');
@@ -29,7 +29,7 @@ const is_active = ref(1);
 
 // Reset form fields
 const resetForm = () => {
-  billing_code.value = '';
+  //billing_code.value = '';
   description.value = '';
   billing_address.value = '';
   item_name.value = '';
@@ -48,14 +48,14 @@ const resetForm = () => {
 
 // Submit form (create billing)
 const submitForm = async () => {
-  if (!billing_code.value) {
-    Swal.fire('Error!', 'Please fill in all required fields.', 'error');
-    return;
-  }
+  // if (!billing_code.value) {
+  //   Swal.fire('Error!', 'Please fill in all required fields.', 'error');
+  //   return;
+  // }
 
   const payload = {
     user_id: userId,
-    billing_code: billing_code.value,
+    //billing_code: billing_code.value,
     description: description.value,
     billing_address: billing_address.value,
     item_name: item_name.value,
@@ -116,26 +116,26 @@ const submitForm = async () => {
     <form @submit.prevent="submitForm" class="space-y-6">
       <!-- Form grid layout -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="col-span-full">
+        <!-- <div class="col-span-full">
           <label for="billing_code"
             class="block text-sm font-medium text-gray-700 after:content-['*'] after:text-red-500 after:ml-1">
             Billing Code
           </label>
           <input v-model="billing_code" type="text" id="billing_code"
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2"
-            placeholder="Enter billing code" required />
-        </div>
+            placeholder="Enter billing code" />
+        </div> -->
         <div>
           <label for="item_name" class="block text-sm font-medium text-gray-700">Item Name</label>
           <input v-model="item_name" type="text" id="item_name"
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2"
-            placeholder="Item name" required />
+            placeholder="Item name" />
         </div>
         <div>
           <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
           <input v-model="description" type="text" id="description"
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2"
-            placeholder="Description" required />
+            placeholder="Description" />
         </div>
       </div>
 

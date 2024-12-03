@@ -14,6 +14,17 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-GB', options);
 };
 
+// const systemCreateBilling = async () => {
+//   try {
+//     const response = await auth.fetchProtectedApi(`/api/system-create-billing`, {}, 'GET');
+//     console.log(response.data);
+
+//     billingList.value = response.status ? response.data : [];
+//   } catch (error) {
+//     console.error('Error fetching events:', error);
+//   }
+// };
+
 const getRecords = async () => {
   try {
     const response = await auth.fetchProtectedApi(`/api/billing-list`, {}, 'GET');
@@ -24,6 +35,8 @@ const getRecords = async () => {
     console.error('Error fetching events:', error);
   }
 };
+
+
 
 // Delete a meeting
 const deleteRecord = async (billingId) => {
@@ -52,7 +65,10 @@ const deleteRecord = async (billingId) => {
   }
 };
 
-onMounted(() => getRecords());
+onMounted(() => {
+    getRecords();
+    //systemCreateBilling();
+});
 </script>
 
 <template>
