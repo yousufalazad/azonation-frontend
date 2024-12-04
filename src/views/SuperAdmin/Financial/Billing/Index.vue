@@ -27,7 +27,7 @@ const formatDate = (dateString) => {
 
 const getRecords = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/billing-list`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/superadmin-billing-list`, {}, 'GET');
     console.log(response.data);
 
     billingList.value = response.status ? response.data : [];
