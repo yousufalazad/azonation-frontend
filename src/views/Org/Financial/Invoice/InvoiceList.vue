@@ -56,7 +56,7 @@ const formatDate = (dateString) => {
 
 const fetchInvoices = async () => {
   try {
-      const response = await auth.fetchProtectedApi('/api/invoices');
+      const response = await auth.fetchProtectedApi('/api/invoice');
 
       // Set invoices to the response data or an empty array
       invoices.value = response.status ? response.data : [];
