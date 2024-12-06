@@ -134,6 +134,7 @@ import BillCalculation from "@/views/Org/Financial/BillCalculation.vue";
 import BillList from "../views/Org/Financial/BillingList.vue";
 
 
+
 // ------------------------SUPER ADMIN----------------------------
 //SuperAdmin
 import SuperAdminRegister from "../views/SuperAdmin/Profile/Register.vue";
@@ -164,12 +165,16 @@ import UserPriceRate from "../views/SuperAdmin/Financial/UserPriceRate/Index.vue
 import SuperAdminBillingList from "../views/SuperAdmin/Financial/Billing/Index.vue";
 import SuperAdminBillingCreate from "../views/SuperAdmin/Financial/Billing/Create.vue";
 import SuperAdminBillingEdit from "../views/SuperAdmin/Financial/Billing/Edit.vue";
-
-//Receipt
-import SuperAdminReceiptList from "@/views/SuperAdmin/Financial/Receipt/Index.vue";
+import SuperAdminBillingView from "../views/SuperAdmin/Financial/Billing/View.vue";
 
 //Invoice
 import SuperAdminInvoiceList from "../views/SuperAdmin/Financial/Invoice/Index.vue";
+import SuperAdminInvoiceCreate from "../views/SuperAdmin/Financial/Invoice/Create.vue";
+import SuperAdminInvoiceEdit from "../views/SuperAdmin/Financial/Invoice/Edit.vue";
+import SuperAdminInvoiceView from "../views/SuperAdmin/Financial/Invoice/View.vue";
+
+//Receipt
+import SuperAdminReceiptList from "@/views/SuperAdmin/Financial/Receipt/Index.vue";
 
 //Subscription
 import SuperAdminSubscriptionList from "../views/SuperAdmin/Financial/Subscription/Index.vue";
@@ -901,9 +906,33 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
+        path: "super-admin-billing-view/:id",
+        name: "super-admin-billing-view",
+        component: SuperAdminBillingView,
+        meta: { requiresAuth: true },
+      },
+      {
         path: "super-admin-invoice-list",
         name: "super-admin-invoice-list",
         component: SuperAdminInvoiceList,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-invoice-create",
+        name: "super-admin-invoice-create",
+        component: SuperAdminInvoiceCreate,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-invoice-edit/:id",
+        name: "super-admin-invoice-edit",
+        component: SuperAdminInvoiceEdit,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-invoice-view/:id",
+        name: "super-admin-invoice-view",
+        component: SuperAdminInvoiceView,
         meta: { requiresAuth: true },
       },
       {

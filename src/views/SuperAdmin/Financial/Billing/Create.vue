@@ -11,7 +11,7 @@ const auth = authStore;
 const userId = auth.user.id;
 
 // Form fields
-//const billing_code = ref('');
+const billing_code = ref('');
 const description = ref('');
 const billing_address = ref('');
 const item_name = ref('');
@@ -19,17 +19,17 @@ const period_start = ref('');
 const period_end = ref('');
 const service_month = ref('');
 const billing_month = ref('');
-const total_active_member = ref('');
-const total_billable_active_member = ref('');
-const price_rate = ref('');
-const bill_amount = ref('');
+const active_member_count = ref('');
+const billable_active_member_count = ref('');
+const member_daily_rate = ref('');
+const total_bill_amount = ref('');
 const status = ref("");
 const admin_notes = ref('');
 const is_active = ref(1);
 
 // Reset form fields
 const resetForm = () => {
-  //billing_code.value = '';
+  billing_code.value = '';
   description.value = '';
   billing_address.value = '';
   item_name.value = '';
@@ -37,10 +37,10 @@ const resetForm = () => {
   period_end.value = '';
   service_month.value = '';
   billing_month.value = '';
-  total_active_member.value = '';
-  total_billable_active_member.value = '';
-  price_rate.value = '';
-  bill_amount.value = '';
+  active_member_count.value = '';
+  billable_active_member_count.value = '';
+  member_daily_rate.value = '';
+  total_bill_amount.value = '';
   status.value = "";
   admin_notes.value = '';
   is_active.value = 1;
@@ -48,14 +48,14 @@ const resetForm = () => {
 
 // Submit form (create billing)
 const submitForm = async () => {
-  // if (!billing_code.value) {
-  //   Swal.fire('Error!', 'Please fill in all required fields.', 'error');
-  //   return;
-  // }
+  if (!billing_code.value) {
+    Swal.fire('Error!', 'Please fill in all required fields.', 'error');
+    return;
+  }
 
   const payload = {
     user_id: userId,
-    //billing_code: billing_code.value,
+    billing_code: billing_code.value,
     description: description.value,
     billing_address: billing_address.value,
     item_name: item_name.value,
@@ -63,10 +63,10 @@ const submitForm = async () => {
     period_end: period_end.value,
     service_month: service_month.value,
     billing_month: billing_month.value,
-    total_active_member: total_active_member.value,
-    total_billable_active_member: total_billable_active_member.value,
-    price_rate: price_rate.value,
-    bill_amount: bill_amount.value,
+    active_member_count: active_member_count.value,
+    billable_active_member_count: billable_active_member_count.value,
+    member_daily_rate: member_daily_rate.value,
+    total_bill_amount: total_bill_amount.value,
     status: status.value,
     admin_notes: admin_notes.value,
     is_active: is_active.value,
@@ -116,26 +116,26 @@ const submitForm = async () => {
     <form @submit.prevent="submitForm" class="space-y-6">
       <!-- Form grid layout -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- <div class="col-span-full">
+        <div class="col-span-full">
           <label for="billing_code"
             class="block text-sm font-medium text-gray-700 after:content-['*'] after:text-red-500 after:ml-1">
             Billing Code
           </label>
           <input v-model="billing_code" type="text" id="billing_code"
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2"
-            placeholder="Enter billing code" />
-        </div> -->
+            placeholder="Enter billing code" required />
+        </div>
         <div>
           <label for="item_name" class="block text-sm font-medium text-gray-700">Item Name</label>
           <input v-model="item_name" type="text" id="item_name"
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2"
-            placeholder="Item name" />
+            placeholder="Item name" required />
         </div>
         <div>
           <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
           <input v-model="description" type="text" id="description"
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2"
-            placeholder="Description" />
+            placeholder="Description" required />
         </div>
       </div>
 
@@ -164,24 +164,24 @@ const submitForm = async () => {
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label for="total_active_member" class="block text-sm font-medium text-gray-700">Active Member Count</label>
-          <input v-model="total_active_member" type="number" id="total_active_member"
+          <label for="active_member_count" class="block text-sm font-medium text-gray-700">Active Member Count</label>
+          <input v-model="active_member_count" type="number" id="active_member_count"
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2" />
         </div>
         <div>
-          <label for="total_billable_active_member" class="block text-sm font-medium text-gray-700">Billable Active
+          <label for="billable_active_member_count" class="block text-sm font-medium text-gray-700">Billable Active
             Member Count</label>
-          <input v-model="total_billable_active_member" type="number" id="total_billable_active_member"
+          <input v-model="billable_active_member_count" type="number" id="billable_active_member_count"
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2" />
         </div>
         <div>
-          <label for="price_rate" class="block text-sm font-medium text-gray-700">Member Daily Rate</label>
-          <input v-model="price_rate" type="number" id="price_rate"
+          <label for="member_daily_rate" class="block text-sm font-medium text-gray-700">Member Daily Rate</label>
+          <input v-model="member_daily_rate" type="number" id="member_daily_rate"
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2" />
         </div>
         <div>
-          <label for="bill_amount" class="block text-sm font-medium text-gray-700">Total Bill Amount</label>
-          <input v-model="bill_amount" type="number" id="bill_amount"
+          <label for="total_bill_amount" class="block text-sm font-medium text-gray-700">Total Bill Amount</label>
+          <input v-model="total_bill_amount" type="number" id="total_bill_amount"
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2" />
         </div>
       </div>
@@ -190,7 +190,6 @@ const submitForm = async () => {
         <input v-model="admin_notes" type="text" id="admin_notes"
           class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2" />
       </div>
-
       <!-- Status and Notes -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
@@ -205,7 +204,6 @@ const submitForm = async () => {
             <option value="draft">Draft</option>
           </select>
         </div>
-
         <div>
           <label for="is_active" class="block text-sm font-medium text-gray-700">Active</label>
           <select v-model="is_active" id="is_active"

@@ -14,20 +14,9 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-GB', options);
 };
 
-// const systemCreateBilling = async () => {
-//   try {
-//     const response = await auth.fetchProtectedApi(`/api/system-create-billing`, {}, 'GET');
-//     console.log(response.data);
-
-//     billingList.value = response.status ? response.data : [];
-//   } catch (error) {
-//     console.error('Error fetching events:', error);
-//   }
-// };
-
 const getRecords = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/superadmin-billing-list`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/billing-list`, {}, 'GET');
     console.log(response.data);
 
     billingList.value = response.status ? response.data : [];
@@ -35,8 +24,6 @@ const getRecords = async () => {
     console.error('Error fetching events:', error);
   }
 };
-
-
 
 // Delete a meeting
 const deleteRecord = async (billingId) => {
@@ -65,10 +52,7 @@ const deleteRecord = async (billingId) => {
   }
 };
 
-onMounted(() => {
-    getRecords();
-    //systemCreateBilling();
-});
+onMounted(() => getRecords());
 </script>
 
 <template>
@@ -96,10 +80,10 @@ onMounted(() => {
                 <th class="py-2 px-4 border">period_end</th>
                 <th class="py-2 px-4 border">service_month</th>
                 <th class="py-2 px-4 border">billing_month</th>
-                <th class="py-2 px-4 border">total_active_member</th>
+                <th class="py-2 px-4 border">active_member_count</th>
                 <th class="py-2 px-4 border">billable_active_member_count</th>
-                <th class="py-2 px-4 border">price_rate</th>
-                <th class="py-2 px-4 border">bill_amount</th>
+                <th class="py-2 px-4 border">member_daily_rate</th>
+                <th class="py-2 px-4 border">total_bill_amount</th>
                 <th class="py-2 px-4 border">status</th>
                 <th class="py-2 px-4 border">is_active</th>
                 <th class="py-2 px-4 border">admin_notes</th>
@@ -115,17 +99,17 @@ onMounted(() => {
                 <td class="py-2 px-4 border">{{ formatDate(bill.period_end) }}</td>
                 <td class="py-2 px-4 border">{{ bill.service_month }}</td>
                 <td class="py-2 px-4 border">{{ bill.billing_month }}</td>
-                <td class="py-2 px-4 border">{{ bill.total_active_member }}</td>
+                <td class="py-2 px-4 border">{{ bill.active_member_count }}</td>
                 <td class="py-2 px-4 border">{{ bill.billable_active_member_count }}</td>
-                <td class="py-2 px-4 border">{{ bill.price_rate }}</td>
-                <td class="py-2 px-4 border">{{ bill.bill_amount }}</td>
+                <td class="py-2 px-4 border">{{ bill.member_daily_rate }}</td>
+                <td class="py-2 px-4 border">{{ bill.total_bill_amount }}</td>
                 <td class="py-2 px-4 border">{{ bill.status }}</td>
                 <td class="py-2 px-4 border">{{ bill.is_active }}</td>
                 <td class="py-2 px-4 border">{{ bill.admin_notes }}</td>
                 <td class="py-2 px-4 border">
                   <button @click="$router.push({ name: 'super-admin-billing-edit', params: { id: bill.id } })"
                     class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">Edit</button>
-                  <button @click="$router.push({ name: 'view-project', params: { id: bill.id } })"
+                  <button @click="$router.push({ name: 'super-admin-billing-view', params: { id: bill.id } })"
                     class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 m-2 rounded">View</button>
                   <button @click="deleteRecord(bill.id)"
                     class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">Delete</button>
