@@ -54,8 +54,16 @@ onMounted(() => {
           <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.invoice_code }}</td>
         </tr>
         <tr>
+          <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Billing Address</th>
+          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.billing_address }}</td>
+        </tr>
+        <tr>
           <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Billing ID</th>
           <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.billing_id }}</td>
+        </tr>
+        <tr>
+          <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Billing Code</th>
+          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.billing_code }}</td>
         </tr>
         <tr>
           <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Item Name</th>
@@ -82,34 +90,58 @@ onMounted(() => {
 
         <!-- Financial Details -->
         <tr>
+          <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Total Active Member</th>
+          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.total_active_member }}</td>
+        </tr>
+        <tr>
+          <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Total Active Honorary Member</th>
+          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.total_active_honorary_member }}</td>
+        </tr>
+        <tr>
+          <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Total Billable Active Member</th>
+          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.total_billable_active_member }}</td>
+        </tr>
+        <tr>
+          <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Subscribed Package Name</th>
+          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.subscribed_package_name }}</td>
+        </tr>
+        <tr>
+          <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Price Rate</th>
+          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.price_rate }}</td>
+        </tr>
+        <tr>
+          <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Currency</th>
+          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.currency }}</td>
+        </tr>
+        <tr>
           <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Subtotal Amount</th>
-          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.subtotal_amount }}</td>
+          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.subtotal }}</td>
         </tr>
         <tr>
           <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Discount Description</th>
-          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.discount_description }}</td>
+          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.discount_title }}</td>
         </tr>
         <tr>
           <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Discount Value</th>
-          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.discount_value }}</td>
+          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.discount }}</td>
         </tr>
         <tr>
           <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Tax Amount</th>
-          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.tax_amount }}</td>
+          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.tax }}</td>
         </tr>
         <tr>
           <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Credit Applied</th>
           <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.credit_applied }}</td>
         </tr>
         <tr>
-          <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Total Amount Due</th>
-          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.total_amount_due }}</td>
+          <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Balance Amount</th>
+          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.balance }}</td>
         </tr>
 
         <!-- Notes -->
         <tr>
-          <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Additional Note</th>
-          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.additional_note }}</td>
+          <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Invoice Note</th>
+          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.invoice_note }}</td>
         </tr>
         <tr>
           <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Admin Note</th>
@@ -122,8 +154,12 @@ onMounted(() => {
           <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.payment_status }}</td>
         </tr>
         <tr>
-          <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Status Reason</th>
-          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.status_reason }}</td>
+          <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Payment Status Reason</th>
+          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.payment_status_reason }}</td>
+        </tr>
+        <tr>
+          <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Invoice Status</th>
+          <td class="px-4 py-2 border border-gray-300">{{ invoiceDetails.invoice_status }}</td>
         </tr>
         <tr>
           <th class="px-4 py-2 border border-gray-300 w-36 bg-gray-100">Is Published</th>
