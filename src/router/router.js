@@ -155,8 +155,9 @@ import IndexCurrency from "../views/SuperAdmin/Financial/Currency/Index.vue";
 
 //Subscription
 import EditSubscription from "../views/SuperAdmin/Financial/Subscription/Edit.vue";
-import IndexSubscription from "../views/SuperAdmin/Financial/Subscription/Index.vue";
+//import IndexSubscription from "../views/SuperAdmin/Financial/Subscription/Index.vue";
 import ViewSubscription from "../views/SuperAdmin/Financial/Subscription/View.vue";
+import SuperAdminSubscriptionList from "../views/SuperAdmin/Financial/Subscription/Index.vue";
 
 //UserPrice
 import UserPriceRate from "../views/SuperAdmin/Financial/UserPriceRate/Index.vue";
@@ -176,8 +177,7 @@ import SuperAdminInvoiceView from "../views/SuperAdmin/Financial/Invoice/View.vu
 //Receipt
 import SuperAdminReceiptList from "@/views/SuperAdmin/Financial/Receipt/Index.vue";
 
-//Subscription
-import SuperAdminSubscriptionList from "../views/SuperAdmin/Financial/Subscription/Index.vue";
+
 
 //Payment Log
 import SuperAdminPaymentLog from "../views/SuperAdmin/Financial/Payment/Index.vue";
