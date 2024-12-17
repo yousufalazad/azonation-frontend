@@ -30,7 +30,7 @@
             </button>
             <div v-if="isSectionOpen('financial') && isSidebarExpanded" class="space-y-1">
 
-              <router-link to="/superadmin-dashboard/super-admin-payment-log"
+              <router-link to="/superadmin-dashboard/super-admin-payment-log-list"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Payment</router-link>
 
               <router-link to="/superadmin-dashboard/super-admin-subscription-list"
@@ -58,6 +58,8 @@
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Currency</router-link>
               <router-link to="/superadmin-dashboard/region-currency"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Region Currency</router-link>
+              <router-link to="/superadmin-dashboard/regional-tax-rate"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Region Tax Rate</router-link>
 
             </div>
           </div>
@@ -218,6 +220,42 @@
               <router-link to="/superadmin-dashboard/privacy-setup"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Privacy Setup
               </router-link>
+            </div>
+          </div>
+
+
+          <!-- E-commerce Settings section -->
+          <div>
+            <button @click="toggleSection('e-commerce')"
+              class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
+              <span v-if="isSidebarExpanded">E-commerce</span>
+              <svg v-if="isSectionOpen('e-commerce')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+            <div v-if="isSectionOpen('e-commerce') && isSidebarExpanded" class="space-y-1">
+              <router-link to="/superadmin-dashboard/index-business-type"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Business Type
+              </router-link>
+              <router-link to="/superadmin-dashboard/index-category"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Category
+              </router-link>
+              <router-link to="/superadmin-dashboard/index-sub-category"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Sub Category
+              </router-link>
+              <router-link to="/superadmin-dashboard/index-sub-sub-category"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Sub Sub Category
+              </router-link>
+              <router-link to="/superadmin-dashboard/index-brand"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Brand
+              </router-link>
+              
+
             </div>
           </div>
 

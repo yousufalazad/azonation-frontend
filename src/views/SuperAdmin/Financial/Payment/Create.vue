@@ -21,9 +21,7 @@ const note = ref('');
 const admin_note = ref('');
 
 const invoiceList = ref([]);
-const isEditMode = ref(true); // Indicate edit mode
-
-// Fetch invoice list
+// Fetch invoiceList
 const getInvoiceList = async () => {
   try {
     const response = await auth.fetchProtectedApi('/api/invoices', {}, 'GET');
@@ -34,37 +32,18 @@ const getInvoiceList = async () => {
   }
 };
 
-// Fetch existing payment log details
-const fetchPaymentLogDetails = async () => {
-  try {
-    const { id } = route.params;
-    const response = await auth.fetchProtectedApi(`/api/get-payment-log/${id}`, {}, 'GET');
-    if (response.status) {
-      const data = response.data;
-      invoice_id.value = data.invoice_id;
-      gateway.value = data.gateway;
-      transaction_id.value = data.transaction_id;
-      payment_status.value = data.payment_status;
-      payment_method.value = data.payment_method;
-      currency.value = data.currency;
-      amount_paid.value = data.amount_paid;
-      exchange_rate.value = data.exchange_rate;
-      note.value = data.note;
-      admin_note.value = data.admin_note;
-    } else {
-      Swal.fire('Error!', 'Failed to load payment log details.', 'error');
-      router.push({ name: 'super-admin-payment-log-list' });
-    }
-  } catch (error) {
-    console.error('Error fetching payment log details:', error);
-    Swal.fire('Error!', 'An error occurred. Please try again.', 'error');
-    router.push({ name: 'super-admin-payment-log-list' });
-  }
-};
-
 // Reset form
 const resetForm = () => {
-  fetchPaymentLogDetails();
+  invoice_id.value = '';
+  gateway.value = '';
+  transaction_id.value = '';
+  payment_status.value = '';
+  payment_method.value = '';
+  currency.value = '';
+  amount_paid.value = '';
+  exchange_rate.value = '';
+  note.value = '';
+  admin_note.value = '';
 };
 
 // Submit form
@@ -90,42 +69,44 @@ const submitForm = async () => {
   try {
     const result = await Swal.fire({
       title: 'Are you sure?',
-      text: 'Do you want to update this payment log?',
+      text: 'Do you want to save this invoice?',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Yes, update it!',
+      confirmButtonText: 'Yes, save it!',
       cancelButtonText: 'No, cancel!',
     });
 
     if (result.isConfirmed) {
-      const { id } = route.params;
-      const response = await auth.fetchProtectedApi(`/api/update-payment-log/${id}`, payload, 'PUT');
+      const response = await auth.fetchProtectedApi('/api/create-payment-log', payload, 'POST');
       if (response.status) {
-        Swal.fire('Success!', 'Payment log updated successfully.', 'success').then(() => {
+        Swal.fire('Success!', 'Invoice created successfully.', 'success').then(() => {
+          resetForm();
           router.push({ name: 'super-admin-payment-log-list' }); // Adjust route name
         });
       } else {
-        Swal.fire('Failed!', 'Failed to update the payment log.', 'error');
+        Swal.fire('Failed!', 'Failed to create the payment-log.', 'error');
       }
     }
   } catch (error) {
-    console.error('Error updating payment log:', error);
+    console.error('Error creating payment-log:', error);
     Swal.fire('Error!', 'An error occurred. Please try again.', 'error');
   }
 };
 
 // Fetch on mount
 onMounted(() => {
+  resetForm();
   getInvoiceList();
-  fetchPaymentLogDetails();
 });
 </script>
+
+
 
 <template>
   <div class="container mx-auto max-w-7xl w-10/12 p-8 bg-white rounded-lg shadow-lg mt-12">
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
-      <h2 class="text-2xl font-bold text-gray-800">Edit Payment Log</h2>
+      <h2 class="text-2xl font-bold text-gray-800">Add New Payment Log</h2>
       <button @click="$router.push({ name: 'super-admin-payment-log-list' })"
         class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-lg shadow focus:ring-2 focus:ring-blue-300">
         Back to Payment Log List
@@ -172,6 +153,7 @@ onMounted(() => {
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label for="payment_method" class="block text-sm font-medium text-gray-700">Payment Method</label>
+          <!-- <input v-model="payment_method" type="text" id="payment_method" class="input-field" required /> -->
           <select v-model="payment_method" id="payment_method" class="input-field" required>
             <option value="">Select Payment Method</option>
             <option value="card">Card</option>
@@ -213,6 +195,7 @@ onMounted(() => {
     </form>
   </div>
 </template>
+
 
 <style scoped>
 .input-field {

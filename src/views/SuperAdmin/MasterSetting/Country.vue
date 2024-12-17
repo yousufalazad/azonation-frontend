@@ -6,8 +6,10 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const auth = authStore;
-const country_name = ref('');
-const iso_code = ref('');
+const name = ref('');
+const iso_code_alpha_3 = ref('');
+const iso_code_alpha_2 = ref('');
+const numeric_code = ref('');
 const is_active = ref('1');
 const isEditMode = ref(false);
 const selectedCountryId = ref(null);
@@ -26,8 +28,10 @@ const getCountries = async () => {
 
 // Reset form fields
 const resetForm = () => {
-    country_name.value = '';
-    iso_code.value = '';
+    name.value = '';
+    iso_code_alpha_3.value = '';
+    iso_code_alpha_2.value = '';
+    numeric_code.value = '';
     is_active.value = '1';
     selectedCountryId.value = null;
     isEditMode.value = false;
@@ -36,8 +40,10 @@ const resetForm = () => {
 // Add or update country
 const submitForm = async () => {
     const payload = {
-        country_name: country_name.value,
-        iso_code: iso_code.value,
+        name: name.value,
+        iso_code_alpha_3: iso_code_alpha_3.value,
+        iso_code_alpha_2: iso_code_alpha_2.value,
+        numeric_code: numeric_code.value,
         is_active: is_active.value
     };
 
@@ -78,8 +84,10 @@ const submitForm = async () => {
 
 // Edit country
 const editCountry = (country) => {
-    country_name.value = country.country_name;
-    iso_code.value = country.iso_code;
+    name.value = country.name;
+    iso_code_alpha_3.value = country.iso_code_alpha_3;
+    iso_code_alpha_2.value = country.iso_code_alpha_2;
+    numeric_code.value = country.numeric_code;
     is_active.value = country.is_active;
     selectedCountryId.value = country.id;
     isEditMode.value = true;
@@ -130,15 +138,23 @@ onMounted(() => {
                 <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> -->
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <!-- Name -->
-                    <div class="col-span-6 mb-4">
-                        <label for="country_name" class="block text-gray-700 font-semibold mb-2">Country Name</label>
-                        <input v-model="country_name" id="country_name" type="text" class="w-full border border-gray-300 rounded-md py-2 px-4" required />
+                    <div class="col-span-2 mb-4">
+                        <label for="name" class="block text-gray-700 font-semibold mb-2">Country Name</label>
+                        <input v-model="name" id="name" type="text" class="w-full border border-gray-300 rounded-md py-2 px-4" required />
                     </div>
                     
                     <!-- Status dropdown -->
                     <div class="col-span-2 mb-4">
-                        <label for="iso_code" class="block text-gray-700 font-semibold mb-2">ISO Code</label>
-                        <input v-model="iso_code" id="iso_code" type="text" class="w-full border border-gray-300 rounded-md py-2 px-4" required />
+                        <label for="iso_code_alpha_3" class="block text-gray-700 font-semibold mb-2">ISO Code Alpha 3</label>
+                        <input v-model="iso_code_alpha_3" id="iso_code_alpha_3" type="text" class="w-full border border-gray-300 rounded-md py-2 px-4" required />
+                    </div>
+                    <div class="col-span-2 mb-4">
+                        <label for="iso_code_alpha_2" class="block text-gray-700 font-semibold mb-2">ISO Code Alpha 2</label>
+                        <input v-model="iso_code_alpha_2" id="iso_code_alpha_2" type="text" class="w-full border border-gray-300 rounded-md py-2 px-4" required />
+                    </div>
+                    <div class="col-span-2 mb-4">
+                        <label for="numeric_code" class="block text-gray-700 font-semibold mb-2">Numeric Code</label>
+                        <input v-model="numeric_code" id="numeric_code" type="text" class="w-full border border-gray-300 rounded-md py-2 px-4" required />
                     </div>
 
                     <!-- is_active -->
@@ -184,8 +200,10 @@ onMounted(() => {
                 <tbody>
                     <tr v-for="(country, index) in CountryList" :key="country.id">
                         <td class="py-2 px-4 border">{{ index + 1 }}</td>
-                        <td class="py-2 px-4 border">{{ country.country_name }}</td>
-                        <td class="py-2 px-4 border">{{ country.iso_code}}</td>
+                        <td class="py-2 px-4 border">{{ country.name }}</td>
+                        <td class="py-2 px-4 border">{{ country.iso_code_alpha_3}}</td>
+                        <td class="py-2 px-4 border">{{ country.iso_code_alpha_2}}</td>
+                        <td class="py-2 px-4 border">{{ country.numeric_code}}</td>
                         <td class="py-2 px-4 border">
                             <span :class="country.is_active === 0 ? 'text-red-500' : 'text-green-500'">
                                 {{ country.is_active === 0 ? "No" : "Yes" }}

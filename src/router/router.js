@@ -205,6 +205,23 @@ import IndexPrice from "../views/SuperAdmin/Financial/Price/Index.vue";
 import ViewPrice from "../views/SuperAdmin/Financial/Price/View.vue";
 
 
+//Payment Log
+import SuperAdminPaymentLogList from "../views/SuperAdmin/Financial/Payment/Index.vue";
+import SuperAdminPaymentLogCreate from "../views/SuperAdmin/Financial/Payment/Create.vue";
+import SuperAdminPaymentLogEdit from "../views/SuperAdmin/Financial/Payment/Edit.vue";
+import SuperAdminPaymentLogView from "../views/SuperAdmin/Financial/Payment/View.vue";
+
+//TAX
+import RegionalTaxRate from "../views/SuperAdmin/MasterSetting/RegionalTaxRate.vue";
+
+//SuperAdmin E-commerce Setting
+import IndexBusinessType from "../views/SuperAdmin/E-commerce/BusinessType.vue";
+import IndexCategory from "../views/SuperAdmin/E-commerce/Category.vue";
+import IndexSubCategory from "../views/SuperAdmin/E-commerce/SubCategory.vue";
+import IndexSubSubCategory from "../views/SuperAdmin/E-commerce/SubSubCategory.vue";
+import IndexBrand from "../views/SuperAdmin/E-commerce/Brand.vue";
+
+
 // Mock authentication function
 function isAuthenticated() {
   // Replace this with your actual authentication logic
@@ -946,7 +963,69 @@ const routes = [
         name: "index-currency",
         component: IndexCurrency,
         meta: { requiresAuth: true },
+      },
+      {
+        path: "regional-tax-rate",
+        name: "regional-tax-rate",
+        component: RegionalTaxRate,
+        meta: { requiresAuth: true },
+      },
+
+      {
+        path: "super-admin-payment-log-list",
+        name: "super-admin-payment-log-list",
+        component: SuperAdminPaymentLogList,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-payment-log-create",
+        name: "super-admin-payment-log-create",
+        component: SuperAdminPaymentLogCreate,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-payment-log-edit/:id",
+        name: "super-admin-payment-log-edit",
+        component: SuperAdminPaymentLogEdit,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-payment-log-view/:id",
+        name: "super-admin-payment-log-view",
+        component: SuperAdminPaymentLogView,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "index-business-type",
+        name: "index-business-type",
+        component: IndexBusinessType,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "index-category",
+        name: "index-category",
+        component: IndexCategory,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "index-sub-category",
+        name: "index-sub-category",
+        component: IndexSubCategory,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "index-sub-sub-category",
+        name: "index-sub-sub-category",
+        component: IndexSubSubCategory,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "index-brand",
+        name: "index-brand",
+        component: IndexBrand,
+        meta: { requiresAuth: true },
       }
+      
 
     ],
   },

@@ -1,0 +1,304 @@
+<script setup>
+import { ref, onMounted } from 'vue';
+import { authStore } from '../../../store/authStore';
+import Swal from 'sweetalert2';
+
+const auth = authStore;
+const form = ref({});
+const isModalOpen = ref(false);
+const editMode = ref(false);
+const errorMessage = ref(null);
+const previewImage = ref(null);
+
+const categories = ref([]);
+const fetchCategories = async () => {
+    try {
+        const response = await auth.fetchProtectedApi('/api/get-categories');
+        categories.value = response.status ? response.data : [];
+    } catch (error) {
+        errorMessage.value = 'Error loading categories. Please try again later.';
+    }
+};
+
+const subCategories = ref([]);
+const fetchSubCategories = async () => {
+    try {
+        const response = await auth.fetchProtectedApi('/api/get-sub-categories');
+        subCategories.value = response.status ? response.data : [];
+    } catch (error) {
+        errorMessage.value = 'Error loading subCategories. Please try again later.';
+    }
+};
+
+const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        form.value.sub_category_image_path = file;
+        previewImage.value = URL.createObjectURL(file);
+    }
+};
+
+const openModal = (subCategory = null) => {
+    form.value = subCategory ? { ...subCategory } : { is_active: true };
+    previewImage.value = null;
+    if (subCategory && subCategory.sub_category_image_path) {
+        previewImage.value = `/path/to/images/${subCategory.sub_category_image_path}`; // Adjust based on your API
+    }
+    editMode.value = !!subCategory;
+    isModalOpen.value = true;
+};
+
+const closeModal = () => {
+    isModalOpen.value = false;
+    form.value = {};
+    editMode.value = false;
+    previewImage.value = null;
+};
+
+const saveSubCategory = async () => {
+    try {
+        // const formData = new FormData();
+        // for (const key in form.value) {
+        //   formData.append(key, form.value[key]);
+        // }
+
+        const endpoint = editMode.value ? `/api/update-sub-category/${form.value.id}` : '/api/create-sub-category';
+        const method = editMode.value ? 'PUT' : 'POST';
+        const response = await auth.fetchProtectedApi(endpoint, form.value, method);
+
+        // const response = await auth.fetchProtectedApi(endpoint, formData, method, {
+        //   headers: { 'Content-Type': 'multipart/form-data' },
+        // });
+
+        if (response.status) {
+            await fetchSubCategories();
+            closeModal();
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: `Sub Category ${editMode.value ? 'updated' : 'created'} successfully.`,
+                timer: 2000,
+                showConfirmButton: false,
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Could not save the sub category. Please try again.',
+            });
+        }
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while saving the category.',
+        });
+    }
+};
+
+const deleteSubCategory = async (id) => {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'This action will delete the sub category permanently.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!',
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                const response = await auth.fetchProtectedApi(`/api/delete-sub-category/${id}`, {}, 'DELETE');
+                if (response.status) {
+                    await fetchSubCategories();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'Sub Category has been deleted.',
+                        timer: 2000,
+                        showConfirmButton: false,
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Could not delete the sub category. Please try again.',
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while deleting the sub category.',
+                });
+            }
+        }
+    });
+};
+
+// Fetch Dialing Codes on mount
+onMounted(() => {
+    fetchCategories();
+    fetchSubCategories();
+});
+</script>
+
+<template>
+    <div class="container mx-auto p-6 bg-gray-100 min-h-screen">
+
+        <div class="flex justify-between left-color-shade py-2 my-3">
+            <h5 class="text-md font-semibold mt-2">Sub Category Management</h5>
+            <div>
+                <button @click="openModal()"
+                    class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition">
+                    Add Sub Category
+                </button>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div v-if="errorMessage" class="text-red-500 text-center py-4 font-medium">
+            {{ errorMessage }}
+        </div>
+
+        <!-- Table -->
+        <div v-else class="bg-white shadow rounded-lg overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Name
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                            Description</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                            Category</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Order
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Status
+                        </th>
+                        <th class="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">
+                            Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr v-for="subCategory in subCategories" :key="subCategory.id" class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 text-sm text-gray-700">{{ subCategory.name }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">{{ subCategory.description }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">
+                            {{ categories.find(c => c.id === subCategory.category_id)?.name || '-' }}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-700">{{ subCategory.order }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">
+                            <span
+                                :class="subCategory.is_active ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'"
+                                class="px-2 py-1 rounded-full text-xs font-medium">
+                                {{ subCategory.is_active ? 'Yes' : 'No' }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <button @click="openModal(subCategory)"
+                                class="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-yellow-600 transition">
+                                Edit
+                            </button>
+                            <button @click="deleteSubCategory(subCategory.id)"
+                                class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Modal -->
+        <div v-if="isModalOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="bg-white rounded-lg p-6 w-full max-w-3xl shadow-lg overflow-y-auto max-h-[80vh] relative top-0">
+                <h2 class="text-2xl font-semibold mb-6 text-gray-800">{{ editMode ? 'Edit' : 'Add' }} Sub Category</h2>
+
+                <form @submit.prevent="saveSubCategory" class="grid grid-cols-2 gap-6">
+                    <!-- Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <input v-model="form.name" type="text"
+                            class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"
+                            required />
+                    </div>
+                    <!-- Slug -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+                        <input v-model="form.slug" type="text"
+                            class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2" />
+                    </div>
+                    <!-- Description -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea v-model="form.description"
+                            class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"
+                            required></textarea>
+                    </div>
+
+                    <!-- Meta Description -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Meta Description</label>
+                        <textarea v-model="form.meta_description"
+                            class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"></textarea>
+                    </div>
+
+                    <!-- Category -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                        <select v-model="form.category_id"
+                            class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"
+                            required>
+                            <option value="">Select Category</option>
+                            <option v-for="category in categories" :key="category.id" :value="category.id">
+                                {{ category.name }}
+                            </option>
+                        </select>
+                    </div>
+                    <!-- Order -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Order</label>
+                        <input v-model="form.order" type="number"
+                            class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2" />
+                    </div>
+                    <!-- Status -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Active</label>
+                        <select v-model="form.is_active"
+                            class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2">
+                            <option :value="true">Yes</option>
+                            <option :value="false">No</option>
+                        </select>
+                    </div>
+                    <!-- Image Upload -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Sub Category Image</label>
+                        <input type="file" @change="handleFileUpload"
+                            class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2" />
+                        <img v-if="previewImage" :src="previewImage" alt="Preview" class="mt-4 max-h-48 rounded-lg" />
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="col-span-2 flex justify-end gap-4">
+                        <button type="button" @click="closeModal"
+                            class="bg-gray-500 text-white px-6 py-2 rounded-lg shadow hover:bg-gray-600 transition">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition">
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</template>
+
+
+<style scoped>
+.container {
+    max-width: 1200px;
+}
+</style>

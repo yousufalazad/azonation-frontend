@@ -169,7 +169,7 @@ onMounted(() => {
                             class="w-full border border-gray-300 rounded-md p-2" required>
                             <option value="">Select Country</option>
                             <option v-for="country in countryList" :key="country.id" :value="country.id">{{
-                                country.country_name }}</option>
+                                country.name }}</option>
                         </select>
                     </div>
                     <!-- is_active -->

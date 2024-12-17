@@ -149,7 +149,7 @@ onMounted(() => {
                         <select v-model="country_id" id="country_id"
                             class="w-full border border-gray-300 rounded-md p-2" required>
                             <option value="">Select Country</option>
-                            <option v-for="country in countryList" :key="country.id" :value="country.id">{{ country.country_name }}</option>
+                            <option v-for="country in countryList" :key="country.id" :value="country.id">{{ country.name }}</option>
                         </select>
                     </div>
                     <!-- Dialing Code dropdown -->
@@ -202,9 +202,9 @@ onMounted(() => {
                 </thead>
                 <tbody>
                     <tr v-for="(dialingCode, index) in dialingCodeList" :key="dialingCode.id">
-                        <td class="py-2 px-4 border">{{ index + 1 }}</td>
-                        <td class="py-2 px-4 border">{{ dialingCode.country_name }}</td>
-                        <td class="py-2 px-4 border">{{ dialingCode.dialing_code }}</td>
+                        <td class="py-2 px-4 border" style="width: 20px;">{{ index + 1 }}</td>
+                        <td class="py-2 px-4 border" style="width: 300px;">{{ dialingCode.name }}</td>
+                        <td class="py-2 px-4 border" style="width: 200px;">{{ dialingCode.dialing_code }}</td>
                         
                         <td class="py-2 px-4 border">
                             <span :class="dialingCode.is_active === 0 ? 'text-red-500' : 'text-green-500'">
