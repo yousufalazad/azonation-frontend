@@ -254,7 +254,12 @@
               <router-link to="/superadmin-dashboard/index-brand"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Brand
               </router-link>
-              
+              <router-link to="/superadmin-dashboard/products-list"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Products
+              </router-link>
+              <router-link to="/superadmin-dashboard/orders-list"
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Orders
+              </router-link>
 
             </div>
           </div>

@@ -7,8 +7,12 @@ const auth = authStore;
 const form = ref({});
 const isModalOpen = ref(false);
 const editMode = ref(false);
+const isViewModalOpen = ref(false);
+
 const errorMessage = ref(null);
 const previewImage = ref(null);
+
+const selectedCategory = ref(null);
 
 const business_types = ref([]);
 const fetchBusinessType = async () => {
@@ -53,6 +57,16 @@ const closeModal = () => {
   form.value = {};
   editMode.value = false;
   previewImage.value = null;
+};
+
+const openViewModal = (category) => {
+  selectedCategory.value = category;
+  isViewModalOpen.value = true;
+};
+
+const closeViewModal = () => {
+  isViewModalOpen.value = false;
+  selectedCategory.value = null;
 };
 
 const saveCategory = async () => {
@@ -188,6 +202,10 @@ onMounted(() => {
               </span>
             </td>
             <td class="px-6 py-4 text-center">
+              <button @click="openViewModal(category)"
+                class="bg-blue-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-blue-600 transition">
+                View
+              </button>
               <button @click="openModal(category)"
                 class="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-yellow-600 transition">
                 Edit
@@ -285,6 +303,28 @@ onMounted(() => {
         </form>
       </div>
     </div>
+
+    <!-- View Modal -->
+    <div v-if="isViewModalOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div class="bg-white rounded-lg p-6 w-full max-w-3xl shadow-lg overflow-y-auto max-h-[80vh]">
+        <h2 class="text-2xl font-semibold mb-6 text-gray-800">View Category </h2>
+        <div class="grid grid-cols-1 gap-4">
+          <p><strong>Business Type:</strong>
+            {{ business_types.find(bt => bt.id === selectedCategory.business_type_id)?.name || '-' }}
+          </p>
+          <p><strong>Name:</strong> {{ selectedCategory.name }}</p>
+          <p><strong>Description:</strong> {{ selectedCategory.description }}</p>
+          <p><strong>Meta Description:</strong> {{ selectedCategory.meta_description }}</p>
+          <p><strong>Order:</strong> {{ selectedCategory.order }}</p>
+          <p><strong>Status:</strong> {{ selectedCategory.is_active ? 'Active' : 'Inactive' }}</p>
+        </div>
+        <button @click="closeViewModal"
+          class="bg-gray-500 text-white px-6 py-2 rounded-lg shadow hover:bg-gray-600 transition mt-4">
+          Close
+        </button>
+      </div>
+    </div>
+
   </div>
 </template>
 

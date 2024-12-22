@@ -6,11 +6,14 @@ import Swal from 'sweetalert2';
 const auth = authStore;
 const form = ref({});
 const isModalOpen = ref(false);
+const isViewModalOpen = ref(false);
 const editMode = ref(false);
 const errorMessage = ref(null);
 const previewImage = ref(null);
 
 const businessTypes = ref([]);
+const selectedBusinessType = ref(null);
+
 const fetchBusinessType = async () => {
   try {
     const response = await auth.fetchProtectedApi('/api/get-business-types');
@@ -38,6 +41,16 @@ const openModal = (businessType = null) => {
   isModalOpen.value = true;
 };
 
+const openViewModal = (businessType) => {
+  selectedBusinessType.value = businessType;
+  isViewModalOpen.value = true;
+};
+
+const closeViewModal = () => {
+  isViewModalOpen.value = false;
+  selectedBusinessType.value = null;
+};
+
 const closeModal = () => {
   isModalOpen.value = false;
   form.value = {};
@@ -47,18 +60,14 @@ const closeModal = () => {
 
 const saveBusinessType = async () => {
   try {
-    // const formData = new FormData();
-    // for (const key in form.value) {
-    //   formData.append(key, form.value[key]);
-    // }
+    const formData = new FormData();
+    for (const key in form.value) {
+      formData.append(key, form.value[key]);
+    }
 
     const endpoint = editMode.value ? `/api/update-business-type/${form.value.id}` : '/api/create-business-type';
     const method = editMode.value ? 'PUT' : 'POST';
     const response = await auth.fetchProtectedApi(endpoint, form.value, method);
-
-    // const response = await auth.fetchProtectedApi(endpoint, formData, method, {
-    //   headers: { 'Content-Type': 'multipart/form-data' },
-    // });
 
     if (response.status) {
       await fetchBusinessType();
@@ -126,7 +135,6 @@ const deleteBusinessType = async (id) => {
   });
 };
 
-// Fetch Dialing Codes on mount
 onMounted(() => {
   fetchBusinessType();
 });
@@ -158,7 +166,7 @@ onMounted(() => {
             <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-[300px]">Description</th>
             <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-[60px]">Order</th>
             <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-[60px]">Status</th>
-            <th class="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider w-[150px]">Actions</th>
+            <th class="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider w-[250px]">Actions</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
@@ -173,6 +181,10 @@ onMounted(() => {
               </span>
             </td>
             <td class="px-6 py-4 text-center">
+              <button @click="openViewModal(businessType)"
+                class="bg-blue-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-blue-600 transition">
+                View
+              </button>
               <button @click="openModal(businessType)"
                 class="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-yellow-600 transition">
                 Edit
@@ -256,10 +268,26 @@ onMounted(() => {
           </div>
         </form>
       </div>
+    </div
+
+    <!-- View Modal -->
+    <div v-if="isViewModalOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div class="bg-white rounded-lg p-6 w-full max-w-3xl shadow-lg overflow-y-auto max-h-[80vh]">
+        <h2 class="text-2xl font-semibold mb-6 text-gray-800">View Business Type</h2>
+        <div class="grid grid-cols-1 gap-4">
+          <p><strong>Name:</strong> {{ selectedBusinessType.name }}</p>
+          <p><strong>Description:</strong> {{ selectedBusinessType.description }}</p>
+          <p><strong>Order:</strong> {{ selectedBusinessType.order }}</p>
+          <p><strong>Status:</strong> {{ selectedBusinessType.is_active ? 'Active' : 'Inactive' }}</p>
+        </div>
+        <button @click="closeViewModal"
+          class="bg-gray-500 text-white px-6 py-2 rounded-lg shadow hover:bg-gray-600 transition mt-4">
+          Close
+        </button>
+      </div>
     </div>
   </div>
 </template>
-
 
 <style scoped>
 .container {

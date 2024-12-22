@@ -10,6 +10,9 @@ const editMode = ref(false);
 const errorMessage = ref(null);
 const previewImage = ref(null);
 
+const isViewModalOpen = ref(false);
+const selectedSubSubCategory = ref(null);
+
 const subCategories = ref([]);
 const fetchSubCategories = async () => {
     try {
@@ -53,6 +56,16 @@ const closeModal = () => {
     form.value = {};
     editMode.value = false;
     previewImage.value = null;
+};
+
+const openViewModal = (subSubCategory) => {
+  selectedSubSubCategory.value = subSubCategory;
+  isViewModalOpen.value = true;
+};
+
+const closeViewModal = () => {
+  isViewModalOpen.value = false;
+  selectedSubSubCategory.value = null;
 };
 
 const saveSubSubCategory = async () => {
@@ -196,6 +209,12 @@ onMounted(() => {
                             </span>
                         </td>
                         <td class="px-6 py-4 text-center">
+
+                            <button @click="openViewModal(subSubCategory)"
+                                class="bg-blue-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-blue-600 transition">
+                                View
+                            </button>
+
                             <button @click="openModal(subSubCategory)"
                                 class="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-yellow-600 transition">
                                 Edit
@@ -293,6 +312,28 @@ onMounted(() => {
                 </form>
             </div>
         </div>
+
+        <!-- View Modal -->
+        <div v-if="isViewModalOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="bg-white rounded-lg p-6 w-full max-w-3xl shadow-lg overflow-y-auto max-h-[80vh]">
+                <h2 class="text-2xl font-semibold mb-6 text-gray-800">View Sub Sub Category </h2>
+                <div class="grid grid-cols-1 gap-4">
+                <p><strong>Sub Category:</strong>
+                    {{ subCategories.find(sc => sc.id === selectedSubSubCategory.sub_category_id)?.name || '-' }}
+                </p>
+                <p><strong>Name:</strong> {{ selectedSubSubCategory.name }}</p>
+                <p><strong>Description:</strong> {{ selectedSubSubCategory.description }}</p>
+                <p><strong>Meta Description:</strong> {{ selectedSubSubCategory.meta_description }}</p>
+                <p><strong>Order:</strong> {{ selectedSubSubCategory.order }}</p>
+                <p><strong>Status:</strong> {{ selectedSubSubCategory.is_active ? 'Active' : 'Inactive' }}</p>
+                </div>
+                <button @click="closeViewModal"
+                class="bg-gray-500 text-white px-6 py-2 rounded-lg shadow hover:bg-gray-600 transition mt-4">
+                Close
+                </button>
+            </div>
+        </div>
+
     </div>
 </template>
 

@@ -221,6 +221,16 @@ import IndexSubCategory from "../views/SuperAdmin/E-commerce/SubCategory.vue";
 import IndexSubSubCategory from "../views/SuperAdmin/E-commerce/SubSubCategory.vue";
 import IndexBrand from "../views/SuperAdmin/E-commerce/Brand.vue";
 
+import ProductList from "../views/SuperAdmin/E-commerce/product/Index.vue";
+import ProductCreate from "../views/SuperAdmin/E-commerce/product/Create.vue";
+import ProductEdit from "../views/SuperAdmin/E-commerce/product/Edit.vue";
+import ProductView from "../views/SuperAdmin/E-commerce/product/View.vue";
+
+import OrderList from "../views/SuperAdmin/E-commerce/order/Index.vue";
+import OrderCreate from "../views/SuperAdmin/E-commerce/order/Create.vue";
+import OrderEdit from "../views/SuperAdmin/E-commerce/order/Edit.vue";
+import OrderView from "../views/SuperAdmin/E-commerce/order/View.vue";
+
 
 // Mock authentication function
 function isAuthenticated() {
@@ -1024,8 +1034,56 @@ const routes = [
         name: "index-brand",
         component: IndexBrand,
         meta: { requiresAuth: true },
-      }
-      
+      },
+      {
+        path: "products-list",
+        name: "products-list",
+        component: ProductList,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "product-create",
+        name: "product-create",
+        component: ProductCreate,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "product-edit/:id",
+        name: "product-edit",
+        component: ProductEdit,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "product-view/:id",
+        name: "product-view",
+        component: ProductView,
+        meta: { requiresAuth: true },
+      },
+
+      {
+        path: "orders-list",
+        name: "orders-list",
+        component: OrderList,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "order-create",
+        name: "order-create",
+        component: OrderCreate,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "order-edit/:id",
+        name: "order-edit",
+        component: OrderEdit,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "order-view/:id",
+        name: "order-view",
+        component: OrderView,
+        meta: { requiresAuth: true },
+      },
 
     ],
   },
