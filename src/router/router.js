@@ -128,8 +128,8 @@ import Package from "../views/Org/Financial/Package.vue";
 import Subscription from "../views/Org/Financial/Subscription.vue";
 import OrgInvoiceList from "../views/Org/Financial/Invoice/InvoiceList.vue";
 import ViewInvoice from "../views/Org/Financial/Invoice/ViewInvoice.vue";
-import ReceiptList from "../views/Org/Financial/Receipt/ReceiptList.vue";
-import ViewReceipt from "../views/Org/Financial/Receipt/ViewReceipt.vue";
+import OrgReceiptList from "../views/Org/Financial/Receipt/ReceiptList.vue";
+import ViewOrgReceipt from "../views/Org/Financial/Receipt/ViewReceipt.vue";
 import BillCalculation from "@/views/Org/Financial/BillCalculation.vue";
 import BillList from "../views/Org/Financial/BillingList.vue";
 
@@ -686,15 +686,15 @@ const routes = [
           meta: { requiresAuth: true },
         },
         {
-          path: "receipt-list",
-          name: "receipt-list",
-          component: ReceiptList,
+          path: "org-receipt-list",
+          name: "org-receipt-list",
+          component: OrgReceiptList,
           meta: { requiresAuth: true },
         },
         {
-          path: "view-receipt",
-          name: "view-receipt",
-          component: ViewReceipt,
+          path: "view-org-receipt",
+          name: "view-org-receipt",
+          component: ViewOrgReceipt,
           meta: { requiresAuth: true },
         },
         {
