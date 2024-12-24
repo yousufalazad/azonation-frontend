@@ -33,7 +33,7 @@ const status = ref('');
 const cancelled_at = ref('');
 const is_active = ref(true);
 
-// Form fields for Order Items
+// Order Items Data
 const order_items = ref([{
   product_id: '',
   product_name: '',
@@ -57,7 +57,8 @@ const getUserList = async () => {
     userList.value = [];
   }
 }
-// Fetch user list for order
+
+// Fetch products for order
 const productList = ref([]);
 const getProducts = async () => {
   try {
@@ -69,6 +70,43 @@ const getProducts = async () => {
     console.error('Error fetching products:', error);
   }
 };
+
+// Add a new order item
+const addOrderItem = () => {
+  order_items.value.push({
+    product_id: '',
+    product_name: '',
+    product_attributes: '',
+    unit_price: '',
+    quantity: '',
+    total_price: '',
+    discount_amount: '',
+    note: '',
+    is_active: true,
+  });
+};
+
+// Remove an order item
+const removeOrderItem = (index) => {
+  order_items.value.splice(index, 1);
+};
+
+// Update product name based on selected product
+const updateProductName = (index) => {
+  const selectedProduct = productList.value.find(product => product.id === order_items.value[index].product_id);
+  order_items.value[index].product_name = selectedProduct ? selectedProduct.name : '';
+  order_items.value[index].unit_price = selectedProduct ? selectedProduct.price : '';
+  order_items.value[index].total_price = order_items.value[index].quantity * order_items.value[index].unit_price;
+};
+
+// Watch for changes in quantity or unit price to update total price
+watch(order_items, (newOrderItems) => {
+  newOrderItems.forEach(item => {
+    if (item.quantity && item.unit_price) {
+      item.total_price = item.quantity * item.unit_price;
+    }
+  });
+}, { deep: true });
 
 // Reset the order form
 const resetForm = () => {
@@ -111,23 +149,9 @@ const resetForm = () => {
 // Submit form
 const submitForm = async () => {
   if (!user_id.value || !order_number.value || !total_amount.value || !shipping_address.value || !billing_address.value || !status.value) {
-    Swal.fire('Error!', 'Please fill in all  fields.', 'error');
+    Swal.fire('Error!', 'Please fill in all fields.', 'error');
     return;
   }
-
-  // Find user name based on user_id
-  // const user_name = userList.value.find(user => user.id === user_id.value)?.name || 'Unknown';
-
-  // Watch each order item and update the product_name when product_id changes
-  watch(order_items, (newOrderItems) => {
-    newOrderItems.forEach(item => {
-      if (item.product_id) {
-        const selectedProduct = productList.value.find(product => product.id === item.product_id);
-        item.product_name = selectedProduct ? selectedProduct.name : 'Unknown'; // Ensure product_name is set
-      }
-    });
-  }, { deep: true });
-
 
   const payload = {
     user_id: user_id.value,
@@ -154,7 +178,6 @@ const submitForm = async () => {
     cancelled_at: cancelled_at.value,
     is_active: is_active.value,
     order_items: order_items.value,  // Use the updated order_items with product_name
-
   };
 
   try {
@@ -330,40 +353,102 @@ onMounted(() => {
 
       <!-- Order Items Section -->
       <div class="space-y-6">
-        <h3 class="text-lg font-semibold text-gray-700">Order Items</h3>
-        <div v-for="(item, index) in order_items" :key="index" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label for="product_id" class="block text-sm font-medium text-gray-700">Product</label>
-            <select v-model="item.product_id" id="product_id" class="w-full border border-gray-300 rounded-md p-2">
-              <option value="">Select Product</option>
-              <option v-for="product in productList" :key="product.id" :value="product.id">{{ product.name }}</option>
-            </select>
+        <!-- Order Items Section -->
+        <div>
+          <h3 class="text-lg font-bold text-gray-800 pb-4">Order Items</h3>
+
+          <!-- Dynamic Order Items List -->
+          <div v-for="(item, index) in order_items" :key="index" class="bg-white shadow rounded-lg p-6 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+              <!-- Product Selection -->
+              <div>
+                <label for="product_id" class="block text-sm font-medium text-gray-700">Product</label>
+                <select v-model="item.product_id" @change="updateProductName(index)" id="product_id"
+                  class="w-full border p-2 rounded-md">
+                  <option value="">Select Product</option>
+                  <option v-for="product in productList" :key="product.id" :value="product.id">{{ product.name }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Product Name (Auto-filled when product is selected) -->
+              <div>
+                <label for="product_name" class="block text-sm font-medium text-gray-700">Product Name</label>
+                <input v-model="item.product_name" type="text" id="product_name" class="w-full border p-2 rounded-md"
+                  disabled />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+              <!-- Product Attributes -->
+              <div>
+                <label for="product_attributes" class="block text-sm font-medium text-gray-700">Product
+                  Attributes</label>
+                <input v-model="item.product_attributes" type="text" id="product_attributes"
+                  class="w-full border p-2 rounded-md" />
+              </div>
+
+              <!-- Unit Price -->
+              <div>
+                <label for="unit_price" class="block text-sm font-medium text-gray-700">Unit Price</label>
+                <input v-model="item.unit_price" type="number" id="unit_price" class="w-full border p-2 rounded-md" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+              <!-- Quantity -->
+              <div>
+                <label for="quantity" class="block text-sm font-medium text-gray-700">Quantity</label>
+                <input v-model="item.quantity" type="number" id="quantity" class="w-full border p-2 rounded-md" />
+              </div>
+
+              <!-- Total Price -->
+              <div>
+                <label for="total_price" class="block text-sm font-medium text-gray-700">Total Price</label>
+                <input v-model="item.total_price" type="number" id="total_price" class="w-full border p-2 rounded-md"
+                  disabled />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+              <!-- Discount Amount -->
+              <div>
+                <label for="discount_amount" class="block text-sm font-medium text-gray-700">Discount Amount</label>
+                <input v-model="item.discount_amount" type="number" id="discount_amount"
+                  class="w-full border p-2 rounded-md" />
+              </div>
+
+              <!-- Item Note -->
+              <div>
+                <label for="note" class="block text-sm font-medium text-gray-700">Note</label>
+                <textarea v-model="item.note" id="note" rows="3" class="w-full border p-2 rounded-md"></textarea>
+              </div>
+            </div>
+
+            <!-- Remove Item Button -->
+            <div class="flex justify-end mt-4">
+              <button type="button" @click="removeOrderItem(index)"
+                class="bg-red-600 hover:bg-red-700 text-white py-1 px-3 text-sm rounded-md">
+                Remove Item
+              </button>
+            </div>
           </div>
 
-          <!-- Dynamically display product_name -->
-          <div>
-            <label for="product_name" class="block text-sm font-medium text-gray-700">Product Name</label>
-            <input v-model="item.product_name" type="text" class="input-field" readonly />
-          </div>
-          <div>
-            <label for="quantity" class="block text-sm font-medium text-gray-700">Quantity</label>
-            <input v-model="item.quantity" type="number" class="input-field" />
-          </div>
-          <div>
-            <label for="unit_price" class="block text-sm font-medium text-gray-700">Unit Price</label>
-            <input v-model="item.unit_price" type="number" class="input-field" />
-          </div>
-          <div>
-            <label for="total_price" class="block text-sm font-medium text-gray-700">Total Price</label>
-            <input v-model="item.total_price" type="number" class="input-field" />
+          <!-- Add New Item Button -->
+          <div class="flex justify-end mt-6">
+            <button type="button" @click="addOrderItem"
+              class="bg-green-600 hover:bg-green-700 text-white py-1 px-3 text-sm rounded-md">
+              Add New Item
+            </button>
           </div>
         </div>
       </div>
 
+
       <!-- Buttons -->
-      <div class="flex justify-between">
+      <div class="flex justify-center border-t border-gray-300 bg-gray-50 p-4">
         <button type="button" @click="resetForm"
-          class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-5 rounded-lg shadow">
+          class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-5 rounded-lg shadow mr-3">
           Reset
         </button>
         <button type="submit"
@@ -371,6 +456,7 @@ onMounted(() => {
           Submit
         </button>
       </div>
+
     </form>
   </div>
 </template>

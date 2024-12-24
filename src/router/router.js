@@ -176,7 +176,9 @@ import SuperAdminInvoiceView from "../views/SuperAdmin/Financial/Invoice/View.vu
 
 //Receipt
 import SuperAdminReceiptList from "@/views/SuperAdmin/Financial/Receipt/Index.vue";
-
+import SuperAdminReceiptCreate from "@/views/SuperAdmin/Financial/Receipt/Create.vue";
+import SuperAdminReceiptEdit from "@/views/SuperAdmin/Financial/Receipt/Edit.vue";
+import SuperAdminReceiptView from "@/views/SuperAdmin/Financial/Receipt/View.vue";
 
 
 //Payment Log
@@ -966,6 +968,24 @@ const routes = [
         path: "super-admin-receipt-list",
         name: "super-admin-receipt-list",
         component: SuperAdminReceiptList,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-receipt-create",
+        name: "super-admin-receipt-create",
+        component: SuperAdminReceiptCreate,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-receipt-edit/:id",
+        name: "super-admin-receipt-edit",
+        component: SuperAdminReceiptEdit,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-receipt-view/:id",
+        name: "super-admin-receipt-view",
+        component: SuperAdminReceiptView,
         meta: { requiresAuth: true },
       },
       {
