@@ -53,6 +53,7 @@ import OrgSettings from "../views/Org/Profile/Settings.vue";
 
 
 //Org Member
+import IndependentMember from "../views/Org/Member/IndependentMember.vue";
 import AddMember from "../views/Org/Member/AddMember.vue";
 import MemberList from "../views/Org/Member/MemberList.vue";
 
@@ -297,6 +298,12 @@ const routes = [
         path: "member-list",
         name: "member-list",
         component: MemberList,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "independent-member",
+        name: "independent-member",
+        component: IndependentMember,
         meta: { requiresAuth: true },
       },
       {

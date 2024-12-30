@@ -13,31 +13,44 @@
             <span v-if="isSidebarExpanded">Dashboard</span>
             <span v-else class="hidden">Dashboard</span>
           </router-link>
+
           <router-link to="/org-dashboard/member-list"
             class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Members</span>
             <span v-else class="hidden">Members</span>
           </router-link>
+
+
+          <router-link to="/org-dashboard/independent-member"
+            class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+            <span v-if="isSidebarExpanded">Independent Member</span>
+            <span v-else class="hidden">Independent Member</span>
+          </router-link>
+
           <router-link to="/org-dashboard/committee-list"
             class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Committees</span>
             <span v-else class="hidden">Committees</span>
           </router-link>
+
           <router-link to="/org-dashboard/meetings"
             class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Meetings</span>
             <span v-else class="hidden">Meetings</span>
           </router-link>
+
           <router-link to="/org-dashboard/events"
             class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Events</span>
             <span v-else class="hidden">Events</span>
           </router-link>
+
           <router-link to="/org-dashboard/projects"
             class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Projects</span>
             <span v-else class="hidden">Projects</span>
           </router-link>
+
           <router-link to="/org-dashboard/accounts" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Accounts</span>
             <span v-else class="hidden">Accounts</span>
