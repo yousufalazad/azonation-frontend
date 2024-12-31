@@ -79,9 +79,9 @@ const saveMember = async () => {
 
     const formData = new FormData();
     for (const key in form.value) {
-      // if (key === 'image_path' && !form.value.image_path) {
-      //   continue; // Skip image_path if no new file is selected
-      // }
+      if (key === 'image_path' && !form.value.image_path) {
+        continue; // Skip image_path if no new file is selected
+      }
       if (key === 'is_active') {
         formData.append(key, form.value[key] ? 1 : 0); // Convert to 1 or 0
       } else {
@@ -274,10 +274,7 @@ onMounted(() => {
           <!-- Image Upload -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Profile Image</label>
-            <!-- <input v-model="form.image_path" type="text"
-              class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"
-               /> -->
-            <input type="file" @change="handleFileUpload"
+            <input type="file" @change="handleFileUpload" accept="image/*"
               class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2" />
             <img v-if="previewImage" :src="previewImage" alt="Preview" class="mt-4 max-h-48 rounded-lg" />
           </div>
