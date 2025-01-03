@@ -2,17 +2,16 @@
 import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
+// const baseURL = 'http://localhost:8000';
 
 const auth = authStore;
 const form = ref({});
 const isModalOpen = ref(false);
 const editMode = ref(false);
-const isViewModalOpen = ref(false);
-
 const errorMessage = ref(null);
 const previewImage = ref(null);
-
-const selectedCategory = ref(null);
+const isViewModalOpen = ref(false);
+const selectedItem = ref(null);
 
 const business_types = ref([]);
 const fetchBusinessType = async () => {
@@ -25,9 +24,9 @@ const fetchBusinessType = async () => {
 };
 
 const categories = ref([]);
-const fetchCategories = async () => {
+const fetchItems = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/get-categories');
+    const response = await auth.uploadProtectedApi('/api/get-categories', {}, 'GET');
     categories.value = response.status ? response.data : [];
   } catch (error) {
     errorMessage.value = 'Error loading categories. Please try again later.';
@@ -43,10 +42,10 @@ const handleFileUpload = (event) => {
 };
 
 const openModal = (category = null) => {
-  form.value = category ? { ...category } : { is_active: true };
+  form.value = category ? { ...category, is_active: category.is_active === 1 } : { is_active: true };
   previewImage.value = null;
   if (category && category.category_image_path) {
-    previewImage.value = `/path/to/images/${category.category_image_path}`; // Adjust based on your API
+    previewImage.value = `${category.image_url}`; // Adjust based on your API
   }
   editMode.value = !!category;
   isModalOpen.value = true;
@@ -60,37 +59,47 @@ const closeModal = () => {
 };
 
 const openViewModal = (category) => {
-  selectedCategory.value = category;
+  selectedItem.value = category;
   isViewModalOpen.value = true;
 };
 
 const closeViewModal = () => {
   isViewModalOpen.value = false;
-  selectedCategory.value = null;
+  selectedItem.value = null;
 };
 
-const saveCategory = async () => {
+const saveItem = async () => {
   try {
-    // const formData = new FormData();
-    // for (const key in form.value) {
-    //   formData.append(key, form.value[key]);
-    // }
+    const endpoint = editMode.value
+      ? `/api/update-category/${form.value.id}`
+      : '/api/create-category';
+    const method = editMode.value ? 'POST' : 'POST'; // Always POST for FormData
 
-    const endpoint = editMode.value ? `/api/update-category/${form.value.id}` : '/api/create-category';
-    const method = editMode.value ? 'PUT' : 'POST';
-    const response = await auth.fetchProtectedApi(endpoint, form.value, method);
+    const formData = new FormData();
+    for (const key in form.value) {
+      if (key === 'category_image_path' && !form.value.category_image_path) {
+        continue; // Skip category_image_path if no new file is selected
+      }
+      if (key === 'is_active') {
+        formData.append(key, form.value[key] ? 1 : 0); // Convert to 1 or 0
+      } else {
+        formData.append(key, form.value[key]);
+      }
+    }
 
-    // const response = await auth.fetchProtectedApi(endpoint, formData, method, {
-    //   headers: { 'Content-Type': 'multipart/form-data' },
-    // });
+    if (editMode.value) {
+      formData.append('_method', 'PUT'); // Simulate PUT
+    }
+
+    const response = await auth.uploadProtectedApi(endpoint, formData, method);
 
     if (response.status) {
-      await fetchCategories();
+      await fetchItems();
       closeModal();
       Swal.fire({
         icon: 'success',
         title: 'Success',
-        text: `Category ${editMode.value ? 'updated' : 'created'} successfully.`,
+        text: `category ${editMode.value ? 'updated' : 'created'} successfully.`,
         timer: 2000,
         showConfirmButton: false,
       });
@@ -110,7 +119,7 @@ const saveCategory = async () => {
   }
 };
 
-const deleteCategory = async (id) => {
+const deleteMember = async (id) => {
   Swal.fire({
     title: 'Are you sure?',
     text: 'This action will delete the category permanently.',
@@ -122,13 +131,17 @@ const deleteCategory = async (id) => {
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
-        const response = await auth.fetchProtectedApi(`/api/delete-category/${id}`, {}, 'DELETE');
+        const response = await auth.uploadProtectedApi(
+          `/api/delete-category/${id}`,
+          {},
+          'DELETE'
+        );
         if (response.status) {
-          await fetchCategories();
+          await fetchItems();
           Swal.fire({
             icon: 'success',
             title: 'Deleted!',
-            text: 'Category has been deleted.',
+            text: 'category has been deleted.',
             timer: 2000,
             showConfirmButton: false,
           });
@@ -150,10 +163,9 @@ const deleteCategory = async (id) => {
   });
 };
 
-// Fetch Dialing Codes on mount
 onMounted(() => {
   fetchBusinessType();
-  fetchCategories();
+  fetchItems();
 });
 </script>
 
@@ -180,37 +192,38 @@ onMounted(() => {
         <thead class="bg-gray-50">
           <tr>
             <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Name</th>
-            <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Description</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Active</th>
             <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Business Type</th>
-            <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Order</th>
-            <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Description</th>
             <th class="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <tr v-for="category in categories" :key="category.id" class="hover:bg-gray-50 transition">
             <td class="px-6 py-4 text-sm text-gray-700">{{ category.name }}</td>
-            <td class="px-6 py-4 text-sm text-gray-700">{{ category.description }}</td>
-            <td class="px-6 py-4 text-sm text-gray-700">
-              {{ business_types.find(bt => bt.id === category.business_type_id)?.name || '-' }}
-            </td>
-            <td class="px-6 py-4 text-sm text-gray-700">{{ category.order }}</td>
             <td class="px-6 py-4 text-sm text-gray-700">
               <span :class="category.is_active ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'"
                 class="px-2 py-1 rounded-full text-xs font-medium">
                 {{ category.is_active ? 'Yes' : 'No' }}
               </span>
             </td>
+
+            <td class="px-6 py-4 text-sm text-gray-700">
+              {{ business_types.find(bt => bt.id === category.business_type_id)?.name || '-' }}
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-700">{{ category.description }}</td>
+            
             <td class="px-6 py-4 text-center">
               <button @click="openViewModal(category)"
                 class="bg-blue-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-blue-600 transition">
                 View
               </button>
+
               <button @click="openModal(category)"
                 class="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-yellow-600 transition">
                 Edit
               </button>
-              <button @click="deleteCategory(category.id)"
+              <button @click="deleteMember(category.id)"
                 class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition">
                 Delete
               </button>
@@ -225,7 +238,7 @@ onMounted(() => {
       <div class="bg-white rounded-lg p-6 w-full max-w-3xl shadow-lg overflow-y-auto max-h-[80vh] relative top-0">
         <h2 class="text-2xl font-semibold mb-6 text-gray-800">{{ editMode ? 'Edit' : 'Add' }} Category</h2>
 
-        <form @submit.prevent="saveCategory" class="grid grid-cols-2 gap-6">
+        <form @submit.prevent="saveItem" class="grid grid-cols-2 gap-6">
           <!-- Name -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -272,6 +285,12 @@ onMounted(() => {
             <input v-model="form.order" type="number"
               class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2" />
           </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Image</label>
+            <input type="file" @change="handleFileUpload" accept="image/*"
+              class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2" />
+            <img v-if="previewImage" :src="previewImage" alt="Preview" class="mt-4 max-h-48 rounded-lg" />
+          </div>
           <!-- Status -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Active</label>
@@ -281,24 +300,12 @@ onMounted(() => {
               <option :value="false">No</option>
             </select>
           </div>
-          <!-- Image Upload -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Category Image</label>
-            <input type="file" @change="handleFileUpload"
-              class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2" />
-            <img v-if="previewImage" :src="previewImage" alt="Preview" class="mt-4 max-h-48 rounded-lg" />
-          </div>
 
-          <!-- Buttons -->
-          <div class="col-span-2 flex justify-end gap-4">
+          <!-- Actions -->
+          <div class="col-span-2 mt-4 flex justify-between">
             <button type="button" @click="closeModal"
-              class="bg-gray-500 text-white px-6 py-2 rounded-lg shadow hover:bg-gray-600 transition">
-              Cancel
-            </button>
-            <button type="submit"
-              class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition">
-              Save
-            </button>
+              class="bg-gray-500 text-white px-6 py-2 rounded-lg">Cancel</button>
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg">Save</button>
           </div>
         </form>
       </div>
@@ -307,30 +314,111 @@ onMounted(() => {
     <!-- View Modal -->
     <div v-if="isViewModalOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div class="bg-white rounded-lg p-6 w-full max-w-3xl shadow-lg overflow-y-auto max-h-[80vh]">
-        <h2 class="text-2xl font-semibold mb-6 text-gray-800">View Category </h2>
-        <div class="grid grid-cols-1 gap-4">
-          <p><strong>Business Type:</strong>
-            {{ business_types.find(bt => bt.id === selectedCategory.business_type_id)?.name || '-' }}
-          </p>
-          <p><strong>Name:</strong> {{ selectedCategory.name }}</p>
-          <p><strong>Description:</strong> {{ selectedCategory.description }}</p>
-          <p><strong>Meta Description:</strong> {{ selectedCategory.meta_description }}</p>
-          <p><strong>Order:</strong> {{ selectedCategory.order }}</p>
-          <p><strong>Status:</strong> {{ selectedCategory.is_active ? 'Active' : 'Inactive' }}</p>
+        <h2 class="text-2xl font-semibold mb-6 text-gray-800">Category Details</h2>
+
+        <table class="w-full border border-gray-300 rounded-lg">
+          <tbody>
+            <tr class="border-b">
+              <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50 w-20">
+                Name
+              </th>
+              <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                :
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-800">
+                {{ selectedItem.name || "N/A" }}
+              </td>
+            </tr>
+            <tr class="border-b">
+              <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50 w-20">
+                Slug
+              </th>
+              <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                :
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-800">
+                {{ selectedItem.slug || "N/A" }}
+              </td>
+            </tr>
+            <tr class="border-b">
+              <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50 w-20">
+                Business Type
+              </th>
+              <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                :
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-800">
+                {{ business_types.find(bt => bt.id === selectedItem.business_type_id)?.name || '-' }}
+              </td>
+            </tr>
+            <tr class="border-b">
+              <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50">
+                Description
+              </th>
+              <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                :
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-800">
+                {{ selectedItem.description || "N/A" }}
+              </td>
+            </tr>
+            <tr class="border-b">
+              <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50">
+                Meta Description
+              </th>
+              <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                :
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-800">
+                {{ selectedItem.meta_description || "N/A" }}
+              </td>
+            </tr>
+            <tr class="border-b">
+              <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50">
+                Image
+              </th>
+              <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                :
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-800">
+                <img v-if="selectedItem.image_url" :src="selectedItem.image_url" alt="Logo"
+                  class="max-h-48 rounded-lg" />
+                <span v-else class="text-gray-500">No image available</span>
+              </td>
+            </tr>
+            <tr>
+              <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50">
+                Order
+              </th>
+              <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                :
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-800">
+                {{ selectedItem.order }}
+              </td>
+            </tr>
+            <tr>
+              <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50">
+                Active
+              </th>
+              <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                :
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-800">
+                {{ selectedItem.is_active ? "Yes" : "No" }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="mt-6 flex justify-end">
+          <button @click="closeViewModal" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600">
+            Close
+          </button>
         </div>
-        <button @click="closeViewModal"
-          class="bg-gray-500 text-white px-6 py-2 rounded-lg shadow hover:bg-gray-600 transition mt-4">
-          Close
-        </button>
       </div>
     </div>
 
+
   </div>
 </template>
-
-
-<style scoped>
-.container {
-  max-width: 1200px;
-}
-</style>

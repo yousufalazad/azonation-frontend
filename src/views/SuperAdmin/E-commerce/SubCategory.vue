@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
+// const baseURL = 'http://localhost:8000';
 
 const auth = authStore;
 const form = ref({});
@@ -9,9 +10,8 @@ const isModalOpen = ref(false);
 const editMode = ref(false);
 const errorMessage = ref(null);
 const previewImage = ref(null);
-
 const isViewModalOpen = ref(false);
-const selectedSubCategory = ref(null);
+const selectedItem = ref(null);
 
 const categories = ref([]);
 const fetchCategories = async () => {
@@ -24,9 +24,9 @@ const fetchCategories = async () => {
 };
 
 const subCategories = ref([]);
-const fetchSubCategories = async () => {
+const fetchItems = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-sub-categories');
+        const response = await auth.uploadProtectedApi('/api/get-sub-categories', {}, 'GET');
         subCategories.value = response.status ? response.data : [];
     } catch (error) {
         errorMessage.value = 'Error loading subCategories. Please try again later.';
@@ -42,10 +42,10 @@ const handleFileUpload = (event) => {
 };
 
 const openModal = (subCategory = null) => {
-    form.value = subCategory ? { ...subCategory } : { is_active: true };
+    form.value = subCategory ? { ...subCategory, is_active: subCategory.is_active === 1 } : { is_active: true };
     previewImage.value = null;
     if (subCategory && subCategory.sub_category_image_path) {
-        previewImage.value = `/path/to/images/${subCategory.sub_category_image_path}`; // Adjust based on your API
+        previewImage.value = `${subCategory.image_url}`; // Adjust based on your API
     }
     editMode.value = !!subCategory;
     isModalOpen.value = true;
@@ -59,38 +59,47 @@ const closeModal = () => {
 };
 
 const openViewModal = (subCategory) => {
-  selectedSubCategory.value = subCategory;
-  isViewModalOpen.value = true;
+    selectedItem.value = subCategory;
+    isViewModalOpen.value = true;
 };
 
 const closeViewModal = () => {
-  isViewModalOpen.value = false;
-  selectedSubCategory.value = null;
+    isViewModalOpen.value = false;
+    selectedItem.value = null;
 };
 
-
-const saveSubCategory = async () => {
+const saveItem = async () => {
     try {
-        // const formData = new FormData();
-        // for (const key in form.value) {
-        //   formData.append(key, form.value[key]);
-        // }
+        const endpoint = editMode.value
+            ? `/api/update-sub-category/${form.value.id}`
+            : '/api/create-sub-category';
+        const method = editMode.value ? 'POST' : 'POST'; // Always POST for FormData
 
-        const endpoint = editMode.value ? `/api/update-sub-category/${form.value.id}` : '/api/create-sub-category';
-        const method = editMode.value ? 'PUT' : 'POST';
-        const response = await auth.fetchProtectedApi(endpoint, form.value, method);
+        const formData = new FormData();
+        for (const key in form.value) {
+            if (key === 'sub_category_image_path' && !form.value.sub_category_image_path) {
+                continue; // Skip sub_category_image_path if no new file is selected
+            }
+            if (key === 'is_active') {
+                formData.append(key, form.value[key] ? 1 : 0); // Convert to 1 or 0
+            } else {
+                formData.append(key, form.value[key]);
+            }
+        }
 
-        // const response = await auth.fetchProtectedApi(endpoint, formData, method, {
-        //   headers: { 'Content-Type': 'multipart/form-data' },
-        // });
+        if (editMode.value) {
+            formData.append('_method', 'PUT'); // Simulate PUT
+        }
+
+        const response = await auth.uploadProtectedApi(endpoint, formData, method);
 
         if (response.status) {
-            await fetchSubCategories();
+            await fetchItems();
             closeModal();
             Swal.fire({
                 icon: 'success',
                 title: 'Success',
-                text: `Sub Category ${editMode.value ? 'updated' : 'created'} successfully.`,
+                text: `sub-category ${editMode.value ? 'updated' : 'created'} successfully.`,
                 timer: 2000,
                 showConfirmButton: false,
             });
@@ -98,22 +107,22 @@ const saveSubCategory = async () => {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Could not save the sub category. Please try again.',
+                text: 'Could not save the sub-category. Please try again.',
             });
         }
     } catch (error) {
         Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'An error occurred while saving the category.',
+            text: 'An error occurred while saving the sub-category.',
         });
     }
 };
 
-const deleteSubCategory = async (id) => {
+const deleteMember = async (id) => {
     Swal.fire({
         title: 'Are you sure?',
-        text: 'This action will delete the sub category permanently.',
+        text: 'This action will delete the sub-category permanently.',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
@@ -122,13 +131,17 @@ const deleteSubCategory = async (id) => {
     }).then(async (result) => {
         if (result.isConfirmed) {
             try {
-                const response = await auth.fetchProtectedApi(`/api/delete-sub-category/${id}`, {}, 'DELETE');
+                const response = await auth.uploadProtectedApi(
+                    `/api/delete-sub-category/${id}`,
+                    {},
+                    'DELETE'
+                );
                 if (response.status) {
-                    await fetchSubCategories();
+                    await fetchItems();
                     Swal.fire({
                         icon: 'success',
                         title: 'Deleted!',
-                        text: 'Sub Category has been deleted.',
+                        text: 'sub-category has been deleted.',
                         timer: 2000,
                         showConfirmButton: false,
                     });
@@ -136,30 +149,28 @@ const deleteSubCategory = async (id) => {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: 'Could not delete the sub category. Please try again.',
+                        text: 'Could not delete the sub-category. Please try again.',
                     });
                 }
             } catch (error) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'An error occurred while deleting the sub category.',
+                    text: 'An error occurred while deleting the sub-category.',
                 });
             }
         }
     });
 };
 
-// Fetch Dialing Codes on mount
 onMounted(() => {
     fetchCategories();
-    fetchSubCategories();
+    fetchItems();
 });
 </script>
 
 <template>
     <div class="container mx-auto p-6 bg-gray-100 min-h-screen">
-
         <div class="flex justify-between left-color-shade py-2 my-3">
             <h5 class="text-md font-semibold mt-2">Sub Category Management</h5>
             <div>
@@ -214,11 +225,12 @@ onMounted(() => {
                                 class="bg-blue-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-blue-600 transition">
                                 View
                             </button>
+
                             <button @click="openModal(subCategory)"
                                 class="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-yellow-600 transition">
                                 Edit
                             </button>
-                            <button @click="deleteSubCategory(subCategory.id)"
+                            <button @click="deleteMember(subCategory.id)"
                                 class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition">
                                 Delete
                             </button>
@@ -233,7 +245,7 @@ onMounted(() => {
             <div class="bg-white rounded-lg p-6 w-full max-w-3xl shadow-lg overflow-y-auto max-h-[80vh] relative top-0">
                 <h2 class="text-2xl font-semibold mb-6 text-gray-800">{{ editMode ? 'Edit' : 'Add' }} Sub Category</h2>
 
-                <form @submit.prevent="saveSubCategory" class="grid grid-cols-2 gap-6">
+                <form @submit.prevent="saveItem" class="grid grid-cols-2 gap-6">
                     <!-- Name -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -280,6 +292,12 @@ onMounted(() => {
                         <input v-model="form.order" type="number"
                             class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2" />
                     </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Image</label>
+                        <input type="file" @change="handleFileUpload" accept="image/*"
+                            class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2" />
+                        <img v-if="previewImage" :src="previewImage" alt="Preview" class="mt-4 max-h-48 rounded-lg" />
+                    </div>
                     <!-- Status -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Active</label>
@@ -289,24 +307,12 @@ onMounted(() => {
                             <option :value="false">No</option>
                         </select>
                     </div>
-                    <!-- Image Upload -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Sub Category Image</label>
-                        <input type="file" @change="handleFileUpload"
-                            class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2" />
-                        <img v-if="previewImage" :src="previewImage" alt="Preview" class="mt-4 max-h-48 rounded-lg" />
-                    </div>
 
-                    <!-- Buttons -->
-                    <div class="col-span-2 flex justify-end gap-4">
+                    <!-- Actions -->
+                    <div class="col-span-2 mt-4 flex justify-between">
                         <button type="button" @click="closeModal"
-                            class="bg-gray-500 text-white px-6 py-2 rounded-lg shadow hover:bg-gray-600 transition">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                            class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition">
-                            Save
-                        </button>
+                            class="bg-gray-500 text-white px-6 py-2 rounded-lg">Cancel</button>
+                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg">Save</button>
                     </div>
                 </form>
             </div>
@@ -315,30 +321,112 @@ onMounted(() => {
         <!-- View Modal -->
         <div v-if="isViewModalOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
             <div class="bg-white rounded-lg p-6 w-full max-w-3xl shadow-lg overflow-y-auto max-h-[80vh]">
-                <h2 class="text-2xl font-semibold mb-6 text-gray-800">View Sub Category </h2>
-                <div class="grid grid-cols-1 gap-4">
-                <p><strong>Category:</strong>
-                    {{ categories.find(c => c.id === selectedSubCategory.category_id)?.name || '-' }}
-                </p>
-                <p><strong>Name:</strong> {{ selectedSubCategory.name }}</p>
-                <p><strong>Description:</strong> {{ selectedSubCategory.description }}</p>
-                <p><strong>Meta Description:</strong> {{ selectedSubCategory.meta_description }}</p>
-                <p><strong>Order:</strong> {{ selectedSubCategory.order }}</p>
-                <p><strong>Status:</strong> {{ selectedSubCategory.is_active ? 'Active' : 'Inactive' }}</p>
+                <h2 class="text-2xl font-semibold mb-6 text-gray-800">Sub Category Details</h2>
+
+                <table class="w-full border border-gray-300 rounded-lg">
+                    <tbody>
+                        <tr class="border-b">
+                            <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50 w-20">
+                                Name
+                            </th>
+                            <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                                :
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-800">
+                                {{ selectedItem.name || "N/A" }}
+                            </td>
+                        </tr>
+                        <tr class="border-b">
+                            <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50 w-20">
+                                Slug
+                            </th>
+                            <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                                :
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-800">
+                                {{ selectedItem.slug || "N/A" }}
+                            </td>
+                        </tr>
+                        <tr class="border-b">
+                            <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50 w-20">
+                                Category
+                            </th>
+                            <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                                :
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-800">
+                                {{ categories.find(c => c.id === selectedItem.category_id)?.name || '-' }}
+                            </td>
+                        </tr>
+                        <tr class="border-b">
+                            <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50">
+                                Description
+                            </th>
+                            <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                                :
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-800">
+                                {{ selectedItem.description || "N/A" }}
+                            </td>
+                        </tr>
+                        <tr class="border-b">
+                            <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50">
+                                Meta Description
+                            </th>
+                            <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                                :
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-800">
+                                {{ selectedItem.meta_description || "N/A" }}
+                            </td>
+                        </tr>
+                        <tr class="border-b">
+                            <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50">
+                                Image
+                            </th>
+                            <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                                :
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-800">
+                                <img v-if="selectedItem.image_url" :src="selectedItem.image_url" alt="Logo"
+                                    class="max-h-48 rounded-lg" />
+                                <span v-else class="text-gray-500">No image available</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50">
+                                Order
+                            </th>
+                            <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                                :
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-800">
+                                {{ selectedItem.order }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50">
+                                Active
+                            </th>
+                            <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                                :
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-800">
+                                {{ selectedItem.is_active ? "Yes" : "No" }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="mt-6 flex justify-end">
+                    <button @click="closeViewModal"
+                        class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600">
+                        Close
+                    </button>
                 </div>
-                <button @click="closeViewModal"
-                class="bg-gray-500 text-white px-6 py-2 rounded-lg shadow hover:bg-gray-600 transition mt-4">
-                Close
-                </button>
             </div>
         </div>
 
+
     </div>
 </template>
-
-
-<style scoped>
-.container {
-    max-width: 1200px;
-}
-</style>

@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
+// const baseURL = 'http://localhost:8000';
 
 const auth = authStore;
 const form = ref({});
@@ -9,14 +10,13 @@ const isModalOpen = ref(false);
 const editMode = ref(false);
 const errorMessage = ref(null);
 const previewImage = ref(null);
-
 const isViewModalOpen = ref(false);
-const selectedBrand = ref(null);
+const selectedItem = ref(null);
 
 const brands = ref([]);
-const fetchBrands = async () => {
+const fetchItems = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/get-brands');
+    const response = await auth.uploadProtectedApi('/api/get-brands', {}, 'GET');
     brands.value = response.status ? response.data : [];
   } catch (error) {
     errorMessage.value = 'Error loading brands. Please try again later.';
@@ -32,10 +32,10 @@ const handleFileUpload = (event) => {
 };
 
 const openModal = (brand = null) => {
-  form.value = brand ? { ...brand } : { is_active: true };
+  form.value = brand ? { ...brand, is_active: brand.is_active === 1 } : { is_active: true };
   previewImage.value = null;
   if (brand && brand.logo_path) {
-    previewImage.value = `/path/to/images/${brand.logo_path}`; // Adjust based on your API
+    previewImage.value = `${brand.logo_url}`; // Adjust based on your API
   }
   editMode.value = !!brand;
   isModalOpen.value = true;
@@ -49,32 +49,42 @@ const closeModal = () => {
 };
 
 const openViewModal = (brand) => {
-  selectedBrand.value = brand;
+  selectedItem.value = brand;
   isViewModalOpen.value = true;
 };
 
 const closeViewModal = () => {
   isViewModalOpen.value = false;
-  selectedBrand.value = null;
+  selectedItem.value = null;
 };
 
-const saveBrand = async () => {
+const saveItem = async () => {
   try {
-    // const formData = new FormData();
-    // for (const key in form.value) {
-    //   formData.append(key, form.value[key]);
-    // }
+    const endpoint = editMode.value
+      ? `/api/update-brand/${form.value.id}`
+      : '/api/create-brand';
+    const method = editMode.value ? 'POST' : 'POST'; // Always POST for FormData
 
-    const endpoint = editMode.value ? `/api/update-brand/${form.value.id}` : '/api/create-brand';
-    const method = editMode.value ? 'PUT' : 'POST';
-    const response = await auth.fetchProtectedApi(endpoint, form.value, method);
+    const formData = new FormData();
+    for (const key in form.value) {
+      if (key === 'logo_path' && !form.value.logo_path) {
+        continue; // Skip logo_path if no new file is selected
+      }
+      if (key === 'is_active') {
+        formData.append(key, form.value[key] ? 1 : 0); // Convert to 1 or 0
+      } else {
+        formData.append(key, form.value[key]);
+      }
+    }
 
-    // const response = await auth.fetchProtectedApi(endpoint, formData, method, {
-    //   headers: { 'Content-Type': 'multipart/form-data' },
-    // });
+    if (editMode.value) {
+      formData.append('_method', 'PUT'); // Simulate PUT
+    }
+
+    const response = await auth.uploadProtectedApi(endpoint, formData, method);
 
     if (response.status) {
-      await fetchBrands();
+      await fetchItems();
       closeModal();
       Swal.fire({
         icon: 'success',
@@ -99,7 +109,7 @@ const saveBrand = async () => {
   }
 };
 
-const deleteBrand = async (id) => {
+const deleteMember = async (id) => {
   Swal.fire({
     title: 'Are you sure?',
     text: 'This action will delete the brand permanently.',
@@ -111,9 +121,13 @@ const deleteBrand = async (id) => {
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
-        const response = await auth.fetchProtectedApi(`/api/delete-brand/${id}`, {}, 'DELETE');
+        const response = await auth.uploadProtectedApi(
+          `/api/delete-brand/${id}`,
+          {},
+          'DELETE'
+        );
         if (response.status) {
-          await fetchBrands();
+          await fetchItems();
           Swal.fire({
             icon: 'success',
             title: 'Deleted!',
@@ -139,20 +153,19 @@ const deleteBrand = async (id) => {
   });
 };
 
-// Fetch Dialing Codes on mount
 onMounted(() => {
-  fetchBrands();
+  fetchItems();
 });
 </script>
 
 <template>
   <div class="container mx-auto p-6 bg-gray-100 min-h-screen">
     <div class="flex justify-between left-color-shade py-2 my-3">
-      <h5 class="text-md font-semibold mt-2">Brand Management</h5>
+      <h5 class="text-md font-semibold mt-2">Brands Management</h5>
       <div>
         <button @click="openModal()"
           class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition">
-          Add Brand
+          Add Brands
         </button>
       </div>
     </div>
@@ -167,20 +180,16 @@ onMounted(() => {
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-[100px]">Name</th>
-            <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-[300px]">
-              Description</th>
-            <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-[100px]">Active
-            </th>
-            <th class="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider w-[200px]">Actions
-            </th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Name</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Description</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Active</th>
+            <th class="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <tr v-for="brand in brands" :key="brand.id" class="hover:bg-gray-50 transition">
             <td class="px-6 py-4 text-sm text-gray-700">{{ brand.name }}</td>
             <td class="px-6 py-4 text-sm text-gray-700">{{ brand.description }}</td>
-
             <td class="px-6 py-4 text-sm text-gray-700">
               <span :class="brand.is_active ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'"
                 class="px-2 py-1 rounded-full text-xs font-medium">
@@ -189,15 +198,15 @@ onMounted(() => {
             </td>
             <td class="px-6 py-4 text-center">
               <button @click="openViewModal(brand)"
-                  class="bg-blue-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-blue-600 transition">
-                  View
+                class="bg-blue-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-blue-600 transition">
+                View
               </button>
 
               <button @click="openModal(brand)"
                 class="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-yellow-600 transition">
                 Edit
               </button>
-              <button @click="deleteBrand(brand.id)"
+              <button @click="deleteMember(brand.id)"
                 class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition">
                 Delete
               </button>
@@ -212,7 +221,7 @@ onMounted(() => {
       <div class="bg-white rounded-lg p-6 w-full max-w-3xl shadow-lg overflow-y-auto max-h-[80vh] relative top-0">
         <h2 class="text-2xl font-semibold mb-6 text-gray-800">{{ editMode ? 'Edit' : 'Add' }} Brand</h2>
 
-        <form @submit.prevent="saveBrand" class="grid grid-cols-2 gap-6">
+        <form @submit.prevent="saveItem" class="grid grid-cols-2 gap-6">
           <!-- Name -->
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -220,12 +229,17 @@ onMounted(() => {
               class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"
               required />
           </div>
-          <!-- Description -->
+          <!-- description -->
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea v-model="form.description"
-              class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"
-              required></textarea>
+              class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Image</label>
+            <input type="file" @change="handleFileUpload" accept="image/*"
+              class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2" />
+            <img v-if="previewImage" :src="previewImage" alt="Preview" class="mt-4 max-h-48 rounded-lg" />
           </div>
           <!-- Status -->
           <div>
@@ -236,24 +250,12 @@ onMounted(() => {
               <option :value="false">No</option>
             </select>
           </div>
-          <!-- Image Upload -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Brand Logo</label>
-            <input type="file" @change="handleFileUpload"
-              class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2" />
-            <img v-if="previewImage" :src="previewImage" alt="Preview" class="mt-4 max-h-48 rounded-lg" />
-          </div>
 
-          <!-- Buttons -->
-          <div class="col-span-2 flex justify-end gap-4">
+          <!-- Actions -->
+          <div class="col-span-2 mt-4 flex justify-between">
             <button type="button" @click="closeModal"
-              class="bg-gray-500 text-white px-6 py-2 rounded-lg shadow hover:bg-gray-600 transition">
-              Cancel
-            </button>
-            <button type="submit"
-              class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition">
-              Save
-            </button>
+              class="bg-gray-500 text-white px-6 py-2 rounded-lg">Cancel</button>
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg">Save</button>
           </div>
         </form>
       </div>
@@ -261,27 +263,67 @@ onMounted(() => {
 
     <!-- View Modal -->
     <div v-if="isViewModalOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white rounded-lg p-6 w-full max-w-3xl shadow-lg overflow-y-auto max-h-[80vh]">
-            <h2 class="text-2xl font-semibold mb-6 text-gray-800">View Brand </h2>
-            <div class="grid grid-cols-1 gap-4">
-            <p><strong>Name:</strong> {{ selectedBrand.name }}</p>
-            <p><strong>Description:</strong> {{ selectedBrand.description }}</p>
-            <p><strong>Order:</strong> {{ selectedBrand.order }}</p>
-            <p><strong>Status:</strong> {{ selectedBrand.is_active ? 'Active' : 'Inactive' }}</p>
-            </div>
-            <button @click="closeViewModal"
-            class="bg-gray-500 text-white px-6 py-2 rounded-lg shadow hover:bg-gray-600 transition mt-4">
+      <div class="bg-white rounded-lg p-6 w-full max-w-3xl shadow-lg overflow-y-auto max-h-[80vh]">
+        <h2 class="text-2xl font-semibold mb-6 text-gray-800">Brand Details</h2>
+
+        <table class="w-full border border-gray-300 rounded-lg">
+          <tbody>
+            <tr class="border-b">
+              <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50 w-20" >
+                Name
+              </th>
+              <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                :
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-800">
+                {{ selectedItem.name || "N/A" }}
+              </td>
+            </tr>
+            <tr class="border-b">
+              <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50" >
+                Description
+              </th>
+              <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                :
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-800">
+                {{ selectedItem.description || "N/A" }}
+              </td>
+            </tr>
+            <tr class="border-b">
+              <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50" >
+                Image
+              </th>
+              <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                :
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-800">
+                <img v-if="selectedItem.logo_url" :src="selectedItem.logo_url" alt="Logo" class="max-h-48 rounded-lg" />
+                <span v-else class="text-gray-500">No image available</span>
+              </td>
+            </tr>
+            <tr>
+              <th class="px-6 py-4 text-left text-sm font-medium text-gray-700 bg-gray-50" >
+                Active
+              </th>
+              <td class="px-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                :
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-800">
+                {{ selectedItem.is_active ? "Yes" : "No" }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="mt-6 flex justify-end">
+          <button @click="closeViewModal" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600">
             Close
-            </button>
+          </button>
         </div>
+      </div>
     </div>
+
 
   </div>
 </template>
-
-
-<style scoped>
-.container {
-  max-width: 1200px;
-}
-</style>
