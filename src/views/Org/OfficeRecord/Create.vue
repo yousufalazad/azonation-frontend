@@ -42,7 +42,7 @@ const submitForm = async () => {
     formData.append('user_id', userId);
     formData.append('title', title.value);
     formData.append('description', description.value);
-    formData.append('status', privacySetupId.value);
+    formData.append('privacy_setup_id', privacySetupId.value);
 
     // Append each image file to the FormData
     if (images.value.length) {
