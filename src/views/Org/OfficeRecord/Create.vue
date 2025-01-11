@@ -1,73 +1,77 @@
-<!-- create.vue -->
 <script setup>
 import { ref } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
 import { useRouter } from 'vue-router';
+
 const router = useRouter();
 const auth = authStore;
 const userId = auth.user.id;
 
 const title = ref('');
-const images = ref([]);
+const images = ref([{ id: Date.now(), file: null }]);
+const documents = ref([{ id: Date.now(), file: null }]);
 const description = ref('');
 const privacySetupId = ref(1);
-const document = ref(null);
 
 const resetForm = () => {
     title.value = '';
-    images.value = [];
-    document.value = null;
+    images.value = [{ id: Date.now(), file: null }];
+    documents.value = [{ id: Date.now(), file: null }];
     description.value = '';
     privacySetupId.value = 1;
 };
 
-const handleImages = (event) => {
-    images.value = Array.from(event.target.files).map(file => ({
-        file,
-        preview: URL.createObjectURL(file)
-    }));
+const handleFileChange = (event, fileList, index) => {
+    const file = event.target.files[0];
+    if (file) {
+        fileList[index].file = {
+            file,
+            preview: URL.createObjectURL(file),
+            name: file.name
+        };
+    }
 };
-// Remove image from the list
-const removeImage = (index) => {
-    images.value.splice(index, 1);
+
+const addMoreFiles = (fileList) => {
+    fileList.push({ id: Date.now(), file: null });
 };
-const handleDocument = (event) => {
-    document.value = event.target.files[0];
+
+const removeFile = (fileList, index) => {
+    if (fileList[index].file && fileList[index].file.preview) {
+        URL.revokeObjectURL(fileList[index].file.preview); // Release memory
+    }
+    fileList.splice(index, 1);
 };
 
 const submitForm = async () => {
-    // Create FormData object to send images and other form data
     const formData = new FormData();
     formData.append('user_id', userId);
     formData.append('title', title.value);
     formData.append('description', description.value);
     formData.append('privacy_setup_id', privacySetupId.value);
 
-    // Append each image file to the FormData
-    if (images.value.length) {
-        images.value.forEach((img, index) => {
-            formData.append(`images[${index}]`, img.file); // Handle multiple image upload
-        });
-    }
+    images.value.forEach((fileData, index) => {
+        if (fileData.file) {
+            formData.append(`images[${index}]`, fileData.file.file);
+        }
+    });
 
-    // Append document file if it exists
-    if (document.value) {
-        formData.append('document', document.value); // Handle document upload
-    }
+    documents.value.forEach((fileData, index) => {
+        if (fileData.file) {
+            formData.append(`documents[${index}]`, fileData.file.file);
+        }
+    });
 
     try {
         let apiUrl = '/api/create-office-record';
-        // if (isEditMode.value && selectedRecordId.value) {
-        //     apiUrl = `/api/update-office-record/${selectedRecordId.value}`;
-        // }
         const result = await Swal.fire({
             title: 'Are you sure?',
             text: 'Do you want to add this record?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, save it!',
-            cancelButtonText: 'No, cancel!'
+            cancelButtonText: 'No, cancel!',
         });
 
         if (result.isConfirmed) {
@@ -77,72 +81,98 @@ const submitForm = async () => {
 
             if (response.status) {
                 Swal.fire('Success!', 'Record added successfully.', 'success').then(() => {
-                    // Redirect to event list
                     router.push({ name: 'index-record' });
-                    resetForm(); // Reset the form fields
-                    // getRecords(); // Refresh the record list
+                    resetForm();
                 });
             } else {
-                Swal.fire('Failed!', 'Failed to added record.', 'error');
-            } 
+                Swal.fire('Failed!', 'Failed to add record.', 'error');
+            }
         }
-        
     } catch (error) {
         console.error('Error adding record:', error);
         Swal.fire('Error!', 'Failed to add record.', 'error');
     }
 };
 </script>
-<template>
-    <div class="container mx-auto max-w-7xl mx-auto w-10/12 p-6 bg-white rounded-lg shadow-md mt-10">
-        <div class="flex justify-between items-center mb-6">
-            <h5 class="text-xl font-semibold">Add New Record</h5>
-            <button @click="$router.push({ name: 'index-record' })"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
-                Back to Record List
-            </button>
-        </div>
 
+<template>
+    <div class="container mx-auto max-w-7xl p-6 bg-white rounded-lg shadow-md mt-10">
         <form @submit.prevent="submitForm">
-            <!-- Title input -->
+            <!-- Title Input -->
             <div class="mb-4">
                 <label for="title" class="block text-gray-700 font-semibold mb-2">Title</label>
-                <input v-model="title" type="text" id="title" class="w-full border border-gray-300 rounded-md py-2 px-4"
-                    placeholder="Enter title" required />
+                <input v-model="title" type="text" id="title" class="w-full border border-gray-300 rounded-md py-2 px-4" placeholder="Enter title" required />
             </div>
 
-            <!-- Image input with preview and remove button -->
+            <!-- Images Upload -->
             <div class="mb-4">
-                <label for="images" class="block text-gray-700 font-semibold mb-2">Upload Images</label>
-                <input @change="handleImages" type="file" id="images"
-                    class="w-full border border-gray-300 rounded-md py-2 px-4" accept="image/*" multiple />
-                <!-- Image preview -->
-                <div class="mt-3 flex flex-wrap">
-                    <div v-for="(img, index) in images" :key="index" class="relative group w-32 h-32 mr-2 mb-2">
-                        <img :src="img.preview" class="w-full h-full object-cover rounded-md">
-                        <button @click="removeImage(index)"
-                            class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            &times;
-                        </button>
+                <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
+                <div class="space-y-3">
+                    <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
+                        <input
+                            type="file"
+                            class="border border-gray-300 rounded-md py-2 px-4"
+                            accept="image/*"
+                            @change="event => handleFileChange(event, images, index)"
+                        />
+
+                        <div v-if="file.file && file.file.preview" class="w-16 h-16 border rounded-md overflow-hidden">
+                            <img :src="file.file.preview" alt="Preview" class="w-full h-full object-cover" />
+                        </div>
+
+                        <button
+                            type="button"
+                            class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
+                            @click="removeFile(images, index)"
+                        >X</button>
                     </div>
                 </div>
+                <button
+                    type="button"
+                    class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+                    @click="() => addMoreFiles(images)"
+                >
+                    Add more image
+                </button>
             </div>
 
-            <!-- Description input -->
+            <!-- Documents Upload -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">Upload Documents</label>
+                <div class="space-y-3">
+                    <div v-for="(file, index) in documents" :key="file.id" class="flex items-center gap-4">
+                        <input
+                            type="file"
+                            class="border border-gray-300 rounded-md py-2 px-4"
+                            accept=".pdf,.doc,.docx"
+                            @change="event => handleFileChange(event, documents, index)"
+                        />
+
+                        <span v-if="file.file" class="truncate w-32">{{ file.file.name }}</span>
+
+                        <button
+                            type="button"
+                            class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
+                            @click="removeFile(documents, index)"
+                        >X</button>
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+                    @click="() => addMoreFiles(documents)"
+                >
+                    Add more document
+                </button>
+            </div>
+
+            <!-- Description -->
             <div class="mb-4">
                 <label for="description" class="block text-gray-700 font-semibold mb-2">Description</label>
-                <textarea v-model="description" id="description" class="w-full border border-gray-300 rounded-md"
-                    placeholder="Enter description"></textarea>
+                <textarea v-model="description" id="description" class="w-full border border-gray-300 rounded-md py-2 px-4" placeholder="Enter description"></textarea>
             </div>
 
-            <!-- Document input -->
-            <div class="mb-4">
-                <label for="document" class="block text-gray-700 font-semibold mb-2">Upload Document (PDF)</label>
-                <input @change="handleDocument" type="file" id="document"
-                    class="w-full border border-gray-300 rounded-md py-2 px-4" accept=".pdf" />
-            </div>
-
-            <!-- Privacy setup -->
+            <!-- Privacy Setup -->
             <div class="mb-4">
                 <label class="block text-gray-700 font-semibold mb-2">Privacy Setup</label>
                 <select v-model="privacySetupId" class="w-full border border-gray-300 rounded-md py-2 px-4">
@@ -152,12 +182,10 @@ const submitForm = async () => {
                 </select>
             </div>
 
-            <!-- Submit button -->
+            <!-- Buttons -->
             <div class="flex justify-end gap-4">
-                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Add
-                    Record</button>
-                <button type="button" @click="resetForm"
-                    class="px-6 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500">Reset</button>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Add Record</button>
+                <button type="button" @click="resetForm" class="px-6 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500">Reset</button>
             </div>
         </form>
     </div>

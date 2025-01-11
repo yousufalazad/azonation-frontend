@@ -205,7 +205,7 @@ onMounted(() => {
         <section>
             <div class="flex justify-between left-color-shade py-2 my-3">
                 <h5 class="text-md font-semibold mt-2">Record List</h5>
-                <button @click="$router.push({ name: 'create-record'})"
+                <button @click="$router.push({ name: 'create-record' })"
                     class="bg-blue-500 text-white font-semibold py-2 px-2 mx-3 rounded-md">
                     Add Record
                 </button>
@@ -213,60 +213,60 @@ onMounted(() => {
             <div class="overflow-x-auto">
 
                 <table class="w-full border-collapse border border-gray-200 rounded-md overflow-hidden">
-                <thead>
-                    <tr class="bg-gray-200 text-left">
-                        <th class="p-3 border border-gray-200">Title</th>
-                        <th class="p-3 border border-gray-200">Description</th>
-                        <th class="p-3 border border-gray-200">Privacy</th>
-                        <th class="p-3 border border-gray-200">Document</th>
-                        <th class="p-3 border border-gray-200">Images</th>
-                        <th class="p-3 border border-gray-200">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="record in recordList" :key="record.id" class="border border-gray-200">
-                        <td class="p-3">{{ record.title }}</td>
-                        <td class="p-3" v-html="sanitize(record.description)"></td>
-                        <td class="p-3">
-                            <span v-if="record.status === 1">Only Me</span>
-                            <span v-else-if="record.status === 2">Public</span>
-                            <span v-else-if="record.status === 3">Selected Users</span>
-                        </td>
-                        <td class="border border-gray-300 px-4 py-2 text-center">
-                            <button @click="viewDocument(record)" class="bg-blue-500 text-white px-2 py-1 rounded-md">
-                                View Document
-                            </button>
-                        </td>
-                        <!-- View Images -->
-                        <td class="border border-gray-300 p-2">
-                            <div v-if="record.images && record.images.length">
-                                <!-- Display only one image -->
-                                <!-- <img :src="`${baseURL}${record.images[0].image}`" alt="Image"
-                                    class="rounded-md w-20 h-20 object-cover mr-2" /> -->
-
-                                <!-- Show 'View All' button if there are multiple images -->
-                                <button v-if="record.images.length > 0" @click="viewImages(record)"
-                                    class="bg-green-500 text-white rounded-md py-1 px-3 hover:bg-green-600 transition">
-                                    View Image
-                                </button>
-                            </div>
-                            <div v-else>
-                            </div>
-                        </td>
-                        <td class="border border-gray-300 px-4 py-2 text-center">
-                            <!-- <button @click="editRecord(record)" class="bg-green-500 text-white px-2 py-1 rounded-md">
+                    <thead>
+                        <tr class="bg-gray-200 text-left">
+                            <th class="p-3 border border-gray-200">Title</th>
+                            <th class="p-3 border border-gray-200">Description</th>
+                            <th class="p-3 border border-gray-200">Privacy</th>
+                            <th class="p-3 border border-gray-200">Document</th>
+                            <th class="p-3 border border-gray-200">Images</th>
+                            <th class="p-3 border border-gray-200">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="record in recordList" :key="record.id" class="border border-gray-200">
+                            <td class="p-3">{{ record.title }}</td>
+                            <td class="p-3" v-html="sanitize(record.description)"></td>
+                            <td class="p-3">
+                                <span v-if="record.status === 1">Only Me</span>
+                                <span v-else-if="record.status === 2">Public</span>
+                                <span v-else-if="record.status === 3">Selected Users</span>
+                            </td>
+                            <td class="border border-gray-300 px-4 py-2 text-center">
+                                <div v-if="record.documents && record.documents.length">
+                                    <button @click="viewDocument(record)"
+                                        class="bg-blue-500 text-white px-2 py-1 rounded-md">
+                                        View Document
+                                    </button>
+                                </div>
+                                <div v-else>
+                                </div>
+                            </td>
+                            <!-- View Images -->
+                            <td class="border border-gray-300 p-2">
+                                <div v-if="record.images && record.images.length">
+                                    <button v-if="record.images.length > 0" @click="viewImages(record)"
+                                        class="bg-green-500 text-white rounded-md py-1 px-3 hover:bg-green-600 transition">
+                                        View Image
+                                    </button>
+                                </div>
+                                <div v-else>
+                                </div>
+                            </td>
+                            <td class="border border-gray-300 px-4 py-2 text-center">
+                                <!-- <button @click="editRecord(record)" class="bg-green-500 text-white px-2 py-1 rounded-md">
                                 Edit
                             </button> -->
-                            <button @click="$router.push({ name: 'edit-record', params: { id: record.id } })"
-                            class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">Edit</button>
-                            <button @click="deleteRecord(record.id)"
-                                class="bg-red-500 text-white px-2 py-1 rounded-md ml-2">
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                                <button @click="$router.push({ name: 'edit-record', params: { id: record.id } })"
+                                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">Edit</button>
+                                <button @click="deleteRecord(record.id)"
+                                    class="bg-red-500 text-white px-2 py-1 rounded-md ml-2">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </section>
     </div>
