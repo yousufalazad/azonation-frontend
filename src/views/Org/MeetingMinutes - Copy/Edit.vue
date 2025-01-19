@@ -26,8 +26,6 @@ const follow_up_tasks = ref('');
 const tags = ref('');
 const action_items = ref('');
 const file_attachments = ref(null);
-const images = ref([{ id: Date.now(), file: null }]);
-const documents = ref([{ id: Date.now(), file: null }]);
 const video_link = ref('');
 const meeting_location = ref('');
 const prepared_by = ref('');
@@ -49,23 +47,6 @@ const fetchMeetingMinutes = async () => {
     if (response.status) {
 
       const data = response.data;
-      console.log('data:', data);
-
-      // Process images
-      images.value = (data.images || []).map((image) => ({
-        id: image.id,
-        file: {
-          preview: image.image_url || '', // Ensure `file_path` contains the correct URL
-          name: image.file_name || '',
-        },
-      }));
-
-      // Process documents
-      documents.value = (data.documents || []).map(doc => ({
-        id: doc.id,
-        file: { preview: doc.document_url, name: doc.file_name },
-      }));
-
       meeting_id.value = data.meeting_id || '';
       minutes.value = data.minutes || '';
       decisions.value = data.decisions || '';
@@ -90,6 +71,25 @@ const fetchMeetingMinutes = async () => {
     errorMessage.value = 'Failed to load meeting minutes. Please try again later.';
   }
 };
+
+// const fetchMeetingMinutes = async () => {
+//   try {
+//     const response = await auth.fetchProtectedApi(`/api/get-meeting-minutes/${id.value}`, {}, 'GET');
+//     if (response.status) {
+//       const data = response.data;
+//       console.log('Fetched data:', data); // Debugging API data
+//       minutes.value = data.minutes || '';
+//       decisions.value = data.decisions || '';
+//       // ... other fields
+//     } else {
+//       errorMessage.value = 'Error loading meeting minutes.';
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     errorMessage.value = 'Failed to load meeting minutes. Please try again later.';
+//   }
+// };
+
 
 // Fetch Dropdown Data
 const fetchData = async () => {
@@ -117,7 +117,7 @@ const fetchData = async () => {
 
 // Form Validation
 const validateForm = () => {
-  if (!minutes.value || !privacy_setup_id.value) {
+  if (!minutes.value || !privacy_setup_id.value || !reviewed_by.value || !prepared_by.value) {
     Swal.fire('Error!', 'Please fill out all required fields.', 'error');
     return false;
   }
@@ -127,28 +127,6 @@ const validateForm = () => {
 // Handle File Attachments
 const handleDocument = (event) => {
   file_attachments.value = event.target.files[0];
-};
-
-const handleFileChange = (event, fileList, index) => {
-  const file = event.target.files[0];
-  if (file) {
-    fileList[index].file = {
-      file,
-      preview: URL.createObjectURL(file),
-      name: file.name
-    };
-  }
-};
-
-const addMoreFiles = (fileList) => {
-  fileList.push({ id: Date.now(), file: null });
-};
-
-const removeFile = (fileList, index) => {
-  if (fileList[index].file && fileList[index].file.preview) {
-    URL.revokeObjectURL(fileList[index].file.preview); // Release memory
-  }
-  fileList.splice(index, 1);
 };
 
 // Submit Form
@@ -168,17 +146,6 @@ const submitForm = async () => {
   if (file_attachments.value) {
     formData.append('file_attachments', file_attachments.value);
   }
-  images.value.forEach((fileData, index) => {
-    if (fileData.file) {
-      formData.append(`images[${index}]`, fileData.file.file);
-    }
-  });
-
-  documents.value.forEach((fileData, index) => {
-    if (fileData.file) {
-      formData.append(`documents[${index}]`, fileData.file.file);
-    }
-  });
   formData.append('video_link', video_link.value);
   formData.append('meeting_location', meeting_location.value);
   formData.append('prepared_by', prepared_by.value);
@@ -215,7 +182,8 @@ onMounted(() => {
   <div class="container mx-auto max-w-7xl p-6 bg-white rounded-lg shadow-md mt-10">
     <div class="flex justify-between items-center mb-6">
       <h5 class="text-xl font-semibold">Edit Meeting Minutes</h5>
-      <button @click="router.push({ name: 'index-meeting-minutes' })"
+      <button 
+        @click="router.push({ name: 'index-meeting-minutes' })" 
         class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium">
         Back to Meeting Minutes List
       </button>
@@ -263,38 +231,39 @@ onMounted(() => {
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">File Attachments</label>
-          <input @change="handleDocument" type="file" class="w-full p-2 border border-gray-300 rounded-md"
+          <input 
+            @change="handleDocument" 
+            type="file" 
+            class="w-full p-2 border border-gray-300 rounded-md" 
             accept=".pdf,.doc,.docx,.xlsx" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700">Tags</label>
           <input v-model="tags" type="text" class="w-full p-2 border border-gray-300 rounded-md" />
         </div>
-
+        
         <div>
           <label class="block text-sm font-medium text-gray-700">Video Link</label>
           <input v-model="video_link" type="text" class="w-full p-2 border border-gray-300 rounded-md" />
         </div>
-
+      
         <div>
           <label class="block text-sm font-medium text-gray-700">Meeting Location</label>
           <input v-model="meeting_location" type="text" class="w-full p-2 border border-gray-300 rounded-md" />
         </div>
-
+        
         <div>
           <label class="block text-sm font-medium text-gray-700">Reviewed By</label>
           <select v-model="reviewed_by" class="w-full p-2 border border-gray-300 rounded-md" required>
             <option value="">Select Reviewed By</option>
-            <option v-for="orgMember in orgMemberList" :key="orgMember.id" :value="orgMember.id">{{ orgMember.name }}
-            </option>
+            <option v-for="orgMember in orgMemberList" :key="orgMember.id" :value="orgMember.id">{{ orgMember.name }}</option>
           </select>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700">Prepared By</label>
           <select v-model="prepared_by" class="w-full p-2 border border-gray-300 rounded-md" required>
             <option value="">Select Prepared By</option>
-            <option v-for="orgMember in orgMemberList" :key="orgMember.id" :value="orgMember.id">{{ orgMember.name }}
-            </option>
+            <option v-for="orgMember in orgMemberList" :key="orgMember.id" :value="orgMember.id">{{ orgMember.name }}</option>
           </select>
         </div>
         <div>
@@ -330,79 +299,11 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Images Upload -->
-      <div class="mb-4">
-        <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
-        <div class="space-y-3">
-          <!-- <div v-for="(image, index) in data.images" :key="image.id">
-            <img :src="image.image_url" alt="Preview" class="w-full h-full object-cover" />            
-          </div> -->
-
-
-
-          <!-- <div>
-            <div v-if="images.length" class="flex gap-4">
-              <div v-for="file in images" :key="file.id" class="w-16 h-16">
-                <img v-if="file.file?.preview" :src="file.file.preview" alt="Meeting Image"
-                  class="w-16 h-16 object-cover rounded" />
-                <p class="text-sm text-center truncate">{{ file.file.name }}</p>
-              </div>
-            </div>
-            <div v-else>
-              <p>No images available.</p>
-            </div>
-          </div> -->
-
-          <!-- <div v-for="file in images" :key="file.id">
-            <img v-if="file?.file?.preview" :src="file.file.preview" class="w-16 h-16 object-cover rounded" />
-          </div> -->
-
-
-          <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
-            <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept="image/*"
-              @change="event => handleFileChange(event, images, index)" />
-
-            <div v-if="file.file && file.file.preview" class="w-16 h-16 border rounded-md overflow-hidden">
-              <img :src="file.file.preview" alt="Preview" class="w-full h-full object-cover" />
-            </div>
-
-            <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-              @click="removeFile(images, index)">X</button>
-          </div>
-        </div>
-        <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
-          @click="() => addMoreFiles(images)">
-          Add more image
-        </button>
-      </div>
-
-      <!-- Documents Upload -->
-      <div class="mb-4">
-        <label class="block text-gray-700 font-semibold mb-2">Upload Documents</label>
-        <div class="space-y-3">
-          <div v-for="(file, index) in documents" :key="file.id" class="flex items-center gap-4">
-            <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept=".pdf,.doc,.docx"
-              @change="event => handleFileChange(event, documents, index)" />
-
-            <span v-if="file.file" class="truncate w-32">{{ file.file.name }}</span>
-
-            <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-              @click="removeFile(documents, index)">X</button>
-          </div>
-        </div>
-        <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
-          @click="() => addMoreFiles(documents)">
-          Add more document
-        </button>
-      </div>
-
-
       <div class="flex justify-end">
         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium">
           Update Meeting Minutes
         </button>
       </div>
-
     </form>
   </div>
 </template>

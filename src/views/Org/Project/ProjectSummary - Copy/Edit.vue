@@ -11,10 +11,11 @@ const route = useRoute();
 // Error Message State
 const errorMessage = ref('');
 
-// Selected Event ID
-const projectId = ref(route.params.projectId || null);
+// Selected Project ID
+const summaryId = ref(route.params.summaryId || null);
 
 // Form Data States
+const org_project_id = ref('');
 const total_member_participation = ref('');
 const total_guest_participation = ref('');
 const total_participation = ref('');
@@ -37,9 +38,6 @@ const is_active = ref('1');
 const image_attachment = ref(null);
 const file_attachment = ref(null);
 
-const images = ref([{ id: Date.now(), file: null }]);
-const documents = ref([{ id: Date.now(), file: null }]);
-
 // Dropdown Data
 const privacySetups = ref([]);
 
@@ -57,29 +55,36 @@ const fetchPrivacySetups = async () => {
   }
 };
 
-// Reset Form
-const resetForm = () => {
-  total_member_participation.value = '';
-  total_guest_participation.value = '';
-  total_participation.value = '';
-  total_beneficial_person.value = '';
-  total_communities_impacted.value = '';
-  summary.value = '';
-  highlights.value = '';
-  feedback.value = '';
-  challenges.value = '';
-  suggestions.value = '';
-  financial_overview.value = '';
-  total_expense.value = '';
-  next_steps.value = '';
-  outcomes.value = '';
-  privacy_setup_id.value = '';
-  is_publish.value = '';
-  is_active.value = '1';
-  image_attachment.value = null;
-  file_attachment.value = null;
-  images.value = [{ id: Date.now(), file: null }];
-  documents.value = [{ id: Date.now(), file: null }];
+// Fetch Existing Project Summary Data
+const fetchProjectSummary = async () => {
+  try {
+    const response = await auth.fetchProtectedApi(`/api/get-project-summary/${summaryId.value}`);
+    if (response.status) {
+      const data = response.data;
+      org_project_id.value = data.org_project_id || '';
+      total_member_participation.value = data.total_member_participation || '';
+      total_guest_participation.value = data.total_guest_participation || '';
+      total_participation.value = data.total_participation || '';
+      total_beneficial_person.value = data.total_beneficial_person || '';
+      total_communities_impacted.value = data.total_communities_impacted || '';
+      summary.value = data.summary || '';
+      highlights.value = data.highlights || '';
+      feedback.value = data.feedback || '';
+      challenges.value = data.challenges || '';
+      suggestions.value = data.suggestions || '';
+      financial_overview.value = data.financial_overview || '';
+      total_expense.value = data.total_expense || '';
+      next_steps.value = data.next_steps || '';
+      outcomes.value = data.outcomes || '';
+      privacy_setup_id.value = data.privacy_setup_id || '';
+      is_publish.value = data.is_publish || '';
+      is_active.value = data.is_active || '1';
+    } else {
+      Swal.fire('Error!', 'Failed to load project summary details.', 'error');
+    }
+  } catch (error) {
+    Swal.fire('Error!', 'Failed to load project summary details.', 'error');
+  }
 };
 
 // Validate Form
@@ -100,35 +105,12 @@ const handleFileAttachment = (event) => {
   file_attachment.value = event.target.files[0];
 };
 
-const handleFileChange = (event, fileList, index) => {
-  const file = event.target.files[0];
-  if (file) {
-    fileList[index].file = {
-      file,
-      preview: URL.createObjectURL(file),
-      name: file.name
-    };
-  }
-};
-
-const addMoreFiles = (fileList) => {
-  fileList.push({ id: Date.now(), file: null });
-};
-
-const removeFile = (fileList, index) => {
-  if (fileList[index].file && fileList[index].file.preview) {
-    URL.revokeObjectURL(fileList[index].file.preview); // Release memory
-  }
-  fileList.splice(index, 1);
-};
-
-console.log('projectId', projectId.value)
 // Submit Form
 const submitForm = async () => {
   if (!validateForm()) return;
 
   const formData = new FormData();
-  formData.append('org_project_id', projectId.value);
+  formData.append('org_project_id', org_project_id.value);
   formData.append('total_member_participation', total_member_participation.value);
   formData.append('total_guest_participation', total_guest_participation.value);
   formData.append('total_participation', total_participation.value);
@@ -141,60 +123,71 @@ const submitForm = async () => {
   formData.append('suggestions', suggestions.value);
   formData.append('financial_overview', financial_overview.value);
   formData.append('total_expense', total_expense.value);
+  formData.append('next_steps', next_steps.value);
+  formData.append('outcomes', outcomes.value);
   if (image_attachment.value) {
     formData.append('image_attachment', image_attachment.value);
   }
   if (file_attachment.value) {
     formData.append('file_attachment', file_attachment.value);
   }
-
-  images.value.forEach((fileData, index) => {
-    if (fileData.file) {
-      formData.append(`images[${index}]`, fileData.file.file);
-    }
-  });
-
-  documents.value.forEach((fileData, index) => {
-    if (fileData.file) {
-      formData.append(`documents[${index}]`, fileData.file.file);
-    }
-  });
-  formData.append('next_steps', next_steps.value);
-  formData.append('outcomes', outcomes.value);
   formData.append('privacy_setup_id', privacy_setup_id.value);
   formData.append('is_publish', is_publish.value);
   formData.append('is_active', is_active.value);
 
+  // Log formData contents for debugging
+  for (let pair of formData.entries()) {
+    console.log(`${pair[0]}: ${pair[1]}`);
+  }
+
   try {
-    const response = await auth.uploadProtectedApi('/api/create-project-summary', formData, 'POST', {
+    const response = await auth.uploadProtectedApi(`/api/update-project-summary/${summaryId.value}`, formData, 'PUT', {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
+
     if (response.status) {
-      Swal.fire('Success!', 'Project summary saved successfully.', 'success');
+      Swal.fire('Success!', 'Project summary updated successfully.', 'success');
       router.push({ name: 'index-project-summary' });
     } else {
-      console.error('Validation Errors:', response.errors); // Log validation errors
-      Swal.fire('Failed!', 'Could not save project summary.', 'error');
+      Swal.fire('Failed!', 'Could not update project summary.', 'error');
     }
   } catch (error) {
-    console.error('Error Response:', error.response); // Log full error details
-    Swal.fire('Error!', 'Failed to save project summary.', 'error');
-  }
+    if (error.response && error.response.status === 422) {
+      // Handle validation errors
+      const fieldErrors = error.response.data.errors;
+      let errorMessages = '';
 
+      for (const [field, message] of Object.entries(fieldErrors)) {
+        errorMessages += `${message}\n`; // Combine all error messages into one string
+      }
+
+      Swal.fire({
+        title: 'Validation Errors!',
+        text: errorMessages,
+        icon: 'error',
+      });
+    } else {
+      // Handle generic errors
+      Swal.fire('Error!', 'Failed to update project summary.', 'error');
+    }
+  }
 };
 
 // Fetch Data on Mounted
-onMounted(fetchPrivacySetups);
+onMounted(() => {
+  fetchPrivacySetups();
+  if (summaryId.value) fetchProjectSummary();
+});
 </script>
 <template>
   <div class="container mx-auto max-w-7xl p-6 bg-white rounded-lg shadow-md mt-10">
     <!-- Page Header -->
     <div class="flex justify-between items-center mb-6">
       <h5 class="text-xl font-semibold">Add New Project Summary</h5>
-      <button @click="router.push({ name: 'index-project' })"
+      <button @click="router.push({ name: 'index-project-summary' })"
         class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium">
-        Back to Project List
+        Back to Project Summary List
       </button>
     </div>
 
@@ -283,7 +276,7 @@ onMounted(fetchPrivacySetups);
       <div class="grid grid-cols-3 gap-4 mb-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Privacy Setup</label>
-          <select v-model="privacy_setup_id" class="w-full p-2 border border-gray-300 rounded-md" required>
+          <select v-model="privacy_setup_id" class="w-full p-2 border border-gray-300 rounded-md">
             <option value="">Select Privacy Setup</option>
             <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{ privacy.name }}</option>
           </select>
@@ -303,48 +296,6 @@ onMounted(fetchPrivacySetups);
             <option value="1">Yes</option>
           </select>
         </div>
-      </div>
-
-      <!-- Images Upload -->
-      <div class="mb-4">
-        <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
-        <div class="space-y-3">
-          <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
-            <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept="image/*"
-              @change="event => handleFileChange(event, images, index)" />
-
-            <div v-if="file.file && file.file.preview" class="w-16 h-16 border rounded-md overflow-hidden">
-              <img :src="file.file.preview" alt="Preview" class="w-full h-full object-cover" />
-            </div>
-
-            <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-              @click="removeFile(images, index)">X</button>
-          </div>
-        </div>
-        <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
-          @click="() => addMoreFiles(images)">
-          Add more image
-        </button>
-      </div>
-
-      <!-- Documents Upload -->
-      <div class="mb-4">
-        <label class="block text-gray-700 font-semibold mb-2">Upload Documents</label>
-        <div class="space-y-3">
-          <div v-for="(file, index) in documents" :key="file.id" class="flex items-center gap-4">
-            <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept=".pdf,.doc,.docx"
-              @change="event => handleFileChange(event, documents, index)" />
-
-            <span v-if="file.file" class="truncate w-32">{{ file.file.name }}</span>
-
-            <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-              @click="removeFile(documents, index)">X</button>
-          </div>
-        </div>
-        <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
-          @click="() => addMoreFiles(documents)">
-          Add more document
-        </button>
       </div>
 
       <!-- Submit Button -->

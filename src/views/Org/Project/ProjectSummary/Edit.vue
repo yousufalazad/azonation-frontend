@@ -38,6 +38,9 @@ const is_active = ref('1');
 const image_attachment = ref(null);
 const file_attachment = ref(null);
 
+const images = ref([{ id: Date.now(), file: null }]);
+const documents = ref([{ id: Date.now(), file: null }]);
+
 // Dropdown Data
 const privacySetups = ref([]);
 
@@ -61,6 +64,22 @@ const fetchProjectSummary = async () => {
     const response = await auth.fetchProtectedApi(`/api/get-project-summary/${summaryId.value}`);
     if (response.status) {
       const data = response.data;
+
+       // Process images
+       images.value = (data.images || []).map((image) => ({
+        id: image.id,
+        file: {
+          preview: image.image_url || '', // Ensure `file_path` contains the correct URL
+          name: image.file_name || '',
+        },
+      }));
+
+      // Process documents
+      documents.value = (data.documents || []).map(doc => ({
+        id: doc.id,
+        file: { preview: doc.document_url, name: doc.file_name },
+      }));
+
       org_project_id.value = data.org_project_id || '';
       total_member_participation.value = data.total_member_participation || '';
       total_guest_participation.value = data.total_guest_participation || '';
@@ -105,6 +124,28 @@ const handleFileAttachment = (event) => {
   file_attachment.value = event.target.files[0];
 };
 
+const handleFileChange = (event, fileList, index) => {
+  const file = event.target.files[0];
+  if (file) {
+    fileList[index].file = {
+      file,
+      preview: URL.createObjectURL(file),
+      name: file.name
+    };
+  }
+};
+
+const addMoreFiles = (fileList) => {
+  fileList.push({ id: Date.now(), file: null });
+};
+
+const removeFile = (fileList, index) => {
+  if (fileList[index].file && fileList[index].file.preview) {
+    URL.revokeObjectURL(fileList[index].file.preview); // Release memory
+  }
+  fileList.splice(index, 1);
+};
+
 // Submit Form
 const submitForm = async () => {
   if (!validateForm()) return;
@@ -131,6 +172,19 @@ const submitForm = async () => {
   if (file_attachment.value) {
     formData.append('file_attachment', file_attachment.value);
   }
+
+  images.value.forEach((fileData, index) => {
+    if (fileData.file) {
+      formData.append(`images[${index}]`, fileData.file.file);
+    }
+  });
+
+  documents.value.forEach((fileData, index) => {
+    if (fileData.file) {
+      formData.append(`documents[${index}]`, fileData.file.file);
+    }
+  });
+
   formData.append('privacy_setup_id', privacy_setup_id.value);
   formData.append('is_publish', is_publish.value);
   formData.append('is_active', is_active.value);
@@ -296,6 +350,48 @@ onMounted(() => {
             <option value="1">Yes</option>
           </select>
         </div>
+      </div>
+
+      <!-- Images Upload -->
+      <div class="mb-4">
+        <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
+        <div class="space-y-3">
+          <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
+            <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept="image/*"
+              @change="event => handleFileChange(event, images, index)" />
+
+            <div v-if="file.file && file.file.preview" class="w-16 h-16 border rounded-md overflow-hidden">
+              <img :src="file.file.preview" alt="Preview" class="w-full h-full object-cover" />
+            </div>
+
+            <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
+              @click="removeFile(images, index)">X</button>
+          </div>
+        </div>
+        <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+          @click="() => addMoreFiles(images)">
+          Add more image
+        </button>
+      </div>
+
+      <!-- Documents Upload -->
+      <div class="mb-4">
+        <label class="block text-gray-700 font-semibold mb-2">Upload Documents</label>
+        <div class="space-y-3">
+          <div v-for="(file, index) in documents" :key="file.id" class="flex items-center gap-4">
+            <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept=".pdf,.doc,.docx"
+              @change="event => handleFileChange(event, documents, index)" />
+
+            <span v-if="file.file" class="truncate w-32">{{ file.file.name }}</span>
+
+            <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
+              @click="removeFile(documents, index)">X</button>
+          </div>
+        </div>
+        <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+          @click="() => addMoreFiles(documents)">
+          Add more document
+        </button>
       </div>
 
       <!-- Submit Button -->

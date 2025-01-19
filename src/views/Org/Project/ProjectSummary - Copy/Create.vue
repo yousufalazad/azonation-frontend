@@ -37,9 +37,6 @@ const is_active = ref('1');
 const image_attachment = ref(null);
 const file_attachment = ref(null);
 
-const images = ref([{ id: Date.now(), file: null }]);
-const documents = ref([{ id: Date.now(), file: null }]);
-
 // Dropdown Data
 const privacySetups = ref([]);
 
@@ -78,8 +75,6 @@ const resetForm = () => {
   is_active.value = '1';
   image_attachment.value = null;
   file_attachment.value = null;
-  images.value = [{ id: Date.now(), file: null }];
-  documents.value = [{ id: Date.now(), file: null }];
 };
 
 // Validate Form
@@ -98,28 +93,6 @@ const handleImageAttachment = (event) => {
 
 const handleFileAttachment = (event) => {
   file_attachment.value = event.target.files[0];
-};
-
-const handleFileChange = (event, fileList, index) => {
-  const file = event.target.files[0];
-  if (file) {
-    fileList[index].file = {
-      file,
-      preview: URL.createObjectURL(file),
-      name: file.name
-    };
-  }
-};
-
-const addMoreFiles = (fileList) => {
-  fileList.push({ id: Date.now(), file: null });
-};
-
-const removeFile = (fileList, index) => {
-  if (fileList[index].file && fileList[index].file.preview) {
-    URL.revokeObjectURL(fileList[index].file.preview); // Release memory
-  }
-  fileList.splice(index, 1);
 };
 
 console.log('projectId', projectId.value)
@@ -147,18 +120,6 @@ const submitForm = async () => {
   if (file_attachment.value) {
     formData.append('file_attachment', file_attachment.value);
   }
-
-  images.value.forEach((fileData, index) => {
-    if (fileData.file) {
-      formData.append(`images[${index}]`, fileData.file.file);
-    }
-  });
-
-  documents.value.forEach((fileData, index) => {
-    if (fileData.file) {
-      formData.append(`documents[${index}]`, fileData.file.file);
-    }
-  });
   formData.append('next_steps', next_steps.value);
   formData.append('outcomes', outcomes.value);
   formData.append('privacy_setup_id', privacy_setup_id.value);
@@ -303,48 +264,6 @@ onMounted(fetchPrivacySetups);
             <option value="1">Yes</option>
           </select>
         </div>
-      </div>
-
-      <!-- Images Upload -->
-      <div class="mb-4">
-        <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
-        <div class="space-y-3">
-          <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
-            <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept="image/*"
-              @change="event => handleFileChange(event, images, index)" />
-
-            <div v-if="file.file && file.file.preview" class="w-16 h-16 border rounded-md overflow-hidden">
-              <img :src="file.file.preview" alt="Preview" class="w-full h-full object-cover" />
-            </div>
-
-            <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-              @click="removeFile(images, index)">X</button>
-          </div>
-        </div>
-        <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
-          @click="() => addMoreFiles(images)">
-          Add more image
-        </button>
-      </div>
-
-      <!-- Documents Upload -->
-      <div class="mb-4">
-        <label class="block text-gray-700 font-semibold mb-2">Upload Documents</label>
-        <div class="space-y-3">
-          <div v-for="(file, index) in documents" :key="file.id" class="flex items-center gap-4">
-            <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept=".pdf,.doc,.docx"
-              @change="event => handleFileChange(event, documents, index)" />
-
-            <span v-if="file.file" class="truncate w-32">{{ file.file.name }}</span>
-
-            <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-              @click="removeFile(documents, index)">X</button>
-          </div>
-        </div>
-        <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
-          @click="() => addMoreFiles(documents)">
-          Add more document
-        </button>
       </div>
 
       <!-- Submit Button -->

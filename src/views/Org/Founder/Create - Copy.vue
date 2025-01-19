@@ -272,7 +272,7 @@ onMounted(getFounders);
             </div>
 
             <div v-if="showForm" class="flex flex-wrap ml-0 md:ml-[100px] mt-2 md:mt-6">
-                <div class="w-full md:w-3/12 mr-2"><label for="name"
+                <div class="w-full md:w-5/12 mr-2"><label for="name"
                         class="block text-gray-700 font-semibold mb-2">Founder
                         name <span class="text-red-500">*</span></label>
                     <input v-model="name" type="text" id="name"
@@ -280,19 +280,12 @@ onMounted(getFounders);
                         placeholder="Founder name" required>
                     <p v-if="auth.errors?.name" class="text-red-500 mt-2">{{ auth.errors?.name[0] }}</p>
                 </div>
-                <div class="w-full md:w-3/12 mr-2"><label for="designation"
+                <div class="w-full md:w-5/12 mr-2"><label for="designation"
                         class="block text-gray-700 font-semibold mb-2">Designation</label>
                     <input v-model="designation" type="text" id="designation"
                         class="w-full border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Optional">
                     <p v-if="auth.errors?.designation" class="text-red-500 mt-2">{{ auth.errors?.designation[0] }}</p>
-                </div>
-                <div class="w-full md:w-3/12 mr-2"><label for="profile_image"
-                        class="block text-gray-700 font-semibold mb-2">Profile Image</label>
-                    <input type="file" id="profile_image"
-                        class="w-full border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Optional">
-                    <p v-if="auth.errors?.profile_image" class="text-red-500 mt-2">{{ auth.errors?.profile_image[0] }}</p>
                 </div>
                 <div>
                     <button @click="addUnlinkFounder(name, designation)"
