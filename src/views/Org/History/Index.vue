@@ -1,21 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import Quill from 'quill';
+import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import DOMPurify from 'dompurify';
 import { authStore } from '../../../store/authStore';
-
 const auth = authStore;
-const userId = auth.user.id; // Assuming the user ID is stored in the logged-in user
-const title = ref('');
-const image = ref(null);
-const document = ref(null); // Document file for upload
-const history = ref(''); // This will be managed by Quill
-const status = ref(1); // Default to Active (1)
-const quillInstance = ref(null);
-const isEditMode = ref(false); // Toggle between add and edit modes
-const selectedRecordId = ref(null); // Store the ID of the record to edit
-const recordList = ref([]); // Data list for the table
+const recordList = ref([]);
 
 // Fetch list of records
 const getRecords = async () => {
@@ -32,105 +22,18 @@ const getRecords = async () => {
     }
 };
 
-// Initialize Quill editor
-const initializeQuill = () => {
-    quillInstance.value = new Quill('#history-editor', {
-        theme: 'snow',
-        placeholder: 'Enter history...',
-        modules: {
-            toolbar: [
-                [{ header: [1, 2, false] }],
-                ['bold', 'italic', 'underline'],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link']
-            ]
-        }
-    });
-
-    quillInstance.value.on('text-change', () => {
-        history.value = quillInstance.value.root.innerHTML; // Sync with Quill content
-    });
-};
-
-// Reset form fields
-const resetForm = () => {
-    title.value = '';
-    image.value = null;
-    document.value = null;
-    quillInstance.value.root.innerHTML = ''; // Reset Quill content
-    status.value = 1; // Default to Active
-    isEditMode.value = false;
-    selectedRecordId.value = null;
-};
-
-// Handle image file change
-const handleImage = (event) => {
-    image.value = event.target.files[0]; // Store the uploaded file
-};
-
-// Handle document file change
-const handleDocument = (event) => {
-    document.value = event.target.files[0]; // Store the uploaded document
-};
-
-// Add or update a record
-const submitForm = async () => {
-    const formData = new FormData();
-    formData.append('user_id', userId);
-    formData.append('title', title.value);
-    formData.append('history', history.value);
-    formData.append('status', status.value);
-    if (image.value) {
-        formData.append('image', image.value); // Handle image upload
-    }
-    if (document.value) {
-        formData.append('document', document.value); // Handle document upload
-    }
-
+// Delete record
+const __deleteRecord = async (id) => {
     try {
-        let apiUrl = '/api/create-org-history';
-        let method = 'POST';
-
-        if (isEditMode.value && selectedRecordId.value) {
-            apiUrl = `/api/update-org-history/${selectedRecordId.value}`;
-            method = 'PUT';
-        }
-
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this record?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, save it!',
-            cancelButtonText: 'No, cancel!'
-        });
-
-        if (result.isConfirmed) {
-            const response = await auth.uploadProtectedApi(apiUrl, formData, method, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
-
-            if (response.status) {
-                await Swal.fire('Success!', `Record ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
-                getRecords(); // Refresh the record list
-                resetForm(); // Reset the form fields
-            } else {
-                Swal.fire('Failed!', 'Failed to save record.', 'error');
-            }
+        const response = await auth.fetchProtectedApi(`/api/delete-org-history/${id}`, {}, 'DELETE');
+        if (response.status) {
+            getRecords(); // Refresh the record list
+        } else {
+            alert('Failed to delete record.');
         }
     } catch (error) {
-        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} record:`, error);
-        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} record.`, 'error');
+        console.error('Error deleting record:', error);
     }
-};
-
-// Edit record
-const editRecord = (record) => {
-    title.value = record.title;
-    quillInstance.value.root.innerHTML = record.history; // Load history into Quill
-    status.value = record.status;
-    selectedRecordId.value = record.id;
-    isEditMode.value = true; // Switch to edit mode
 };
 
 // Delete record
@@ -142,24 +45,25 @@ const deleteRecord = async (id) => {
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, cancel!'
+            cancelButtonText: 'No, cancel!',
         });
 
         if (result.isConfirmed) {
             const response = await auth.fetchProtectedApi(`/api/delete-org-history/${id}`, {}, 'DELETE');
 
             if (response.status) {
-                await Swal.fire('Deleted!', 'Record has been deleted.', 'success');
-                getRecords(); // Refresh the record list
+                Swal.fire('Deleted!', 'Record has been deleted.', 'success');
+                getRecords(); // Refresh the list
             } else {
-                Swal.fire('Failed!', 'Failed to delete record.', 'error');
+                Swal.fire('Failed!', 'Failed to delete the record.', 'error');
             }
         }
     } catch (error) {
         console.error('Error deleting record:', error);
-        Swal.fire('Error!', 'Failed to delete record.', 'error');
+        Swal.fire('Error!', 'Failed to delete the record.', 'error');
     }
 };
+
 
 // Sanitize the HTML content
 const sanitize = (html) => {
@@ -169,67 +73,23 @@ const sanitize = (html) => {
     });
 };
 
-// Initialize Quill and fetch records when component is mounted
+// Initialize and fetch records on mounted
 onMounted(() => {
-    initializeQuill();
     getRecords();
 });
 </script>
-
 <template>
     <div class="max-w-7xl mx-auto w-10/12">
-        <!-- Form for adding/updating records -->
-        <section class="mb-5">
-            <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">{{ isEditMode ? 'Edit' : 'Add' }} Organizational History</h5>
-            </div>
-            <form @submit.prevent="submitForm">
-                <!-- Title input -->
-                <div class="mb-4">
-                    <label for="title" class="block text-gray-700 font-semibold mb-2">Title</label>
-                    <input v-model="title" type="text" id="title" class="w-full border border-gray-300 rounded-md py-2 px-4" placeholder="Enter title" required />
-                </div>
-
-                <!-- Image input -->
-                <div class="mb-4">
-                    <label for="image" class="block text-gray-700 font-semibold mb-2">Upload Image</label>
-                    <input @change="handleImage" type="file" id="image" class="w-full border border-gray-300 rounded-md py-2 px-4" accept="image/*" />
-                </div>
-
-                <!-- History Quill editor -->
-                <div class="mb-4">
-                    <label for="history-editor" class="block text-gray-700 font-semibold mb-2">History</label>
-                    <div id="history-editor" class="w-full border border-gray-300 rounded-md" style="min-height: 150px;"></div>
-                </div>
-
-                 <!-- Document input -->
-                 <div class="mb-4">
-                    <label for="document" class="block text-gray-700 font-semibold mb-2">Upload Document</label>
-                    <input @change="handleDocument" type="file" id="document" class="w-full border border-gray-300 rounded-md py-2 px-4" accept=".pdf,.doc,.docx,.xlsx" />
-                </div>
-
-                <!-- Status dropdown -->
-                <div class="mb-4">
-                    <label for="status" class="block text-gray-700 font-semibold mb-2">Status</label>
-                    <select v-model="status" id="status" class="w-full border border-gray-300 rounded-md py-2 px-4">
-                        <option value="1">Active</option>
-                        <option value="0">Disabled</option>
-                    </select>
-                </div>
-
-                <!-- Submit button -->
-                <div>
-                    <button type="submit" class="bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700">{{ isEditMode ? 'Update' : 'Submit' }}</button>
-                </div>
-            </form>
-        </section>
-
-        <!-- Record list -->
         <section>
-            <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold">Organizational History Records</h5>
+            <!-- Header Section -->
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="text-xl font-semibold">Organizational History Records</h2>
+                <button @click="$router.push({ name: 'create-history' })"
+                    class="bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700">Add History
+                </button>
             </div>
 
+            <!-- Table Section -->
             <div class="overflow-auto">
                 <table class="min-w-full border-collapse block md:table">
                     <thead class="block md:table-header-group">
@@ -242,14 +102,23 @@ onMounted(() => {
                         </tr>
                     </thead>
                     <tbody class="block md:table-row-group">
-                        <tr v-for="(record, index) in recordList" :key="record.id" class="border border-gray-300 md:border-none block md:table-row">
+                        <tr v-for="(record, index) in recordList" :key="record.id"
+                            class="border border-gray-300 md:border-none block md:table-row">
                             <td class="p-2 md:border md:border-gray-300 block md:table-cell">{{ index + 1 }}</td>
                             <td class="p-2 md:border md:border-gray-300 block md:table-cell">{{ record.title }}</td>
-                            <td class="p-2 md:border md:border-gray-300 block md:table-cell" v-html="sanitize(record.history)"></td>
-                            <td class="p-2 md:border md:border-gray-300 block md:table-cell">{{ record.status === 1 ? 'Active' : 'Disabled' }}</td>
+                            <td class="p-2 md:border md:border-gray-300 block md:table-cell"
+                                v-html="sanitize(record.history)"></td>
+                            <td class="p-2 md:border md:border-gray-300 block md:table-cell">{{ record.status === 1 ?
+                                'Active' : 'Disabled' }}</td>
                             <td class="p-2 md:border md:border-gray-300 block md:table-cell">
-                                <button @click="editRecord(record)" class="text-blue-600 hover:text-blue-800">Edit</button>
-                                <button @click="deleteRecord(record.id)" class="text-red-600 hover:text-red-800 ml-4">Delete</button>
+                                <button @click="$router.push({ name: 'edit-history', params: { id: record.id } })"
+                                    class="bg-yellow-500 text-white px-4 py-1 mx-1 rounded hover:bg-yellow-600">Edit
+                                </button>
+
+                                <button @click="$router.push({ name: 'view-history', params: { id: record.id } })"
+                                    class="bg-green-500 text-white px-4 py-1 mx-1 rounded hover:bg-green-600">View </button>
+                                <button @click="deleteRecord(record.id)"
+                                    class="bg-red-500 text-white px-4 py-1 mx-1 rounded hover:bg-red-600">Delete</button>
                             </td>
                         </tr>
                     </tbody>

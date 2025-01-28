@@ -16,6 +16,9 @@ const fund_id = ref("");
 const transaction_type = ref("");
 const description = ref('');
 
+const images = ref([{ id: Date.now(), file: null }]);
+const documents = ref([{ id: Date.now(), file: null }]);
+
 const selectedTransactionId = ref(null);
 const transactionList = ref([]);
 const fundList = ref([]);
@@ -36,10 +39,54 @@ const getFunds = async () => {
 const getTransactions = async () => {
     try {
         const response = await auth.fetchProtectedApi('/api/get-transactions', {}, 'GET');
-        transactionList.value = response.status ? response.data : [];
+
+        if (response.status) {
+            const transactions = response.data;
+
+            // Update the transaction list
+            transactionList.value = transactions;
+
+            // Process images and documents for each transaction
+            images.value = [];
+            documents.value = [];
+
+            transactions.forEach((transaction) => {
+                // Extract and process images
+                if (transaction.images && transaction.images.length) {
+                    images.value.push(
+                        ...transaction.images.map((image) => ({
+                            id: image.id,
+                            file: {
+                                preview: image.image_url || '', // Ensure `image_url` contains the correct URL
+                                name: image.file_name || '',
+                            },
+                        }))
+                    );
+                }
+
+                // Extract and process documents
+                if (transaction.documents && transaction.documents.length) {
+                    documents.value.push(
+                        ...transaction.documents.map((doc) => ({
+                            id: doc.id,
+                            file: {
+                                preview: doc.document_url || '', // Ensure `document_url` contains the correct URL
+                                name: doc.file_name || '',
+                            },
+                        }))
+                    );
+                }
+            });
+        } else {
+            transactionList.value = [];
+            images.value = [];
+            documents.value = [];
+        }
     } catch (error) {
         console.error('Error fetching transactions:', error);
         transactionList.value = [];
+        images.value = [];
+        documents.value = [];
     }
 };
 
@@ -102,34 +149,77 @@ const openModal = (transaction = null) => {
 };
 // Reset form fields
 const resetForm = () => {
-        date.value = '';
-        transaction_title.value = '';
-        description.value = '';
-        fund_id.value = "";
-        transaction_type.value = "";
-        amount.value = 0;
-        selectedTransactionId.value = null;
+    date.value = '';
+    transaction_title.value = '';
+    description.value = '';
+    fund_id.value = "";
+    transaction_type.value = "";
+    amount.value = 0;
+    selectedTransactionId.value = null;
+
+    images.value = [{ id: Date.now(), file: null }];
+    documents.value = [{ id: Date.now(), file: null }];
 };
+
+const handleFileChange = (event, fileList, index) => {
+    const file = event.target.files[0];
+    if (file) {
+        fileList[index].file = {
+            file,
+            preview: URL.createObjectURL(file),
+            name: file.name
+        };
+    }
+};
+
+const addMoreFiles = (fileList) => {
+    fileList.push({ id: Date.now(), file: null });
+};
+
+const removeFile = (fileList, index) => {
+    if (fileList[index].file && fileList[index].file.preview) {
+        URL.revokeObjectURL(fileList[index].file.preview); // Release memory
+    }
+    fileList.splice(index, 1);
+};
+
 // Add or update transaction
 const submitForm = async () => {
-    const payload = {
-        user_id: userId,
-        date: date.value,
-        transaction_title: transaction_title.value,
-        description: description.value,
-        type: transaction_type.value,
-        fund_id: fund_id.value,
-        amount: amount.value
-    };
+    const formData = new FormData();
+
+    // Add basic transaction data
+    formData.append('user_id', userId);
+    formData.append('date', date.value);
+    formData.append('transaction_title', transaction_title.value);
+    formData.append('description', description.value);
+    formData.append('type', transaction_type.value);
+    formData.append('fund_id', fund_id.value);
+    formData.append('amount', amount.value);
+
+    // Add images to FormData
+    images.value.forEach((fileData, index) => {
+        if (fileData.file) {
+            formData.append(`images[${index}]`, fileData.file.file);
+        }
+    });
+
+    // Add documents to FormData
+    documents.value.forEach((fileData, index) => {
+        if (fileData.file) {
+            formData.append(`documents[${index}]`, fileData.file.file);
+        }
+    });
 
     try {
         let apiUrl = '/api/create-transaction';
         let method = 'POST';
 
+        // If updating a transaction, add `_method` to mimic a PUT request
         if (selectedTransactionId.value) {
             apiUrl = `/api/update-transaction/${selectedTransactionId.value}`;
-            method = 'PUT';
+            formData.append('_method', 'PUT'); // Tell Laravel to treat this as a PUT request
         }
+
         const result = await Swal.fire({
             title: 'Are you sure?',
             text: `Do you want to ${selectedTransactionId.value ? 'update' : 'add'} this transaction?`,
@@ -138,8 +228,12 @@ const submitForm = async () => {
             confirmButtonText: 'Yes, save it!',
             cancelButtonText: 'No, cancel!'
         });
+
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(apiUrl, payload, method);
+            const response = await auth.uploadProtectedApi(apiUrl, formData, method, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
             if (response.status) {
                 await Swal.fire('Success!', `Transaction ${selectedTransactionId.value ? 'updated' : 'added'} successfully.`, 'success');
                 getTransactions();
@@ -155,6 +249,7 @@ const submitForm = async () => {
     }
 };
 
+
 </script>
 
 <template>
@@ -166,8 +261,7 @@ const submitForm = async () => {
                     <button @click="openModal(null)"
                         class="bg-blue-600 text-white rounded-md p-2 mx-4 hover:bg-blue-700">Add
                         Transaction</button>
-                    <button @click="funds"
-                        class="bg-yellow-500 text-white rounded-md p-2 mx-4 hover:bg-yellow-600">Add
+                    <button @click="funds" class="bg-yellow-500 text-white rounded-md p-2 mx-4 hover:bg-yellow-600">Add
                         Fund</button>
                 </div>
 
@@ -177,7 +271,8 @@ const submitForm = async () => {
                 <div class="bg-white rounded-lg shadow-lg w-2/4 h-auto max-h-[80%] overflow-y-auto p-5">
 
                     <div class="flex justify-between left-color-shade bg-blue-100 py-2 mt-3 mb-5">
-                        <h5 class="text-md font-semibold my-2">{{ selectedTransactionId ? 'Edit' : 'Add' }} Transaction</h5>
+                        <h5 class="text-md font-semibold my-2">{{ selectedTransactionId ? 'Edit' : 'Add' }} Transaction
+                        </h5>
                     </div>
                     <form @submit.prevent="submitForm">
 
@@ -239,10 +334,58 @@ const submitForm = async () => {
                             </div>
                         </div>
 
+                        <!-- Images Upload -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
+                            <div class="space-y-3">
+                                <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
+                                    <input type="file" class="border border-gray-300 rounded-md py-2 px-4"
+                                        accept="image/*" @change="event => handleFileChange(event, images, index)" />
+
+                                    <div v-if="file.file && file.file.preview"
+                                        class="w-16 h-16 border rounded-md overflow-hidden">
+                                        <img :src="file.file.preview" alt="Preview"
+                                            class="w-full h-full object-cover" />
+                                    </div>
+
+                                    <button type="button"
+                                        class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
+                                        @click="removeFile(images, index)">X</button>
+                                </div>
+                            </div>
+                            <button type="button"
+                                class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+                                @click="() => addMoreFiles(images)">
+                                Add more image
+                            </button>
+                        </div>
+
+                        <!-- Documents Upload -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-semibold mb-2">Upload Documents</label>
+                            <div class="space-y-3">
+                                <div v-for="(file, index) in documents" :key="file.id" class="flex items-center gap-4">
+                                    <input type="file" class="border border-gray-300 rounded-md py-2 px-4"
+                                        accept=".pdf,.doc,.docx"
+                                        @change="event => handleFileChange(event, documents, index)" />
+
+                                    <span v-if="file.file" class="truncate w-32">{{ file.file.name }}</span>
+
+                                    <button type="button"
+                                        class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
+                                        @click="removeFile(documents, index)">X</button>
+                                </div>
+                            </div>
+                            <button type="button"
+                                class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+                                @click="() => addMoreFiles(documents)">
+                                Add more document
+                            </button>
+                        </div>
+
                         <!-- Submit button -->
                         <div class="flex justify-center pt-5 pb-3">
-                            <button type="submit"
-                                class="bg-blue-600 text-white rounded-md p-2 hover:bg-blue-700 mr-2">
+                            <button type="submit" class="bg-blue-600 text-white rounded-md p-2 hover:bg-blue-700 mr-2">
                                 {{ selectedTransactionId ? 'Update' : 'Submit' }}
                             </button>
                             <button type="button" @click="closeModal"
@@ -261,52 +404,54 @@ const submitForm = async () => {
                 <h5 class="text-md font-semibold mt-2">Transaction List</h5>
             </div>
             <div class="overflow-x-auto">
-    <table class="min-w-full table-auto border-collapse border border-gray-300 text-left">
-        <thead class="bg-gray-100">
-            <tr>
-                <th class="border px-4 py-2 min-w-[10px]">SL</th>
-                <th class="p-2 border border-gray-300 min-w-[100px]">Date</th>
-                <th class="p-2 border border-gray-300 min-w-[130px]">Transaction ID</th>
-                <th class="p-2 border border-gray-300 min-w-[100px]">Title</th>
-                <!-- <th class="p-2 border border-gray-300 min-w-[120px]">Description</th> -->
-                <th class="p-2 border border-gray-300 min-w-[100px]">Fund</th>
-                <th class="p-2 border border-gray-300 min-w-[100px]">Income</th>
-                <th class="p-2 border border-gray-300 min-w-[100px]">Expense</th>
-                <!-- <th class="p-2 border border-gray-300 min-w-[110px]">Balance</th> -->
-                <th class="p-2 border border-gray-300 min-w-[100px]">Actions</th>
-            </tr>
-        </thead>
+                <table class="min-w-full table-auto border-collapse border border-gray-300 text-left">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="border px-4 py-2 min-w-[10px]">SL</th>
+                            <th class="p-2 border border-gray-300 min-w-[100px]">Date</th>
+                            <th class="p-2 border border-gray-300 min-w-[130px]">Transaction ID</th>
+                            <th class="p-2 border border-gray-300 min-w-[100px]">Title</th>
+                            <!-- <th class="p-2 border border-gray-300 min-w-[120px]">Description</th> -->
+                            <th class="p-2 border border-gray-300 min-w-[100px]">Fund</th>
+                            <th class="p-2 border border-gray-300 min-w-[100px]">Income</th>
+                            <th class="p-2 border border-gray-300 min-w-[100px]">Expense</th>
+                            <!-- <th class="p-2 border border-gray-300 min-w-[110px]">Balance</th> -->
+                            <th class="p-2 border border-gray-300 min-w-[100px]">Actions</th>
+                        </tr>
+                    </thead>
 
-        <tbody>
-            <tr v-for="(transaction, index) in transactionList" :key="transaction.id">
-                <td class="p-2 border">{{ index + 1 }}</td>
-                <td class="p-2 border">{{ transaction.date }}</td>
-                <td class="p-2 border">{{ transaction.transaction_code }}</td>
-                <td class="p-2 border">{{ transaction.transaction_title }}</td>
-                <!-- <td class="p-2 border">{{ transaction.description }}</td> -->
-                <td class="p-2 border">{{ transaction.fund_name }}</td>
-                <td class="p-2 border" v-if="transaction.type === 'income'">
-                    {{ transaction.amount }}
-                </td>
-                <td class="p-2 border" v-else></td>
-                <td class="p-2 border" v-if="transaction.type === 'expense'">
-                    {{ transaction.amount }}
-                </td>
-                <td class="p-2 border" v-else></td>
-                <!-- <td class="p-2 border">{{ transaction.balance_after }}</td> -->
+                    <tbody>
+                        <tr v-for="(transaction, index) in transactionList" :key="transaction.id">
+                            <td class="p-2 border">{{ index + 1 }}</td>
+                            <td class="p-2 border">{{ transaction.date }}</td>
+                            <td class="p-2 border">{{ transaction.transaction_code }}</td>
+                            <td class="p-2 border">{{ transaction.transaction_title }}</td>
+                            <!-- <td class="p-2 border">{{ transaction.description }}</td> -->
+                            <td class="p-2 border">{{ transaction.fund_name }}</td>
+                            <td class="p-2 border" v-if="transaction.type === 'income'">
+                                {{ transaction.amount }}
+                            </td>
+                            <td class="p-2 border" v-else></td>
+                            <td class="p-2 border" v-if="transaction.type === 'expense'">
+                                {{ transaction.amount }}
+                            </td>
+                            <td class="p-2 border" v-else></td>
+                            <!-- <td class="p-2 border">{{ transaction.balance_after }}</td> -->
 
-                <td class="p-2 border flex gap-2">
-                    <button @click="openModal(transaction)" class="bg-green-600 text-white rounded-md py-1 px-2 hover:bg-green-700">
-                        Edit
-                    </button>
-                    <button @click="deleteTransaction(transaction.id)" class="bg-red-600 text-white rounded-md py-1 px-2 hover:bg-red-700">
-                        Delete
-                    </button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+                            <td class="p-2 border flex gap-2">
+                                <button @click="openModal(transaction)"
+                                    class="bg-green-600 text-white rounded-md py-1 px-2 hover:bg-green-700">
+                                    Edit
+                                </button>
+                                <button @click="deleteTransaction(transaction.id)"
+                                    class="bg-red-600 text-white rounded-md py-1 px-2 hover:bg-red-700">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
         </section>
 

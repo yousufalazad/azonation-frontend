@@ -31,18 +31,31 @@ import ViewAsset from "../views/Org/Asset/View.vue";
 
 //History
 import History from "../views/Org/History/Index.vue";
+import CreateHistory from "../views/Org/History/Create.vue";
+import EditHistory from "../views/Org/History/Edit.vue";
+import ViewHistory from "../views/Org/History/View.vue";
 
 //StrategicPlan
 import StrategicPlan from "../views/Org/StrategicPlan/Index.vue";
+import CreateStrategicPlan from "../views/Org/StrategicPlan/Create.vue";
+import EditStrategicPlan from "../views/Org/StrategicPlan/Edit.vue";
+import ViewStrategicPlan from "../views/Org/StrategicPlan/View.vue";
 
 //Year plan
 import YearPlan from "../views/Org/YearPlan/Index.vue"
 
 //Success Story
 import SuccessStory from "../views/Org/SuccessStory/Index.vue";
+import CreateSuccessStory from "../views/Org/SuccessStory/Create.vue";
+import EditSuccessStory from "../views/Org/SuccessStory/Edit.vue";
+import ViewSuccessStory from "../views/Org/SuccessStory/View.vue";
 
 //Recognition
 import Recognition from "../views/Org/Recognition/Index.vue"
+import CreateRecognition from "../views/Org/Recognition/Create.vue";
+import EditRecognition from "../views/Org/Recognition/Edit.vue";
+import ViewRecognition from "../views/Org/Recognition/View.vue";
+
 
 // Org Profile
 import Profile from "../views/Org/Profile/Profile.vue";
@@ -541,6 +554,26 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
+        path: 'history/create',
+        name: 'create-history',
+        component: CreateHistory,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'history/edit/:id',
+        name: 'edit-history',
+        component: EditHistory,
+        meta: { requiresAuth: true },
+        props: true
+      },
+      {
+        path: 'history/view/:id',
+        name: 'view-history',
+        component: ViewHistory,
+        meta: { requiresAuth: true },
+        props: true
+      },
+      {
         path: "year-plan",
         name: "year-plan",
         component: YearPlan,
@@ -553,16 +586,76 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
+        path: 'strategic-plan/create',
+        name: 'create-strategic-plan',
+        component: CreateStrategicPlan,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'strategic-plan/edit/:id',
+        name: 'edit-strategic-plan',
+        component: EditStrategicPlan,
+        meta: { requiresAuth: true },
+        props: true
+      },
+      {
+        path: 'strategic-plan/view/:id',
+        name: 'view-strategic-plan',
+        component: ViewStrategicPlan,
+        meta: { requiresAuth: true },
+        props: true
+      },
+      {
         path: "success-story",
         name: "success-story",
         component: SuccessStory,
         meta: { requiresAuth: true },
       },
       {
+        path: 'success-story/create',
+        name: 'create-success-story',
+        component: CreateSuccessStory,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'success-story/edit/:id',
+        name: 'edit-success-story',
+        component: EditSuccessStory,
+        meta: { requiresAuth: true },
+        props: true
+      },
+      {
+        path: 'success-story/view/:id',
+        name: 'view-success-story',
+        component: ViewSuccessStory,
+        meta: { requiresAuth: true },
+        props: true
+      },
+      {
         path: "recognition",
         name: "recognition",
         component: Recognition,
         meta: { requiresAuth: true },
+      },
+      {
+        path: 'recognition/create',
+        name: 'create-recognition',
+        component: CreateRecognition,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'recognition/edit/:id',
+        name: 'edit-recognition',
+        component: EditRecognition,
+        meta: { requiresAuth: true },
+        props: true
+      },
+      {
+        path: 'recognition/view/:id',
+        name: 'view-recognition',
+        component: ViewRecognition,
+        meta: { requiresAuth: true },
+        props: true
       },
       {
         path: "accounts",
