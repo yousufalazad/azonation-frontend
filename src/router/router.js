@@ -43,6 +43,9 @@ import ViewStrategicPlan from "../views/Org/StrategicPlan/View.vue";
 
 //Year plan
 import YearPlan from "../views/Org/YearPlan/Index.vue"
+import CreateYearPlan from "../views/Org/YearPlan/Create.vue"
+import EditYearPlan from "../views/Org/YearPlan/Edit.vue"
+import ViewYearPlan from "../views/Org/YearPlan/View.vue"
 
 //Success Story
 import SuccessStory from "../views/Org/SuccessStory/Index.vue";
@@ -140,8 +143,8 @@ import InviteFriend from "../views/Org/InviteFriend/Index.vue";
 //Billing
 import Package from "../views/Org/Financial/Package.vue";
 import Subscription from "../views/Org/Financial/Subscription.vue";
-import OrgInvoiceList from "../views/Org/Financial/Invoice/InvoiceList.vue";
-import ViewInvoice from "../views/Org/Financial/Invoice/ViewInvoice.vue";
+import OrgInvoiceList from "../views/Org/Financial/Invoice/Index.vue";
+import ViewInvoice from "../views/Org/Financial/Invoice/View.vue";
 import OrgReceiptList from "../views/Org/Financial/Receipt/ReceiptList.vue";
 import ViewOrgReceipt from "../views/Org/Financial/Receipt/ViewReceipt.vue";
 import BillCalculation from "@/views/Org/Financial/BillCalculation.vue";
@@ -580,6 +583,26 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
+        path: 'year-plan/create',
+        name: 'create-year-plan',
+        component: CreateYearPlan,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'year-plan/edit/:id',
+        name: 'edit-year-plan',
+        component: EditYearPlan,
+        meta: { requiresAuth: true },
+        props: true
+      },
+      {
+        path: 'year-plan/view/:id',
+        name: 'view-year-plan',
+        component: ViewYearPlan,
+        meta: { requiresAuth: true },
+        props: true
+      },
+      {
         path: "strategic-plan",
         name: "strategic-plan",
         component: StrategicPlan,
@@ -782,7 +805,7 @@ const routes = [
           meta: { requiresAuth: true },
         },
         {
-          path: "view-invoice",
+          path: "view-invoice/:id",
           name: "view-invoice",
           component: ViewInvoice,
           meta: { requiresAuth: true },

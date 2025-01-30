@@ -18,6 +18,7 @@ const fetchInvoiceDetails = async () => {
     const response = await auth.fetchProtectedApi(`/api/get-invoice/${invoiceId}`, {}, 'GET');
     if (response.status) {
       invoiceDetails.value = response.data;
+      console.log('Invoice details fetched:', invoiceDetails.value);
     } else {
       Swal.fire('Error!', 'Failed to fetch invoice details.', 'error');
       router.push({ name: 'invoice-list' }); // Redirect if data not found
@@ -39,7 +40,7 @@ onMounted(() => {
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
       <h2 class="text-2xl font-bold text-gray-800">Invoice Details</h2>
-      <button @click="$router.push({ name: 'super-admin-invoice-list' })"
+      <button @click="$router.push({ name: 'invoice-list' })"
         class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-lg shadow focus:ring-2 focus:ring-blue-300">
         Back to Invoice List
       </button>

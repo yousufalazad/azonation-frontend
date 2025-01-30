@@ -18,22 +18,32 @@
               <tr>
                   <th class="py-2 px-4 border">Sl</th>
                   <th class="py-2 px-4 border">Invoice ID</th>
-                  <th class="py-2 px-4 border">Item</th>
-                  <th class="py-2 px-4 border">Issue Date</th>
-                  <th class="py-2 px-4 border">Due Date</th>
-                  <th class="py-2 px-4 border">Amount</th>
-                  <th class="py-2 px-4 border">Status</th>
+                  <th class="py-2 px-4 border">Description</th>
+                  <th class="py-2 px-4 border">Total Amount</th>
+                  <th class="py-2 px-4 border">Currency</th>
+                  <th class="py-2 px-4 border">Issue date</th>
+                  <th class="py-2 px-4 border">Due date</th>
+                  <th class="py-2 px-4 border">Payment Status</th>
+                  <th class="py-2 px-4 border">Action</th>
               </tr>
           </thead>
           <tbody>
               <tr v-for="(invoice, index) in invoices" :key="invoice.id">
                   <td class="py-2 px-4 border">{{ index +1 }}</td>
                   <td class="py-2 px-4 border">{{ invoice.invoice_code }}</td> 
-                  <td class="py-2 px-4 border">{{ invoice.item_name }}</td>
-                  <td class="py-2 px-4 border">{{ formatDate(invoice.issued_at) }}</td>
-                  <td class="py-2 px-4 border">{{ formatDate(invoice.due_at) }}</td>
-                  <td class="py-2 px-4 border">{{ invoice.total_amount_due }}</td>
+                  <td class="py-2 px-4 border">{{ invoice.description }}</td>
+                  <td class="py-2 px-4 border">{{ invoice.total_amount }}</td>
+                  <td class="py-2 px-4 border">{{ invoice.currency_code }}</td>
+                  <td class="py-2 px-4 border">{{ formatDate(invoice.issue_date) }}</td>
+                  <td class="py-2 px-4 border">{{ formatDate(invoice.due_date) }}</td>
                   <td class="py-2 px-4 border">{{ invoice.payment_status }}</td>
+                  <!-- <td class="py-2 px-4 border">
+                      <button @click="handleInvoiceAction(invoice.id)">View</button>
+                  </td> -->
+                  <td  class="py-2 px-4 border">
+                    <button @click="$router.push({ name: 'super-admin-invoice-view', params: { id: invoice.id } })"
+                    class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 m-2 rounded">View</button>
+                  </td> 
               </tr>
           </tbody>
       </table>
@@ -56,9 +66,7 @@ const formatDate = (dateString) => {
 
 const fetchInvoices = async () => {
   try {
-      const response = await auth.fetchProtectedApi('/api/invoice');
-
-      // Set invoices to the response data or an empty array
+      const response = await auth.fetchProtectedApi('/api/invoices');
       invoices.value = response.status ? response.data : [];
 
   } catch (error) {
