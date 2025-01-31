@@ -122,8 +122,8 @@ const userType = computed(() => auth.user?.type);
 const userEmail = computed(() => auth.user?.email);
 const username = computed(() => auth.user?.username);
 const azonId = computed(() => auth.user?.azon_id);
-
 import dayjs from 'dayjs';
+
 const createdAtDate = computed(() => {
     const createdAt = auth.user?.created_at;
     return createdAt && dayjs(createdAt).isValid() ? dayjs(createdAt).format('MMMM, YYYY') : 'Invalid date';
