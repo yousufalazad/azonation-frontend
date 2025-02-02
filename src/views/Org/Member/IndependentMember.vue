@@ -248,27 +248,27 @@ onMounted(() => {
             <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input v-model="form.email" type="email"
               class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"
-              required />
+               />
           </div>
           <!-- Mobile -->
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Mobile</label>
             <input v-model="form.mobile" type="text"
               class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"
-              required />
+               />
           </div>
           <!-- Address -->
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
             <textarea v-model="form.address"
               class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"
-              required></textarea>
+              ></textarea>
           </div>
           
           <!-- Admin Note -->
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Admin Note</label>
-            <textarea v-model="form.admin_note"
+            <textarea v-model="form.note"
               class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"></textarea>
           </div>
           <!-- Image Upload -->
@@ -332,7 +332,7 @@ onMounted(() => {
           </div>
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Admin Note</label>
-            <textarea v-model="selectedMember.admin_note"
+            <textarea v-model="selectedMember.note"
               class="w-full border border-gray-300 rounded-lg px-4 py-2" disabled></textarea>
           </div>
           <div class="col-span-2">
