@@ -16,13 +16,13 @@ const title = ref('');
 const history = ref('');
 // const image = ref(null);
 // const document = ref(null);
-const status = ref(1);
+const is_active = ref(1);
 const images = ref([{ id: Date.now(), file: null }]);
 const documents = ref([{ id: Date.now(), file: null }]);
 
 
-// Fetch record data for editing
-const fetchRecord = async () => {
+// Fetch history data for editing
+const fetchHistory = async () => {
   try {
     const response = await auth.fetchProtectedApi(`/api/get-org-history/${id.value}`, {}, 'GET');
     if (response?.status) {
@@ -44,12 +44,12 @@ const fetchRecord = async () => {
 
       title.value = data.title;
       history.value = data.history;
-      status.value = data.status;
+      is_active.value = data.is_active;
     } else {
-      handleError('Failed to fetch record details.');
+      handleError('Failed to fetch history details.');
     }
   } catch (error) {
-    handleError('An error occurred while fetching the record.');
+    handleError('An error occurred while fetching the history.');
   }
 };
 
@@ -80,7 +80,7 @@ const submitForm = async () => {
   const formData = new FormData();
   formData.append('title', title.value);
   formData.append('history', history.value);
-  formData.append('status', status.value);
+  formData.append('is_active', is_active.value);
 
 
 
@@ -107,10 +107,10 @@ const submitForm = async () => {
   //     Swal.fire('Success', 'Success story updated successfully.', 'success');
   //     router.push({ name: 'success-story' });
   //   } else {
-  //     Swal.fire('Error', 'Failed to update record.', 'error');
+  //     Swal.fire('Error', 'Failed to update history.', 'error');
   //   }
   // } catch (error) {
-  //   Swal.fire('Error', 'An error occurred while updating the record.', 'error');
+  //   Swal.fire('Error', 'An error occurred while updating the history.', 'error');
   // }
 
   try {
@@ -131,7 +131,7 @@ const submitForm = async () => {
 
 // Initialize component on mount
 onMounted(() => {
-  fetchRecord();
+  fetchHistory();
 });
 </script>
 
@@ -163,12 +163,12 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Status Field -->
+        <!-- is_active Field -->
         <div class="mb-4">
-          <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-          <select v-model="status" id="status" class="w-full p-2 border border-gray-300 rounded-md">
-            <option value="1">Active</option>
-            <option value="0">Disabled</option>
+          <label for="is_active" class="block text-sm font-medium text-gray-700">Active</label>
+          <select v-model="is_active" id="is_active" class="w-full p-2 border border-gray-300 rounded-md">
+            <option value="1">Yes</option>
+            <option value="0">No</option>
           </select>
         </div>
 
@@ -219,7 +219,7 @@ onMounted(() => {
         <div class="flex justify-center mt-6">
           <button type="submit"
             class="w-full md:w-auto bg-blue-600 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50">
-            Update Record
+            Update History
           </button>
         </div>
       </form>

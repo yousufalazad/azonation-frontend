@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
 
@@ -9,27 +9,29 @@ const route = useRoute();
 const id = ref(route.params.id || null);
 
 
-// Reactive variable to hold the record data
-const record = ref(null);
-const fetchRecord = async () => {
+// Reactive variable to hold the history data
+//const history = ref(null);S
+const history = ref([]); // Ensure it's initialized as an empty array
+
+const fetchHistory = async () => {
     try {
       const response = await auth.fetchProtectedApi(`/api/get-org-history/${id.value}`, {}, 'GET');
         if (response.status) {
-            record = response.data;
+            history.value = response.data;
         } else {
-            Swal.fire('Error', 'Failed to fetch record details.', 'error');
+            Swal.fire('Error', 'Failed to fetch history details.', 'error');
             router.push({ name: 'history' });
         }
     } catch (error) {
-        console.error('Error fetching record:', error);
+        console.error('Error fetching history:', error);
         Swal.fire('Error', 'An error occurred. Please try again.', 'error');
         router.push({ name: 'history' });
     }
 };
 
-// Load the record data when the component is mounted
+// Load the history data when the component is mounted
 onMounted(() => {
-    fetchRecord();
+    fetchHistory();
 });
 </script>
 
@@ -46,22 +48,22 @@ onMounted(() => {
       </div>
 
   
-        <!-- Record Display Section -->
+        <!-- history Display Section -->
         <div class="bg-white shadow-sm rounded-lg p-6">
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700">Title</label>
-            <p class="mt-1 text-gray-700">{{ record.title }}</p>
+            <p class="mt-1 text-gray-700">{{ history.title }}</p>
           </div>
   
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700">History</label>
-            <p class="mt-1 text-gray-700">{{ record.history }}</p>
+            <p class="mt-1 text-gray-700">{{ history.history }}</p>
           </div>
   
           <!-- <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700">Image</label>
-            <div v-if="record.image">
-              <img :src="record.image" alt="Image" class="mt-2 max-w-full rounded-lg" />
+            <div v-if="history.image">
+              <img :src="history.image" alt="Image" class="mt-2 max-w-full rounded-lg" />
             </div>
             <div v-else>
               <p class="text-gray-700">No image available</p>
@@ -70,8 +72,8 @@ onMounted(() => {
   
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700">Document</label>
-            <div v-if="record.document">
-              <a :href="record.document" target="_blank" class="text-blue-600 hover:text-blue-800">Download Document</a>
+            <div v-if="history.document">
+              <a :href="history.document" target="_blank" class="text-blue-600 hover:text-blue-800">Download Document</a>
             </div>
             <div v-else>
               <p class="text-gray-700">No document available</p>
@@ -79,10 +81,10 @@ onMounted(() => {
           </div> -->
   
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700">Status</label>
+            <label class="block text-sm font-medium text-gray-700">Active</label>
             <p class="mt-1 text-gray-700">
-              <span v-if="record.status === 1" class="text-green-500">Active</span>
-              <span v-else class="text-red-500">Disabled</span>
+              <span v-if="history.is_active === 1" class="text-green-500">Yes</span>
+              <span v-else class="text-red-500">No</span>
             </p>
           </div>
         </div>

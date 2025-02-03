@@ -5,43 +5,43 @@ import Swal from 'sweetalert2';
 import DOMPurify from 'dompurify';
 import { authStore } from '../../../store/authStore';
 const auth = authStore;
-const recordList = ref([]);
+const historyList = ref([]);
 
-// Fetch list of records
-const getRecords = async () => {
+// Fetch list of Histories
+const getHistories = async () => {
     try {
         const response = await auth.fetchProtectedApi('/api/get-org-histories', {}, 'GET');
         if (response.status) {
-            recordList.value = response.data;
+            historyList.value = response.data;
         } else {
-            recordList.value = [];
+            historyList.value = [];
         }
     } catch (error) {
-        console.error('Error fetching records:', error);
-        recordList.value = [];
+        console.error('Error fetching Histories:', error);
+        historyList.value = [];
     }
 };
 
-// Delete record
-const __deleteRecord = async (id) => {
+// Delete history
+const __deleteHistory = async (id) => {
     try {
         const response = await auth.fetchProtectedApi(`/api/delete-org-history/${id}`, {}, 'DELETE');
         if (response.status) {
-            getRecords(); // Refresh the record list
+            getHistories(); // Refresh the history list
         } else {
-            alert('Failed to delete record.');
+            alert('Failed to delete history.');
         }
     } catch (error) {
-        console.error('Error deleting record:', error);
+        console.error('Error deleting history:', error);
     }
 };
 
-// Delete record
-const deleteRecord = async (id) => {
+// Delete history
+const deleteHistory = async (id) => {
     try {
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: 'Do you want to delete this record?',
+            text: 'Do you want to delete this history?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, delete it!',
@@ -52,15 +52,15 @@ const deleteRecord = async (id) => {
             const response = await auth.fetchProtectedApi(`/api/delete-org-history/${id}`, {}, 'DELETE');
 
             if (response.status) {
-                Swal.fire('Deleted!', 'Record has been deleted.', 'success');
-                getRecords(); // Refresh the list
+                Swal.fire('Deleted!', 'history has been deleted.', 'success');
+                getHistories(); // Refresh the list
             } else {
-                Swal.fire('Failed!', 'Failed to delete the record.', 'error');
+                Swal.fire('Failed!', 'Failed to delete the history.', 'error');
             }
         }
     } catch (error) {
-        console.error('Error deleting record:', error);
-        Swal.fire('Error!', 'Failed to delete the record.', 'error');
+        console.error('Error deleting history:', error);
+        Swal.fire('Error!', 'Failed to delete the history.', 'error');
     }
 };
 
@@ -73,9 +73,9 @@ const sanitize = (html) => {
     });
 };
 
-// Initialize and fetch records on mounted
+// Initialize and fetch Histories on mounted
 onMounted(() => {
-    getRecords();
+    getHistories();
 });
 </script>
 <template>
@@ -83,7 +83,7 @@ onMounted(() => {
         <section>
             <!-- Header Section -->
             <div class="flex justify-between items-center mb-5">
-                <h2 class="text-xl font-semibold">Organizational History Records</h2>
+                <h2 class="text-xl font-semibold">Organizational History</h2>
                 <button @click="$router.push({ name: 'create-history' })"
                     class="bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700">Add History
                 </button>
@@ -97,27 +97,27 @@ onMounted(() => {
                             <th class="p-2 md:border md:border-gray-300 text-left block md:table-cell">#</th>
                             <th class="p-2 md:border md:border-gray-300 text-left block md:table-cell">Title</th>
                             <th class="p-2 md:border md:border-gray-300 text-left block md:table-cell">History</th>
-                            <th class="p-2 md:border md:border-gray-300 text-left block md:table-cell">Status</th>
+                            <th class="p-2 md:border md:border-gray-300 text-left block md:table-cell">Active</th>
                             <th class="p-2 md:border md:border-gray-300 text-left block md:table-cell">Action</th>
                         </tr>
                     </thead>
                     <tbody class="block md:table-row-group">
-                        <tr v-for="(record, index) in recordList" :key="record.id"
+                        <tr v-for="(history, index) in historyList" :key="history.id"
                             class="border border-gray-300 md:border-none block md:table-row">
                             <td class="p-2 md:border md:border-gray-300 block md:table-cell">{{ index + 1 }}</td>
-                            <td class="p-2 md:border md:border-gray-300 block md:table-cell">{{ record.title }}</td>
+                            <td class="p-2 md:border md:border-gray-300 block md:table-cell">{{ history.title }}</td>
                             <td class="p-2 md:border md:border-gray-300 block md:table-cell"
-                                v-html="sanitize(record.history)"></td>
-                            <td class="p-2 md:border md:border-gray-300 block md:table-cell">{{ record.status === 1 ?
-                                'Active' : 'Disabled' }}</td>
+                                v-html="sanitize(history.history)"></td>
+                            <td class="p-2 md:border md:border-gray-300 block md:table-cell">{{ history.is_active === 1 ?
+                                'Yes' : 'No' }}</td>
                             <td class="p-2 md:border md:border-gray-300 block md:table-cell">
-                                <button @click="$router.push({ name: 'edit-history', params: { id: record.id } })"
+                                <button @click="$router.push({ name: 'edit-history', params: { id: history.id } })"
                                     class="bg-yellow-500 text-white px-4 py-1 mx-1 rounded hover:bg-yellow-600">Edit
                                 </button>
 
-                                <button @click="$router.push({ name: 'view-history', params: { id: record.id } })"
+                                <button @click="$router.push({ name: 'view-history', params: { id: history.id } })"
                                     class="bg-green-500 text-white px-4 py-1 mx-1 rounded hover:bg-green-600">View </button>
-                                <button @click="deleteRecord(record.id)"
+                                <button @click="deleteHistory(history.id)"
                                     class="bg-red-500 text-white px-4 py-1 mx-1 rounded hover:bg-red-600">Delete</button>
                             </td>
                         </tr>

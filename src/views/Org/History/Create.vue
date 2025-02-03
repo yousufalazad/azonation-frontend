@@ -11,7 +11,7 @@ const title = ref('');
 const history = ref('');
 // const image = ref(null);
 // const document = ref(null);
-const status = ref(1);
+const is_active = ref(1);
 const images = ref([{ id: Date.now(), file: null }]);
 const documents = ref([{ id: Date.now(), file: null }]);
 
@@ -57,7 +57,7 @@ const submitForm = async () => {
   const formData = new FormData();
   formData.append('title', title.value);
   formData.append('history', history.value);
-  formData.append('status', status.value);
+  formData.append('is_active', is_active.value);
 
   images.value.forEach((fileData, index) => {
     if (fileData.file) {
@@ -77,14 +77,14 @@ const submitForm = async () => {
     });
 
     if (response.status) {
-      await Swal.fire('Success!', 'Record added successfully.', 'success');
+      await Swal.fire('Success!', 'History added successfully.', 'success');
       router.push({ name: 'history' });
     } else {
-      Swal.fire('Failed!', 'Failed to add record.', 'error');
+      Swal.fire('Failed!', 'Failed to add History.', 'error');
     }
   } catch (error) {
-    console.error('Error adding record:', error);
-    Swal.fire('Error!', 'Failed to add record.', 'error');
+    console.error('Error adding History:', error);
+    Swal.fire('Error!', 'Failed to add History.', 'error');
   }
 };
 </script>
@@ -100,7 +100,7 @@ const submitForm = async () => {
         </button>
       </div>
 
-      <!-- Form for Adding New Record -->
+      <!-- Form for Adding New History -->
       <form @submit.prevent="submitForm">
         <div class="grid grid-cols-1 md:grid-cols-1 gap-4 mb-4">
           <!-- Title Field -->
@@ -131,12 +131,12 @@ const submitForm = async () => {
             class="w-full p-2 border border-gray-300 rounded-md" @change="handleDocument" />
         </div> -->
 
-        <!-- Status Field -->
+        <!-- is_active Field -->
         <div class="mb-4">
-          <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-          <select v-model="status" id="status" class="w-full p-2 border border-gray-300 rounded-md">
-            <option value="1">Active</option>
-            <option value="0">Disabled</option>
+          <label for="is_active" class="block text-sm font-medium text-gray-700">Active</label>
+          <select v-model="is_active" id="is_active" class="w-full p-2 border border-gray-300 rounded-md">
+            <option value="1">Yes</option>
+            <option value="0">No</option>
           </select>
         </div>
 
