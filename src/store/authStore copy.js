@@ -120,7 +120,7 @@ const authStore = reactive({
       .then((res) => {
         if (res.status) {
           authStore.errors = null;
-          router.push({ name: "login" });
+          router.push({name: "login"});
           Swal.fire({
             icon: "success",
             title: "Registration successful",
@@ -135,6 +135,7 @@ const authStore = reactive({
       });
   },
 
+
   async authenticate(username, password, remember_token) {
     try {
       const response = await authStore.fetchPublicApi(
@@ -142,17 +143,13 @@ const authStore = reactive({
         { email: username, password: password, remember_token: remember_token },
         "POST"
       );
-
+  
       if (response.status === "success") {
         authStore.isAuthenticated = true;
         authStore.user = response.data;
         sessionStorage.setItem("auth", 1);
         sessionStorage.setItem("user", JSON.stringify(response.data));
-
-        // Check session storage
-        console.log(sessionStorage.getItem("auth")); // Should return 1
-        console.log(sessionStorage.getItem("user")); // Should return user data
-
+  
         // Redirect based on user type
         switch (response.data.type) {
           case "individual":
@@ -166,14 +163,9 @@ const authStore = reactive({
             router.push({ name: "initial-content" });
             break;
           default:
-            router.push({ name: "login" });
+            router.push({name: "login"});
         }
-        
-        console.log(authStore.isAuthenticated);  // Should be true after login
-        console.log(authStore.user);  // Should return user data after login
-        console.log(authStore.getUserToken());  // Should return the token if the user is logged in
-        console.log(response.data.type); // Check which user type is being returned
-
+  
         Swal.fire({
           icon: "success",
           title: "Login Successful",
@@ -199,7 +191,7 @@ const authStore = reactive({
       });
     }
   },
-
+  
   logout() {
     Swal.fire({
       title: "Are you sure?",
@@ -211,7 +203,7 @@ const authStore = reactive({
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await authStore.fetchProtectedApi("/api/logout", {}, "POST");
+          await authStore.fetchProtectedApi("/api/logout",{},"POST")
 
           // Clear frontend authentication status
           authStore.isAuthenticated = false;
@@ -287,6 +279,7 @@ const authStore = reactive({
   //     }
   //   });
   // },
+
 
   // logout() {
   //   Swal.fire({

@@ -1264,4 +1264,12 @@ router.beforeEach((to, from, next) => {
   }
 })
 
+// router.beforeEach((to, from, next) => {
+//   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+//     next({ name: 'login' });
+//   } else {
+//     next();
+//   }
+// });
+
 export default router;
