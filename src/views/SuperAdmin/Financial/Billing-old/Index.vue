@@ -75,12 +75,18 @@ onMounted(() => getRecords());
               <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
                 <th class="py-2 px-4 border">Sl</th>
                 <th class="py-2 px-4 border">Billing ID</th>
+                <th class="py-2 px-4 border">Item</th>
                 <th class="py-2 px-4 border">period_start</th>
                 <th class="py-2 px-4 border">period_end</th>
                 <th class="py-2 px-4 border">service_month</th>
                 <th class="py-2 px-4 border">billing_month</th>
+                <th class="py-2 px-4 border">active_member_count</th>
+                <th class="py-2 px-4 border">billable_active_member_count</th>
+                <th class="py-2 px-4 border">member_daily_rate</th>
+                <th class="py-2 px-4 border">total_bill_amount</th>
                 <th class="py-2 px-4 border">status</th>
                 <th class="py-2 px-4 border">is_active</th>
+                <th class="py-2 px-4 border">admin_notes</th>
                 <th class="border px-1 py-3 text-left" style="width:300px">Action</th>
               </tr>
             </thead>
@@ -88,12 +94,18 @@ onMounted(() => getRecords());
               <tr v-for="(bill, index) in billingList" :key="bill.id">
                 <td class="py-2 px-4 border">{{ index + 1 }}</td>
                 <td class="py-2 px-4 border">{{ bill.billing_code }}</td>
+                <td class="py-2 px-4 border">{{ bill.item_name }}</td>
                 <td class="py-2 px-4 border">{{ formatDate(bill.period_start) }}</td>
                 <td class="py-2 px-4 border">{{ formatDate(bill.period_end) }}</td>
                 <td class="py-2 px-4 border">{{ bill.service_month }}</td>
                 <td class="py-2 px-4 border">{{ bill.billing_month }}</td>
+                <td class="py-2 px-4 border">{{ bill.active_member_count }}</td>
+                <td class="py-2 px-4 border">{{ bill.billable_active_member_count }}</td>
+                <td class="py-2 px-4 border">{{ bill.member_daily_rate }}</td>
+                <td class="py-2 px-4 border">{{ bill.total_bill_amount }}</td>
                 <td class="py-2 px-4 border">{{ bill.status }}</td>
                 <td class="py-2 px-4 border">{{ bill.is_active }}</td>
+                <td class="py-2 px-4 border">{{ bill.admin_notes }}</td>
                 <td class="py-2 px-4 border">
                   <button @click="$router.push({ name: 'super-admin-billing-edit', params: { id: bill.id } })"
                     class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">Edit</button>

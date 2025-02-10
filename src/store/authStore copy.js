@@ -1,5 +1,5 @@
 import { reactive } from "vue";
-import router from "../router/router";
+import router from "../router/router-edited";
 import axios from "axios";
 import Swal from "sweetalert2";
 

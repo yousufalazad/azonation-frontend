@@ -11,20 +11,20 @@ const auth = authStore;
 
 // Form fields
 const billing_code = ref('');
-const description = ref('');
-const billing_address = ref('');
-const item_name = ref('');
 const period_start = ref('');
 const period_end = ref('');
 const service_month = ref('');
+const service_year = ref('');
 const billing_month = ref('');
-const active_member_count = ref('');
-const billable_active_member_count = ref('');
-const member_daily_rate = ref('');
-const total_bill_amount = ref('');
-const status = ref("");
+const billing_year = ref('');
+const total_member = ref('');
+const total_management_bill_amount = ref('');
+const total_storage_bill_amount = ref('');
+const currency_code = ref('');
+const bill_status = ref("");
 const admin_notes = ref('');
 const is_active = ref(1);
+
 
 const billingId = route.params.id; // Assume the billing ID is passed as a route parameter
 
@@ -35,18 +35,17 @@ const getRecord = async () => {
     if (response.status) {
       const data = response.data;
       billing_code.value = data.billing_code || '';
-      description.value = data.description || '';
-      billing_address.value = data.billing_address || '';
-      item_name.value = data.item_name || '';
       period_start.value = data.period_start || '';
       period_end.value = data.period_end || '';
       service_month.value = data.service_month || '';
+      service_year.value = data.service_year || '';
       billing_month.value = data.billing_month || '';
-      active_member_count.value = data.active_member_count || '';
-      billable_active_member_count.value = data.billable_active_member_count || '';
-      member_daily_rate.value = data.member_daily_rate || '';
-      total_bill_amount.value = data.total_bill_amount || '';
-      status.value = data.status || '';
+      billing_year.value = data.billing_year || '';
+      total_member.value = data.total_member || '';
+      total_management_bill_amount.value = data.total_management_bill_amount || '';
+      total_storage_bill_amount.value = data.total_storage_bill_amount || '';
+      currency_code.value = data.currency_code || '';
+      bill_status.value = data.bill_status || '';
       admin_notes.value = data.admin_notes || '';
       is_active.value = data.is_active || 1;
     } else {
@@ -60,25 +59,24 @@ const getRecord = async () => {
 
 // Update record
 const submitForm = async () => {
-  if (!billing_code.value) {
-    Swal.fire('Error!', 'Please fill in all required fields.', 'error');
-    return;
-  }
+  // if (!billing_code.value) {
+  //   Swal.fire('Error!', 'Please fill in all required fields.', 'error');
+  //   return;
+  // }
 
   const payload = {
     billing_code: billing_code.value,
-    description: description.value,
-    billing_address: billing_address.value,
-    item_name: item_name.value,
     period_start: period_start.value,
     period_end: period_end.value,
     service_month: service_month.value,
+    service_year: service_year.value,
     billing_month: billing_month.value,
-    active_member_count: active_member_count.value,
-    billable_active_member_count: billable_active_member_count.value,
-    member_daily_rate: member_daily_rate.value,
-    total_bill_amount: total_bill_amount.value,
-    status: status.value,
+    billing_year: billing_year.value,
+    total_member: total_member.value,
+    total_management_bill_amount: total_management_bill_amount.value,
+    total_storage_bill_amount: total_storage_bill_amount.value,
+    currency_code: currency_code.value,
+    bill_status: bill_status.value,
     admin_notes: admin_notes.value,
     is_active: is_active.value,
   };
@@ -139,18 +137,6 @@ onMounted(() => {
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2"
             placeholder="Enter billing code" required />
         </div>
-        <div>
-          <label for="item_name" class="block text-sm font-medium text-gray-700">Item Name</label>
-          <input v-model="item_name" type="text" id="item_name"
-            class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2"
-            placeholder="Item name" required />
-        </div>
-        <div>
-          <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-          <input v-model="description" type="text" id="description"
-            class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2"
-            placeholder="Description" required />
-        </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -170,32 +156,43 @@ onMounted(() => {
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2" />
         </div>
         <div>
+          <label for="service_year" class="block text-sm font-medium text-gray-700">Service Year</label>
+          <input v-model="service_year" type="month" id="service_year"
+            class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2" />
+        </div>
+        <div>
           <label for="billing_month" class="block text-sm font-medium text-gray-700">Billing Month</label>
           <input v-model="billing_month" type="month" id="billing_month"
+            class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2" />
+        </div>
+        <div>
+          <label for="billing_year" class="block text-sm font-medium text-gray-700">Billing Year</label>
+          <input v-model="billing_year" type="month" id="billing_year"
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2" />
         </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label for="active_member_count" class="block text-sm font-medium text-gray-700">Active Member Count</label>
-          <input v-model="active_member_count" type="number" id="active_member_count"
+          <label for="total_member" class="block text-sm font-medium text-gray-700">Total Member</label>
+          <input v-model="total_member" type="number" id="total_member"
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2" />
         </div>
         <div>
-          <label for="billable_active_member_count" class="block text-sm font-medium text-gray-700">Billable Active
-            Member Count</label>
-          <input v-model="billable_active_member_count" type="number" id="billable_active_member_count"
+          <label for="total_management_bill_amount" class="block text-sm font-medium text-gray-700">Total Management
+            Bill Amount</label>
+          <input v-model="total_management_bill_amount" type="number" id="total_management_bill_amount"
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2" />
         </div>
         <div>
-          <label for="member_daily_rate" class="block text-sm font-medium text-gray-700">Member Daily Rate</label>
-          <input v-model="member_daily_rate" type="number" id="member_daily_rate"
+          <label for="total_storage_bill_amount" class="block text-sm font-medium text-gray-700">Total Storage Bill
+            Amount</label>
+          <input v-model="total_storage_bill_amount" type="number" id="total_storage_bill_amount"
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2" />
         </div>
         <div>
-          <label for="total_bill_amount" class="block text-sm font-medium text-gray-700">Total Bill Amount</label>
-          <input v-model="total_bill_amount" type="number" id="total_bill_amount"
+          <label for="currency_code" class="block text-sm font-medium text-gray-700">Currency Code</label>
+          <input v-model="currency_code" type="text" id="currency_code"
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2" />
         </div>
       </div>
@@ -204,13 +201,13 @@ onMounted(() => {
         <input v-model="admin_notes" type="text" id="admin_notes"
           class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2" />
       </div>
-      <!-- Status and Notes -->
+      <!-- bill_status and Notes -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-          <select v-model="status" id="status"
+          <label for="bill_status" class="block text-sm font-medium text-gray-700">Bill Status</label>
+          <select v-model="bill_status" id="bill_status"
             class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2">
-            <option value="">Select Status</option>
+            <option value="">Select Bill Status</option>
             <option value="issued">Issued</option>
             <option value="unissued">Unissued</option>
             <option value="pending">Pending</option>

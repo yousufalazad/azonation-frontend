@@ -185,6 +185,18 @@ import SuperAdminBillingCreate from "../views/SuperAdmin/Financial/Billing/Creat
 import SuperAdminBillingEdit from "../views/SuperAdmin/Financial/Billing/Edit.vue";
 import SuperAdminBillingView from "../views/SuperAdmin/Financial/Billing/View.vue";
 
+//EveryDayMemberCount
+import SuperAdminEveryDayMemberCountList from "../views/SuperAdmin/Financial/EveryDayMemberCount/Index.vue";
+import SuperAdminEveryDayMemberCountCreate from "../views/SuperAdmin/Financial/EveryDayMemberCount/Create.vue";
+import SuperAdminEveryDayMemberCountEdit from "../views/SuperAdmin/Financial/EveryDayMemberCount/Edit.vue";
+import SuperAdminEveryDayMemberCountView from "../views/SuperAdmin/Financial/EveryDayMemberCount/View.vue";
+
+//EverydayStorage Billing
+import SuperAdminEverydayStorageBillingList from "../views/SuperAdmin/Financial/EverydayStorageBilling/Index.vue";
+import SuperAdminEverydayStorageBillingCreate from "../views/SuperAdmin/Financial/EverydayStorageBilling/Create.vue";
+import SuperAdminEverydayStorageBillingEdit from "../views/SuperAdmin/Financial/EverydayStorageBilling/Edit.vue";
+import SuperAdminEverydayStorageBillingView from "../views/SuperAdmin/Financial/EverydayStorageBilling/View.vue";
+
 //Invoice
 import SuperAdminInvoiceList from "../views/SuperAdmin/Financial/Invoice/Index.vue";
 import SuperAdminInvoiceCreate from "../views/SuperAdmin/Financial/Invoice/Create.vue";
@@ -1063,6 +1075,59 @@ const routes = [
         component: SuperAdminBillingView,
         meta: { requiresAuth: true },
       },
+
+
+      {
+        path: "super-admin-every-day-member-count-list",
+        name: "super-admin-every-day-member-count-list",
+        component: SuperAdminEveryDayMemberCountList,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-every-day-member-count-create",
+        name: "super-admin-every-day-member-count-create",
+        component: SuperAdminEveryDayMemberCountCreate,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-every-day-member-count-edit/:id",
+        name: "super-admin-every-day-member-count-edit",
+        component: SuperAdminEveryDayMemberCountEdit,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-every-day-member-count-view/:id",
+        name: "super-admin-every-day-member-count-view",
+        component: SuperAdminEveryDayMemberCountView,
+        meta: { requiresAuth: true },
+      },
+
+
+      {
+        path: "super-admin-everyday-storage-billing-list",
+        name: "super-admin-everyday-storage-billing-list",
+        component: SuperAdminEverydayStorageBillingList,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-everyday-storage-billing-create",
+        name: "super-admin-everyday-storage-billing-create",
+        component: SuperAdminEverydayStorageBillingCreate,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-everyday-storage-billing-edit/:id",
+        name: "super-admin-everyday-storage-billing-edit",
+        component: SuperAdminEverydayStorageBillingEdit,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-everyday-storage-billing-view/:id",
+        name: "super-admin-everyday-storage-billing-view",
+        component: SuperAdminEverydayStorageBillingView,
+        meta: { requiresAuth: true },
+      },
+
       {
         path: "super-admin-invoice-list",
         name: "super-admin-invoice-list",
@@ -1237,23 +1302,6 @@ const router = createRouter({
   routes,
 });
 
-// const router = createRouter({
-//   history: createWebHistory(),
-//   routes
-// })
-
-// router.beforeEach((to, from, next) => {
-//   if (to.matched.some((record) => record.meta.requiresAuth)) {
-//     if (!isAuthenticated()) {
-//       next({ name: "login" });
-//     } else {
-//       next();
-//     }
-//   } else {
-//     next();
-//   }
-// });
-
 router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
       next({name: "login"})
@@ -1263,13 +1311,5 @@ router.beforeEach((to, from, next) => {
       next()
   }
 })
-
-// router.beforeEach((to, from, next) => {
-//   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-//     next({ name: 'login' });
-//   } else {
-//     next();
-//   }
-// });
 
 export default router;
