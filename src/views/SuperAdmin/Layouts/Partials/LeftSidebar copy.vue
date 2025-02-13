@@ -40,13 +40,7 @@
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">User price rate</router-link>
 
               <router-link to="/superadmin-dashboard/super-admin-billing-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100"> Billing</router-link>
-              <router-link to="/superadmin-dashboard/super-admin-every-day-member-count-and-bill-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Every Day Member Count </router-link>
-              <router-link to="/superadmin-dashboard/super-admin-everyday-storage-billing-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Everyday Storage Billing </router-link>
-              <router-link to="/superadmin-dashboard/super-admin-management-and-storage-billing-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Management and Storage Billing </router-link>
+                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Billing</router-link>
 
               <router-link to="/superadmin-dashboard/super-admin-invoice-list"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Invoice</router-link>

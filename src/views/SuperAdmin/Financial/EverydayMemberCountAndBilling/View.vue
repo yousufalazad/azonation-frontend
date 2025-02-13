@@ -15,7 +15,7 @@ const id = route.params.id; // Assume the billing ID is passed as a route parame
 // Fetch record
 const getRecord = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-every-day-member-count/${id}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/get-every-day-member-count-and-bill/${id}`, {}, 'GET');
     if (response.status) {
       record.value = response.data;
     } else {
@@ -37,7 +37,7 @@ onMounted(() => {
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
       <h2 class="text-2xl font-bold text-gray-800">View Details</h2>
-      <button @click="$router.push({ name: 'super-admin-every-day-member-count-list' })"
+      <button @click="$router.push({ name: 'super-admin-every-day-member-count-and-bill-list' })"
         class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-lg shadow focus:ring-2 focus:ring-blue-300 focus:outline-none">
         Back to List
       </button>
@@ -46,7 +46,11 @@ onMounted(() => {
     <!-- Table -->
     <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
       <tbody class="text-gray-600 text-md font-medium">
-        
+        <tr>
+          <td class="p-2 text-left font-semibold w-36">User</td>
+          <td class="p-2">:</td>
+          <td class="p-2">{{ record.user?.name || 'N/A' }}</td>
+        </tr>
         <tr>
           <td class="p-2 text-left font-semibold w-36">Date</td>
           <td class="p-2">:</td>

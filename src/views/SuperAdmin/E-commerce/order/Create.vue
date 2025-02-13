@@ -11,27 +11,37 @@ const auth = authStore;
 // Form fields for Order
 const user_id = ref('');
 const user_name = ref('');
-const order_number = ref('');
-const total_amount = ref('');
+const billing_code = ref('');
+const order_code = ref('');
+const order_date = ref('');
+const sub_total = ref('');
 const discount_amount = ref('');
 const shipping_cost = ref('');
 const total_tax = ref('');
-const currency = ref('');
-const shipping_status = ref('');
-const shipping_address = ref('');
-const billing_address = ref('');
+const credit_applied = ref('');
+const total_amount = ref('');
+const discount_title = ref('');
+const tax_rate = ref('');
+const currency_code = ref('');
 const coupon_code = ref('');
+const payment_method = ref('');
+const billing_address = ref('');
+const user_country = ref('');
+const user_region = ref('');
+const is_active = ref(true);
+
+const shipping_address = ref('');
+const shipping_status = ref('');
 const shipping_method = ref('');
 const shipping_note = ref('');
 const customer_note = ref('');
 const admin_note = ref('');
 const tracking_number = ref('');
-const order_date = ref('');
 const delivery_date_expected = ref('');
 const delivery_date_actual = ref('');
-const status = ref('');
+const order_status = ref('');
 const cancelled_at = ref('');
-const is_active = ref(true);
+const cancellation_reason = ref('');
 
 // Order Items Data
 const order_items = ref([{
@@ -50,8 +60,8 @@ const order_items = ref([{
 const userList = ref([]);
 const getUserList = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/get-org-user-list', {}, 'GET');
-    userList.value = response.status ? response.data : [];
+    const response = await auth.fetchProtectedApi('/api/get-all-org-user', {}, 'GET');
+    userList.value = response.data ? response.data : [];
   } catch (error) {
     console.error('Error fetching user list:', error);
     userList.value = [];
@@ -63,13 +73,12 @@ const productList = ref([]);
 const getProducts = async () => {
   try {
     const response = await auth.fetchProtectedApi(`/api/get-products`, {}, 'GET');
-    console.log(response.data);
-
-    productList.value = response.status ? response.data : [];
+    productList.value = response.data ? response.data : [];
   } catch (error) {
     console.error('Error fetching products:', error);
   }
 };
+
 
 // Add a new order item
 const addOrderItem = () => {
@@ -112,27 +121,38 @@ watch(order_items, (newOrderItems) => {
 const resetForm = () => {
   user_id.value = '';
   user_name.value = '';
-  order_number.value = '';
+  order_code.value = '';
+  billing_code.value = '';
   total_amount.value = '';
   discount_amount.value = '';
   shipping_cost.value = '';
   total_tax.value = '';
-  currency.value = '';
-  shipping_status.value = '';
-  shipping_address.value = '';
+  currency_code.value = '';
+  payment_method.value = '';
+  sub_total.value = '';
   billing_address.value = '';
   coupon_code.value = '';
+  credit_applied.value = '';
+  discount_title.value = '';
+  tax_rate.value = '';
+  order_date.value = '';
+  user_country.value = '';
+  user_region.value = '';
+  is_active.value = true;
+
+  shipping_status.value = '';
+  shipping_address.value = '';
   shipping_method.value = '';
   shipping_note.value = '';
   customer_note.value = '';
   admin_note.value = '';
   tracking_number.value = '';
-  order_date.value = '';
   delivery_date_expected.value = '';
   delivery_date_actual.value = '';
-  status.value = '';
+  order_status.value = '';
   cancelled_at.value = '';
-  is_active.value = true;
+  cancellation_reason.value = '';
+
   order_items.value = [{
     product_id: '',
     product_name: '',
@@ -148,35 +168,46 @@ const resetForm = () => {
 
 // Submit form
 const submitForm = async () => {
-  if (!user_id.value || !order_number.value || !total_amount.value || !shipping_address.value || !billing_address.value || !status.value) {
-    Swal.fire('Error!', 'Please fill in all fields.', 'error');
-    return;
-  }
+  // if (!user_id.value || !order_code.value || !total_amount.value || !sub_total.value || !billing_address.value || !user_country.value) {
+  //   Swal.fire('Error!', 'Please fill in all fields.', 'error');
+  //   return;
+  // }
 
   const payload = {
     user_id: user_id.value,
     user_name: userList.value.find(user => user.id === user_id.value)?.name || 'Unknown',
-    order_number: order_number.value,
+    order_code: order_code.value,
+    billing_code: billing_code.value,
     total_amount: total_amount.value,
     discount_amount: discount_amount.value,
     shipping_cost: shipping_cost.value,
     total_tax: total_tax.value,
-    currency: currency.value,
-    shipping_status: shipping_status.value,
-    shipping_address: shipping_address.value,
+    currency_code: currency_code.value,
+    payment_method: payment_method.value,
+    sub_total: sub_total.value,
     billing_address: billing_address.value,
     coupon_code: coupon_code.value,
+    credit_applied: credit_applied.value,
+    discount_title: discount_title.value,
+    tax_rate: tax_rate.value,
+    order_date: order_date.value,
+    user_country: user_country.value,
+    user_region: user_region.value,
+    is_active: is_active.value,
+
+    shipping_status: shipping_status.value,
+    shipping_address: shipping_address.value,
     shipping_method: shipping_method.value,
     shipping_note: shipping_note.value,
     customer_note: customer_note.value,
     admin_note: admin_note.value,
     tracking_number: tracking_number.value,
-    order_date: order_date.value,
     delivery_date_expected: delivery_date_expected.value,
     delivery_date_actual: delivery_date_actual.value,
-    status: status.value,
+    order_status: order_status.value,
     cancelled_at: cancelled_at.value,
-    is_active: is_active.value,
+    cancellation_reason: cancellation_reason.value,
+
     order_items: order_items.value,  // Use the updated order_items with product_name
   };
 
@@ -238,19 +269,21 @@ onMounted(() => {
           </select>
         </div>
         <div>
-          <label for="order_number" class="block text-sm font-medium text-gray-700">Order Number</label>
-          <input v-model="order_number" type="text" id="order_number" class="input-field" />
+          <label for="billing_code" class="block text-sm font-medium text-gray-700">Billing Number</label>
+          <input v-model="billing_code" type="text" id="billing_code" class="input-field" />
         </div>
-      </div>
-
-      <!-- Payment & Shipping Details -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label for="order_code" class="block text-sm font-medium text-gray-700">Order Code</label>
+          <input v-model="order_code" type="text" id="order_code" class="input-field" />
+        </div>
+        <div>
+          <label for="order_date" class="block text-sm font-medium text-gray-700">Order Date</label>
+          <input v-model="order_date" type="date" id="order_date" class="input-field" />
+        </div>
         <div>
           <label for="total_amount" class="block text-sm font-medium text-gray-700">Total Amount</label>
           <input v-model="total_amount" type="number" id="total_amount" class="input-field" />
         </div>
-
-
         <div>
           <label for="discount_amount" class="block text-sm font-medium text-gray-700">Discount Amount</label>
           <input v-model="discount_amount" type="number" id="discount_amount" class="input-field" />
@@ -263,34 +296,23 @@ onMounted(() => {
           <label for="total_tax" class="block text-sm font-medium text-gray-700">Total Tax</label>
           <input v-model="total_tax" type="number" id="total_tax" class="input-field" />
         </div>
-
         <div>
-          <label for="currency" class="block text-sm font-medium text-gray-700">Currency</label>
-          <input v-model="currency" type="text" id="currency" class="input-field" />
+          <label for="currency_code" class="block text-sm font-medium text-gray-700">Currency Code</label>
+          <input v-model="currency_code" type="text" id="currency_code" class="input-field" />
         </div>
         <div>
-          <label for="shipping_status" class="block text-sm font-medium text-gray-700">Shipping Status</label>
-          <select v-model="shipping_status" id="shipping_status"
+          <label for="payment_method" class="block text-sm font-medium text-gray-700">Payment Method</label>
+          <select v-model="payment_method" id="payment_method"
             class="border mt-1 border-gray-300 rounded-md p-2 block w-full">
-            <option value="">Select Status</option>
+            <option value="">Select Payment Method</option>
             <option value="pending">Pending</option>
             <option value="shipped">Shipped</option>
             <option value="delivered">Delivered</option>
           </select>
         </div>
         <div>
-          <label for="shipping_method" class="block text-sm font-medium text-gray-700">Shipping Method</label>
-          <select v-model="shipping_method" id="shipping_method"
-            class="border mt-1 border-gray-300 rounded-md p-2 block w-full">
-            <option value="">Select Method</option>
-            <option value="Standard Shipping">Standard Shipping</option>
-            <option value="Express Shipping">Express Shipping</option>
-            <option value="Free Shipping">Free Shipping</option>
-          </select>
-        </div>
-        <div>
-          <label for="shipping_address" class="block text-sm font-medium text-gray-700">Shipping Address</label>
-          <input v-model="shipping_address" type="text" id="shipping_address" class="input-field" />
+          <label for="sub_total" class="block text-sm font-medium text-gray-700">Sub Total</label>
+          <input v-model="sub_total" type="number" id="sub_total" class="input-field" />
         </div>
         <div>
           <label for="billing_address" class="block text-sm font-medium text-gray-700">Billing Address</label>
@@ -300,48 +322,31 @@ onMounted(() => {
           <label for="coupon_code" class="block text-sm font-medium text-gray-700">Coupon Code</label>
           <input v-model="coupon_code" type="text" id="coupon_code" class="input-field" />
         </div>
+
         <div>
-          <label for="shipping_note" class="block text-sm font-medium text-gray-700">Shipping Note</label>
-          <textarea v-model="shipping_note" id="shipping_note" class="input-field"></textarea>
+          <label for="credit_applied" class="block text-sm font-medium text-gray-700">Credit Applied</label>
+          <input v-model="credit_applied" type="number" id="credit_applied" class="input-field" />
         </div>
         <div>
-          <label for="customer_note" class="block text-sm font-medium text-gray-700">Customer Note</label>
-          <textarea v-model="customer_note" id="customer_note" class="input-field"></textarea>
+          <label for="discount_title" class="block text-sm font-medium text-gray-700">Discount Title</label>
+          <input v-model="discount_title" type="text" id="discount_title" class="input-field" />
         </div>
         <div>
-          <label for="admin_note" class="block text-sm font-medium text-gray-700">Admin Note</label>
-          <input v-model="admin_note" type="text" id="admin_note" class="input-field" />
+          <label for="tax_rate" class="block text-sm font-medium text-gray-700">Tax Rate</label>
+          <input v-model="tax_rate" type="text" id="tax_rate" class="input-field" />
+        </div>
+
+        <div>
+          <label for="user_region" class="block text-sm font-medium text-gray-700">User Region</label>
+          <input v-model="user_region" type="text" id="user_region" class="input-field" />
         </div>
         <div>
-          <label for="tracking_number" class="block text-sm font-medium text-gray-700">Tracking Number</label>
-          <input v-model="tracking_number" type="text" id="tracking_number" class="input-field" />
-        </div>
-        <div>
-          <label for="order_date" class="block text-sm font-medium text-gray-700">Order Date</label>
-          <input v-model="order_date" type="date" id="order_date" class="input-field" />
-        </div>
-        <div>
-          <label for="delivery_date_expected" class="block text-sm font-medium text-gray-700">Delivery Date
-            Expected</label>
-          <input v-model="delivery_date_expected" type="date" id="delivery_date_expected" class="input-field" />
-        </div>
-        <div>
-          <label for="delivery_date_actual" class="block text-sm font-medium text-gray-700">Delivery Date Actual</label>
-          <input v-model="delivery_date_actual" type="date" id="delivery_date_actual" class="input-field" />
-        </div>
-        <div>
-          <label for="cancelled_at" class="block text-sm font-medium text-gray-700">Cancelled Date</label>
-          <input v-model="cancelled_at" type="date" id="cancelled_at" class="input-field" />
-        </div>
-        <div>
-          <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-          <select v-model="status" id="status" class="border mt-1 border-gray-300 rounded-md p-2 block w-full">
-            <option value="">Select Status</option>
-            <option value="pending">Pending</option>
-            <option value="processing">Processing</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="refunded">Refunded</option>
+          <label for="user_country" class="block text-sm font-medium text-gray-700"> User Country</label>
+          <select v-model="user_country" id="user_country"
+            class="border mt-1 border-gray-300 rounded-md p-2 block w-full">
+            <option value="">Select User Country</option>
+            <option value="BD">BD</option>
+            <option value="UK">UK</option>
           </select>
         </div>
         <div>
@@ -349,6 +354,79 @@ onMounted(() => {
           <input type="checkbox" id="is_active" v-model="is_active"
             class="border mt-1 border-gray-300 rounded-md p-2" />
         </div>
+      </div>
+
+      <h3 class="text-lg font-bold text-gray-800">Shipping Info</h3>
+
+      <div>
+        <label for="shipping_address" class="block text-sm font-medium text-gray-700">Shipping Address</label>
+        <input v-model="shipping_address" type="text" id="shipping_address" class="input-field" />
+      </div>
+      <div>
+        <label for="shipping_status" class="block text-sm font-medium text-gray-700">Shipping Status</label>
+        <select v-model="shipping_status" id="shipping_status"
+          class="border mt-1 border-gray-300 rounded-md p-2 block w-full">
+          <option value="">Select Status</option>
+          <option value="pending">Pending</option>
+          <option value="shipped">Shipped</option>
+          <option value="delivered">Delivered</option>
+        </select>
+      </div>
+      <div>
+        <label for="shipping_method" class="block text-sm font-medium text-gray-700">Shipping Method</label>
+        <select v-model="shipping_method" id="shipping_method"
+          class="border mt-1 border-gray-300 rounded-md p-2 block w-full">
+          <option value="">Select Method</option>
+          <option value="Standard Shipping">Standard Shipping</option>
+          <option value="Express Shipping">Express Shipping</option>
+          <option value="Free Shipping">Free Shipping</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="shipping_note" class="block text-sm font-medium text-gray-700">Shipping Note</label>
+        <textarea v-model="shipping_note" id="shipping_note" class="input-field"></textarea>
+      </div>
+      <div>
+        <label for="customer_note" class="block text-sm font-medium text-gray-700">Customer Note</label>
+        <textarea v-model="customer_note" id="customer_note" class="input-field"></textarea>
+      </div>
+      <div>
+        <label for="admin_note" class="block text-sm font-medium text-gray-700">Admin Note</label>
+        <input v-model="admin_note" type="text" id="admin_note" class="input-field" />
+      </div>
+      <div>
+        <label for="tracking_number" class="block text-sm font-medium text-gray-700">Tracking Number</label>
+        <input v-model="tracking_number" type="text" id="tracking_number" class="input-field" />
+      </div>
+      <div>
+        <label for="delivery_date_expected" class="block text-sm font-medium text-gray-700">Delivery Date
+          Expected</label>
+        <input v-model="delivery_date_expected" type="date" id="delivery_date_expected" class="input-field" />
+      </div>
+      <div>
+        <label for="delivery_date_actual" class="block text-sm font-medium text-gray-700">Delivery Date Actual</label>
+        <input v-model="delivery_date_actual" type="date" id="delivery_date_actual" class="input-field" />
+      </div>
+      <div>
+        <label for="cancelled_at" class="block text-sm font-medium text-gray-700">Cancelled Date</label>
+        <input v-model="cancelled_at" type="date" id="cancelled_at" class="input-field" />
+      </div>
+      <div>
+        <label for="cancellation_reason" class="block text-sm font-medium text-gray-700">Cancelled Reason</label>
+        <input v-model="cancellation_reason" type="text" id="cancellation_reason" class="input-field" />
+      </div>
+      <div>
+        <label for="order_status" class="block text-sm font-medium text-gray-700">order_status</label>
+        <select v-model="order_status" id="order_status"
+          class="border mt-1 border-gray-300 rounded-md p-2 block w-full">
+          <option value="">Select order_status</option>
+          <option value="pending">Pending</option>
+          <option value="processing">Processing</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="refunded">Refunded</option>
+        </select>
       </div>
 
       <!-- Order Items Section -->
@@ -443,7 +521,6 @@ onMounted(() => {
           </div>
         </div>
       </div>
-
 
       <!-- Buttons -->
       <div class="flex justify-center border-t border-gray-300 bg-gray-50 p-4">

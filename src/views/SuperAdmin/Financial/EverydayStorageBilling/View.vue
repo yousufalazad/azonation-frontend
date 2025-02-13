@@ -46,7 +46,11 @@ onMounted(() => {
     <!-- Table -->
     <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
       <tbody class="text-gray-600 text-md font-medium">
-        
+        <tr>
+          <td class="p-2 text-left font-semibold w-36">User</td>
+          <td class="p-2">:</td>
+          <td class="p-2">{{ record.user?.name || 'N/A' }}</td>
+        </tr>
         <tr>
           <td class="p-2 text-left font-semibold w-36">Date</td>
           <td class="p-2">:</td>

@@ -9,11 +9,24 @@ const router = useRouter();
 const auth = authStore;
 
 // Form fields
+const user_id = ref('');
 const date = ref('');
 const day_bill_amount = ref('');
 const is_active = ref(1);
 
 const id = route.params.id; // Assume the billing ID is passed as a route parameter
+
+// Fetch user list for order
+const userList = ref([]);
+const getUserList = async () => {
+  try {
+    const response = await auth.fetchProtectedApi('/api/get-all-org-user', {}, 'GET');
+    userList.value = response.data ? response.data : [];
+  } catch (error) {
+    console.error('Error fetching user list:', error);
+    userList.value = [];
+  }
+}
 
 // Fetch record for editing
 const getRecord = async () => {
@@ -21,7 +34,8 @@ const getRecord = async () => {
     const response = await auth.fetchProtectedApi(`/api/get-everyday-storage-billing/${id}`, {}, 'GET');
     if (response.status) {
       const data = response.data;
-      date.value = data.date,
+        user_id.value = data.user_id,
+        date.value = data.date,
         day_bill_amount.value = data.day_bill_amount,
         is_active.value = data.is_active
     } else {
@@ -35,6 +49,7 @@ const getRecord = async () => {
 
 // Reset form fields
 const resetForm = () => {
+  user_id.value = '';
   date.value = '';
   day_bill_amount.value = '';
   is_active.value = 1;
@@ -49,6 +64,7 @@ const submitForm = async () => {
 
   const payload = {
     // user_id: userId,
+    user_id: user_id.value,
     date: date.value,
     day_bill_amount: day_bill_amount.value,
     is_active: is_active.value,
@@ -82,6 +98,7 @@ const submitForm = async () => {
 };
 
 onMounted(() => {
+  getUserList();
   getRecord();
 });
 </script>
@@ -101,7 +118,13 @@ onMounted(() => {
 
     <form @submit.prevent="submitForm" class="space-y-6">
       <!-- Form grid layout -->
-
+      <div>
+        <label for="user_id" class="block text-sm font-medium text-gray-700">User ID</label>
+        <select v-model="user_id" id="user_id" class="w-full border border-gray-300 rounded-md p-2">
+          <option value="">Select User</option>
+          <option v-for="user in userList" :key="user.id" :value="user.id">{{ user.name }}</option>
+        </select>
+      </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>

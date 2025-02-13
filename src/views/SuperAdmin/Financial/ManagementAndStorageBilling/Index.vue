@@ -1,25 +1,32 @@
-<!-- Every Day Member Count Index.vue -->
+<!-- Billing Index.vue -->
 <script setup>
 import { onMounted, ref } from 'vue';
 import { authStore } from '../../../../store/authStore';
 import Swal from 'sweetalert2';
 
 const auth = authStore;
-const everyDayMemberCountList = ref([]);
+const billingList = ref([]);
+
+// Format date helper function
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+  return new Date(dateString).toLocaleDateString('en-GB', options);
+};
 
 const getRecords = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/every-day-member-count-list`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/superadmin-billing-list`, {}, 'GET');
     console.log(response.data);
 
-    everyDayMemberCountList.value = response.status ? response.data : [];
+    billingList.value = response.status ? response.data : [];
   } catch (error) {
     console.error('Error fetching events:', error);
   }
 };
 
 // Delete a meeting
-const deleteRecord = async (id) => {
+const deleteRecord = async (billingId) => {
   try {
     const confirmed = await Swal.fire({
       title: 'Are you sure?',
@@ -32,9 +39,9 @@ const deleteRecord = async (id) => {
     });
 
     if (confirmed.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/delete-every-day-member-count/${id}`, {}, 'DELETE');
+      const response = await auth.fetchProtectedApi(`/api/delete-billing/${billingId}`, {}, 'DELETE');
       if (response.status) {
-        everyDayMemberCountList.value = everyDayMemberCountList.value.filter(record => record.id !== id);
+        billingList.value = billingList.value.filter(record => record.id !== billingId);
         Swal.fire('Deleted!', 'Billing has been deleted.', 'success');
       } else {
         Swal.fire('Error!', 'Failed to delete meeting.', 'error');
@@ -52,43 +59,49 @@ onMounted(() => getRecords());
   <div class="max-w-7xl mx-auto w-10/12">
     <section>
       <div class="flex justify-between left-color-shade py-2 my-3">
-        <h5 class="text-md font-semibold mt-2">Every Day Member Count List</h5>
+        <h5 class="text-md font-semibold mt-2">Billing List</h5>
         <div>
-          <button @click="$router.push({ name: 'super-admin-every-day-member-count-create' })"
+          <button @click="$router.push({ name: 'super-admin-management-and-storage-billing-create' })"
             class="bg-blue-500 text-white font-semibold py-2 px-2 mx-3 rounded-md">
-            Add Every Day Member Count
+            Add Billing
           </button>
         </div>
       </div>
       <!-- Table container inside the card body -->
-      <div v-if="everyDayMemberCountList.length" class="p-4">
+      <div v-if="billingList.length" class="p-4">
         <div class="overflow-x-auto">
           <table class="min-w-full bg-white border border-gray-200">
             <thead class="bg-gray-50">
               <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
                 <th class="py-2 px-4 border">Sl</th>
-                <th class="py-2 px-4 border">Date</th>
-                <th class="py-2 px-4 border">Day Total Member</th>
-                <th class="py-2 px-4 border">Day Total Bill</th>
-                <th class="py-2 px-4 border">Active</th>
+                <th class="py-2 px-4 border">User</th>
+                <th class="py-2 px-4 border">Billing ID</th>
+                <th class="py-2 px-4 border">period_start</th>
+                <th class="py-2 px-4 border">period_end</th>
+                <th class="py-2 px-4 border">service_month</th>
+                <th class="py-2 px-4 border">billing_month</th>
+                <th class="py-2 px-4 border">status</th>
+                <th class="py-2 px-4 border">is_active</th>
                 <th class="border px-1 py-3 text-left" style="width:300px">Action</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
-              <tr v-for="(data, index) in everyDayMemberCountList" :key="data.id">
+              <tr v-for="(bill, index) in billingList" :key="bill.id">
                 <td class="py-2 px-4 border">{{ index + 1 }}</td>
-                <td class="py-2 px-4 border">{{ data.date }}</td>
-                <td class="py-2 px-4 border">{{ data.day_total_member }}</td>
-                <td class="py-2 px-4 border">{{ data.day_total_bill }}</td>
-
-                <td class="py-2 px-4 border">{{ data.is_active }}</td>
-
+                <td class="py-2 px-4 border">{{ bill.user.name }}</td>
+                <td class="py-2 px-4 border">{{ bill.billing_code }}</td>
+                <td class="py-2 px-4 border">{{ formatDate(bill.period_start) }}</td>
+                <td class="py-2 px-4 border">{{ formatDate(bill.period_end) }}</td>
+                <td class="py-2 px-4 border">{{ bill.service_month }}</td>
+                <td class="py-2 px-4 border">{{ bill.billing_month }}</td>
+                <td class="py-2 px-4 border">{{ bill.status }}</td>
+                <td class="py-2 px-4 border">{{ bill.is_active }}</td>
                 <td class="py-2 px-4 border">
-                  <button @click="$router.push({ name: 'super-admin-every-day-member-count-edit', params: { id: data.id } })"
+                  <button @click="$router.push({ name: 'super-admin-management-and-storage-billing-edit', params: { id: bill.id } })"
                     class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">Edit</button>
-                  <button @click="$router.push({ name: 'super-admin-every-day-member-count-view', params: { id: data.id } })"
+                  <button @click="$router.push({ name: 'super-admin-management-and-storage-billing-view', params: { id: bill.id } })"
                     class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 m-2 rounded">View</button>
-                  <button @click="deleteRecord(data.id)"
+                  <button @click="deleteRecord(bill.id)"
                     class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">Delete</button>
                 </td>
               </tr>
@@ -97,7 +110,7 @@ onMounted(() => getRecords());
         </div>
       </div>
       <div v-else class="p-4">
-        <p class="text-center text-gray-500">No Every Day Member Count available. Click "Create Every Day Member Count" to add a new one.</p>
+        <p class="text-center text-gray-500">No billings available. Click "Create Billing" to add a new one.</p>
       </div>
     </section>
   </div>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import Swal from 'sweetalert2';
 import { useRoute, useRouter } from 'vue-router';
 import { authStore } from '../../../../store/authStore';
@@ -9,38 +9,31 @@ const router = useRouter();
 const auth = authStore;
 
 
+// Form fields
 const id = ref('');
 // const invoice_code = ref('');
-// const user_id = ref(auth.user.id); // Automatically assigned
-// const user_name = ref('');
-const billing_address = ref('');
-const billing_id = ref('');
 const billing_code = ref('');
-const item_name = ref('');
-const item_description = ref('');
-const generated_at = ref('');
-const issued_at = ref('');
-const due_at = ref('');
-const total_active_member = ref('');
-const total_active_honorary_member = ref('');
-const total_billable_active_member = ref('');
-const subscribed_package_name = ref('');
-const price_rate = ref('');
-const currency = ref('');
-const subtotal = ref('');
-const discount_title = ref('');
-const discount = ref('');
-const tax = ref('');
-const balance = ref('');
+const order_code = ref('');
+const order_id = ref('');
+const user_id = ref('');
+const user_name = ref('');
+const description = ref('');
+const total_amount = ref('');
+const amount_paid = ref('');
+const balance_due = ref('');
+const currency_code = ref('');
+const generate_date = ref('');
+const issue_date = ref('');
+const due_date = ref('');
+const terms = ref('');
 const invoice_note = ref('');
+const is_published = ref(false);
 const invoice_status = ref('');
-const credit_applied = ref('');
-const is_published = ref(1);
 const payment_status = ref('');
-const payment_status_reason = ref('');
 const admin_note = ref('');
-const billingList = ref([]);
+const is_active = ref(true);
 
+const billingList = ref([]);
 // Fetch billing list
 const getBillingList = async () => {
   try {
@@ -52,6 +45,17 @@ const getBillingList = async () => {
   }
 };
 
+const orderList = ref([]);
+const getOrders = async () => {
+  try {
+    const response = await auth.fetchProtectedApi(`/api/get-orders`, {}, 'GET');
+    orderList.value = response.status ? response.data : [];
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+  }
+};
+
+
 // Load existing invoice details
 const fetchInvoiceDetails = async () => {
   const invoiceId = route.params.id; // Assume route param holds the invoice ID
@@ -59,33 +63,29 @@ const fetchInvoiceDetails = async () => {
     const response = await auth.fetchProtectedApi(`/api/get-invoice/${invoiceId}`, {}, 'GET');
     if (response.status) {
       const data = response.data;
+      // Assigning data to variables
       id.value = data.id;
-      billing_address.value = data.billing_address;
-      billing_id.value = data.billing_id;
+      // invoice_code.value = data.invoice_code;
       billing_code.value = data.billing_code;
-      item_name.value = data.item_name;
-      item_description.value = data.item_description;
-      generated_at.value = data.generated_at;
-      issued_at.value = data.issued_at;
-      due_at.value = data.due_at;
-      total_active_member.value = data.total_active_member;
-      total_active_honorary_member.value = data.total_active_honorary_member;
-      total_billable_active_member.value = data.total_billable_active_member;
-      subscribed_package_name.value = data.subscribed_package_name;
-      price_rate.value = data.price_rate;
-      currency.value = data.currency;
-      subtotal.value = data.subtotal;
-      discount_title.value = data.discount_title;
-      discount.value = data.discount;
-      tax.value = data.tax;
-      balance.value = data.balance;
+      order_code.value = data.order_code;
+      order_id.value = data.order_id;
+      user_id.value = data.user_id;
+      user_name.value = data.user_name;
+      description.value = data.description;
+      total_amount.value = data.total_amount;
+      amount_paid.value = data.amount_paid;
+      balance_due.value = data.balance_due;
+      currency_code.value = data.currency_code;
+      generate_date.value = data.generate_date;
+      issue_date.value = data.issue_date;
+      due_date.value = data.due_date;
+      terms.value = data.terms;
       invoice_note.value = data.invoice_note;
-      invoice_status.value = data.invoice_status;
-      credit_applied.value = data.credit_applied;
       is_published.value = data.is_published;
+      invoice_status.value = data.invoice_status;
       payment_status.value = data.payment_status;
-      payment_status_reason.value = data.payment_status_reason;
       admin_note.value = data.admin_note;
+      is_active.value = data.is_active;
     }
     else {
       Swal.fire('Error!', 'Failed to fetch invoice details.', 'error');
@@ -100,48 +100,60 @@ const fetchInvoiceDetails = async () => {
 
 // Reset form
 const resetForm = () => {
-  fetchInvoiceDetails(); // Reset to fetched data
+  // invoice_code.value = '';
+  billing_code.value = '';
+  order_code.value = '';
+  order_id.value = '';
+  user_id.value = '';
+  user_name.value = '';
+  description.value = '';
+  total_amount.value = '';
+  amount_paid.value = '';
+  balance_due.value = '';
+  currency_code.value = '';
+  generate_date.value = '';
+  issue_date.value = '';
+  due_date.value = '';
+  terms.value = '';
+  invoice_note.value = '';
+  is_published.value = false;
+  invoice_status.value = '';
+  payment_status.value = '';
+  admin_note.value = '';
+  is_active.value = true;
 };
 
 // Submit form
 const submitForm = async () => {
-  if (!billing_id.value) {
-    Swal.fire('Error!', 'Please fill in all required fields.', 'error');
-    return;
-  }
+  // if (!billing_id.value) {
+  //   Swal.fire('Error!', 'Please fill in all required fields.', 'error');
+  //   return;
+  // }
 
   const payload = {
-    id: id.value,
     // invoice_code: invoice_code.value,
-    // user_id: user_id.value,
-    // user_name: user_name.value,
-    billing_address: billing_address.value,
-    billing_id: billing_id.value,
     billing_code: billing_code.value,
-    item_name: item_name.value,
-    item_description: item_description.value,
-    generated_at: generated_at.value,
-    issued_at: issued_at.value,
-    due_at: due_at.value,
-    total_active_member: total_active_member.value,
-    total_active_honorary_member: total_active_honorary_member.value,
-    total_billable_active_member: total_billable_active_member.value,
-    subscribed_package_name: subscribed_package_name.value,
-    price_rate: price_rate.value,
-    currency: currency.value,
-    subtotal: subtotal.value,
-    discount_title: discount_title.value,
-    discount: discount.value,
-    tax: tax.value,
-    balance: balance.value,
+    order_code: order_code.value,
+    order_id: order_id.value,
+    user_id: user_id.value,
+    user_name: user_name.value,
+    description: description.value,
+    total_amount: total_amount.value,
+    amount_paid: amount_paid.value,
+    balance_due: balance_due.value,
+    currency_code: currency_code.value,
+    generate_date: generate_date.value,
+    issue_date: issue_date.value,
+    due_date: due_date.value,
+    terms: terms.value,
     invoice_note: invoice_note.value,
-    invoice_status: invoice_status.value,
-    credit_applied: credit_applied.value,
     is_published: is_published.value,
+    invoice_status: invoice_status.value,
     payment_status: payment_status.value,
-    payment_status_reason: payment_status_reason.value,
     admin_note: admin_note.value,
+    is_active: is_active.value,
   };
+
 
   try {
     const result = await Swal.fire({
@@ -169,8 +181,26 @@ const submitForm = async () => {
   }
 };
 
+// Watch for changes in order_id and update fields
+watch(order_id, (newOrderId) => {
+  const selectedOrder = orderList.value.find(order => order.id == newOrderId);
+  if (selectedOrder) {
+    order_code.value = selectedOrder.order_code;
+    billing_code.value = selectedOrder.billing_code;
+    user_id.value = selectedOrder.user_id;
+    user_name.value = selectedOrder.user_name;
+  } else {
+    // Reset fields if no order is selected
+    order_code.value = '';
+    billing_code.value = '';
+    user_id.value = '';
+    user_name.value = '';
+  }
+});
+
 // Initialize component
 onMounted(() => {
+  getOrders();
   getBillingList();
   fetchInvoiceDetails();
 });
@@ -188,8 +218,7 @@ onMounted(() => {
     </div>
 
     <!-- Form -->
-    <form @submit.prevent="submitForm" class="space-y-6">
-      <!-- General Info -->
+    <form @submit.prevent="submitForm" class="space-y-6 bg-white p-6 rounded-lg shadow-md">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- <div>
           <label for="invoice_code" class="block text-sm font-medium text-gray-700">Invoice Code</label>
@@ -197,192 +226,144 @@ onMounted(() => {
         </div> -->
 
         <div>
-          <label for="billing_id" class="block text-sm font-medium text-gray-700">Billing ID</label>
-          <!-- <input v-model="billing_id" type="text" id="billing_id" class="input-field" required /> -->
-          <select v-model="billing_id" id="billing_id" class="w-full border border-gray-300 rounded-md p-2" required>
-            <option value="">Select Billing</option>
-            <option v-for="billing in billingList" :key="billing.id" :value="billing.id">{{
-              billing.id }}</option>
+          <label for="order_id" class="block text-sm font-medium text-gray-700">Order</label>
+          <select v-model="order_id" id="order_id" class="w-full border border-gray-300 rounded-md p-2">
+            <option value="">Select Order</option>
+            <option v-for="order in orderList" :key="order.id" :value="order.id">
+              {{ order.order_code }}
+            </option>
           </select>
+        </div>
+
+        <div>
+          <label for="order_code" class="block text-sm font-medium text-gray-700">Order Code</label>
+          <input v-model="order_code" type="text" id="order_code" class="input-field" required />
         </div>
 
         <div>
           <label for="billing_code" class="block text-sm font-medium text-gray-700">Billing Code</label>
-          <!-- <input v-model="billing_code" type="text" id="billing_code" class="input-field" required /> -->
-          <select v-model="billing_code" id="billing_code" class="w-full border border-gray-300 rounded-md p-2"
-            required>
-            <option value="">Select Billing Code</option>
-            <option v-for="billing in billingList" :key="billing.billing_code" :value="billing.billing_code">{{
-              billing.billing_code }}</option>
-          </select>
+          <input v-model="billing_code" type="text" id="billing_code" class="input-field" required />
         </div>
 
-      </div>
+        <div>
+          <label for="user_id" class="block text-sm font-medium text-gray-700">User ID</label>
+          <input v-model="user_id" type="number" id="user_id" class="input-field" required />
+        </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
-        <!-- <div>
+        <div>
           <label for="user_name" class="block text-sm font-medium text-gray-700">User Name</label>
-          <input v-model="user_name" type="text" id="user_name" class="input-field" />
-        </div> -->
-        <div>
-          <label for="billing_address" class="block text-sm font-medium text-gray-700">Billing Address</label>
-          <input v-model="billing_address" type="text" id="billing_address" class="input-field" />
+          <input v-model="user_name" type="text" id="user_name" class="input-field" required />
         </div>
-      </div>
 
-      <!-- Dates -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <label for="generated_at" class="block text-sm font-medium text-gray-700">Generated At</label>
-          <input v-model="generated_at" type="date" id="generated_at" class="input-field" />
+          <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+          <textarea v-model="description" id="description" class="input-field"></textarea>
         </div>
-        <div>
-          <label for="issued_at" class="block text-sm font-medium text-gray-700">Issued At</label>
-          <input v-model="issued_at" type="date" id="issued_at" class="input-field" />
-        </div>
-        <div>
-          <label for="due_at" class="block text-sm font-medium text-gray-700">Due At</label>
-          <input v-model="due_at" type="date" id="due_at" class="input-field" />
-        </div>
-      </div>
 
-      <!-- Item Details -->
-      <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
         <div>
-          <label for="item_name" class="block text-sm font-medium text-gray-700">Item Name</label>
-          <input v-model="item_name" type="text" id="item_name" class="input-field" />
+          <label for="total_amount" class="block text-sm font-medium text-gray-700">Total Amount</label>
+          <input v-model="total_amount" type="number" step="0.01" id="total_amount" class="input-field" required />
         </div>
-        <div>
-          <label for="item_description" class="block text-sm font-medium text-gray-700">Item Description</label>
-          <textarea v-model="item_description" id="item_description" class="input-field"></textarea>
-        </div>
-      </div>
 
-      <!-- Financial Details -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <label for="total_active_member" class="block text-sm font-medium text-gray-700">Total Active Members</label>
-          <input v-model="total_active_member" type="number" id="total_active_member" class="input-field" />
+          <label for="amount_paid" class="block text-sm font-medium text-gray-700">Amount Paid</label>
+          <input v-model="amount_paid" type="number" step="0.01" id="amount_paid" class="input-field" required />
         </div>
-        <div>
-          <label for="total_active_honorary_member" class="block text-sm font-medium text-gray-700">Total Active
-            Honorary Members</label>
-          <input v-model="total_active_honorary_member" type="number" id="total_active_honorary_member"
-            class="input-field" />
-        </div>
-        <div>
-          <label for="total_billable_active_member" class="block text-sm font-medium text-gray-700">Total Billable
-            Active Members</label>
-          <input v-model="total_billable_active_member" type="number" id="total_billable_active_member"
-            class="input-field" />
-        </div>
-      </div>
 
-      <!-- Package & Pricing -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <label for="subscribed_package_name" class="block text-sm font-medium text-gray-700">Subscribed
-            Package</label>
-          <input v-model="subscribed_package_name" type="text" id="subscribed_package_name" class="input-field" />
+          <label for="balance_due" class="block text-sm font-medium text-gray-700">Balance Due</label>
+          <input v-model="balance_due" type="number" step="0.01" id="balance_due" class="input-field" required />
         </div>
+
         <div>
-          <label for="price_rate" class="block text-sm font-medium text-gray-700">Price Rate</label>
-          <input v-model="price_rate" type="number" id="price_rate" class="input-field" />
+          <label for="currency_code" class="block text-sm font-medium text-gray-700">Currency Code</label>
+          <input v-model="currency_code" type="text" id="currency_code" class="input-field" required />
         </div>
+
         <div>
-          <label for="currency" class="block text-sm font-medium text-gray-700">Currency</label>
-          <input v-model="currency" type="text" id="currency" class="input-field" />
+          <label for="generate_date" class="block text-sm font-medium text-gray-700">Generate Date</label>
+          <input v-model="generate_date" type="date" id="generate_date" class="input-field" required />
         </div>
+
         <div>
-          <label for="subtotal" class="block text-sm font-medium text-gray-700">Subtotal</label>
-          <input v-model="subtotal" type="number" id="subtotal" class="input-field" />
+          <label for="issue_date" class="block text-sm font-medium text-gray-700">Issue Date</label>
+          <input v-model="issue_date" type="date" id="issue_date" class="input-field" required />
         </div>
+
         <div>
-          <label for="discount_title" class="block text-sm font-medium text-gray-700">Discount Title</label>
-          <input v-model="discount_title" type="text" id="discount_title" class="input-field" />
+          <label for="due_date" class="block text-sm font-medium text-gray-700">Due Date</label>
+          <input v-model="due_date" type="date" id="due_date" class="input-field" required />
         </div>
+
         <div>
-          <label for="discount" class="block text-sm font-medium text-gray-700 ">Discount</label>
-          <input v-model="discount" type="number" id="discount" class="input-field" />
+          <label for="terms" class="block text-sm font-medium text-gray-700">Terms</label>
+          <textarea v-model="terms" id="terms" class="input-field"></textarea>
         </div>
+
         <div>
-          <label for="tax" class="block text-sm font-medium text-gray-700">Tax</label>
-          <input v-model="tax" type="number" id="tax" class="input-field" />
+          <label for="invoice_note" class="block text-sm font-medium text-gray-700">Invoice Note</label>
+          <textarea v-model="invoice_note" id="invoice_note" class="input-field"></textarea>
         </div>
+
         <div>
-          <label for="balance" class="block text-sm font-medium text-gray-700">Balance</label>
-          <input v-model="balance" type="number" id="balance" class="input-field" />
-        </div>
-        <div>
-          <label for="credit_applied" class="block text-sm font-medium text-gray-700">Credit Applied</label>
-          <input v-model="credit_applied" type="number" id="credit_applied" class="input-field" />
-        </div>
-      </div>
-      <!-- Payment & Status -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label for="payment_status" class="block text-sm font-medium text-gray-700">Payment Status</label>
-          <select v-model="payment_status" id="payment_status" class="input-field">
-            <option value="">Select Payment Status</option>
-            <option value="paid">Paid</option>
-            <option value="unpaid">Unpaid</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="refunded">Refunded</option>
-            <option value="collections">Collections</option>
-            <option value="payment_pending">Payment Pending</option>
-            <option value="processing">Processing</option>
+          <label for="is_published" class="block text-sm font-medium text-gray-700">Published</label>
+          <select v-model="is_published" id="is_published" class="input-field">
+            <option :value="true">Yes</option>
+            <option :value="false">No</option>
           </select>
         </div>
-        <div>
-          <label for="payment_status_reason" class="block text-sm font-medium text-gray-700">Payment Status
-            Reason</label>
-          <input v-model="payment_status_reason" type="text" id="payment_status_reason" class="input-field" />
-        </div>
+
         <div>
           <label for="invoice_status" class="block text-sm font-medium text-gray-700">Invoice Status</label>
-          <select v-model="invoice_status" id="invoice_status" class="input-field">
-            <option value="">Select Invoice Status</option>
+          <select v-model="invoice_status" id="invoice_status" class="input-field" required>
             <option value="issued">Issued</option>
             <option value="unissued">Unissued</option>
             <option value="pending">Pending</option>
             <option value="cancelled">Cancelled</option>
             <option value="draft">Draft</option>
           </select>
+          <!-- <input v-model="invoice_status" type="text" id="invoice_status" class="input-field" required /> -->
         </div>
-        <div>
-          <label for="is_published" class="block text-sm font-medium text-gray-700">Is Published</label>
-          <select v-model="is_published" id="is_published" class="input-field">
-            <option value="0">No</option>
-            <option value="1">Yes</option>
-          </select>
-        </div>
-      </div>
 
-      <!-- Notes -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label for="invoice_note" class="block text-sm font-medium text-gray-700">Invoice Note</label>
-          <textarea v-model="invoice_note" id="invoice_note" class="input-field"></textarea>
+          <label for="payment_status" class="block text-sm font-medium text-gray-700">Payment Status</label>
+          <select v-model="payment_status" id="payment_status" class="input-field" required>
+          <option value="paid">Paid</option>
+          <option value="unpaid">Unpaid</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="refunded">Refunded</option>
+          <option value="collections">Collections</option>
+          <option value="payment_pending">Payment Pending</option>
+          <option value="processing">Processing</option>
+        </select>
+          <!-- <input v-model="payment_status" type="text" id="payment_status" class="input-field" required /> -->
         </div>
+
         <div>
           <label for="admin_note" class="block text-sm font-medium text-gray-700">Admin Note</label>
           <textarea v-model="admin_note" id="admin_note" class="input-field"></textarea>
         </div>
+
+        <div>
+          <label for="is_active" class="block text-sm font-medium text-gray-700">Active</label>
+          <select v-model="is_active" id="is_active" class="input-field">
+            <option :value="true">Yes</option>
+            <option :value="false">No</option>
+          </select>
+        </div>
       </div>
 
-      <!-- Buttons -->
       <div class="flex justify-between">
-        <!-- <button type="button" @click="resetForm"
-          class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-5 rounded-lg shadow">
-          Reset
-        </button> -->
         <button type="submit"
           class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-lg shadow focus:ring-2 focus:ring-blue-300">
           Submit
         </button>
+        <button type="button" @click="resetForm"
+          class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-5 rounded-lg shadow focus:ring-2 focus:ring-gray-300">
+          Reset
+        </button>
       </div>
     </form>
-    <!-- Form -->
 
   </div>
 </template>

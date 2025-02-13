@@ -185,17 +185,23 @@ import SuperAdminBillingCreate from "../views/SuperAdmin/Financial/Billing/Creat
 import SuperAdminBillingEdit from "../views/SuperAdmin/Financial/Billing/Edit.vue";
 import SuperAdminBillingView from "../views/SuperAdmin/Financial/Billing/View.vue";
 
-//EveryDayMemberCount
-import SuperAdminEveryDayMemberCountList from "../views/SuperAdmin/Financial/EveryDayMemberCount/Index.vue";
-import SuperAdminEveryDayMemberCountCreate from "../views/SuperAdmin/Financial/EveryDayMemberCount/Create.vue";
-import SuperAdminEveryDayMemberCountEdit from "../views/SuperAdmin/Financial/EveryDayMemberCount/Edit.vue";
-import SuperAdminEveryDayMemberCountView from "../views/SuperAdmin/Financial/EveryDayMemberCount/View.vue";
+//Everyday member count and billing
+import SuperAdminEverydayMemberCountAndBillingList from "../views/SuperAdmin/Financial/EverydayMemberCountAndBilling/Index.vue";
+import SuperAdminEverydayMemberCountAndBillingCreate from "../views/SuperAdmin/Financial/EverydayMemberCountAndBilling/Create.vue";
+import SuperAdminEverydayMemberCountAndBillingEdit from "../views/SuperAdmin/Financial/EverydayMemberCountAndBilling/Edit.vue";
+import SuperAdminEverydayMemberCountAndBillingView from "../views/SuperAdmin/Financial/EverydayMemberCountAndBilling/View.vue";
 
-//EverydayStorage Billing
+// EverydayStorageBilling
 import SuperAdminEverydayStorageBillingList from "../views/SuperAdmin/Financial/EverydayStorageBilling/Index.vue";
 import SuperAdminEverydayStorageBillingCreate from "../views/SuperAdmin/Financial/EverydayStorageBilling/Create.vue";
 import SuperAdminEverydayStorageBillingEdit from "../views/SuperAdmin/Financial/EverydayStorageBilling/Edit.vue";
 import SuperAdminEverydayStorageBillingView from "../views/SuperAdmin/Financial/EverydayStorageBilling/View.vue";
+
+//ManagementAndStorageBilling
+import SuperAdminManagementAndStorageBillingList from "../views/SuperAdmin/Financial/ManagementAndStorageBilling/Index.vue";
+import SuperAdminManagementAndStorageBillingCreate from "../views/SuperAdmin/Financial/ManagementAndStorageBilling/Create.vue";
+import SuperAdminManagementAndStorageBillingEdit from "../views/SuperAdmin/Financial/ManagementAndStorageBilling/Edit.vue";
+import SuperAdminManagementAndStorageBillingView from "../views/SuperAdmin/Financial/ManagementAndStorageBilling/View.vue";
 
 //Invoice
 import SuperAdminInvoiceList from "../views/SuperAdmin/Financial/Invoice/Index.vue";
@@ -1076,29 +1082,28 @@ const routes = [
         meta: { requiresAuth: true },
       },
 
-
       {
-        path: "super-admin-every-day-member-count-list",
-        name: "super-admin-every-day-member-count-list",
-        component: SuperAdminEveryDayMemberCountList,
+        path: "super-admin-every-day-member-count-and-bill-list",
+        name: "super-admin-every-day-member-count-and-bill-list",
+        component: SuperAdminEverydayMemberCountAndBillingList,
         meta: { requiresAuth: true },
       },
       {
-        path: "super-admin-every-day-member-count-create",
-        name: "super-admin-every-day-member-count-create",
-        component: SuperAdminEveryDayMemberCountCreate,
+        path: "super-admin-every-day-member-count-and-bill-create",
+        name: "super-admin-every-day-member-count-and-bill-create",
+        component: SuperAdminEverydayMemberCountAndBillingCreate,
         meta: { requiresAuth: true },
       },
       {
-        path: "super-admin-every-day-member-count-edit/:id",
-        name: "super-admin-every-day-member-count-edit",
-        component: SuperAdminEveryDayMemberCountEdit,
+        path: "super-admin-every-day-member-count-and-bill-edit/:id",
+        name: "super-admin-every-day-member-count-and-bill-edit",
+        component: SuperAdminEverydayMemberCountAndBillingEdit,
         meta: { requiresAuth: true },
       },
       {
-        path: "super-admin-every-day-member-count-view/:id",
-        name: "super-admin-every-day-member-count-view",
-        component: SuperAdminEveryDayMemberCountView,
+        path: "super-admin-every-day-member-count-and-bill-view/:id",
+        name: "super-admin-every-day-member-count-and-bill-view",
+        component: SuperAdminEverydayMemberCountAndBillingView,
         meta: { requiresAuth: true },
       },
 
@@ -1128,6 +1133,35 @@ const routes = [
         meta: { requiresAuth: true },
       },
 
+
+
+      {
+        path: "super-admin-management-and-storage-billing-list",
+        name: "super-admin-management-and-storage-billing-list",
+        component: SuperAdminManagementAndStorageBillingList,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-management-and-storage-billing-create",
+        name: "super-admin-management-and-storage-billing-create",
+        component: SuperAdminManagementAndStorageBillingCreate,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-management-and-storage-billing-edit/:id",
+        name: "super-admin-management-and-storage-billing-edit",
+        component: SuperAdminManagementAndStorageBillingEdit,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "super-admin-management-and-storage-billing-view/:id",
+        name: "super-admin-management-and-storage-billing-view",
+        component: SuperAdminManagementAndStorageBillingView,
+        meta: { requiresAuth: true },
+      },
+
+
+
       {
         path: "super-admin-invoice-list",
         name: "super-admin-invoice-list",
@@ -1152,6 +1186,7 @@ const routes = [
         component: SuperAdminInvoiceView,
         meta: { requiresAuth: true },
       },
+      
       {
         path: "super-admin-receipt-list",
         name: "super-admin-receipt-list",
