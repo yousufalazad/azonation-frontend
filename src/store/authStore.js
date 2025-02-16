@@ -40,6 +40,7 @@ const authStore = reactive({
         Accept: "application/vnd.api+json",
         "Content-Type": "application/vnd.api+json",
         Authorization: `Bearer ${token}`,
+        
       },
     };
 

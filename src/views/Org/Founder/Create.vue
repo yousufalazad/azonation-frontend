@@ -20,6 +20,8 @@ const baseURL = 'http://localhost:8000';
 const addedFounder = ref([]);
 const name = ref('');
 const designation = ref('');
+const isActive = ref(true); // Stores the active status of the founder
+const profile_image = ref([]);
 
 const showForm = ref(false); // initially, the form is hidden
 const showAddFounderSection = ref(false); // controls the display of "Search and Add Founder" section
@@ -55,12 +57,13 @@ const getFounders = async () => {
 const openEditModal = (founder) => {
     // If the founder has a name in the relational table, don't allow editing
     const isNameEditable = !(founder.founders && founder.founders.name);
-    
+
     // Set founder details for editing
     selectedFounder.value = {
         id: founder.id,
         name: isNameEditable ? founder.name : founder.founders.name,
         designation: founder.designation,
+        isActive: founder.is_active,
         isNameEditable: isNameEditable
     };
     isEditModalOpen.value = true;
@@ -81,7 +84,8 @@ const updateFounder = async () => {
         if (result.isConfirmed) {
             // Prepare the payload, conditionally including the name
             const payload = {
-                designation: selectedFounder.value.designation // Always send designation
+                designation: selectedFounder.value.designation, // Always send designation
+                is_active: selectedFounder.value.isActive // Always send is_active status for now, may be updated in future
             };
             // Include name only if it's editable
             if (selectedFounder.value.isNameEditable) {
@@ -101,6 +105,7 @@ const updateFounder = async () => {
                         founderList.value[index].name = selectedFounder.value.name;
                     }
                     founderList.value[index].designation = selectedFounder.value.designation;
+                    founderList.value[index].is_active = selectedFounder.value.isActive;
                 }
                 closeEditModal();
             } else {
@@ -116,7 +121,7 @@ const updateFounder = async () => {
 // Close edit modal
 const closeEditModal = () => {
     isEditModalOpen.value = false;
-    selectedFounder.value = { id: null, name: '', designation: '', isNameEditable: false }; // Reset selected founder data
+    selectedFounder.value = { id: null, name: '', designation: '', isActive: '', isNameEditable: false }; // Reset selected founder data
 };
 
 const searchIndividuals = async () => {
@@ -184,7 +189,14 @@ const addUnlinkFounder = async () => {
             cancelButtonText: 'No, cancel!'
         });
         if (result.isConfirmed) {
-            const response = await authStore.fetchProtectedApi('/api/create-founder', { user_id: userId, name: name.value, designation: designation.value }, 'POST');
+            console.log(name.value, designation.value, isActive.value, profile_image.value);
+            const response = await authStore.fetchProtectedApi('/api/create-founder', { 
+                user_id: userId,
+                name: name.value,
+                designation: designation.value,
+                is_active: isActive.value,
+                profile_image: profile_image.value
+            }, 'POST');
             if (response.status && response.data) {
                 addedFounder.value = response.data;
                 //console.log(addedFounder);
@@ -225,7 +237,7 @@ onMounted(getFounders);
     <section v-if="showAddFounderSection" class="mb-5 md:mb-16">
         <div class="add-member max-w-7xl mx-auto">
             <h2 class="text-center text-2xl text-gray-500">Search & add founder</h2>
-            
+
             <!-- Search Input -->
             <div class="flex justify-center my-6">
                 <input type="text"
@@ -238,7 +250,7 @@ onMounted(getFounders);
                     Search
                 </button>
             </div>
-            
+
             <!-- Search Results -->
             <div v-if="searchResults.length" class="bg-white shadow-lg rounded-lg p-6">
                 <ul class="divide-y divide-gray-200">
@@ -271,6 +283,7 @@ onMounted(getFounders);
                 </p>
             </div>
 
+            <!-- Add Founder Form -->
             <div v-if="showForm" class="flex flex-wrap ml-0 md:ml-[100px] mt-2 md:mt-6">
                 <div class="w-full md:w-3/12 mr-2"><label for="name"
                         class="block text-gray-700 font-semibold mb-2">Founder
@@ -292,10 +305,11 @@ onMounted(getFounders);
                     <input type="file" id="profile_image"
                         class="w-full border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Optional">
-                    <p v-if="auth.errors?.profile_image" class="text-red-500 mt-2">{{ auth.errors?.profile_image[0] }}</p>
+                    <p v-if="auth.errors?.profile_image" class="text-red-500 mt-2">{{ auth.errors?.profile_image[0] }}
+                    </p>
                 </div>
                 <div>
-                    <button @click="addUnlinkFounder(name, designation)"
+                    <button @click="addUnlinkFounder(name, designation, isActive, profile_image)"
                         class="bg-blue-600 text-white rounded-md hover:bg-blue-700 py-2 px-4 mb-2 mt-2 md:mt-8">Submit</button>
                 </div>
             </div>
@@ -348,6 +362,7 @@ onMounted(getFounders);
                         <th class="border px-4 py-2">Sl</th>
                         <th class="border px-4 py-2">Name</th>
                         <th class="border px-4 py-2">Designation</th>
+                        <th class="border px-4 py-2">Active</th>
                         <th class="border px-4 py-2">Action</th>
                     </tr>
                 </thead>
@@ -357,6 +372,14 @@ onMounted(getFounders);
                         <td class="border px-4 py-2">{{ founder.founders && founder.founders.name ?
                             founder.founders.name : founder.name }}</td>
                         <td class="border px-4 py-2">{{ founder.designation }}</td>
+
+                        <td class="border px-4 py-2">
+                            <span :class="founder.is_active ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'"
+                                class="px-2 py-1 rounded-full text-xs font-medium">
+                                {{ founder.is_active ? 'Yes' : 'No' }}
+                            </span>
+                        </td>
+
                         <td class="border px-4 py-2 text-right">
                             <button @click="openEditModal(founder)"
                                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">
@@ -368,50 +391,51 @@ onMounted(getFounders);
             </table>
         </div>
     </section>
-    
+
     <section>
-    <!-- Edit Modal -->
-<div v-if="isEditModalOpen" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-    <div class="bg-white p-6 rounded shadow-lg w-1/3">
-        <h3 class="text-xl font-bold mb-4">Edit Founder</h3>
-        <form @submit.prevent="updateFounder">
-            <!-- Conditionally allow name editing -->
-            <div class="mb-4">
-                <label for="name" class="block text-sm font-bold mb-2">Name</label>
-                <input 
-                    type="text" 
-                    id="name" 
-                    v-model="selectedFounder.name" 
-                    class="w-full border px-3 py-2 rounded" 
-                    :readonly="!selectedFounder.isNameEditable" 
-                />
-                <!-- Show a tooltip or message if the name is not editable -->
-                <p v-if="!selectedFounder.isNameEditable" class="text-sm text-gray-500 mt-1">
-                    Name cannot be edited as it comes from a linked founder record.
-                </p>
+        <!-- Edit Modal -->
+        <div v-if="isEditModalOpen" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+            <div class="bg-white p-6 rounded shadow-lg w-1/3">
+                <h3 class="text-xl font-bold mb-4">Edit Founder</h3>
+                <form @submit.prevent="updateFounder">
+                    <!-- Conditionally allow name editing -->
+                    <div class="mb-4">
+                        <label for="name" class="block text-sm font-bold mb-2">Name</label>
+                        <input type="text" id="name" v-model="selectedFounder.name"
+                            class="w-full border px-3 py-2 rounded" :readonly="!selectedFounder.isNameEditable" />
+                        <!-- Show a tooltip or message if the name is not editable -->
+                        <p v-if="!selectedFounder.isNameEditable" class="text-sm text-gray-500 mt-1">
+                            Name cannot be edited as it comes from a linked founder record.
+                        </p>
+                    </div>
+                    <div class="mb-4">
+                        <label for="designation" class="block text-sm font-bold mb-2">Designation</label>
+                        <input type="text" id="designation" v-model="selectedFounder.designation"
+                            class="w-full border px-3 py-2 rounded" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Active</label>
+                        <select v-model="selectedFounder.is_active"
+                            class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2">
+                            <option :value="true">Yes</option>
+                            <option :value="false">No</option>
+                        </select>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="button" @click="closeEditModal"
+                            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            Save
+                        </button>
+                    </div>
+                </form>
             </div>
-            <div class="mb-4">
-                <label for="designation" class="block text-sm font-bold mb-2">Designation</label>
-                <input 
-                    type="text" 
-                    id="designation" 
-                    v-model="selectedFounder.designation" 
-                    class="w-full border px-3 py-2 rounded" 
-                />
-            </div>
-            <div class="flex justify-end">
-                <button type="button" @click="closeEditModal"
-                    class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2">
-                    Cancel
-                </button>
-                <button type="submit"
-                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Save
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+        </div>
 
     </section>
 </template>
