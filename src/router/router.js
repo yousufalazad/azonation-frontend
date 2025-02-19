@@ -148,8 +148,8 @@ import ViewInvoice from "../views/Org/Financial/Invoice/View.vue";
 import OrgReceiptList from "../views/Org/Financial/Receipt/ReceiptList.vue";
 import ViewOrgReceipt from "../views/Org/Financial/Receipt/ViewReceipt.vue";
 import BillCalculation from "@/views/Org/Financial/BillCalculation.vue";
-import BillList from "../views/Org/Financial/BillingList.vue";
-
+import BillList from "../views/Org/Financial/ManagementAndStorageBilling/Index.vue";
+import ViewBilling from "../views/Org/Financial/ManagementAndStorageBilling/View.vue";
 
 
 // ------------------------SUPER ADMIN----------------------------
@@ -814,6 +814,12 @@ const routes = [
           path: "bill-list",
           name: "bill-list",
           component: BillList,
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "view-billing/:id",
+          name: "view-billing",
+          component: ViewBilling,
           meta: { requiresAuth: true },
         },
         {

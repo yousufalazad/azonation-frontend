@@ -9,7 +9,7 @@ const router = useRouter();
 const auth = authStore;
 
 // Invoice details
-const invoiceDetails = ref({});
+const invoiceData = ref({});
 
 // Load invoice details
 const fetchInvoiceDetails = async () => {
@@ -17,8 +17,8 @@ const fetchInvoiceDetails = async () => {
   try {
     const response = await auth.fetchProtectedApi(`/api/get-invoice/${invoiceId}`, {}, 'GET');
     if (response.status) {
-      invoiceDetails.value = response.data;
-      console.log('Invoice details fetched:', invoiceDetails.value);
+      invoiceData.value = response.data;
+      console.log('Invoice details fetched:', invoiceData.value);
     } else {
       Swal.fire('Error!', 'Failed to fetch invoice details.', 'error');
       router.push({ name: 'invoice-list' }); // Redirect if data not found
@@ -36,108 +36,118 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container mx-auto max-w-7xl w-10/12 p-8 bg-white rounded-lg shadow-lg mt-12">
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-8">
-      <h2 class="text-2xl font-bold text-gray-800">Invoice Details</h2>
-       <button @click="$router.push({ name: 'invoice-list' })"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-lg shadow focus:ring-2 focus:ring-blue-300">
-        Back to Invoice List
-      </button>
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-5">
+    <h2 class="text-2xl font-bold text-gray-800">Invoice Details</h2>
+    <button @click="$router.push({ name: 'invoice-list' })"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-lg shadow focus:ring-2 focus:ring-blue-300">
+      Back to Invoice List
+    </button>
+  </div>
+
+  <div class="mx-auto bg-white p-6 rounded-lg shadow-lg mx-0">
+    <div class="flex justify-between items-center border-b pb-4 mb-4">
+      <div>
+        <h1 class="text-xl font-bold">{{ invoiceData.user_name }}</h1>
+        <p class="text-sm text-gray-600">Mirpur, Dhaka, Bangladesh
+          <br>
+          {{ invoiceData?.order?.user?.email }}
+          <br>
+        </p>
+      </div>
+      <div class="text-right">
+        <h2 class="text-2xl font-bold text-blue-600">INVOICE</h2>
+        <p class="text-sm text-gray-600">Invoice #: <strong>{{ invoiceData?.invoice_code }}</strong></p>
+        <p class="text-sm text-gray-600">Invoice Date: <strong>{{ invoiceData?.issue_date }}</strong></p>
+        <p class="text-sm text-gray-600">Terms: <strong>{{ invoiceData?.terms }}</strong></p>
+        <p class="text-sm text-gray-600">Due Date: <strong>{{ invoiceData?.due_date }}</strong></p>
+      </div>
     </div>
 
-    <!-- Details Table -->
-    <table class="w-full border border-gray-300 rounded-lg overflow-hidden shadow-md">
-  <tbody>
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">Invoice Code</th>
-      <td class="px-6 py-3 text-right border border-gray-300">{{ invoiceDetails.invoice_code }}</td>
-    </tr>
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">Order ID</th>
-      <td class="px-6 py-3 text-right border border-gray-300">{{ invoiceDetails.order_id }}</td>
-    </tr>
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">Order Code</th>
-      <td class="px-6 py-3 text-right border border-gray-300">{{ invoiceDetails.order_code }}</td>
-    </tr>
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">Billing Code</th>
-      <td class="px-6 py-3 text-right border border-gray-300">{{ invoiceDetails.billing_code }}</td>
-    </tr>
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <div>
+        <h3 class="font-bold">Bill To</h3>
+        <p class="text-sm text-gray-600">{{ invoiceData.user_name }}
+          <br>{{ invoiceData?.order?.user?.email }}
+        </p>
+      </div>
 
-    <!-- User Details -->
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">User ID</th>
-      <td class="px-6 py-3 text-right border border-gray-300">{{ invoiceDetails.user_id }}</td>
-    </tr>
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">User Name</th>
-      <td class="px-6 py-3 text-right border border-gray-300">{{ invoiceDetails.user_name }}</td>
-    </tr>
+      <div v-if="invoiceData?.order?.order_detail?.shipping_address">
+        <h3 class="font-bold">Ship To</h3>
+        <p class="text-sm text-gray-600">{{ invoiceData?.order?.order_detail?.shipping_address }}</p>
+      </div>
 
-    <!-- Financial Details -->
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">Total Amount</th>
-      <td class="px-6 py-3 text-right font-semibold text-gray-800 border border-gray-300">{{ invoiceDetails.total_amount }} {{ invoiceDetails.currency_code }}</td>
-    </tr>
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">Amount Paid</th>
-      <td class="px-6 py-3 text-right text-green-600 font-semibold border border-gray-300">{{ invoiceDetails.amount_paid }}</td>
-    </tr>
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">Balance Due</th>
-      <td class="px-6 py-3 text-right text-red-600 font-semibold border border-gray-300">{{ invoiceDetails.balance_due }}</td>
-    </tr>
+    </div>
 
-    <!-- Dates -->
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">Generated At</th>
-      <td class="px-6 py-3 text-right border border-gray-300">{{ invoiceDetails.generate_date }}</td>
-    </tr>
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">Issued At</th>
-      <td class="px-6 py-3 text-right border border-gray-300">{{ invoiceDetails.issue_date }}</td>
-    </tr>
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">Due At</th>
-      <td class="px-6 py-3 text-right border border-gray-300">{{ invoiceDetails.due_date }}</td>
-    </tr>
+    <table class="w-full border-collapse border border-gray-300 mb-4">
+      <thead>
+        <tr class="bg-blue-600 text-white">
+          <th class="p-2 text-left">#</th>
+          <th class="p-2 text-left">Item</th>
+          <th class="p-2 text-right">Qty</th>
+          <th class="p-2 text-right">Rate</th>
+          <th class="p-2 text-right">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(item, index) in invoiceData?.order?.order_items ?? []" :key="item?.id ?? index"
+          class="border-b border-gray-300">
 
-    <!-- Notes -->
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">Terms</th>
-      <td class="px-6 py-3 text-right border border-gray-300">{{ invoiceDetails.terms }}</td>
-    </tr>
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">Invoice Note</th>
-      <td class="px-6 py-3 text-right border border-gray-300">{{ invoiceDetails.invoice_note }}</td>
-    </tr>
+          <td class="p-2">{{ index + 1 }}</td>
+          <td class="p-2">{{ item?.product_name ?? '--' }}</td>
+          <td class="p-2 text-right">{{ item?.quantity ? parseFloat(item.quantity).toFixed(2) : '0.00' }}</td>
+          <td class="p-2 text-right">{{ item?.unit_price ? parseFloat(item.unit_price).toFixed(2) : '0.00' }}</td>
+          <td class="p-2 text-right">{{ item?.total_price ? parseFloat(item.total_price).toFixed(2) : '0.00' }}</td>
+        </tr>
+      </tbody>
+    </table>
 
-    <!-- Status -->
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">Invoice Status</th>
-      <td class="px-6 py-3 text-right font-semibold text-blue-600 border border-gray-300">{{ invoiceDetails.invoice_status }}</td>
-    </tr>
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">Payment Status</th>
-      <td class="px-6 py-3 text-right font-semibold text-purple-600 border border-gray-300">{{ invoiceDetails.payment_status }}</td>
-    </tr>
-
-    <!-- Boolean Fields -->
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">Is Published</th>
-      <td class="px-6 py-3 text-right border border-gray-300">{{ invoiceDetails.is_published === 1 ? 'Yes' : 'No' }}</td>
-    </tr>
-    <tr class="even:bg-gray-50">
-      <th class="px-6 py-3 text-left font-medium text-gray-700 bg-gray-100 w-48 border border-gray-300">Is Active</th>
-      <td class="px-6 py-3 text-right border border-gray-300">{{ invoiceDetails.is_active === 1 ? 'Yes' : 'No' }}</td>
-    </tr>
-  </tbody>
-</table>
+    <div class="flex justify-end">
+      <table class="text-right">
+        <tr>
+          <td class="p-2">Subtotal:</td>
+          <td class="p-2 font-bold">
+            {{ invoiceData?.order?.sub_total ?? '0.00' }}
+          </td>
+        </tr>
+        <tr>
+          <td class="p-2">
+            Tax Rate ({{ invoiceData?.order?.tax_rate ?? '0.00' }}%):
+          </td>
+          <td class="p-2 font-bold">
+            {{ invoiceData?.order?.total_tax ?? '0.00' }}
+          </td>
+        </tr>
+        <tr class="bg-blue-100">
+          <td class="p-2 font-bold">Total:</td>
+          <td class="p-2 font-bold">
+            {{ invoiceData?.order?.total_amount ?? '0.00' }}
+          </td>
+        </tr>
+        <tr class="bg-blue-200">
+          <td class="p-2 font-bold">Total Paid:</td>
+          <td class="p-2 font-bold">
+            {{ invoiceData?.order?.credit_applied ?? '0.00' }}
+          </td>
+        </tr>
+        <tr class="bg-blue-300">
+          <td class="p-2 font-bold">Balance Due:</td>
+          <td class="p-2 font-bold">
+            {{
+              (parseFloat(invoiceData?.order?.total_amount ?? 0) -
+                parseFloat(invoiceData?.order?.credit_applied ?? 0)).toFixed(2)
+            }}
+          </td>
+        </tr>
+      </table>
 
 
+    </div>
+
+    <p class="text-sm text-gray-600 mt-4">Thanks for your business.</p>
+    <p class="text-xs text-gray-500">{{ invoiceData.invoice_note }}</p>
   </div>
+
 </template>
 
 <style scoped>
