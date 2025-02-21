@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { authStore } from '../store/authStore';
-//import orgRoutes from '../router/orgRouter';
+
 
 //Home
 import Home from "../views/Home.vue";
@@ -276,8 +276,7 @@ function isAuthenticated() {
   return !!sessionStorage.getItem("auth");
 }
 
-const routes = [
-
+const orgRoutes = [
   {
     path: "/",
     name: "home",
@@ -303,7 +302,11 @@ const routes = [
     name: "superAdmin-register",
     component: SuperAdminRegister,
   },
-  
+  {
+    path: "independent-member",
+    name: "independent-member",
+    component: IndependentMember,
+  },
   //ORGANISATION
   {
     path: "/org-dashboard",
@@ -337,12 +340,12 @@ const routes = [
         component: MemberList,
         meta: { requiresAuth: true },
       },
-      {
-        path: "independent-member",
-        name: "independent-member",
-        component: IndependentMember,
-        meta: { requiresAuth: true },
-      },
+      // {
+      //   path: "independent-member",
+      //   name: "independent-member",
+      //   component: IndependentMember,
+      //   meta: { requiresAuth: true },
+      // },
       {
         path: "create-committee",
         name: "create-committee",
@@ -1341,21 +1344,6 @@ const routes = [
   },
 ];
 
-// routes = [orgRoutes, ...routes]; // Add orgRoutes to the routes
 
-const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes,
-});
 
-router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-      next({name: "login"})
-  } else if (to.meta.requiresAuth && to.meta.type != authStore.getUserType()) {
-      next('/')
-  } else {
-      next()
-  }
-})
-
-export default router;
+export default orgRoutes;

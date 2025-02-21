@@ -91,6 +91,8 @@ const authStore = reactive({
     let request = {
       method: requestType.toUpperCase(), // Handle both POST and PUT
       headers: {
+        "Access-Control-Allow-Origin": "*", // Handle CORS for local development
+        Accept: "application/vnd.api+json", // Handle API response format
         "Content-Type": "multipart/form-data", // Multipart form-data for file uploads
         Authorization: `Bearer ${token}`, // Add the authorization header
       },
