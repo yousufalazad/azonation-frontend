@@ -9,7 +9,7 @@
 
         <!-- No Invoices Found -->
         <div v-else-if="billingList.length === 0" class="text-gray-500 text-center py-8">
-            No invoices found.
+            No bill found.
         </div>
 
         <!-- Invoices Table -->
@@ -62,7 +62,6 @@ const fetchBillingList = async () => {
 
         // Set billing to the response data or an empty array
         billingList.value = response.status ? response.data : [];
-        console.log(billingList);
 
     } catch (error) {
         console.error("Error fetching billing:", error);

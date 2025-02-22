@@ -28,32 +28,47 @@ const selectedRecordId = ref(null);
 const images = ref([{ id: Date.now(), file: null }]);
 const documents = ref([{ id: Date.now(), file: null }]);
 
+const privacySetups = ref([]);
+// Fetch Dropdown Data
+const fetchPrivacySetups = async () => {
+  try {
+    const response = await auth.fetchProtectedApi('/api/privacy-setups');
+    if (response.status) {
+      privacySetups.value = response.data;
+    } else {
+      errorMessage.value = 'Error loading privacy setups.';
+    }
+  } catch (error) {
+    errorMessage.value = 'Failed to load privacy setups. Please try again later.';
+  }
+};
+
 // Initialize Quill editors
 const initializeQuill = () => {
     goalsQuill.value = new Quill('#goals-editor', {
         theme: 'snow',
         placeholder: 'Enter goals...',
-        modules: {
-            toolbar: [
-                [{ header: [1, 2, false] }],
-                ['bold', 'italic', 'underline'],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link']
-            ]
-        }
+        // modules: {
+        //     toolbar: [
+        //         [{ header: [1, 2, false] }],
+        //         ['bold', 'italic', 'underline'],
+        //         [{ list: 'ordered' }, { list: 'bullet' }],
+        //         ['link']
+        //     ]
+        // }
     });
 
     activitiesQuill.value = new Quill('#activities-editor', {
         theme: 'snow',
         placeholder: 'Enter activities...',
-        modules: {
-            toolbar: [
-                [{ header: [1, 2, false] }],
-                ['bold', 'italic', 'underline'],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link']
-            ]
-        }
+        // modules: {
+        //     toolbar: [
+        //         [{ header: [1, 2, false] }],
+        //         ['bold', 'italic', 'underline'],
+        //         [{ list: 'ordered' }, { list: 'bullet' }],
+        //         ['link']
+        //     ]
+        // }
     });
 
     goalsQuill.value.on('text-change', () => {
@@ -110,8 +125,8 @@ const fetchRecord = async () => {
             // Assign values from response data
             start_year.value = data.start_year || '';
             end_year.value = data.end_year || '';
-            // goalsQuill.value.root.innerHTML = data.goals || '';  // Properly set Quill editor content
-            // activitiesQuill.value.root.innerHTML = data.activities || ''; // Properly set Quill editor content
+            goalsQuill.value.root.innerHTML = data.goals || '';  // Properly set Quill editor content
+            activitiesQuill.value.root.innerHTML = data.activities || ''; // Properly set Quill editor content
             budget.value = data.budget || '';
             start_date.value = data.start_date || '';
             end_date.value = data.end_date || '';
@@ -158,11 +173,11 @@ const removeFile = (fileList, index) => {
 
 // Add or update a record
 const submitForm = async () => {
-    if (!validateForm()) return;
+    // if (!validateForm()) return;
 
     // Prepare the form data
     const formData = new FormData();
-    formData.append('user_id', userId);
+    // formData.append('user_id', userId);
     formData.append('start_year', start_year.value);
     formData.append('end_year', end_year.value);
     formData.append('goals', goals.value);
@@ -219,20 +234,11 @@ const submitForm = async () => {
     }
 };
 
-
-
-// Sanitize the HTML content
-const sanitize = (html) => {
-    return DOMPurify.sanitize(html, {
-        ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'a', 'ul', 'ol', 'li', 'strong', 'em', 'u', 'br', 'img'],
-        ALLOWED_ATTR: ['href', 'src', 'alt', 'title'],
-    });
-};
-
 // Initialize Quill and fetch records on mount
 onMounted(() => {
     initializeQuill();
     fetchRecord();
+    fetchPrivacySetups();
 });
 </script>
 
@@ -265,23 +271,21 @@ onMounted(() => {
                             required />
                     </div>
                 </div>
-                <div class="grid mb-4">
-                    <!-- Goals -->
-                    <div class="mb-4">
+
+                <!-- Goals and Activities (Full Width) -->
+                <div class="grid grid-cols-1 gap-4 mb-4">
+                    <div class="mb-6">
                         <label for="goals-editor" class="block text-gray-700 font-semibold mb-2">Goals</label>
-                        <div id="goals-editor" class="w-full border border-gray-300 rounded-md"
-                            style="min-height: 100px;">
-                        </div>
+                        <div id="goals-editor" class="w-full border border-gray-300 rounded-md p-3 min-h-[100px]"></div>
                     </div>
-                </div>
-                <div class="grid mb-4">
-                    <!-- Activities -->
-                    <div class="mb-4">
+
+                    <div class="mb-6">
                         <label for="activities-editor" class="block text-gray-700 font-semibold mb-2">Activities</label>
-                        <div id="activities-editor" class="w-full border border-gray-300 rounded-md"
-                            style="min-height: 100px;"></div>
+                        <div id="activities-editor" class="w-full border border-gray-300 rounded-md p-3 min-h-[100px]"></div>
                     </div>
                 </div>
+
+                <!-- Budget and Start Date moved to a new row -->
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <!-- Budget -->
                     <div class="mb-4">
@@ -297,7 +301,10 @@ onMounted(() => {
                         <input v-model="start_date" type="date" id="start_date"
                             class="w-full border border-gray-300 rounded-md py-2 px-4" required />
                     </div>
+                </div>
 
+                <!-- End Date and Privacy Setup -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
                     <!-- End Date -->
                     <div class="mb-4">
                         <label for="end_date" class="block text-gray-700 font-semibold mb-2">End Date</label>
@@ -307,16 +314,20 @@ onMounted(() => {
 
                     <!-- Privacy Setup -->
                     <div class="mb-4">
-                        <label for="privacy_setup_id" class="block text-gray-700 font-semibold mb-2">Privacy
-                            Setup</label>
+                        <label for="privacy_setup_id" class="block text-gray-700 font-semibold mb-2">Privacy Setup</label>
                         <select v-model="privacy_setup_id" id="privacy_setup_id"
                             class="w-full border border-gray-300 rounded-md py-2 px-4" required>
-                            <option value="1">Only Me</option>
+                            <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{ privacy.name }}</option>
+
+                            <!-- <option value="1">Only Me</option>
                             <option value="2">Organization</option>
-                            <option value="3">Public</option>
+                            <option value="3">Public</option> -->
                         </select>
                     </div>
+                </div>
 
+                <!-- Published and Status -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
                     <!-- Published -->
                     <div class="mb-4">
                         <label for="published" class="block text-gray-700 font-semibold mb-2">Published</label>
@@ -338,32 +349,29 @@ onMounted(() => {
                             <option value="4">Archived</option>
                         </select>
                     </div>
+                </div>
 
+                <!-- Images Upload -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
+                    <div class="space-y-3">
+                        <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
+                            <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept="image/*"
+                                @change="event => handleFileChange(event, images, index)" />
 
-
-                    <!-- Images Upload -->
-                    <div class="mb-4">
-                        <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
-                        <div class="space-y-3">
-                            <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
-                                <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept="image/*"
-                                    @change="event => handleFileChange(event, images, index)" />
-
-                                <div v-if="file.file && file.file.preview"
-                                    class="w-16 h-16 border rounded-md overflow-hidden">
-                                    <img :src="file.file.preview" alt="Preview" class="w-full h-full object-cover" />
-                                </div>
-
-                                <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-                                    @click="removeFile(images, index)">X</button>
+                            <div v-if="file.file && file.file.preview"
+                                class="w-16 h-16 border rounded-md overflow-hidden">
+                                <img :src="file.file.preview" alt="Preview" class="w-full h-full object-cover" />
                             </div>
-                        </div>
-                        <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
-                            @click="() => addMoreFiles(images)">
-                            Add more image
-                        </button>
-                    </div>
 
+                            <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
+                                @click="removeFile(images, index)">X</button>
+                        </div>
+                    </div>
+                    <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+                        @click="() => addMoreFiles(images)">
+                        Add more image
+                    </button>
                 </div>
 
                 <!-- Documents Upload -->
@@ -386,7 +394,7 @@ onMounted(() => {
                     </button>
                 </div>
 
-                <!-- Submit Button -->
+                <!-- Submit Buttons -->
                 <div class="mb-4 flex justify-end">
                     <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600">
                         Update Year Plan

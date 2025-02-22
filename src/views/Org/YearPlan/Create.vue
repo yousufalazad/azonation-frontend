@@ -27,32 +27,48 @@ const selectedRecordId = ref(null);
 const images = ref([{ id: Date.now(), file: null }]);
 const documents = ref([{ id: Date.now(), file: null }]);
 
+const privacySetups = ref([]);
+// Fetch Dropdown Data
+const fetchPrivacySetups = async () => {
+  try {
+    const response = await auth.fetchProtectedApi('/api/privacy-setups');
+    if (response.status) {
+      privacySetups.value = response.data;
+    } else {
+      errorMessage.value = 'Error loading privacy setups.';
+    }
+  } catch (error) {
+    errorMessage.value = 'Failed to load privacy setups. Please try again later.';
+  }
+};
+
+
 // Initialize Quill editors
 const initializeQuill = () => {
     goalsQuill.value = new Quill('#goals-editor', {
         theme: 'snow',
         placeholder: 'Enter goals...',
-        modules: {
-            toolbar: [
-                [{ header: [1, 2, false] }],
-                ['bold', 'italic', 'underline'],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link']
-            ]
-        }
+        // modules: {
+        //     toolbar: [
+        //         [{ header: [1, 2, false] }],
+        //         ['bold', 'italic', 'underline'],
+        //         [{ list: 'ordered' }, { list: 'bullet' }],
+        //         ['link']
+        //     ]
+        // }
     });
 
     activitiesQuill.value = new Quill('#activities-editor', {
         theme: 'snow',
         placeholder: 'Enter activities...',
-        modules: {
-            toolbar: [
-                [{ header: [1, 2, false] }],
-                ['bold', 'italic', 'underline'],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link']
-            ]
-        }
+        // modules: {
+        //     toolbar: [
+        //         [{ header: [1, 2, false] }],
+        //         ['bold', 'italic', 'underline'],
+        //         [{ list: 'ordered' }, { list: 'bullet' }],
+        //         ['link']
+        //     ]
+        // }
     });
 
     goalsQuill.value.on('text-change', () => {
@@ -167,18 +183,10 @@ const submitForm = async () => {
 };
 
 
-
-// Sanitize the HTML content
-const sanitize = (html) => {
-    return DOMPurify.sanitize(html, {
-        ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'a', 'ul', 'ol', 'li', 'strong', 'em', 'u', 'br', 'img'],
-        ALLOWED_ATTR: ['href', 'src', 'alt', 'title'],
-    });
-};
-
 // Initialize Quill and fetch records on mount
 onMounted(() => {
     initializeQuill();
+    fetchPrivacySetups();
 });
 </script>
 
@@ -255,11 +263,10 @@ onMounted(() => {
                     <div class="mb-4">
                         <label for="privacy_setup_id" class="block text-gray-700 font-semibold mb-2">Privacy
                             Setup</label>
+
                         <select v-model="privacy_setup_id" id="privacy_setup_id"
                             class="w-full border border-gray-300 rounded-md py-2 px-4" required>
-                            <option value="1">Only Me</option>
-                            <option value="2">Organization</option>
-                            <option value="3">Public</option>
+                            <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{ privacy.name }}</option>
                         </select>
                     </div>
 

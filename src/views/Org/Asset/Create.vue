@@ -31,6 +31,7 @@ const documents = ref([{ id: Date.now(), file: null }]);
 const responsibleUsers = ref([]);
 const assetLifecycleSetups = ref([]);
 const privacySetups = ref([]);
+const getOrgAllMemberName = ref([]);
 
 // Fetch Data from API
 const fetchDropdownData = async (url, stateRef) => {
@@ -167,6 +168,7 @@ onMounted(() => {
     fetchDropdownData(`/api/org-members/${userId}`, responsibleUsers);
     fetchDropdownData('/api/asset-lifecycle-setups', assetLifecycleSetups);
     fetchDropdownData('/api/privacy-setups', privacySetups);
+    fetchDropdownData('/api/org-all-member-name', getOrgAllMemberName);
 });
 </script>
 
@@ -237,8 +239,9 @@ onMounted(() => {
                 <select v-model="responsible_user_id" id="responsible_user_id"
                     class="w-full  border border-gray-300 rounded-md py-2 px-4">
                     <option value="" disabled>Select Responsible User</option>
-                    <option v-for="user in responsibleUsers" :key="user.individual.id" :value="user.individual.id">
-                        {{ user.individual.name }}</option>
+                    
+                    <option v-for=" orgMember in getOrgAllMemberName" :key="orgMember.individual.id" :value="orgMember.individual.id">
+                        {{ orgMember.individual.name }}</option>
                 </select>
             </div>
 
