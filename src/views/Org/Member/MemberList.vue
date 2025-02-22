@@ -5,11 +5,10 @@ import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 
 const memberList = ref([]);
-const userId = authStore.user.id;
 
 const fetchMemberList = async () => {
   try {
-    const response = await authStore.fetchProtectedApi(`/api/org-member-list/${userId}`, {}, 'GET');
+    const response = await authStore.fetchProtectedApi('/api/org-all-members', {}, 'GET');
     if (response.status) {
       memberList.value = response.data;
     } else {
@@ -79,7 +78,7 @@ onMounted(fetchMemberList);
           <tr>
             <th class="border px-4 py-2">Sl</th>
             <th class="border px-4 py-2">ID Number</th>
-            <th class="border px-4 py-2">Photo</th>
+            <!-- <th class="border px-4 py-2">Photo</th> -->
             <th class="border px-4 py-2">Name</th>
             <th class="border px-4 py-2">Email</th>
             <th class="border px-4 py-2">Azon ID</th>
@@ -93,13 +92,13 @@ onMounted(fetchMemberList);
           <tr v-for="member in memberList" :key="member.id" class="hover:bg-gray-50">
             <td class="border px-4 py-2">{{ member.id }}</td>
             <td class="border px-4 py-2">{{ member.existing_org_membership_id }}</td>
-            <td class="border px-4 py-2">{{ member.individual.image }}</td>
+            <!-- <td class="border px-4 py-2">{{ member.memberProfileImage.image_path }}</td>  -->
             <td class="border px-4 py-2">{{ member.individual.name }}</td>
             <td class="border px-4 py-2">{{ member.individual.email }}</td>
             <td class="border px-4 py-2">{{ member.individual.azon_id }}</td>
             <td class="border px-4 py-2">{{ member.individual.id }}</td>
             <td class="border px-4 py-2">{{ member.joining_date }}</td>
-            <td class="border px-4 py-2">{{ member.membership_type }}</td>
+            <td class="border px-4 py-2">{{ member.membership_type.name }}</td>
             <td class="border px-4 py-2">{{ member.end_date }}</td>
           </tr>
         </tbody>
@@ -146,7 +145,7 @@ onMounted(fetchMemberList);
           <tr>
             <th class="border px-4 py-2">Sl</th>
             <th class="border px-4 py-2">ID Number</th>
-            <th class="border px-4 py-2">Photo</th>
+            <!-- <th class="border px-4 py-2">Photo</th> -->
             <th class="border px-4 py-2">Name</th>
             <th class="border px-4 py-2">Email</th>
             <th class="border px-4 py-2">Azon ID</th>
@@ -160,13 +159,13 @@ onMounted(fetchMemberList);
           <tr v-for="member in memberList" :key="member.id" class="hover:bg-gray-50">
             <td class="border px-4 py-2">{{ member.id }}</td>
             <td class="border px-4 py-2">{{ member.existing_org_membership_id }}</td>
-            <td class="border px-4 py-2">{{ member.individual.image }}</td>
+            <!-- <td class="border px-4 py-2">{{ member.memberProfileImage.image_path }}</td> -->
             <td class="border px-4 py-2">{{ member.individual.name }}</td>
             <td class="border px-4 py-2">{{ member.individual.email }}</td>
             <td class="border px-4 py-2">{{ member.individual.azon_id }}</td>
             <td class="border px-4 py-2">{{ member.individual.id }}</td>
             <td class="border px-4 py-2">{{ member.joining_date }}</td>
-            <td class="border px-4 py-2">{{ member.membership_type }}</td>
+            <td class="border px-4 py-2">{{ member.membership_type.name }}</td>
             <td class="border px-4 py-2">{{ member.end_date }}</td>
           </tr>
         </tbody>
