@@ -1,3 +1,35 @@
+<script setup>
+import { ref, onMounted } from 'vue';
+import { authStore } from '../../../../store/authStore';
+const auth = authStore;
+const billingList = ref([]); // Initialize as an empty array
+const errorMessage = ref(null);
+
+// Format date helper function
+const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+    return new Date(dateString).toLocaleDateString('en-GB', options);
+};
+
+const fetchBillingList = async () => {
+    try {
+        const response = await auth.fetchProtectedApi('/api/org-all-bill');
+
+        // Set billing to the response data or an empty array
+        billingList.value = response.status ? response.data : [];
+
+    } catch (error) {
+        console.error("Error fetching billing:", error);
+        errorMessage.value = "Error loading billing. Please try again later.";
+        invoices.value = []; // Ensure billing is empty on error
+    }
+};
+
+// Fetch billing on component mount
+onMounted(fetchBillingList);
+</script>
+
 <template>
     <div class="container mx-auto p-6">
         <h1 class="text-2xl font-semibold mb-4">Bills</h1>
@@ -41,38 +73,6 @@
         </table>
     </div>
 </template>
-
-<script setup>
-import { ref, onMounted } from 'vue';
-import { authStore } from '../../../../store/authStore';
-const auth = authStore;
-const billingList = ref([]); // Initialize as an empty array
-const errorMessage = ref(null);
-
-// Format date helper function
-const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-    return new Date(dateString).toLocaleDateString('en-GB', options);
-};
-
-const fetchBillingList = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/billing-list');
-
-        // Set billing to the response data or an empty array
-        billingList.value = response.status ? response.data : [];
-
-    } catch (error) {
-        console.error("Error fetching billing:", error);
-        errorMessage.value = "Error loading billing. Please try again later.";
-        invoices.value = []; // Ensure billing is empty on error
-    }
-};
-
-// Fetch billing on component mount
-onMounted(fetchBillingList);
-</script>
 
 <style scoped>
 .container {
