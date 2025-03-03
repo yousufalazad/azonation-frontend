@@ -17,7 +17,7 @@ import IndividualRegister from "../views/Individual/Profile/Register.vue";
 import OrgRegister from "../views/Org/Profile/Register.vue";
 
 //SuperAdmin
-import SuperAdminRegister from "../views/SuperAdmin/Profile/Register.vue";
+import SuperadminRegister from "../views/SuperAdmin/Profile/Register.vue";
 
 // Mock authentication function
 function isAuthenticated() {
@@ -47,9 +47,9 @@ const routes = [
     component: OrgRegister,
   },
   {
-    path: "/superAdmin-register",
-    name: "superAdmin-register",
-    component: SuperAdminRegister,
+    path: "/superadmin-register",
+    name: "superadmin-register",
+    component: SuperadminRegister,
   },
 ];
 
