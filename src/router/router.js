@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { authStore } from '../store/authStore';
-import superadminRoutes from '../router/superadminRoutes';
+import superadminRoutes from '../router/superadminRouter';
 import individualRoutes from '../router/individualRouter';
 import orgRoutes from '../router/orgRouter';
 
@@ -65,7 +65,7 @@ const router = createRouter({
 
 // Add route guard for authentication
 router.beforeEach((to, from, next) => {
-  const auth = authStore(); // Ensure Pinia store is initialized
+  const auth = authStore(); 
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     next({ name: "login" });

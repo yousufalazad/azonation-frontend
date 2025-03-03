@@ -1,6 +1,3 @@
-import { createRouter, createWebHistory } from "vue-router";
-import { authStore } from "../store/authStore";
-
 import OrgDashboard from "../views/Org/Layouts/Dashboard/Index.vue";
 import OrgDashboardInitialContent from "@/views/Org/Layouts/Dashboard/InitialContent.vue";
 

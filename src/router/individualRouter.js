@@ -1,6 +1,3 @@
-import { createRouter, createWebHistory } from "vue-router";
-import { authStore } from "../store/authStore";
-
 import IndividualDashboard from "../views/Individual/Layouts/Dashboard/Index.vue";
 import IndividualDashboardInitialContent from "../views/Individual/Layouts/Dashboard/InitialContent.vue";
 

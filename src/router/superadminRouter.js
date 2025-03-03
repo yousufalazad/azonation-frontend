@@ -1,6 +1,3 @@
-import { createRouter, createWebHistory } from "vue-router";
-import { authStore } from '../store/authStore';
-
 import SuperAdminDashboard from "../views/SuperAdmin/Layouts/Dashboard/Index.vue";
 import SuperAdminDashboardInitialContent from "../views/SuperAdmin/Layouts/Dashboard/InitialContent.vue";
 import SuperAdminProfileUpdate from "../views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue";
