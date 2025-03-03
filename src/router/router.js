@@ -20,8 +20,8 @@ import IndividualProfileUpdate from "../views/Individual/Profile/IndividualProfi
 
 // Org
 import OrgRegister from "../views/Org/Profile/Register.vue";
-import OrgDashboard from "../views/Org/Layouts/Dashboard/Index.vue";
-import OrgDashboardInitialContent from "@/views/Org/Layouts/Dashboard/InitialContent.vue";
+import OrgDashboardLayout from "../views/Org/Layouts/Layout.vue";
+import OrgDashboardIndex from "@/views/Org/Layouts/Dashboard/Index.vue";
 
 
 //Asset Management
@@ -308,15 +308,15 @@ const routes = [
   {
     path: "/org-dashboard",
     name: "org-dashboard",
-    component: OrgDashboard,
+    component: OrgDashboardLayout,
     meta: { requiresAuth: true,
       type: 'organisation',
     },
     children: [
       {
-        path: "dashboard-initial-content",
-        name: "dashboard-initial-content",
-        component: OrgDashboardInitialContent,
+        path: "index",
+        name: "org-index",
+        component: OrgDashboardIndex,
         meta: { requiresAuth: true },
       },
       {
