@@ -57,9 +57,9 @@ const authStore = reactive({
   },
 
   // async uploadProtectedApi(endPoint = "", params = {}) {
-  //   const token = authStore.getUserToken();
+  //   const token = this.getUserToken();
 
-  //   const res = await axios.post(authStore.apiBase + endPoint, params, {
+  //   const res = await axios.post(this.apiBase + endPoint, params, {
   //     headers: {
   //       "Access-Control-Allow-Origin": "*",
   //       "Content-Type": "multipart/form-data",
@@ -71,9 +71,9 @@ const authStore = reactive({
   //   return response;
   // },
   // async uploadProtectedApi(endPoint = "", params = {}) {
-  //   const token = authStore.getUserToken();
+  //   const token = this.getUserToken();
 
-  //   const res = await axios.post(authStore.apiBase + endPoint, params, {
+  //   const res = await axios.post(this.apiBase + endPoint, params, {
   //     headers: {
   //       "Content-Type": "multipart/form-data",
   //       Authorization: `Bearer ${token}`,
@@ -85,7 +85,7 @@ const authStore = reactive({
 
   //--------NEW by Ourself------------
   async uploadProtectedApi(endPoint = "", params = {}, requestType = "POST") {
-    const token = authStore.getUserToken();
+    const token = this.getUserToken();
 
     // Prepare the request configuration
     let request = {
@@ -107,14 +107,14 @@ const authStore = reactive({
     }
 
     // Make the axios request
-    const res = await axios(authStore.apiBase + endPoint, request);
+    const res = await axios(this.apiBase + endPoint, request);
 
     // Return the response data
     return res.data;
   },
 
   register(name, type, email, password) {
-    authStore
+    this
       .fetchPublicApi(
         "/api/register",
         { name: name, type: type, email: email, password: password },
@@ -122,7 +122,7 @@ const authStore = reactive({
       )
       .then((res) => {
         if (res.status) {
-          authStore.errors = null;
+          this.errors = null;
           router.push({ name: "login" });
           Swal.fire({
             icon: "success",
@@ -133,22 +133,22 @@ const authStore = reactive({
             showConfirmButton: false,
           });
         } else {
-          authStore.errors = res.errors;
+          this.errors = res.errors;
         }
       });
   },
 
   async authenticate(username, password, remember_token) {
     try {
-      const response = await authStore.fetchPublicApi(
+      const response = await this.fetchPublicApi(
         "/api/login",
         { email: username, password: password, remember_token: remember_token },
         "POST"
       );
 
       if (response.status === "success") {
-        authStore.isAuthenticated = true;
-        authStore.user = response.data;
+        this.isAuthenticated = true;
+        this.user = response.data;
         sessionStorage.setItem("auth", 1);
         sessionStorage.setItem("user", JSON.stringify(response.data));
 
@@ -162,7 +162,7 @@ const authStore = reactive({
             router.push({ name: "individual-dashboard-initial-content" });
             break;
           case "organisation":
-            router.push({ name: "dashboard-initial-content" });
+            router.push({ name: "org-index" });
             break;
           case "superadmin":
             //this.superAdminUserData(response.data.id); no needed
@@ -172,9 +172,9 @@ const authStore = reactive({
             router.push({ name: "login" });
         }
         
-        console.log(authStore.isAuthenticated);  // Should be true after login
-        console.log(authStore.user);  // Should return user data after login
-        console.log(authStore.getUserToken());  // Should return the token if the user is logged in
+        console.log(this.isAuthenticated);  // Should be true after login
+        console.log(this.user);  // Should return user data after login
+        console.log(this.getUserToken());  // Should return the token if the user is logged in
         console.log(response.data.type); // Check which user type is being returned
 
         Swal.fire({
@@ -186,7 +186,7 @@ const authStore = reactive({
           showConfirmButton: false,
         });
       } else {
-        authStore.errors = response.errors || "An error occurred during login.";
+        this.errors = response.errors || "An error occurred during login.";
         Swal.fire({
           icon: "error",
           title: "Login failed",
@@ -214,11 +214,11 @@ const authStore = reactive({
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await authStore.fetchProtectedApi("/api/logout", {}, "POST");
+          await this.fetchProtectedApi("/api/logout", {}, "POST");
 
           // Clear frontend authentication status
-          authStore.isAuthenticated = false;
-          authStore.user = {};
+          this.isAuthenticated = false;
+          this.user = {};
           sessionStorage.setItem("auth", 0);
           sessionStorage.setItem("user", "{}");
           router.push({ name: "login" });
@@ -255,8 +255,8 @@ const authStore = reactive({
   //     if (result.isConfirmed) {
   //       try {
   //         // Call the backend logout API endpoint
-  //         const token = authStore.getUserToken();
-  //         await fetch(`${authStore.apiBase}/logout`, {
+  //         const token = this.getUserToken();
+  //         await fetch(`${this.apiBase}/logout`, {
   //           method: "POST",
   //           headers: {
   //             "Content-Type": "application/json",
@@ -265,8 +265,8 @@ const authStore = reactive({
   //         });
 
   //         // Clear frontend authentication status
-  //         authStore.isAuthenticated = false;
-  //         authStore.user = {};
+  //         this.isAuthenticated = false;
+  //         this.user = {};
   //         sessionStorage.setItem("auth", 0);
   //         sessionStorage.setItem("user", "{}");
   //         router.push({ name: "login" });
@@ -301,8 +301,8 @@ const authStore = reactive({
   //     cancelButtonText: "Cancel",
   //   }).then((result) => {
   //     if (result.isConfirmed) {
-  //       authStore.isAuthenticated = false;
-  //       authStore.user = {};
+  //       this.isAuthenticated = false;
+  //       this.user = {};
   //       sessionStorage.setItem("auth", 0);
   //       sessionStorage.setItem("user", "{}");
   //       router.push({name: "login"});
@@ -374,11 +374,11 @@ const authStore = reactive({
   // },
 
   getUserToken() {
-    return authStore.user?.accessToken;
+    return this.user?.accessToken;
   },
 
   getUserType() {
-    return authStore.user?.type;
+    return this.user?.type;
   },
 
   createCommittee(
@@ -390,7 +390,7 @@ const authStore = reactive({
     note,
     status
   ) {
-    authStore
+    this
       .fetchProtectedApi(
         "/api/create_committee",
         {
@@ -406,10 +406,10 @@ const authStore = reactive({
       )
       .then((response) => {
         if (response.status) {
-          authStore.errors = null;
+          this.errors = null;
           router.push("/committees");
         } else {
-          authStore.errors = response.errors;
+          this.errors = response.errors;
         }
       });
   },
@@ -423,7 +423,7 @@ const authStore = reactive({
     note,
     status
   ) {
-    authStore
+    this
       .fetchProtectedApi(
         // Correct the URL to use backticks for interpolation
         `/api/update_committee/${id}`,
@@ -439,10 +439,10 @@ const authStore = reactive({
       )
       .then((response) => {
         if (response.status) {
-          authStore.errors = null;
+          this.errors = null;
           router.push("/committees");
         } else {
-          authStore.errors = response.errors;
+          this.errors = response.errors;
         }
       })
       .catch((error) => {
@@ -465,7 +465,7 @@ const authStore = reactive({
     status,
     conduct_type
   ) {
-    authStore
+    this
       .fetchProtectedApi(
         "/api/create-meeting",
         {
@@ -487,10 +487,10 @@ const authStore = reactive({
       )
       .then((response) => {
         if (response.status) {
-          authStore.errors = null;
+          this.errors = null;
           router.push("/create-meeting");
         } else {
-          authStore.errors = response.errors;
+          this.errors = response.errors;
         }
       });
   },
@@ -510,7 +510,7 @@ const authStore = reactive({
     status,
     conduct_type
   ) {
-    authStore
+    this
       .fetchProtectedApi(
         "/api/create-event",
         {
@@ -532,10 +532,10 @@ const authStore = reactive({
       )
       .then((response) => {
         if (response.status) {
-          authStore.errors = null;
+          this.errors = null;
           router.push("/create-event");
         } else {
-          authStore.errors = response.errors;
+          this.errors = response.errors;
         }
       });
   },
@@ -556,7 +556,7 @@ const authStore = reactive({
     status,
     conduct_type
   ) {
-    authStore
+    this
       .fetchProtectedApi(
         "/api/create-project",
         {
@@ -579,9 +579,9 @@ const authStore = reactive({
       )
       .then((response) => {
         if (response.status) {
-          authStore.errors = null;
+          this.errors = null;
         } else {
-          authStore.errors = response.errors;
+          this.errors = response.errors;
         }
       });
   },
@@ -602,7 +602,7 @@ const authStore = reactive({
     status,
     conduct_type
   ) {
-    authStore
+    this
       .fetchProtectedApi(
         `/api/update-project/${id}`,
         {
@@ -624,9 +624,9 @@ const authStore = reactive({
       )
       .then((response) => {
         if (response.status) {
-          authStore.errors = null;
+          this.errors = null;
         } else {
-          authStore.errors = response.errors;
+          this.errors = response.errors;
         }
       });
   },
