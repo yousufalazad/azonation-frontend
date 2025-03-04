@@ -1,5 +1,5 @@
-import OrgDashboard from "../views/Org/Layouts/Dashboard/Index.vue";
-import OrgDashboardInitialContent from "@/views/Org/Layouts/Dashboard/InitialContent.vue";
+import OrgDashboardLayout from "../views/Org/Layouts/Layout.vue";
+import OrgDashboardIndex from "@/views/Org/Layouts/Dashboard/Index.vue";
 
 import fundamentalInfo from "../views/Org/Profile/FundamentalInfo.vue";
 
@@ -125,20 +125,21 @@ import ViewInvoice from "../views/Org/Financial/Invoice/View.vue";
 import OrgReceiptList from "../views/Org/Financial/Receipt/ReceiptList.vue";
 import ViewOrgReceipt from "../views/Org/Financial/Receipt/ViewReceipt.vue";
 
+
 const orgRoutes = [
   {
     path: "/org-dashboard",
     name: "org-dashboard",
-    component: OrgDashboard,
+    component: OrgDashboardLayout,
     meta: {
       requiresAuth: true,
       type: 'organisation',
     },
     children: [
       {
-        path: "dashboard-initial-content",
-        name: "dashboard-initial-content",
-        component: OrgDashboardInitialContent,
+        path: "index",
+        name: "org-index",
+        component: OrgDashboardIndex,
         meta: { requiresAuth: true },
       },
       {

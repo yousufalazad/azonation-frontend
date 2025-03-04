@@ -1,8 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { authStore } from '../store/authStore';
-import superadminRoutes from '../router/superadminRouter';
-import individualRoutes from '../router/individualRouter';
-import orgRoutes from '../router/orgRouter';
+import superadminRoutes from './superadminRouter';
+import individualRoutes from './individualRouter';
+import orgRoutes from './orgRouter';
 
 //Home
 import Home from "../views/Home.vue";
@@ -21,11 +20,10 @@ import SuperadminRegister from "../views/SuperAdmin/Profile/Register.vue";
 
 // Mock authentication function
 function isAuthenticated() {
-  // Replace this with your actual authentication logic
   return !!sessionStorage.getItem("auth");
 }
 
-const routes = [
+const baseRoutes = [
   {
     path: "/",
     name: "home",
@@ -53,10 +51,8 @@ const routes = [
   },
 ];
 
-//routes = [orgRoutes, ...routes]; // Add orgRoutes to the routes
-
 // Merge all route modules properly
-routes = [...superadminRoutes, ...individualRoutes, ...orgRoutes, ...routes];
+const routes = [...superadminRoutes, ...individualRoutes, ...orgRoutes, ...baseRoutes];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -64,12 +60,18 @@ const router = createRouter({
 });
 
 // Add route guard for authentication
-router.beforeEach((to, from, next) => {
-  const auth = authStore(); 
+router.beforeEach(async (to, from, next) => {
+  const { authStore } = await import("../store/authStore"); // 👈 Fix applied
+  // const auth = authStore(); 
 
-  if (to.meta.requiresAuth && !auth.isAuthenticated) {
+  console.log("Auth Store:", authStore); // Debug output
+  console.log("Auth Store User Type:", authStore.getUserType()); // Debug output
+    console.log("Router Guard:", { isAuthenticated: authStore?.isAuthenticated, userType: authStore?.getUserType() }); // Debugging
+
+
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next({ name: "login" });
-  } else if (to.meta.requiresAuth && to.meta.type !== auth.getUserType()) {
+  } else if (to.meta.requiresAuth && to.meta.type !== authStore.getUserType()) {
     next("/");
   } else {
     next();

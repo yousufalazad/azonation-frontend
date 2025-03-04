@@ -130,7 +130,7 @@ const fetchLogo = async () => {
   <header class="sticky top-0 z-50 flex items-center justify-between bg-white shadow  py-3 px-6">
     <div>
       <!-- Organization/Brand Name -->
-      <a href="/org-dashboard/dashboard-initial-content" class="text-xl font-semibold text-gray-600">
+      <a href="/org-dashboard/index" class="text-xl font-semibold text-gray-600">
         {{ name }}
       </a>
     </div>
@@ -223,7 +223,7 @@ const fetchLogo = async () => {
               </button>
             </li>
             <li class="border-t"></li>
-            <li class="py-4 px-3.5"><img src="../../../../assets/Logo/Azonation.png" alt=""
+            <li class="py-4 px-3.5"><img src="../../../assets/Logo/Azonation.png" alt=""
                 class="max-h-[50px] max-w-[100px]"></li>
 
           </ul>

@@ -26,13 +26,13 @@ const authStore = reactive({
       request.body = JSON.stringify(params);
     }
 
-    const res = await fetch(authStore.apiBase + endPoint, request);
+    const res = await fetch(this.apiBase + endPoint, request);
     const response = await res.json();
     return response;
   },
 
   async fetchProtectedApi(endPoint = "", params = {}, requestType = "GET") {
-    const token = authStore.getUserToken();
+    const token = this.getUserToken();
     let request = {
       method: requestType.toUpperCase(),
       headers: {
@@ -51,7 +51,7 @@ const authStore = reactive({
       request.body = JSON.stringify(params);
     }
 
-    const res = await fetch(authStore.apiBase + endPoint, request);
+    const res = await fetch(this.apiBase + endPoint, request);
     const response = await res.json();
     return response;
   },
