@@ -165,8 +165,7 @@ const authStore = reactive({
             router.push({ name: "org-index" });
             break;
           case "superadmin":
-            //this.superAdminUserData(response.data.id); no needed
-            router.push({ name: "initial-content" });
+            router.push({ name: "superadmin-index" });
             break;
           default:
             router.push({ name: "login" });

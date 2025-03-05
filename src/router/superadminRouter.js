@@ -1,5 +1,5 @@
-import SuperAdminDashboard from "../views/SuperAdmin/Layouts/Dashboard/Index.vue";
-import SuperAdminDashboardInitialContent from "../views/SuperAdmin/Layouts/Dashboard/InitialContent.vue";
+import SuperadminDashboardLayout from "../views/SuperAdmin/Layouts/Layout.vue";
+import SuperadminDashboardIndex from "../views/SuperAdmin/Layouts/Dashboard/Index.vue";
 import SuperAdminProfileUpdate from "../views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue";
 
 //SuperAdmin Master Setting
@@ -103,16 +103,16 @@ const superadminRoutes = [
     {
         path: "/superadmin-dashboard",
         name: "superadmin-dashboard",
-        component: SuperAdminDashboard,
+        component: SuperadminDashboardLayout,
         meta: {
             requiresAuth: true,
             type: 'superadmin',
         },
         children: [
             {
-                path: "initial-content",
-                name: "initial-content",
-                component: SuperAdminDashboardInitialContent,
+                path: "index",
+                name: "superadmin-index",
+                component: SuperadminDashboardIndex,
                 meta: { requiresAuth: true },
             },
             {
