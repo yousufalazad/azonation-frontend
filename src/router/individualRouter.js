@@ -1,5 +1,5 @@
-import IndividualDashboard from "../views/Individual/Layouts/Dashboard/Index.vue";
-import IndividualDashboardInitialContent from "../views/Individual/Layouts/Dashboard/InitialContent.vue";
+import IndividualDashboardLayout from "../views/Individual/Layouts/Layout.vue";
+import IndividualDashboardIndex from "../views/Individual/Layouts/Dashboard/Index.vue";
 
 import NotificationFromOrg from "../views/Individual/Notifications/NotificationFromOrg.vue";
 import IndividualProfileUpdate from "../views/Individual/Profile/IndividualProfileUpdate.vue";
@@ -10,13 +10,13 @@ const individualRoutes = [
   {
     path: "/individual-dashboard",
     name: "individual-dashboard",
-    component: IndividualDashboard,
+    component: IndividualDashboardLayout,
     meta: { requiresAuth: true, type: 'individual' },
     children: [
       {
-        path: "individual-dashboard-initial-content",
-        name: "individual-dashboard-initial-content",
-        component: IndividualDashboardInitialContent,
+        path: "index",
+        name: "individual-index",
+        component: IndividualDashboardIndex,
         meta: { requiresAuth: true },
       },
       {

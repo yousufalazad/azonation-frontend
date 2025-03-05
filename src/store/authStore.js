@@ -159,7 +159,7 @@ const authStore = reactive({
         // Redirect based on user type
         switch (response.data.type) {
           case "individual":
-            router.push({ name: "individual-dashboard-initial-content" });
+            router.push({ name: "individual-index" });
             break;
           case "organisation":
             router.push({ name: "org-index" });
