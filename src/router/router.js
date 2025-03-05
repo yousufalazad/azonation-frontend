@@ -10,13 +10,13 @@ import Home from "../views/Home.vue";
 import Login from "../views/Auth/Login.vue";
 
 //Individual
-import IndividualRegister from "../views/Individual/Profile/Register.vue";
+import IndividualRegister from "../views/Auth/IndividualRegister.vue";
 
 // Org
-import OrgRegister from "../views/Org/Profile/Register.vue";
+import OrgRegister from "../views/Auth/OrgRegister.vue";
 
 //SuperAdmin
-import SuperadminRegister from "../views/SuperAdmin/Profile/Register.vue";
+import SuperadminRegister from "../views/Auth/SuperadminRegister.vue";
 
 // Mock authentication function
 function isAuthenticated() {
