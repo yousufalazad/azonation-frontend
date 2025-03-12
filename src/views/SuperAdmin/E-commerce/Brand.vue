@@ -16,7 +16,7 @@ const selectedItem = ref(null);
 const brands = ref([]);
 const fetchItems = async () => {
   try {
-    const response = await auth.uploadProtectedApi('/api/get-brands', {}, 'GET');
+    const response = await auth.uploadProtectedApi('/api/brands', {}, 'GET');
     brands.value = response.status ? response.data : [];
   } catch (error) {
     errorMessage.value = 'Error loading brands. Please try again later.';
@@ -61,8 +61,8 @@ const closeViewModal = () => {
 const saveItem = async () => {
   try {
     const endpoint = editMode.value
-      ? `/api/update-brand/${form.value.id}`
-      : '/api/create-brand';
+      ? `/api/brands/${form.value.id}`
+      : '/api/brands';
     const method = editMode.value ? 'POST' : 'POST'; // Always POST for FormData
 
     const formData = new FormData();
@@ -122,7 +122,7 @@ const deleteMember = async (id) => {
     if (result.isConfirmed) {
       try {
         const response = await auth.uploadProtectedApi(
-          `/api/delete-brand/${id}`,
+          `/api/brands/${id}`,
           {},
           'DELETE'
         );

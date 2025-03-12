@@ -47,7 +47,7 @@ const privacySetupList = ref([]);
 
 const getConductTypes = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/get-conduct-types', {}, 'GET');
+    const response = await auth.fetchProtectedApi('/api/conduct-types', {}, 'GET');
     conductTypeList.value = response.status ? response.data : [];
   } catch (error) {
     console.error('Error fetching conduct types:', error);
@@ -73,7 +73,7 @@ const resetForm = () => {
 
 const submitForm = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/create-meeting', form.value, 'POST');
+    const response = await auth.fetchProtectedApi('/api/meetings', form.value, 'POST');
     if (response.status) {
       await Swal.fire('Success!', 'Meeting added successfully.', 'success');
       router.push({ name: 'index-meeting' });

@@ -100,7 +100,7 @@ const resetForm = () => {
 // Fetch the existing record details
 const fetchRecord = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/year-plan/${id}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/year-plans/${id}`, {}, 'GET');
         if (response.status) {
             const data = response.data;
 
@@ -216,7 +216,7 @@ const submitForm = async () => {
 
         // If user confirms
         if (result.isConfirmed) {
-            const response = await auth.uploadProtectedApi(`/api/update-year-plan/${id}`, formData, 'POST', {
+            const response = await auth.uploadProtectedApi(`/api/year-plans/${id}`, formData, 'POST', {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 

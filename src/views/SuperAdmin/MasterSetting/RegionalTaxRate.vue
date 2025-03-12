@@ -29,7 +29,7 @@ const regionList = ref([]);
 // Fetch regionList
 const getRegionList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-regions', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/regions', {}, 'GET');
         regionList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -41,7 +41,7 @@ const regionTaxRateList = ref([]);
 // Fetch getCountryRegionList
 const getCountryRegionList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-region-tax-rates', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/regional-tax-rates', {}, 'GET');
         regionTaxRateList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -66,10 +66,10 @@ const submitForm = async () => {
         is_active: is_active.value
     };
     try {
-        let apiUrl = '/api/create-region-tax-rate';
+        let apiUrl = '/api/regional-tax-rates';
         let method = 'POST';
         if (isEditMode.value && selectedRegionCurrencyId.value) {
-            apiUrl = `/api/update-region-tax-rate/${selectedRegionCurrencyId.value}`;
+            apiUrl = `/api/regional-tax-rates/${selectedRegionCurrencyId.value}`;
             method = 'PUT';
         }
         const result = await Swal.fire({
@@ -120,7 +120,7 @@ const deleteRegionCurrency = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-region-tax-rate/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/regional-tax-rates/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'region tax-rate has been deleted.', 'success');

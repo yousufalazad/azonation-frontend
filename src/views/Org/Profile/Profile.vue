@@ -617,7 +617,7 @@ const updateUsername = async () => {
 
 const fetchOrgAddress = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/address/${userId}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/addresses/${userId}`, {}, 'GET');
 
         // Ensure the response status is true and data exists
         if (response.status && response.data) {
@@ -639,7 +639,7 @@ const fetchOrgAddress = async () => {
 
 const createAddress = async () => {
     try {
-        const response = await auth.fetchProtectedApi("/api/address/", {
+        const response = await auth.fetchProtectedApi("/api/addresses/", {
             user_id: userId,
             address_line_one: address_line_one.value,
             address_line_two: address_line_two.value,
@@ -663,7 +663,7 @@ const createAddress = async () => {
 
 const updateAddress = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/address/${userId}`, {
+        const response = await auth.fetchProtectedApi(`/api/addresses/${userId}`, {
             address_line_one: address_line_one.value,
             address_line_two: address_line_two.value,
             city: city.value,
@@ -686,7 +686,7 @@ const updateAddress = async () => {
 
 const fetchOrgPhoneNumber = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/phone-number/${userId}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/phone-numbers/${userId}`, {}, 'GET');
         // Ensure the response status is true and data exists
         if (response.status && response.data) {
             dialing_code.value = response.data.dialing_code || '';
@@ -704,7 +704,7 @@ const fetchOrgPhoneNumber = async () => {
 
 const updateOrgPhoneNumber = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/phone-number/${userId}`, {
+        const response = await auth.fetchProtectedApi(`/api/phone-numbers/${userId}`, {
             dialing_code_id: dialing_code_id.value,
             phone_number: phone_number.value,
             phone_type: phone_type.value,
@@ -725,7 +725,7 @@ const updateOrgPhoneNumber = async () => {
 
 const fetchDialingCode = async () => {
     try {
-        const response = await auth.fetchProtectedApi("/api/dialing-codes/", {}, 'GET');
+        const response = await auth.fetchProtectedApi("/api/phone-numbers/dialing-codes/", {}, 'GET');
         // Ensure the response status is true and data exists
         if (response.status && response.data) {
             allDialingCodes.value = response.data;

@@ -9,7 +9,7 @@ const orgId = authStore.org.id; // Assuming the org ID is stored in the logged-i
 
 const fetchCommitteeList = async () => {
   try {
-    const response = await authStore.fetchProtectedApi(`/api/org-committee-list/${orgId}`, {}, 'GET');
+    const response = await authStore.fetchProtectedApi(`/api/committees/${orgId}`, {}, 'GET');
     if (response.status) {
       committeeList.value = response.data;
     } else {

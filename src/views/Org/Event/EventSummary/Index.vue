@@ -12,7 +12,7 @@ const recordList = ref([]);
 // Fetch list of meetings
 const getRecords = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-event-summary`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/event-summaries`, {}, 'GET');
     console.log('recordList', response.data);
     recordList.value = response.status ? response.data : [];
   } catch (error) {
@@ -37,7 +37,7 @@ const deleteRecord = async (recordId) => {
     });
 
     if (confirmed.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/delete-event-summary/${recordId}`, {}, 'DELETE');
+      const response = await auth.fetchProtectedApi(`/api/event-summaries/${recordId}`, {}, 'DELETE');
       if (response.status) {
         recordList.value = recordList.value.filter(record => record.id !== recordId);
         Swal.fire('Deleted!', 'Meeting has been deleted.', 'success');

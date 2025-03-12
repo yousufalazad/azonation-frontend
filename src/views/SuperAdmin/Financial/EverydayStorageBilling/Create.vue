@@ -58,7 +58,7 @@ const submitForm = async () => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi('/api/create-everyday-storage-billing', payload, 'POST');
+      const response = await auth.fetchProtectedApi('/api/every-day-storage-billings', payload, 'POST');
 
       if (response.status) {
         Swal.fire('Success!', 'Added successfully.', 'success').then(() => {

@@ -83,7 +83,7 @@ const submitForm = async () => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi('/api/create-billing', payload, 'POST');
+      const response = await auth.fetchProtectedApi('/api/management-and-storage-billings', payload, 'POST');
 
       if (response.status) {
         Swal.fire('Success!', 'Billing added successfully.', 'success').then(() => {

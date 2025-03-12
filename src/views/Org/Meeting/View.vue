@@ -14,7 +14,7 @@ const selectedRecordId = ref(route.params.id);
 // Fetch meeting details on mount
 const fetchMeetingDetails = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-meeting/${selectedRecordId.value}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/meetings/${selectedRecordId.value}`, {}, 'GET');
     record.value = response.status ? response.data : {};
   } catch (error) {
     console.error('Error fetching meetings:', error);

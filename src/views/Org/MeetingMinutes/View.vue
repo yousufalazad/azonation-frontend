@@ -13,7 +13,7 @@ const id = ref(route.params.id); // Selected Meeting ID
 // Fetch meeting minutes details
 const fetchMeetingMinutes = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-meeting-minutes/${id.value}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/meeting-minutes/${id.value}`, {}, 'GET');
         record.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching meeting minutes:', error);

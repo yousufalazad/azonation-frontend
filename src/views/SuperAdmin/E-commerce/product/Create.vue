@@ -54,7 +54,7 @@ const is_active = ref(false);
 const business_types = ref([]);
 const fetchBusinessType = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/get-business-types');
+    const response = await auth.fetchProtectedApi('/api/business-types');
     business_types.value = response.status ? response.data : [];
   } catch (error) {
     errorMessage.value = 'Error loading business_types. Please try again later.';
@@ -64,7 +64,7 @@ const fetchBusinessType = async () => {
 const categories = ref([]);
 const fetchCategories = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/get-categories');
+    const response = await auth.fetchProtectedApi('/api/categories');
     categories.value = response.status ? response.data : [];
   } catch (error) {
     errorMessage.value = 'Error loading categories. Please try again later.';
@@ -74,7 +74,7 @@ const fetchCategories = async () => {
 const subCategories = ref([]);
 const fetchSubCategories = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/get-sub-categories');
+    const response = await auth.fetchProtectedApi('/api/sub-categories');
     subCategories.value = response.status ? response.data : [];
   } catch (error) {
     errorMessage.value = 'Error loading subCategories. Please try again later.';
@@ -84,7 +84,7 @@ const fetchSubCategories = async () => {
 const subSubCategories = ref([]);
 const fetchSubSubCategories = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/get-sub-sub-categories');
+    const response = await auth.fetchProtectedApi('/api/sub-sub-categories');
     subSubCategories.value = response.status ? response.data : [];
   } catch (error) {
     errorMessage.value = 'Error loading subSubCategories. Please try again later.';
@@ -94,7 +94,7 @@ const fetchSubSubCategories = async () => {
 const brands = ref([]);
 const fetchBrands = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/get-brands');
+    const response = await auth.fetchProtectedApi('/api/brands');
     brands.value = response.status ? response.data : [];
   } catch (error) {
     errorMessage.value = 'Error loading brands. Please try again later.';
@@ -211,7 +211,7 @@ const submitForm = async () => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi('/api/create-product', payload, 'POST');
+      const response = await auth.fetchProtectedApi('/api/products', payload, 'POST');
       if (response.status) {
         Swal.fire('Success!', 'Product created successfully.', 'success').then(() => {
           resetForm();

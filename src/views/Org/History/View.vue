@@ -15,7 +15,7 @@ const history = ref([]); // Ensure it's initialized as an empty array
 
 const fetchHistory = async () => {
     try {
-      const response = await auth.fetchProtectedApi(`/api/get-org-history/${id.value}`, {}, 'GET');
+      const response = await auth.fetchProtectedApi(`/api/histories/${id.value}`, {}, 'GET');
         if (response.status) {
             history.value = response.data;
         } else {

@@ -114,7 +114,7 @@ const submitForm = async () => {
   formData.append('is_active', is_active.value);
 
   try {
-    const response = await auth.uploadProtectedApi('/api/create-event-summary', formData, 'POST', {
+    const response = await auth.uploadProtectedApi('/api/event-summaries', formData, 'POST', {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 

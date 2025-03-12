@@ -32,7 +32,7 @@ const getUserList = async () => {
 // Fetch record for editing
 const getRecord = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-every-day-member-count-and-bill/${id}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/every-day-member-count-and-billings/${id}`, {}, 'GET');
     if (response.status) {
       const data = response.data;
         user_id.value = data.user_id,
@@ -76,7 +76,7 @@ const submitForm = async () => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/update-every-day-member-count-and-bill/${id}`, payload, 'PUT');
+      const response = await auth.fetchProtectedApi(`/api/every-day-member-count-and-billings/${id}`, payload, 'PUT');
 
       if (response.status) {
         Swal.fire('Success!', 'Billing updated successfully.', 'success').then(() => {

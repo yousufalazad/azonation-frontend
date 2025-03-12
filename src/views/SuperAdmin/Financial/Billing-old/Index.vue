@@ -16,7 +16,7 @@ const formatDate = (dateString) => {
 
 const getRecords = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/billing-list`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/management-and-storage-billings`, {}, 'GET');
     console.log(response.data);
 
     billingList.value = response.status ? response.data : [];
@@ -39,7 +39,7 @@ const deleteRecord = async (billingId) => {
     });
 
     if (confirmed.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/delete-billing/${billingId}`, {}, 'DELETE');
+      const response = await auth.fetchProtectedApi(`/api/management-and-storage-billings/${billingId}`, {}, 'DELETE');
       if (response.status) {
         billingList.value = billingList.value.filter(record => record.id !== billingId);
         Swal.fire('Deleted!', 'Billing has been deleted.', 'success');

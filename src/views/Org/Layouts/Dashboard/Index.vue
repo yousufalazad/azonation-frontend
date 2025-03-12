@@ -23,7 +23,7 @@ const totalOrgMemberCount = async () => {
 
 const fetchMemberList = async () => {
   try {
-    const response = await authStore.fetchProtectedApi(`/api/org-member-list/${userId}`, {}, 'GET');
+    const response = await authStore.fetchProtectedApi(`/api/org-members/list/${userId}`, {}, 'GET');
     if (response.status) {
       memberList.value = response.data;
     } else {

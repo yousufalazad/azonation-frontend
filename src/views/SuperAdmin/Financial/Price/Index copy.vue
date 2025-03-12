@@ -92,7 +92,7 @@ const formatDate = (dateString) => {
 
 const fetchPriceRate = async () => {
   try {
-      const response = await auth.fetchProtectedApi('/api/price-rate');
+      const response = await auth.fetchProtectedApi('/api/management-pricings');
       //console.log(response.data);
       // Set priceRates to the response data or an empty array
       priceRates.value = response.status ? response.data : [];

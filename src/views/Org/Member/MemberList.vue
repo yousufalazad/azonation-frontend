@@ -8,7 +8,7 @@ const memberList = ref([]);
 
 const fetchMemberList = async () => {
   try {
-    const response = await authStore.fetchProtectedApi('/api/org-all-members', {}, 'GET');
+    const response = await authStore.fetchProtectedApi('/api/org-members/all', {}, 'GET');
     if (response.status) {
       memberList.value = response.data;
     } else {

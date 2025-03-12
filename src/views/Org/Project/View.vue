@@ -11,7 +11,7 @@ const auth = authStore;
 
 const fetchProjectDetails = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-project/${projectId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/projects/${projectId}`, {}, 'GET');
     if (response.status) {
       project.value = response.data;
     } else {

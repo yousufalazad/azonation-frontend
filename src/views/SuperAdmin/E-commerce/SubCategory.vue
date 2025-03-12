@@ -16,7 +16,7 @@ const selectedItem = ref(null);
 const categories = ref([]);
 const fetchCategories = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-categories');
+        const response = await auth.fetchProtectedApi('/api/categories');
         categories.value = response.status ? response.data : [];
     } catch (error) {
         errorMessage.value = 'Error loading categories. Please try again later.';
@@ -26,7 +26,7 @@ const fetchCategories = async () => {
 const subCategories = ref([]);
 const fetchItems = async () => {
     try {
-        const response = await auth.uploadProtectedApi('/api/get-sub-categories', {}, 'GET');
+        const response = await auth.uploadProtectedApi('/api/sub-categories', {}, 'GET');
         subCategories.value = response.status ? response.data : [];
     } catch (error) {
         errorMessage.value = 'Error loading subCategories. Please try again later.';
@@ -71,8 +71,8 @@ const closeViewModal = () => {
 const saveItem = async () => {
     try {
         const endpoint = editMode.value
-            ? `/api/update-sub-category/${form.value.id}`
-            : '/api/create-sub-category';
+            ? `/api/sub-categories/${form.value.id}`
+            : '/api/sub-categories';
         const method = editMode.value ? 'POST' : 'POST'; // Always POST for FormData
 
         const formData = new FormData();
@@ -132,7 +132,7 @@ const deleteMember = async (id) => {
         if (result.isConfirmed) {
             try {
                 const response = await auth.uploadProtectedApi(
-                    `/api/delete-sub-category/${id}`,
+                    `/api/sub-categories/${id}`,
                     {},
                     'DELETE'
                 );

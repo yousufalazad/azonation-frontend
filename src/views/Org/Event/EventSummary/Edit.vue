@@ -57,7 +57,7 @@ const fetchPrivacySetups = async () => {
 // Fetch Existing Data for Editing
 const fetchEventSummary = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-event-summary/${id.value}`);
+    const response = await auth.fetchProtectedApi(`/api/event-summaries/${id.value}`);
     if (response.status) {
       const data = response.data;
 
@@ -179,7 +179,7 @@ const submitForm = async () => {
   formData.append('is_active', is_active.value);
 
   try {
-    const response = await auth.uploadProtectedApi(`/api/update-event-summary/${id.value}`, formData, 'POST', {
+    const response = await auth.uploadProtectedApi(`/api/event-summaries/${id.value}`, formData, 'POST', {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 

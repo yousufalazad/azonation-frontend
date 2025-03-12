@@ -89,7 +89,7 @@ const editingRegion = ref(null);
 
 const fetchPriceRate = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/price-rate');
+    const response = await auth.fetchProtectedApi('/api/management-pricings');
     priceRates.value = response.status ? response.data : [];
   } catch (error) {
     console.error("Error fetching price rates:", error);
@@ -111,7 +111,7 @@ const closeModal = () => {
 const saveChanges = async () => {
   try {
     // Make an API call to save updated priceRates
-    await auth.fetchProtectedApi('/api/price-rate/update', {
+    await auth.fetchProtectedApi('/api/management-pricings/update', {
       method: 'PUT',
       body: JSON.stringify(priceRates.value),
     });

@@ -29,7 +29,7 @@ const regionList = ref([]);
 // Fetch regionList
 const getRegionList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-regions', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/regions', {}, 'GET');
         regionList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -41,7 +41,7 @@ const regionCurrencyList = ref([]);
 // Fetch getCountryRegionList
 const getCountryRegionList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-region-currencies', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/region-currencies', {}, 'GET');
         regionCurrencyList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -66,10 +66,10 @@ const submitForm = async () => {
         is_active: is_active.value
     };
     try {
-        let apiUrl = '/api/create-region-currency';
+        let apiUrl = '/api/regions-currency';
         let method = 'POST';
         if (isEditMode.value && selectedRegionCurrencyId.value) {
-            apiUrl = `/api/update-region-currency/${selectedRegionCurrencyId.value}`;
+            apiUrl = `/api/regions-currency/${selectedRegionCurrencyId.value}`;
             method = 'PUT';
         }
         const result = await Swal.fire({
@@ -120,7 +120,7 @@ const deleteRegionCurrency = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-region-currency/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/regions-currency/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'region currency has been deleted.', 'success');

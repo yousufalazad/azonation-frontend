@@ -391,7 +391,7 @@ const authStore = reactive({
   ) {
     this
       .fetchProtectedApi(
-        "/api/create_committee",
+        "/api/committees",
         {
           user_id: user_id,
           name: name,
@@ -425,7 +425,7 @@ const authStore = reactive({
     this
       .fetchProtectedApi(
         // Correct the URL to use backticks for interpolation
-        `/api/update_committee/${id}`,
+        `/api/committees/${id}`,
         {
           name: newName,
           short_description: short_description,
@@ -466,7 +466,7 @@ const authStore = reactive({
   ) {
     this
       .fetchProtectedApi(
-        "/api/create-meeting",
+        "/api/meetings",
         {
           user_id: user_id,
           name: name,
@@ -511,7 +511,7 @@ const authStore = reactive({
   ) {
     this
       .fetchProtectedApi(
-        "/api/create-event",
+        "/api/events",
         {
           userId,
           title,
@@ -557,7 +557,7 @@ const authStore = reactive({
   ) {
     this
       .fetchProtectedApi(
-        "/api/create-project",
+        "/api/projects",
         {
           user_id: user_id,
           title: title,
@@ -603,7 +603,7 @@ const authStore = reactive({
   ) {
     this
       .fetchProtectedApi(
-        `/api/update-project/${id}`,
+        `/api/projects/${id}`,
         {
           title: title,
           short_description: short_description,

@@ -64,7 +64,7 @@ const submitForm = async () => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi('/api/create-every-day-member-count-and-bill', payload, 'POST');
+      const response = await auth.fetchProtectedApi('/api/every-day-member-count-and-billings', payload, 'POST');
 
       if (response.status) {
         Swal.fire('Success!', 'Added successfully.', 'success').then(() => {

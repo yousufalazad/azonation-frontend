@@ -60,7 +60,7 @@ const submitForm = async () => {
 
     try {
         // Make API request
-        const response = await auth.uploadProtectedApi('/api/create-record', formData, 'POST', {
+        const response = await auth.uploadProtectedApi('/api/success-stories', formData, 'POST', {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
 

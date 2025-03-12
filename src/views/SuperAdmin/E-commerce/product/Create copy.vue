@@ -160,7 +160,7 @@ const submitForm = async () => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi('/api/create-product', payload, 'POST');
+      const response = await auth.fetchProtectedApi('/api/products', payload, 'POST');
       if (response.status) {
         Swal.fire('Success!', 'Product created successfully.', 'success').then(() => {
           resetForm();

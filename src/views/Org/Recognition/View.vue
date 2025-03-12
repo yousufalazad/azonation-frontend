@@ -15,7 +15,7 @@ const record = ref(null);
 // Fetch the record details
 const fetchRecord = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-recognition/${id}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/recognitions/${id}`, {}, 'GET');
         if (response.status) {
             record.value = response.data;
         } else {

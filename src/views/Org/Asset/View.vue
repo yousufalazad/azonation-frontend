@@ -17,8 +17,8 @@ const selectedRecordId = ref(route.params.id);
 // Fetch Event details on mount
 const fetchAssetDetails = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-asset/${assetId}`, {}, 'GET');
-        // const response = await auth.fetchProtectedApi(`/api/get-event/${selectedRecordId.value}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/assets/${assetId}`, {}, 'GET');
+        // const response = await auth.fetchProtectedApi(`/api/events/event/${selectedRecordId.value}`, {}, 'GET');
         record.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching events:', error);

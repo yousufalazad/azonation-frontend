@@ -23,7 +23,7 @@ const documents = ref([{ id: Date.now(), file: null }]);
 // Fetch record data for editing
 const fetchRecord = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-recognition/${id}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/recognitions/${id}`, {}, 'GET');
         if (response?.status) {
             const data = response.data;
 
@@ -141,7 +141,7 @@ const submitForm = async () => {
 //   });
   try {
     // API call using FormData
-    const response = await auth.uploadProtectedApi(`/api/update-recognition/${id}`, formData, 'POST', {
+    const response = await auth.uploadProtectedApi(`/api/recognitions/${id}`, formData, 'POST', {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 

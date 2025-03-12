@@ -61,7 +61,7 @@ const fetchPrivacySetups = async () => {
 // Fetch Existing Project Summary Data
 const fetchProjectSummary = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-project-summary/${summaryId.value}`);
+    const response = await auth.fetchProtectedApi(`/api/project-summaries/${summaryId.value}`);
     if (response.status) {
       const data = response.data;
 
@@ -195,7 +195,7 @@ const submitForm = async () => {
   }
 
   try {
-    const response = await auth.uploadProtectedApi(`/api/update-project-summary/${summaryId.value}`, formData, 'PUT', {
+    const response = await auth.uploadProtectedApi(`/api/project-summaries/${summaryId.value}`, formData, 'PUT', {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 

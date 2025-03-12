@@ -20,7 +20,7 @@ const isLoading = ref(false);
 const fetchRecordDetails = async () => {
     isLoading.value = true;
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-office-record/${recordId}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/office-documents/${recordId}`, {}, 'GET');
         if (response.status) {
             const data = response.data;
 
@@ -134,7 +134,7 @@ const submitForm = async () => {
     });
 
     try {
-        let apiUrl = `/api/update-office-record/${recordId}`;
+        let apiUrl = `/api/office-documents/${recordId}`;
 
         const result = await Swal.fire({
             title: 'Are you sure?',

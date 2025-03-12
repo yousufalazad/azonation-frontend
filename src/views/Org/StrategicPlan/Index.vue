@@ -12,7 +12,7 @@ const recordList = ref([]);
 // Fetch the list of records
 const getRecords = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-strategic-plans', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/strategic-plans', {}, 'GET');
         if (response.status) {
             recordList.value = response.data;
         } else {
@@ -45,7 +45,7 @@ const deleteRecord = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-strategic-plan/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/strategic-plans/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 Swal.fire('Deleted!', 'Record has been deleted.', 'success');

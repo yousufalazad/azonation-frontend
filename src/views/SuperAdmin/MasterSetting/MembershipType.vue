@@ -16,7 +16,7 @@ const membershipTypeList = ref([]);
 // Fetch meetingConductTypes
 const getMeetingConductTypes = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-membership-types', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/membership-types', {}, 'GET');
         membershipTypeList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching countries:', error);
@@ -40,11 +40,11 @@ const submitForm = async () => {
     };
 
     try {
-        let apiUrl = '/api/create-membership-type';
+        let apiUrl = '/api/membership-types';
         let method = 'POST';
 
         if (isEditMode.value && selectedMembershipTypeId.value) {
-            apiUrl = `/api/update-membership-type/${selectedMembershipTypeId.value}`;
+            apiUrl = `/api/membership-types/${selectedMembershipTypeId.value}`;
             method = 'PUT';
         }
 
@@ -95,7 +95,7 @@ const deleteMembershipType = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-membership-type/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/membership-types/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'meeting attendance type has been deleted.', 'success');

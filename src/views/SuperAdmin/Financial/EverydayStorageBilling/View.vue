@@ -15,7 +15,7 @@ const id = route.params.id; // Assume the billing ID is passed as a route parame
 // Fetch record
 const getRecord = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-everyday-storage-billing/${id}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/every-day-storage-billings/${id}`, {}, 'GET');
     if (response.status) {
       record.value = response.data;
     } else {

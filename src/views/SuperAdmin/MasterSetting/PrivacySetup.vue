@@ -16,7 +16,7 @@ const PrivacyList = ref([]);
 // Fetch countries
 const getPrivacy = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-all-privacy-setups', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/privacy-setups/all', {}, 'GET');
         PrivacyList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching countries:', error);
@@ -42,11 +42,11 @@ const submitForm = async () => {
     };
 
     try {
-        let apiUrl = '/api/create-privacy-setup';
+        let apiUrl = '/api/privacy-setups';
         let method = 'POST';
 
         if (isEditMode.value && selectedPrivacyId.value) {
-            apiUrl = `/api/update-privacy-setup/${selectedPrivacyId.value}`;
+            apiUrl = `/api/privacy-setups/${selectedPrivacyId.value}`;
             method = 'PUT';
         }
 
@@ -98,7 +98,7 @@ const deletePrivacy = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-privacy-setup/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/privacy-setups/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'privacy has been deleted.', 'success');

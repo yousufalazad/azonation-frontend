@@ -44,7 +44,7 @@ const privacySetups = ref([]);
 // Fetch Existing Data for Editing
 const fetchMeetingMinutes = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-meeting-minutes/${id.value}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/meeting-minutes/${id.value}`, {}, 'GET');
 
     if (response.status) {
 
@@ -189,7 +189,7 @@ const submitForm = async () => {
   formData.append('is_active', is_active.value);
 
   try {
-    const response = await auth.uploadProtectedApi(`/api/update-meeting-minutes/${id.value}`, formData, 'POST', {
+    const response = await auth.uploadProtectedApi(`/api/meeting-minutes/${id.value}`, formData, 'POST', {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 

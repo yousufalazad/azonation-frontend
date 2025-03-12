@@ -13,7 +13,7 @@ const baseURL = 'http://localhost:8000';
 
 const searchIndividuals = async () => {
   try {
-    const response = await auth.fetchPublicApi('/api/search_individual', { query: searchQuery.value }, 'POST');
+    const response = await auth.fetchPublicApi('/api/org-members/search', { query: searchQuery.value }, 'POST');
     if (response.status) {
       searchResults.value = response.data;
       console.log(response.data);
@@ -38,7 +38,7 @@ const addMember = async (individualTypeUserId) => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi('/api/add_member', { org_type_user_id: orgTypeUserId, individual_type_user_id: individualTypeUserId }, 'POST');
+      const response = await auth.fetchProtectedApi('/api/org-members/create', { org_type_user_id: orgTypeUserId, individual_type_user_id: individualTypeUserId }, 'POST');
       if (response.status) {
         await Swal.fire(
           'Added!',

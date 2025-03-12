@@ -64,7 +64,7 @@ const submitForm = async () => {
     });
 
     try {
-        let apiUrl = '/api/create-office-record';
+        let apiUrl = '/api/office-documents';
         const result = await Swal.fire({
             title: 'Are you sure?',
             text: 'Do you want to add this record?',

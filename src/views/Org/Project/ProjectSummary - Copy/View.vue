@@ -15,7 +15,7 @@ const errorMessage = ref('');
 // Fetch Project Summary Details
 const fetchProjectSummaryDetails = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-project-summary/${summaryId.value}`);
+    const response = await auth.fetchProtectedApi(`/api/project-summaries/${summaryId.value}`);
     if (response.status) {
       projectSummary.value = response.data;
     } else {

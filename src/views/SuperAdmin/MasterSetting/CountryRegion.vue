@@ -16,7 +16,7 @@ const countryList = ref([]);
 // Fetch CountryList
 const getCountryList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-countries', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/countries', {}, 'GET');
         countryList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -29,7 +29,7 @@ const regionList = ref([]);
 // Fetch regionList
 const getRegionList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-regions', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/regions', {}, 'GET');
         regionList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -41,7 +41,7 @@ const countryRegionList = ref([]);
 // Fetch getCountryRegionList
 const getCountryRegionList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-country-regions', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/country-regions', {}, 'GET');
         countryRegionList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -66,10 +66,10 @@ const submitForm = async () => {
         is_active: is_active.value
     };
     try {
-        let apiUrl = '/api/create-country-region';
+        let apiUrl = '/api/countries-region';
         let method = 'POST';
         if (isEditMode.value && selectedCountryRegionId.value) {
-            apiUrl = `/api/update-country-region/${selectedCountryRegionId.value}`;
+            apiUrl = `/api/countries-region/${selectedCountryRegionId.value}`;
             method = 'PUT';
         }
         const result = await Swal.fire({
@@ -120,7 +120,7 @@ const deleteCountryRegion = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-country-region/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/countries-region/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'country region has been deleted.', 'success');

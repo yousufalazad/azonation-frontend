@@ -18,7 +18,7 @@ const languageList = ref([]);
 // Fetch language
 const getLanguageList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-languages', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/languages', {}, 'GET');
         languageList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching countries:', error);
@@ -46,11 +46,11 @@ const submitForm = async () => {
     };
 
     try {
-        let apiUrl = '/api/create-language';
+        let apiUrl = '/api/languages';
         let method = 'POST';
 
         if (isEditMode.value && selectedLanguageListId.value) {
-            apiUrl = `/api/update-language/${selectedLanguageListId.value}`;
+            apiUrl = `/api/languages/${selectedLanguageListId.value}`;
             method = 'PUT';
         }
 
@@ -103,7 +103,7 @@ const deleteLanguageList = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-language/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/languages/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'language has been deleted.', 'success');

@@ -15,7 +15,7 @@ const product = ref({});
 const fetchProductDetails = async () => {
   try {
     const { id } = route.params;
-    const response = await auth.fetchProtectedApi(`/api/get-product/${id}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/products/${id}`, {}, 'GET');
     if (response.status) {
       product.value = response.data;
     } else {

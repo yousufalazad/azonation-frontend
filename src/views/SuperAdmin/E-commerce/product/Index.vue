@@ -14,7 +14,7 @@ const formatDate = (dateString) => {
 const productList = ref([]);
 const getProducts = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-products`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/products`, {}, 'GET');
     console.log(response.data);
 
     productList.value = response.status ? response.data : [];
@@ -36,7 +36,7 @@ const deleteProduct = async (productId) => {
     });
 
     if (confirmed.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/delete-product/${productId}`, {}, 'DELETE');
+      const response = await auth.fetchProtectedApi(`/api/products/${productId}`, {}, 'DELETE');
       if (response.status) {
         productList.value = productList.value.filter(product => product.id !== productId);
         Swal.fire('Deleted!', 'Product has been deleted.', 'success');

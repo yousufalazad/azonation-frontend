@@ -16,7 +16,7 @@ const conductTypeList = ref([]);
 // Fetch conductTypes
 const getConductTypes = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-conduct-types', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/conduct-types', {}, 'GET');
         conductTypeList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching countries:', error);
@@ -40,11 +40,11 @@ const submitForm = async () => {
     };
 
     try {
-        let apiUrl = '/api/create-conduct-type';
+        let apiUrl = '/api/conduct-types';
         let method = 'POST';
 
         if (isEditMode.value && selectedConductTypeId.value) {
-            apiUrl = `/api/update-conduct-type/${selectedConductTypeId.value}`;
+            apiUrl = `/api/conduct-types/${selectedConductTypeId.value}`;
             method = 'PUT';
         }
 
@@ -95,7 +95,7 @@ const deleteConductType = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-conduct-type/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/conduct-types/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'conduct type has been deleted.', 'success');

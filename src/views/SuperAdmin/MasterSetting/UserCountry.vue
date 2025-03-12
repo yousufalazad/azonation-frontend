@@ -16,7 +16,7 @@ const countryList = ref([]);
 // Fetch CountryList
 const getCountryList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-countries', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/countries', {}, 'GET');
         countryList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -41,7 +41,7 @@ const userCountryList = ref([]);
 // Fetch getUserCountryList
 const getUserCountryList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-user-countries', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/user-countries', {}, 'GET');
         userCountryList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -66,10 +66,10 @@ const submitForm = async () => {
         is_active: is_active.value
     };
     try {
-        let apiUrl = '/api/create-user-country';
+        let apiUrl = '/api/user-countries';
         let method = 'POST';
         if (isEditMode.value && selectedUserCountryId.value) {
-            apiUrl = `/api/update-user-country/${selectedUserCountryId.value}`;
+            apiUrl = `/api/user-countries/${selectedUserCountryId.value}`;
             method = 'PUT';
         }
         const result = await Swal.fire({
@@ -120,7 +120,7 @@ const deleteUserCountry = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-user-country/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/user-countries/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'user country has been deleted.', 'success');

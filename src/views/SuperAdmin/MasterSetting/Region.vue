@@ -16,7 +16,7 @@ const RegionList = ref([]);
 // Fetch regions
 const getRegions = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-regions', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/regions', {}, 'GET');
         RegionList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching regions:', error);
@@ -42,11 +42,11 @@ const submitForm = async () => {
     };
 
     try {
-        let apiUrl = '/api/create-region';
+        let apiUrl = '/api/regions';
         let method = 'POST';
 
         if (isEditMode.value && selectedRegionId.value) {
-            apiUrl = `/api/update-region/${selectedRegionId.value}`;
+            apiUrl = `/api/regions/${selectedRegionId.value}`;
             method = 'PUT';
         }
 
@@ -98,7 +98,7 @@ const deleteCountry = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-region/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/regions/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'region has been deleted.', 'success');

@@ -16,7 +16,7 @@ const attendanceTypeList = ref([]);
 // Fetch ConductTypes
 const getConductTypes = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-attendance-types', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/attendance-types', {}, 'GET');
         attendanceTypeList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching countries:', error);
@@ -40,11 +40,11 @@ const submitForm = async () => {
     };
 
     try {
-        let apiUrl = '/api/create-attendance-type';
+        let apiUrl = '/api/attendance-types';
         let method = 'POST';
 
         if (isEditMode.value && selectedAttendanceType.value) {
-            apiUrl = `/api/update-attendance-type/${selectedAttendanceType.value}`;
+            apiUrl = `/api/attendance-types/${selectedAttendanceType.value}`;
             method = 'PUT';
         }
 
@@ -95,7 +95,7 @@ const deleteAttendanceType = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-attendance-type/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/attendance-types/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'attendance type has been deleted.', 'success');

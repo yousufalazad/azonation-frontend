@@ -68,7 +68,7 @@ const submitForm = async () => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi('/api/create-event', payload, 'POST');
+            const response = await auth.fetchProtectedApi('/api/events', payload, 'POST');
 
             if (response.status) {
                 Swal.fire('Success!', 'Event added successfully.', 'success').then(() => {

@@ -144,7 +144,7 @@ const submitForm = async () => {
 
         // If user confirms
         if (result.isConfirmed) {
-            const response = await auth.uploadProtectedApi('/api/create-asset', formData, 'POST', {
+            const response = await auth.uploadProtectedApi('/api/assets', formData, 'POST', {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 

@@ -20,7 +20,7 @@ const documents = ref([{ id: Date.now(), file: null }]);
 // Fetch the existing record details
 const fetchRecord = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-record/${id}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/success-stories/${id}`, {}, 'GET');
         if (response.status) {
             const data = response.data;
             // Process images
@@ -92,7 +92,7 @@ const submitForm = async () => {
 
     try {
         // API call using FormData
-        const response = await auth.uploadProtectedApi(`/api/update-record/${id}`, formData, 'POST', {
+        const response = await auth.uploadProtectedApi(`/api/success-stories/${id}`, formData, 'POST', {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
 
@@ -108,7 +108,7 @@ const submitForm = async () => {
     }
 
     // try {
-    //     const response = await auth.fetchProtectedApi(`/api/update-record/${recordId.value}`, formData, 'POST');
+    //     const response = await auth.fetchProtectedApi(`/api/success-stories/${recordId.value}`, formData, 'POST');
     //     if (response.status) {
     //         Swal.fire('Success', 'Record updated successfully.', 'success');
     //         router.push({ name: 'success-story' }); // Redirect to the record list page

@@ -9,7 +9,7 @@ const orderList = ref([]);
 
 const getOrders = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-orders`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/orders`, {}, 'GET');
     console.log(response.data);
 
     orderList.value = response.status ? response.data : [];
@@ -31,7 +31,7 @@ const deleteOrder = async (orderId) => {
     });
 
     if (confirmed.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/delete-order/${orderId}`, {}, 'DELETE');
+      const response = await auth.fetchProtectedApi(`/api/orders/${orderId}`, {}, 'DELETE');
       if (response.status) {
         orderList.value = orderList.value.filter(order => order.id !== orderId);
         Swal.fire('Deleted!', 'Order has been deleted.', 'success');

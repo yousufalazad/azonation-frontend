@@ -12,7 +12,7 @@ const recordList = ref([]);
 // Fetch the list of year plans
 const getRecords = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-year-plans', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/year-plans', {}, 'GET');
         if (response.status) {
             recordList.value = response.data;
         } else {
@@ -37,7 +37,7 @@ const deleteRecord = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-year-plan/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/year-plans/${id}`, {}, 'DELETE');
             if (response.status) {
                 await Swal.fire('Deleted!', 'Year plan has been deleted.', 'success');
                 getRecords();

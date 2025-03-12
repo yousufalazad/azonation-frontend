@@ -23,7 +23,7 @@ const meetingDetails = ref([]);
 // Fetch meeting details on mount
 const fetchMeetingDetails = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-meeting/${committeeId.value}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/meetings/${committeeId.value}`, {}, 'GET');
         meetingDetails.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching meetings:', error);
@@ -35,7 +35,7 @@ const userList = ref([]);
 // Fetch userList
 const getOrgUserList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-org-user-list', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/project-attendances/org-user-list', {}, 'GET');
         userList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -47,7 +47,7 @@ const designationList = ref([]);
 // Fetch attendance type list
 const getDesignationList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-designations', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/designations', {}, 'GET');
         designationList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching countries:', error);
@@ -59,7 +59,7 @@ const committeeMemberList = ref([]);
 // Fetch getCommitteeMemberList
 const getCommitteeMemberList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-committee-members', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/committee-members', {}, 'GET');
         committeeMemberList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -99,10 +99,10 @@ const submitForm = async () => {
         status: status.value
     };
     try {
-        let apiUrl = '/api/create-committee-member';
+        let apiUrl = '/api/committee-members';
         let method = 'POST';
         if (isEditMode.value && selectedMeetingAttendanceId.value) {
-            apiUrl = `/api/update-committee-member/${selectedMeetingAttendanceId.value}`;
+            apiUrl = `/api/committee-members/${selectedMeetingAttendanceId.value}`;
             method = 'PUT';
         }
         const result = await Swal.fire({
@@ -156,7 +156,7 @@ const deleteMeetingAttendance = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-committee-member/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/committee-members/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'committee member has been deleted.', 'success');

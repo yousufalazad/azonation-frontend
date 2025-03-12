@@ -10,7 +10,7 @@ const historyList = ref([]);
 // Fetch list of Histories
 const getHistories = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-org-histories', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/histories', {}, 'GET');
         if (response.status) {
             historyList.value = response.data;
         } else {
@@ -25,7 +25,7 @@ const getHistories = async () => {
 // Delete history
 const __deleteHistory = async (id) => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/delete-org-history/${id}`, {}, 'DELETE');
+        const response = await auth.fetchProtectedApi(`/api/histories/${id}`, {}, 'DELETE');
         if (response.status) {
             getHistories(); // Refresh the history list
         } else {
@@ -49,7 +49,7 @@ const deleteHistory = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-org-history/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/histories/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 Swal.fire('Deleted!', 'history has been deleted.', 'success');

@@ -29,7 +29,7 @@ const fetchData = async () => {
     const invoices = await auth.fetchProtectedApi('/api/invoices', {}, 'GET');
     invoiceList.value = invoices.status ? invoices.data : [];
 
-    const users = await auth.fetchProtectedApi('/api/get-org-user-list', {}, 'GET');
+    const users = await auth.fetchProtectedApi('/api/project-attendances/org-user-list', {}, 'GET');
     userList.value = users.status ? users.data : [];
   } catch (error) {
     console.error('Error fetching data:', error);

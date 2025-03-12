@@ -10,7 +10,7 @@ const recordList = ref([]);
 
 const getRecords = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-assets/${userId}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/assets`, {}, 'GET');
         recordList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching assets:', error);
@@ -31,7 +31,7 @@ const deleteRecord = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-asset/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/assets/${id}`, {}, 'DELETE');
             if (response.status) {
                 await Swal.fire('Deleted!', 'Asset has been deleted.', 'success');
                 getRecords();

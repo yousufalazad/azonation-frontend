@@ -16,7 +16,7 @@ const selectedBusinessType = ref(null);
 
 const fetchBusinessType = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/get-business-types');
+    const response = await auth.fetchProtectedApi('/api/business-types');
     businessTypes.value = response.status ? response.data : [];
   } catch (error) {
     errorMessage.value = 'Error loading businessTypes. Please try again later.';
@@ -65,7 +65,7 @@ const saveBusinessType = async () => {
       formData.append(key, form.value[key]);
     }
 
-    const endpoint = editMode.value ? `/api/update-business-type/${form.value.id}` : '/api/create-business-type';
+    const endpoint = editMode.value ? `/api/business-types/${form.value.id}` : '/api/business-types';
     const method = editMode.value ? 'PUT' : 'POST';
     const response = await auth.fetchProtectedApi(endpoint, form.value, method);
 
@@ -107,7 +107,7 @@ const deleteBusinessType = async (id) => {
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
-        const response = await auth.fetchProtectedApi(`/api/delete-business-type/${id}`, {}, 'DELETE');
+        const response = await auth.fetchProtectedApi(`/api/business-types/${id}`, {}, 'DELETE');
         if (response.status) {
           await fetchBusinessType();
           Swal.fire({

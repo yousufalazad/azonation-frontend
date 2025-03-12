@@ -33,7 +33,7 @@ const createCommittee = async () => {
 
 const fetchCommitteeList = async () => {
   try {
-    const response = await authStore.fetchProtectedApi(`/api/org-committee-list/${userId}`, {}, 'GET');
+    const response = await authStore.fetchProtectedApi(`/api/committees`, {}, 'GET');
     if (response.status) {
       committeeList.value = response.data;
     } else {

@@ -24,7 +24,7 @@ const documents = ref([{ id: Date.now(), file: null }]);
 // Fetch history data for editing
 const fetchHistory = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-org-history/${id.value}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/histories/${id.value}`, {}, 'GET');
     if (response?.status) {
       const data = response.data;
       // Process images
@@ -98,7 +98,7 @@ const submitForm = async () => {
 
   // try {
   //   // API call using FormData
-  //   const response = await auth.uploadProtectedApi(`/api/update-org-history/${id}`, formData, 'POST', {
+  //   const response = await auth.uploadProtectedApi(`/api/histories/${id}`, formData, 'POST', {
   //     headers: { 'Content-Type': 'multipart/form-data' },
   //   });
 
@@ -114,7 +114,7 @@ const submitForm = async () => {
   // }
 
   try {
-    const response = await auth.uploadProtectedApi(`/api/update-org-history/${id.value}`, formData, 'POST', {
+    const response = await auth.uploadProtectedApi(`/api/histories/${id.value}`, formData, 'POST', {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 

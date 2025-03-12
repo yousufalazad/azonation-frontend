@@ -22,7 +22,7 @@ const documents = ref([{ id: Date.now(), file: null }]);
 // Fetch the existing record data
 const fetchRecord = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-strategic-plan/${id}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/strategic-plans/${id}`, {}, 'GET');
         if (response.status) {
             const data = response.data;
 
@@ -107,7 +107,7 @@ const submitForm = async () => {
     };
 
     try {
-        const response = await auth.fetchProtectedApi(`/api/update-strategic-plan/${id}`, payload, 'PUT');
+        const response = await auth.fetchProtectedApi(`/api/strategic-plans/${id}`, payload, 'PUT');
         if (response.status) {
             await Swal.fire('Success!', 'Strategic plan updated successfully.', 'success');
             router.push({ name: 'strategic-plan' });

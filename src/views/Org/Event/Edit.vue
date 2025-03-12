@@ -28,7 +28,7 @@ const eventId = route.params.id;
 // Fetch event details for editing
 const getEventDetails = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-event/${eventId}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/events/event/${eventId}`, {}, 'GET');
         if (response.status) {
             const event = response.data;
             title.value = event.title;
@@ -95,7 +95,7 @@ const submitForm = async () => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/update-event/${eventId}`, payload, 'PUT');
+            const response = await auth.fetchProtectedApi(`/api/events/${eventId}`, payload, 'PUT');
 
             if (response.status) {
                 Swal.fire('Success!', 'Event updated successfully.', 'success').then(() => {

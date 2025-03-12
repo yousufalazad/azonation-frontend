@@ -27,7 +27,7 @@ const transactionModal = ref(false);
 // Fetch funds
 const getFunds = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-funds', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/funds', {}, 'GET');
         fundList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -38,7 +38,7 @@ const getFunds = async () => {
 // Fetch transactions
 const getTransactions = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-transactions', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/transactions', {}, 'GET');
 
         if (response.status) {
             const transactions = response.data;
@@ -103,7 +103,7 @@ const deleteTransaction = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-transaction/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/transactions/${id}`, {}, 'DELETE');
             if (response.status) {
                 await Swal.fire('Deleted!', 'Transaction has been deleted.', 'success');
                 getTransactions();
@@ -211,12 +211,12 @@ const submitForm = async () => {
     });
 
     try {
-        let apiUrl = '/api/create-transaction';
+        let apiUrl = '/api/transactions';
         let method = 'POST';
 
         // If updating a transaction, add `_method` to mimic a PUT request
         if (selectedTransactionId.value) {
-            apiUrl = `/api/update-transaction/${selectedTransactionId.value}`;
+            apiUrl = `/api/transactions/${selectedTransactionId.value}`;
             formData.append('_method', 'PUT'); // Tell Laravel to treat this as a PUT request
         }
 

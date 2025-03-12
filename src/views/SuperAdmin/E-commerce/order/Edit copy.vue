@@ -51,7 +51,7 @@ const order_items = ref([{
 const userList = ref([]);
 const getUserList = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/get-org-user-list', {}, 'GET');
+    const response = await auth.fetchProtectedApi('/api/project-attendances/org-user-list', {}, 'GET');
     userList.value = response.status ? response.data : [];
   } catch (error) {
     console.error('Error fetching user list:', error);
@@ -63,7 +63,7 @@ const getUserList = async () => {
 const productList = ref([]);
 const getProducts = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-products`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/products`, {}, 'GET');
     console.log(response.data);
 
     productList.value = response.status ? response.data : [];
@@ -76,7 +76,7 @@ const getProducts = async () => {
 const loadOrderData = async () => {
   try {
     const orderId = route.params.id;
-    const response = await auth.fetchProtectedApi(`/api/get-order/${orderId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/orders/${orderId}`, {}, 'GET');
     if (response.status) {
       const order = response.data;
       user_id.value = order.user_id;
@@ -239,7 +239,7 @@ const submitForm = async () => {
       const { id } = route.params;
       // const orderId = route.params.id;
       
-      const response = await auth.fetchProtectedApi(`/api/update-order/${id}`, payload, 'PUT');
+      const response = await auth.fetchProtectedApi(`/api/orders/${id}`, payload, 'PUT');
       if (response.status) {
         Swal.fire('Success!', 'Order created successfully.', 'success').then(() => {
           resetForm();

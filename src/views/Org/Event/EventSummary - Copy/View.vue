@@ -33,7 +33,7 @@ const is_active = ref('');
 // Fetch Event Data
 const fetchEventSummary = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-event-summary/${id.value}`);
+    const response = await auth.fetchProtectedApi(`/api/event-summaries/${id.value}`);
     if (response.status) {
       const data = response.data;
       org_event_id.value = data.org_event_id || 'N/A';

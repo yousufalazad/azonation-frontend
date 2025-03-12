@@ -37,7 +37,7 @@ const billingList = ref([]);
 // Fetch billing list
 const getBillingList = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/billing-list', {}, 'GET');
+    const response = await auth.fetchProtectedApi('/api/management-and-storage-billings', {}, 'GET');
     billingList.value = response.status ? response.data : [];
   } catch (error) {
     console.error('Error fetching billing list:', error);
@@ -48,7 +48,7 @@ const getBillingList = async () => {
 const orderList = ref([]);
 const getOrders = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-orders`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/orders`, {}, 'GET');
     orderList.value = response.status ? response.data : [];
   } catch (error) {
     console.error('Error fetching orders:', error);
@@ -60,7 +60,7 @@ const getOrders = async () => {
 const fetchInvoiceDetails = async () => {
   const invoiceId = route.params.id; // Assume route param holds the invoice ID
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-invoice/${invoiceId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/invoices/${invoiceId}`, {}, 'GET');
     if (response.status) {
       const data = response.data;
       // Assigning data to variables
@@ -166,7 +166,7 @@ const submitForm = async () => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/update-invoice/${id.value}`, payload, 'PUT');
+      const response = await auth.fetchProtectedApi(`/api/invoices/${id.value}`, payload, 'PUT');
       if (response.status) {
         Swal.fire('Success!', 'Invoice updated successfully.', 'success').then(() => {
           router.push({ name: 'super-admin-invoice-list' });

@@ -15,7 +15,7 @@ const fundList = ref([]);
 // Fetch funds
 const getFunds = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-funds', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/funds', {}, 'GET');
         fundList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -39,11 +39,11 @@ const submitForm = async () => {
     };
 
     try {
-        let apiUrl = '/api/create-fund';
+        let apiUrl = '/api/funds';
         let method = 'POST';
 
         if (isEditMode.value && selectedFundId.value) {
-            apiUrl = `/api/update-fund/${selectedFundId.value}`;
+            apiUrl = `/api/funds/${selectedFundId.value}`;
             method = 'PUT';
         }
 
@@ -94,7 +94,7 @@ const deleteFund = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-fund/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/funds/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'Fund has been deleted.', 'success');

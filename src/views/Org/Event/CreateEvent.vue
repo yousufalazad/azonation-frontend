@@ -28,7 +28,7 @@ const recordList = ref([]);
 // Fetch list of events
 const getRecords = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-events/${userId}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/events`, {}, 'GET');
 
         if (response.status) {
             recordList.value = response.data;
@@ -79,11 +79,11 @@ const submitForm = async () => {
     };
 
     try {
-        let apiUrl = '/api/create-event';
+        let apiUrl = '/api/events';
         let method = 'POST';
 
         if (isEditMode.value && selectedRecordId.value) {
-            apiUrl = `/api/update-event/${selectedRecordId.value}`;
+            apiUrl = `/api/events/${selectedRecordId.value}`;
             method = 'PUT';
         }
 
@@ -144,7 +144,7 @@ const deleteRecord = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-event/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/events/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'Event has been deleted.', 'success');

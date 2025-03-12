@@ -88,7 +88,7 @@ const submitForm = async () => {
 
   try {
     // Make API request
-    const response = await auth.uploadProtectedApi('/api/create-recognition', formData, 'POST', {
+    const response = await auth.uploadProtectedApi('/api/recognitions', formData, 'POST', {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 

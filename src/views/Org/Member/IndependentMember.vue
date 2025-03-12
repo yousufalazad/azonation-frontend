@@ -16,7 +16,7 @@ const selectedMember = ref(null);
 const members = ref([]);
 const fetchMembers = async () => {
   try {
-    const response = await auth.uploadProtectedApi('/api/get-independent-members', {}, 'GET');
+    const response = await auth.uploadProtectedApi('/api/independent-members', {}, 'GET');
     members.value = response.status ? response.data : [];
   } catch (error) {
     errorMessage.value = 'Error loading members. Please try again later.';
@@ -73,8 +73,8 @@ const closeViewModal = () => {
 const saveMember = async () => {
   try {
     const endpoint = editMode.value
-      ? `/api/update-independent-member/${form.value.id}`
-      : '/api/create-independent-member';
+      ? `/api/independent-members/${form.value.id}`
+      : '/api/independent-members';
     const method = editMode.value ? 'POST' : 'POST'; // Always POST for FormData
 
     const formData = new FormData();
@@ -134,7 +134,7 @@ const deleteMember = async (id) => {
     if (result.isConfirmed) {
       try {
         const response = await auth.uploadProtectedApi(
-          `/api/delete-independent-member/${id}`,
+          `/api/independent-members/${id}`,
           {},
           'DELETE'
         );

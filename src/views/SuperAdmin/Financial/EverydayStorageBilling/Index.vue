@@ -9,7 +9,7 @@ const everyDayMemberCountList = ref([]);
 
 const getRecords = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/everyday-storage-billing-list`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/every-day-storage-billings`, {}, 'GET');
     console.log(response.data);
 
     everyDayMemberCountList.value = response.status ? response.data : [];
@@ -32,7 +32,7 @@ const deleteRecord = async (id) => {
     });
 
     if (confirmed.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/delete-everyday-storage-billing/${id}`, {}, 'DELETE');
+      const response = await auth.fetchProtectedApi(`/api/every-day-storage-billings/${id}`, {}, 'DELETE');
       if (response.status) {
         everyDayMemberCountList.value = everyDayMemberCountList.value.filter(record => record.id !== id);
         Swal.fire('Deleted!', 'Billing has been deleted.', 'success');

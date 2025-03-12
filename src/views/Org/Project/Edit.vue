@@ -66,7 +66,7 @@ onMounted(() => {
 // Fetch project details
 const fetchProjectDetails = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-project/${projectId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/projects/${projectId}`, {}, 'GET');
 
     if (response.status) {
       const project = response.data;
@@ -137,7 +137,7 @@ const submitForm = async () => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/update-project/${route.params.id}`, payload, 'PUT');
+      const response = await auth.fetchProtectedApi(`/api/projects/${route.params.id}`, payload, 'PUT');
 
       if (response.status) {
         Swal.fire('Success!', 'Project updated successfully.', 'success').then(() => {

@@ -23,7 +23,7 @@ const userList = ref([]);
 // Fetch userList
 const getOrgUserList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-org-user-list', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/project-attendances/org-user-list', {}, 'GET');
         userList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -35,7 +35,7 @@ const attendanceTypeList = ref([]);
 // Fetch getAttendanceTypeList
 const getAttendanceTypeList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-attendance-types', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/attendance-types', {}, 'GET');
         attendanceTypeList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching countries:', error);
@@ -47,7 +47,7 @@ const projectAttendanceList = ref([]);
 // Fetch getProjectAttendanceList
 const getProjectAttendanceList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-project-attendances', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/project-attendances', {}, 'GET');
         projectAttendanceList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -59,7 +59,7 @@ const projectDetails = ref([]);
 // Fetch project details on mount
 const fetchProjectDetails = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-project/${projectId.value}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/projects/${projectId.value}`, {}, 'GET');
         projectDetails.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching events:', error);
@@ -92,10 +92,10 @@ const submitForm = async () => {
         is_active: is_active.value
     };
     try {
-        let apiUrl = '/api/create-project-attendance';
+        let apiUrl = '/api/project-attendances';
         let method = 'POST';
         if (isEditMode.value && selectedProjectAttendanceId.value) {
-            apiUrl = `/api/update-project-attendance/${selectedProjectAttendanceId.value}`;
+            apiUrl = `/api/project-attendances/${selectedProjectAttendanceId.value}`;
             method = 'PUT';
         }
         const result = await Swal.fire({
@@ -149,7 +149,7 @@ const deleteProjectAttendance = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-project-attendance/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/project-attendances/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'project attendance has been deleted.', 'success');

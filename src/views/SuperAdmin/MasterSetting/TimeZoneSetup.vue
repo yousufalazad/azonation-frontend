@@ -18,7 +18,7 @@ const timeZoneSetupList = ref([]);
 // Fetch Time Zone Setups
 const getTimeZoneSetup = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-time-zone-setups', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/time-zone-setups', {}, 'GET');
         timeZoneSetupList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching countries:', error);
@@ -46,11 +46,11 @@ const submitForm = async () => {
     };
 
     try {
-        let apiUrl = '/api/create-time-zone-setup';
+        let apiUrl = '/api/time-zone-setups';
         let method = 'POST';
 
         if (isEditMode.value && selectedTimeZoneSetupId.value) {
-            apiUrl = `/api/update-time-zone-setup/${selectedTimeZoneSetupId.value}`;
+            apiUrl = `/api/time-zone-setups/${selectedTimeZoneSetupId.value}`;
             method = 'PUT';
         }
 
@@ -103,7 +103,7 @@ const deleteTimeZoneSetup = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-time-zone-setup/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/time-zone-setups/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'Time Zone Setup has been deleted.', 'success');

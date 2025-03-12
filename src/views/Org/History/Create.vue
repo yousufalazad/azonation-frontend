@@ -72,7 +72,7 @@ const submitForm = async () => {
   });
 
   try {
-    const response = await auth.uploadProtectedApi('/api/create-org-history', formData, 'POST', {
+    const response = await auth.uploadProtectedApi('/api/histories', formData, 'POST', {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 

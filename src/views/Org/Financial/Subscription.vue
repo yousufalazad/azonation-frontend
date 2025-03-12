@@ -204,7 +204,7 @@ const errorMessage = ref('');
 // Fetch data from the API
 const fetchUserPriceRate = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/user-price-rate', {}, 'GET');
+    const response = await auth.fetchProtectedApi('/api/management-pricings', {}, 'GET');
     console.log(response.data);
     if (response.status) {
       userPriceRate.value = response.data;

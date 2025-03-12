@@ -96,7 +96,7 @@ const submitForm = async () => {
   });
 
   try {
-    const response = await auth.uploadProtectedApi('/api/create-strategic-plan', formData, 'POST', {
+    const response = await auth.uploadProtectedApi('/api/strategic-plans', formData, 'POST', {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 

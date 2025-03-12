@@ -13,7 +13,7 @@ const record = ref(null);
 // Fetch the record details
 const fetchRecord = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-record/${id}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/success-stories/${id}`, {}, 'GET');
         if (response.status) {
             record.value = response.data;
         } else {

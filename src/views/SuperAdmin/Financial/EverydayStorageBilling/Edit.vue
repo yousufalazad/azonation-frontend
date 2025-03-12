@@ -31,7 +31,7 @@ const getUserList = async () => {
 // Fetch record for editing
 const getRecord = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-everyday-storage-billing/${id}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/every-day-storage-billings/${id}`, {}, 'GET');
     if (response.status) {
       const data = response.data;
         user_id.value = data.user_id,
@@ -81,7 +81,7 @@ const submitForm = async () => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/update-everyday-storage-billing/${id}`, payload, 'PUT');
+      const response = await auth.fetchProtectedApi(`/api/every-day-storage-billings/${id}`, payload, 'PUT');
 
       if (response.status) {
         Swal.fire('Success!', 'Billing updated successfully.', 'success').then(() => {

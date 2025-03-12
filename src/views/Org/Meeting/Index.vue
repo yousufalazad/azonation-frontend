@@ -11,7 +11,7 @@ const recordList = ref([]);
 // Fetch list of meetings
 const getRecords = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-org-meetings`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/meetings`, {}, 'GET');
     recordList.value = response.status ? response.data : [];
   } catch (error) {
     console.error('Error fetching meetings:', error);
@@ -47,7 +47,7 @@ const deleteRecord = async (recordId) => {
     });
 
     if (confirmed.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/delete-meeting/${recordId}`, {}, 'DELETE');
+      const response = await auth.fetchProtectedApi(`/api/meetings/${recordId}`, {}, 'DELETE');
       if (response.status) {
         recordList.value = recordList.value.filter(record => record.id !== recordId);
         Swal.fire('Deleted!', 'Meeting has been deleted.', 'success');

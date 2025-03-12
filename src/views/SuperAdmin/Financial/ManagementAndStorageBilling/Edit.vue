@@ -43,7 +43,7 @@ const billingId = route.params.id; // Assume the billing ID is passed as a route
 // Fetch record for editing
 const getRecord = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-billing/${billingId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/management-and-storage-billings/${billingId}`, {}, 'GET');
     if (response.status) {
       const data = response.data;
       user_id.value = data.user_id,
@@ -106,7 +106,7 @@ const submitForm = async () => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/update-billing/${billingId}`, payload, 'PUT');
+      const response = await auth.fetchProtectedApi(`/api/management-and-storage-billings/${billingId}`, payload, 'PUT');
 
       if (response.status) {
         Swal.fire('Success!', 'Billing updated successfully.', 'success').then(() => {

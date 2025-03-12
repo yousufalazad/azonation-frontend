@@ -18,7 +18,7 @@ const CountryList = ref([]);
 // Fetch countries
 const getCountries = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-countries', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/countries', {}, 'GET');
         CountryList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching countries:', error);
@@ -48,11 +48,11 @@ const submitForm = async () => {
     };
 
     try {
-        let apiUrl = '/api/create-country';
+        let apiUrl = '/api/countries';
         let method = 'POST';
 
         if (isEditMode.value && selectedCountryId.value) {
-            apiUrl = `/api/update-country/${selectedCountryId.value}`;
+            apiUrl = `/api/countries/${selectedCountryId.value}`;
             method = 'PUT';
         }
 
@@ -106,7 +106,7 @@ const deleteCountry = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-country/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/countries/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'country has been deleted.', 'success');

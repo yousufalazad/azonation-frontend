@@ -20,7 +20,7 @@ const baseURL = 'http://localhost:8000/storage/'; // Adjust baseURL as per your 
 // Fetch list of records
 const getRecords = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-office-records', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/office-documents', {}, 'GET');
         if (response.status) {
             recordList.value = response.data;
         } else {
@@ -91,10 +91,10 @@ const submitForm = async () => {
     }
 
     try {
-        let apiUrl = '/api/create-office-record';
+        let apiUrl = '/api/office-documents';
 
         if (isEditMode.value && selectedRecordId.value) {
-            apiUrl = `/api/update-office-record/${selectedRecordId.value}`;
+            apiUrl = `/api/office-documents/${selectedRecordId.value}`;
         }
 
         const result = await Swal.fire({
@@ -171,7 +171,7 @@ const deleteRecord = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-office-record/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/office-documents/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'Record has been deleted.', 'success');

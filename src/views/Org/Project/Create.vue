@@ -117,7 +117,7 @@ const submitForm = async () => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi('/api/create-project', payload, 'POST');
+            const response = await auth.fetchProtectedApi('/api/projects', payload, 'POST');
 
             if (response.status) {
                 Swal.fire('Success!', 'Project added successfully.', 'success').then(() => {

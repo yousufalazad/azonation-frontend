@@ -36,7 +36,7 @@ const billingList = ref([]);
 // Fetch billingList
 const getBillingList = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/billing-list', {}, 'GET');
+    const response = await auth.fetchProtectedApi('/api/management-and-storage-billings', {}, 'GET');
     billingList.value = response.status ? response.data : [];
   } catch (error) {
     console.error('Error fetching billing list:', error);
@@ -47,7 +47,7 @@ const getBillingList = async () => {
 const orderList = ref([]);
 const getOrders = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-orders`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/orders`, {}, 'GET');
     orderList.value = response.status ? response.data : [];
   } catch (error) {
     console.error('Error fetching orders:', error);
@@ -123,7 +123,7 @@ const submitForm = async () => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi('/api/create-invoice', payload, 'POST');
+      const response = await auth.fetchProtectedApi('/api/invoices', payload, 'POST');
       if (response.status) {
         Swal.fire('Success!', 'Invoice created successfully.', 'success').then(() => {
           resetForm();

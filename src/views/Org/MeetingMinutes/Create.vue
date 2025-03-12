@@ -162,7 +162,7 @@ const submitForm = async () => {
 
   try {
     // console.log('formData', formData);
-    const response = await auth.uploadProtectedApi('/api/create-meeting-minutes', formData, 'POST', {
+    const response = await auth.uploadProtectedApi('/api/meeting-minutes', formData, 'POST', {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 

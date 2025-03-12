@@ -17,7 +17,7 @@ const countryList = ref([]);
 // Fetch CountryList
 const getCountryList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-countries', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/countries', {}, 'GET');
         countryList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -28,7 +28,7 @@ const getCountryList = async () => {
 // Fetch dialingCodes
 const getDialingCodes = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-dialing-codes', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/dialing-codes', {}, 'GET');
         dialingCodeList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching countries:', error);
@@ -54,11 +54,11 @@ const submitForm = async () => {
     };
 
     try {
-        let apiUrl = '/api/create-dialing-code';
+        let apiUrl = '/api/dialing-codes';
         let method = 'POST';
 
         if (isEditMode.value && selectedDialingCodeId.value) {
-            apiUrl = `/api/update-dialing-code/${selectedDialingCodeId.value}`;
+            apiUrl = `/api/dialing-codes/${selectedDialingCodeId.value}`;
             method = 'PUT';
         }
 
@@ -110,7 +110,7 @@ const deleteDialingCode = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-dialing-code/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/dialing-codes/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'dialing code has been deleted.', 'success');

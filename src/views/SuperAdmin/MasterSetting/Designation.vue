@@ -16,7 +16,7 @@ const designationList = ref([]);
 // Fetch designation
 const getDesignation = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-designations', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/designations', {}, 'GET');
         designationList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching countries:', error);
@@ -40,11 +40,11 @@ const submitForm = async () => {
     };
 
     try {
-        let apiUrl = '/api/create-designation';
+        let apiUrl = '/api/designations';
         let method = 'POST';
 
         if (isEditMode.value && selectedDesignationId.value) {
-            apiUrl = `/api/update-designation/${selectedDesignationId.value}`;
+            apiUrl = `/api/designations/${selectedDesignationId.value}`;
             method = 'PUT';
         }
 
@@ -95,7 +95,7 @@ const deleteDesignation = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-designation/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/designations/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'designation has been deleted.', 'success');

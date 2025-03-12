@@ -22,7 +22,7 @@ const meetingDetails = ref([]);
 // Fetch meeting details on mount
 const fetchMeetingDetails = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-meeting/${meetingId.value}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/meetings/${meetingId.value}`, {}, 'GET');
         meetingDetails.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching meetings:', error);
@@ -34,7 +34,7 @@ const userList = ref([]);
 // Fetch userList
 const getOrgUserList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-org-user-list', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/project-attendances/org-user-list', {}, 'GET');
         userList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -46,7 +46,7 @@ const attendanceTypeList = ref([]);
 // Fetch attendance type list
 const getAttendanceTypeList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-attendance-types', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/attendance-types', {}, 'GET');
         attendanceTypeList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching countries:', error);
@@ -58,7 +58,7 @@ const meetingAttendanceList = ref([]);
 // Fetch getMeetingAttendanceList
 const getMeetingAttendanceList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-meeting-attendances', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/meeting-attendances', {}, 'GET');
         meetingAttendanceList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -90,10 +90,10 @@ const submitForm = async () => {
         is_active: is_active.value
     };
     try {
-        let apiUrl = '/api/create-meeting-attendance';
+        let apiUrl = '/api/meeting-attendances';
         let method = 'POST';
         if (isEditMode.value && selectedMeetingAttendanceId.value) {
-            apiUrl = `/api/update-meeting-attendance/${selectedMeetingAttendanceId.value}`;
+            apiUrl = `/api/meeting-attendances/${selectedMeetingAttendanceId.value}`;
             method = 'PUT';
         }
         const result = await Swal.fire({
@@ -147,7 +147,7 @@ const deleteMeetingAttendance = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-meeting-attendance/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/meeting-attendances/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'meeting attendance has been deleted.', 'success');

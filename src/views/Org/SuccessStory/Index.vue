@@ -12,7 +12,7 @@ const recordList = ref([]);
 // Fetch list of records
 const getRecords = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-records', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/success-stories', {}, 'GET');
         if (response.status) {
             recordList.value = response.data;
         } else {
@@ -37,7 +37,7 @@ const deleteRecord = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-record/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/success-stories/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'Record has been deleted.', 'success');

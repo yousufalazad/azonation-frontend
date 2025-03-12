@@ -37,7 +37,7 @@ const privacySetups = ref([]);
 // Fetch event details for editing
 const getAssetDetails = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-asset/${assetId}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/assets/${assetId}`, {}, 'GET');
         if (response.status) {
             const data = response.data;
 
@@ -187,7 +187,7 @@ const submitForm = async () => {
 
         // If user confirms
         if (result.isConfirmed) {
-            const response = await auth.uploadProtectedApi(`/api/update-asset/${id.value}`, formData, 'POST', {
+            const response = await auth.uploadProtectedApi(`/api/assets/${id.value}`, formData, 'POST', {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 

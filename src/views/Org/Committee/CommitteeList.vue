@@ -20,7 +20,7 @@ const userId = authStore.user.id;
 // Fetch committee list
 const fetchCommitteeList = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/org-committee-list/${userId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/committees`, {}, 'GET');
     if (response.status) {
       committeeList.value = response.data;
     } else {
@@ -117,7 +117,7 @@ const deleteCommittee = async (id) => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/org-committee/${id}`, {}, 'DELETE');
+      const response = await auth.fetchProtectedApi(`/api/committees/${id}`, {}, 'DELETE');
 
       if (response.status) {
         await Swal.fire('Deleted!', 'Committee has been deleted.', 'success');

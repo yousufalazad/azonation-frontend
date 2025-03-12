@@ -23,7 +23,7 @@ const eventDetails = ref([]);
 // Fetch event details on mount
 const fetchEventDetails = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-event/${eventId.value}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/events/event/${eventId.value}`, {}, 'GET');
         eventDetails.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching meetings:', error);
@@ -35,7 +35,7 @@ const attendanceTypeList = ref([]);
 // Fetch attendance type list
 const getAttendanceTypeList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-attendance-types', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/attendance-types', {}, 'GET');
         attendanceTypeList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching countries:', error);
@@ -47,7 +47,7 @@ const eventGuestAttendanceList = ref([]);
 // Fetch getEventGuestAttendanceList
 const getEventGuestAttendanceList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-event-guest-attendances', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/event-guest-attendances', {}, 'GET');
         eventGuestAttendanceList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -81,10 +81,10 @@ const submitForm = async () => {
         is_active: is_active.value
     };
     try {
-        let apiUrl = '/api/create-event-guest-attendance';
+        let apiUrl = '/api/event-guest-attendances';
         let method = 'POST';
         if (isEditMode.value && selectedEventAttendanceId.value) {
-            apiUrl = `/api/update-event-guest-attendance/${selectedEventAttendanceId.value}`;
+            apiUrl = `/api/event-guest-attendances/${selectedEventAttendanceId.value}`;
             method = 'PUT';
         }
         const result = await Swal.fire({
@@ -139,7 +139,7 @@ const deleteMeetingAttendance = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-event-guest-attendance/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/event-guest-attendances/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'event guest attendances has been deleted.', 'success');

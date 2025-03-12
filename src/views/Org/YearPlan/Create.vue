@@ -164,7 +164,7 @@ const submitForm = async () => {
 
         // If user confirms
         if (result.isConfirmed) {
-            const response = await auth.uploadProtectedApi('/api/create-year-plan', formData, 'POST', {
+            const response = await auth.uploadProtectedApi('/api/year-plans', formData, 'POST', {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 

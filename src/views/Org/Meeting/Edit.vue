@@ -50,7 +50,7 @@ const privacySetupList = ref([]);
 
 const getConductTypes = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/get-conduct-types', {}, 'GET');
+    const response = await auth.fetchProtectedApi('/api/conduct-types', {}, 'GET');
     conductTypeList.value = response.status ? response.data : [];
   } catch (error) {
     console.error('Error fetching conduct types:', error);
@@ -74,7 +74,7 @@ const selectedRecordId = ref(route.params.id);
 // Fetch meeting details on mount
 const fetchMeetingDetails = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-meeting/${selectedRecordId.value}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/meetings/${selectedRecordId.value}`, {}, 'GET');
     if (response.status) {
       Object.assign(form.value, response.data); // Populate form with API response
     } else {
@@ -101,7 +101,7 @@ const updateMeeting = async () => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/update-meeting/${selectedRecordId.value}`, form.value, 'PUT');
+      const response = await auth.fetchProtectedApi(`/api/meetings/${selectedRecordId.value}`, form.value, 'PUT');
 
       if (response.status) {
         await Swal.fire('Success', 'Meeting updated successfully.', 'success');

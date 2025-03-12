@@ -16,7 +16,7 @@ const selectedItem = ref(null);
 const business_types = ref([]);
 const fetchBusinessType = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/get-business-types');
+    const response = await auth.fetchProtectedApi('/api/business-types');
     business_types.value = response.status ? response.data : [];
   } catch (error) {
     errorMessage.value = 'Error loading business_types. Please try again later.';
@@ -26,7 +26,7 @@ const fetchBusinessType = async () => {
 const categories = ref([]);
 const fetchItems = async () => {
   try {
-    const response = await auth.uploadProtectedApi('/api/get-categories', {}, 'GET');
+    const response = await auth.uploadProtectedApi('/api/categories', {}, 'GET');
     categories.value = response.status ? response.data : [];
   } catch (error) {
     errorMessage.value = 'Error loading categories. Please try again later.';
@@ -71,8 +71,8 @@ const closeViewModal = () => {
 const saveItem = async () => {
   try {
     const endpoint = editMode.value
-      ? `/api/update-category/${form.value.id}`
-      : '/api/create-category';
+      ? `/api/categories/${form.value.id}`
+      : '/api/categories';
     const method = editMode.value ? 'POST' : 'POST'; // Always POST for FormData
 
     const formData = new FormData();
@@ -132,7 +132,7 @@ const deleteMember = async (id) => {
     if (result.isConfirmed) {
       try {
         const response = await auth.uploadProtectedApi(
-          `/api/delete-category/${id}`,
+          `/api/categories/${id}`,
           {},
           'DELETE'
         );

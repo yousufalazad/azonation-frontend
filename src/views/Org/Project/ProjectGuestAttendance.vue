@@ -23,7 +23,7 @@ const projectDetails = ref([]);
 // Fetch project details on mount
 const fetchProjectDetails = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/get-project/${projectId.value}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/projects/${projectId.value}`, {}, 'GET');
         projectDetails.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching meetings:', error);
@@ -35,7 +35,7 @@ const attendanceTypeList = ref([]);
 // Fetch attendance type list
 const getAttendanceTypeList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-attendance-types', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/attendance-types', {}, 'GET');
         attendanceTypeList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching countries:', error);
@@ -47,7 +47,7 @@ const projectGuestAttendanceList = ref([]);
 // Fetch getProjectGuestAttendanceList
 const getProjectGuestAttendanceList = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-project-guest-attendances', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/project-guest-attendances', {}, 'GET');
         projectGuestAttendanceList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching funds:', error);
@@ -81,10 +81,10 @@ const submitForm = async () => {
         is_active: is_active.value
     };
     try {
-        let apiUrl = '/api/create-project-guest-attendance';
+        let apiUrl = '/api/project-guest-attendances';
         let method = 'POST';
         if (isEditMode.value && selectedProjectAttendanceId.value) {
-            apiUrl = `/api/update-project-guest-attendance/${selectedProjectAttendanceId.value}`;
+            apiUrl = `/api/project-guest-attendances/${selectedProjectAttendanceId.value}`;
             method = 'PUT';
         }
         const result = await Swal.fire({
@@ -139,7 +139,7 @@ const deleteMeetingAttendance = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-project-guest-attendance/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/project-guest-attendances/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 await Swal.fire('Deleted!', 'project guest attendances has been deleted.', 'success');

@@ -29,7 +29,7 @@ const showAddFounderSection = ref(false); // controls the display of "Search and
 // Fetch founders list
 const getFounders = async () => {
     try {
-        const response = await authStore.fetchProtectedApi(`/api/get-founder/${userId}`, {}, 'GET');
+        const response = await authStore.fetchProtectedApi(`/api/founders`, {}, 'GET');
         if (response.status) {
             founderList.value = response.data;
         } else {
@@ -92,7 +92,7 @@ const updateFounder = async () => {
                 payload.name = selectedFounder.value.name;
             }
 
-            const response = await authStore.fetchProtectedApi(`/api/update-founder/${selectedFounder.value.id}`, payload, 'PUT');
+            const response = await authStore.fetchProtectedApi(`/api/founders/${selectedFounder.value.id}`, payload, 'PUT');
 
             if (response.status) {
                 console.log(response.data);
@@ -126,7 +126,7 @@ const closeEditModal = () => {
 
 const searchIndividuals = async () => {
     try {
-        const response = await auth.fetchPublicApi('/api/search_individual', { query: searchQuery.value }, 'POST');
+        const response = await auth.fetchPublicApi('/api/org-members/search', { query: searchQuery.value }, 'POST');
         if (response.status) {
             searchResults.value = response.data;
             //console.log(response.data);
@@ -152,7 +152,7 @@ const addFounder = async (individualTypeUserId) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi('/api/create-founder', { user_id: userId, founder_user_id: individualTypeUserId }, 'POST');
+            const response = await auth.fetchProtectedApi('/api/founders', { user_id: userId, founder_user_id: individualTypeUserId }, 'POST');
             if (response.status) {
                 await Swal.fire(
                     'Added!',
@@ -190,7 +190,7 @@ const addUnlinkFounder = async () => {
         });
         if (result.isConfirmed) {
             console.log(name.value, designation.value, isActive.value, profile_image.value);
-            const response = await authStore.fetchProtectedApi('/api/create-founder', { 
+            const response = await authStore.fetchProtectedApi('/api/founders', { 
                 user_id: userId,
                 name: name.value,
                 designation: designation.value,

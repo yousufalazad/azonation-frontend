@@ -72,7 +72,7 @@ const getUserList = async () => {
 const productList = ref([]);
 const getProducts = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-products`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/products`, {}, 'GET');
     productList.value = response.data ? response.data : [];
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -222,7 +222,7 @@ const submitForm = async () => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi('/api/create-order', payload, 'POST');
+      const response = await auth.fetchProtectedApi('/api/orders', payload, 'POST');
       if (response.status) {
         Swal.fire('Success!', 'Order created successfully.', 'success').then(() => {
           resetForm();

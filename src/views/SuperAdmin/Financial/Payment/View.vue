@@ -16,7 +16,7 @@ const fetchPaymentLogDetails = async () => {
   try {
     const response = await auth.fetchProtectedApi(`/api/get-payment-log/${paymentLogId}`, {}, 'GET');
 
-    // const response = await auth.fetchProtectedApi(`/api/get-invoice/${invoiceId}`, {}, 'GET');
+    // const response = await auth.fetchProtectedApi(`/api/invoices/${invoiceId}`, {}, 'GET');
     if (response.status) {
       paymentLog.value = response.data;
     } else {

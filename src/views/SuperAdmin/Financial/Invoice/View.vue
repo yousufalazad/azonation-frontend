@@ -15,7 +15,7 @@ const invoiceDetails = ref({});
 const fetchInvoiceDetails = async () => {
   const invoiceId = route.params.id; // Assume route param holds the invoice ID
   try {
-    const response = await auth.fetchProtectedApi(`/api/get-invoice/${invoiceId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/invoices/${invoiceId}`, {}, 'GET');
     if (response.status) {
       invoiceDetails.value = response.data;
     } else {

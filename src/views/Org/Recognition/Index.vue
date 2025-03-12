@@ -11,7 +11,7 @@ const router = useRouter();
 // Fetch records
 const getRecords = async () => {
     try {
-        const response = await auth.fetchProtectedApi('/api/get-recognitions', {}, 'GET');
+        const response = await auth.fetchProtectedApi('/api/recognitions', {}, 'GET');
         recordList.value = response.status ? response.data : [];
     } catch (error) {
         console.error('Error fetching records:', error);
@@ -39,7 +39,7 @@ const deleteRecord = async (id) => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/delete-recognition/${id}`, {}, 'DELETE');
+            const response = await auth.fetchProtectedApi(`/api/recognitions/${id}`, {}, 'DELETE');
 
             if (response.status) {
                 Swal.fire('Deleted!', 'Record has been deleted.', 'success');

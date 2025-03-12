@@ -10,8 +10,8 @@ const recordList = ref([]);
 
 const getRecords = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/org-project-list/${userId}`, {}, 'GET');
-    // const response = await auth.fetchProtectedApi(`/api/get-projects/${userId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/projects`, {}, 'GET');
+    // const response = await auth.fetchProtectedApi(`/api/projectss/${userId}`, {}, 'GET');
     recordList.value = response.status ? response.data : [];
   } catch (error) {
     console.error('Error fetching events:', error);
@@ -32,7 +32,7 @@ const deleteRecord = async (projectId) => {
     });
 
     if (confirmed.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/delete-project/${projectId}`, {}, 'DELETE');
+      const response = await auth.fetchProtectedApi(`/api/projects/${projectId}`, {}, 'DELETE');
       if (response.status) {
         recordList.value = recordList.value.filter(record => record.id !== projectId);
         Swal.fire('Deleted!', 'Project has been deleted.', 'success');

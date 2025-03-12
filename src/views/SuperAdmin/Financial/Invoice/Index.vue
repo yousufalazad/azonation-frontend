@@ -15,7 +15,7 @@ const formatDate = (dateString) => {
 
 const getRecords = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/all-invoices`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/invoices/all`, {}, 'GET');
     console.log(response.data);
 
     invoiceList.value = response.status ? response.data : [];
@@ -37,7 +37,7 @@ const deleteRecord = async (invoiceId) => {
     });
 
     if (confirmed.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/delete-invoice/${invoiceId}`, {}, 'DELETE');
+      const response = await auth.fetchProtectedApi(`/api/invoices/${invoiceId}`, {}, 'DELETE');
       if (response.status) {
         invoiceList.value = invoiceList.value.filter(record => record.id !== invoiceId);
         Swal.fire('Deleted!', 'Invoice has been deleted.', 'success');
