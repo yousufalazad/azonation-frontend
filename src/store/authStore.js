@@ -2,11 +2,12 @@ import { reactive } from "vue";
 import router from "../router/router";
 import axios from "axios";
 import Swal from "sweetalert2";
+import functions from "./functions";
 
 const authStore = reactive({
   apiBase: "http://localhost:8000",
-  isAuthenticated: sessionStorage.getItem("auth") == 1,
-  user: JSON.parse(sessionStorage.getItem("user")),
+  isAuthenticated: functions.getCookie("auth") == 1,
+  user: functions.getCookie("user") == 'undefined'? {}: JSON.parse(functions.getCookie("user")),
   errors: null,
 
   async fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
@@ -149,12 +150,8 @@ const authStore = reactive({
       if (response.status === "success") {
         this.isAuthenticated = true;
         this.user = response.data;
-        sessionStorage.setItem("auth", 1);
-        sessionStorage.setItem("user", JSON.stringify(response.data));
-
-        // Check session storage
-        console.log(sessionStorage.getItem("auth")); // Should return 1
-        console.log(sessionStorage.getItem("user")); // Should return user data
+        functions.setCookie("auth", 1);
+        functions.setCookie("user", JSON.stringify(response.data));
 
         // Redirect based on user type
         switch (response.data.type) {
@@ -170,11 +167,9 @@ const authStore = reactive({
           default:
             router.push({ name: "login" });
         }
-        
-        console.log(this.isAuthenticated);  // Should be true after login
-        console.log(this.user);  // Should return user data after login
-        console.log(this.getUserToken());  // Should return the token if the user is logged in
-        console.log(response.data.type); // Check which user type is being returned
+
+
+
 
         Swal.fire({
           icon: "success",

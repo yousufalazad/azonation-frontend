@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import superadminRoutes from './superadminRouter';
 import individualRoutes from './individualRouter';
 import orgRoutes from './orgRouter';
+import functions from "@/store/functions";
 
 //Home
 import Home from "../views/Home.vue";
@@ -64,9 +65,8 @@ router.beforeEach(async (to, from, next) => {
   const { authStore } = await import("../store/authStore"); // 👈 Fix applied
   // const auth = authStore(); 
 
-  console.log("Auth Store:", authStore); // Debug output
-  console.log("Auth Store User Type:", authStore.getUserType()); // Debug output
-    console.log("Router Guard:", { isAuthenticated: authStore?.isAuthenticated, userType: authStore?.getUserType() }); // Debugging
+  console.log(functions.getCookie("user") == 'undefined');
+  console.log(typeof functions.getCookie("user"));
 
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
