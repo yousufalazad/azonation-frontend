@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import superadminRoutes from './superadminRouter';
 import individualRoutes from './individualRouter';
 import orgRoutes from './orgRouter';
-import functions from "@/store/functions";
+import functions from "@/global/cookie";
 
 //Home
 import Home from "../views/Home.vue";

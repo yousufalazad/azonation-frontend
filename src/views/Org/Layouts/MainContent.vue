@@ -18,9 +18,8 @@ const toggleSection = (section) => {
 };
 </script>
 
-
 <template>
-    <div class="flex min-h-screen bg-gray-100 overflow-hidden">
+    <div class="flex min-h-screen bg-gray-900">
         <!-- Sidebar -->
         <aside
             :class="isSidebarExpanded ? 'w-64' : 'w-20'"

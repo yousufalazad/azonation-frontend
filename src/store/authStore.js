@@ -2,7 +2,7 @@ import { reactive } from "vue";
 import router from "../router/router";
 import axios from "axios";
 import Swal from "sweetalert2";
-import functions from "./functions";
+import functions from "../global/cookie";
 
 const authStore = reactive({
   apiBase: "http://localhost:8000",
@@ -167,10 +167,6 @@ const authStore = reactive({
           default:
             router.push({ name: "login" });
         }
-
-
-
-
         Swal.fire({
           icon: "success",
           title: "Login Successful",
@@ -209,12 +205,11 @@ const authStore = reactive({
       if (result.isConfirmed) {
         try {
           await this.fetchProtectedApi("/api/logout", {}, "POST");
-
           // Clear frontend authentication status
           this.isAuthenticated = false;
           this.user = {};
-          sessionStorage.setItem("auth", 0);
-          sessionStorage.setItem("user", "{}");
+          functions.deleteCookie("auth", 0);
+          functions.deleteCookie("user", "{}");
           router.push({ name: "login" });
 
           Swal.fire({
@@ -236,136 +231,6 @@ const authStore = reactive({
       }
     });
   },
-
-  // logout() {
-  //   Swal.fire({
-  //     title: "Are you sure?",
-  //     text: "You will be logged out.",
-  //     icon: "warning",
-  //     showCancelButton: true,
-  //     confirmButtonText: "Yes, log out!",
-  //     cancelButtonText: "Cancel",
-  //   }).then(async (result) => {
-  //     if (result.isConfirmed) {
-  //       try {
-  //         // Call the backend logout API endpoint
-  //         const token = this.getUserToken();
-  //         await fetch(`${this.apiBase}/logout`, {
-  //           method: "POST",
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //             "Authorization": `Bearer ${token}`
-  //           },
-  //         });
-
-  //         // Clear frontend authentication status
-  //         this.isAuthenticated = false;
-  //         this.user = {};
-  //         sessionStorage.setItem("auth", 0);
-  //         sessionStorage.setItem("user", "{}");
-  //         router.push({ name: "login" });
-
-  //         Swal.fire({
-  //           icon: "success",
-  //           title: "Logged Out",
-  //           text: "You have been logged out successfully.",
-  //           timer: 1000,
-  //           timerProgressBar: true,
-  //           showConfirmButton: false,
-  //         });
-  //       } catch (error) {
-  //         console.error("Logout failed:", error);
-  //         Swal.fire({
-  //           icon: "error",
-  //           title: "Logout Failed",
-  //           text: "There was an issue logging out. Please try again.",
-  //         });
-  //       }
-  //     }
-  //   });
-  // },
-
-  // logout() {
-  //   Swal.fire({
-  //     title: "Are you sure?",
-  //     text: "You will be logged out.",
-  //     icon: "warning",
-  //     showCancelButton: true,
-  //     confirmButtonText: "Yes, log out!",
-  //     cancelButtonText: "Cancel",
-  //   }).then((result) => {
-  //     if (result.isConfirmed) {
-  //       this.isAuthenticated = false;
-  //       this.user = {};
-  //       sessionStorage.setItem("auth", 0);
-  //       sessionStorage.setItem("user", "{}");
-  //       router.push({name: "login"});
-  //       Swal.fire({
-  //         icon: "success",
-  //         title: "Logged Out",
-  //         text: "You have been logged out successfully.",
-  //         timer: 1000,
-  //         timerProgressBar: true,
-  //         showConfirmButton: false,
-  //       });
-  //     }
-  //   });
-  // },
-
-  // individualData(userId) {
-  //   this.fetchPublicApi(`/api/individual_profile_data/${userId}`, {}, "GET").then((res) => {
-  //     if (res.status) {
-  //       this.individual = res.data;
-  //       sessionStorage.setItem("individual", JSON.stringify(res.data));
-  //       console.log("Individual Data:", res.data);
-  //     } else {
-  //       this.errors = res.message;
-  //     }
-  //   });
-  // },
-
-  //Find user data after user login only
-  // userUpdatedData(userId) {
-  //   this.fetchPublicApi(`/api/user_data/${userId}`, {}, "GET").then(
-  //     (res) => {
-  //       if (res.status) {
-  //         this.user = res.data;
-  //         sessionStorage.setItem("user", JSON.stringify(res.data));
-  //       } else {
-  //         this.errors = res.message;
-  //       }
-  //     }
-  //   );
-  // },
-
-  //Find org data after any update
-  // getUserData(userId) {
-  //   this.fetchPublicApi(`/api/user-data-local-update/${userId}`, {}, "GET").then(
-  //     (res) => {
-  //       if (res.status) {
-  //         this.user = res.data;
-  //         sessionStorage.setItem("user", JSON.stringify(res.data));
-  //       } else {
-  //         this.errors = res.message;
-  //       }
-  //     }
-  //   );
-  // },
-
-  // superAdminUserData(id) {
-  //   // console.log("user_id", id);
-  //   this.fetchPublicApi(`/api/super_admin_user_data/${id}`, {}, "GET").then(
-  //     (response) => {
-  //       if (response.status) {
-  //         this.superadmin = response.data;
-  //         sessionStorage.setItem("superadmin", JSON.stringify(response.data));
-  //         // console.log("superAdmin Data:", response.data);
-  //       } else {
-  //         this.errors = response.message;
-  //       }
-  //     }
-  //   );
-  // },
 
   getUserToken() {
     return this.user?.accessToken;

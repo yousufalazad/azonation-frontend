@@ -1,7 +1,3 @@
-import { reactive } from "vue";
-import router from "../router/router";
-import axios from "axios";
-import Swal from "sweetalert2";
 
 const functions = {
   // Function to set a cookie
@@ -12,8 +8,7 @@ const functions = {
       date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
       expires = "; expires=" + date.toUTCString();
     }
-    document.cookie =
-      name + "=" + encodeURIComponent(value) + expires + "; path=/";
+    document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/";
   },
 
   // Function to get a cookie by name
