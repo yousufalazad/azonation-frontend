@@ -73,7 +73,20 @@ const closeViewModal = () => {
 // Create committee
 const createCommittee = async () => {
   try {
-    await auth.createCommittee(userId, newName.value, short_description.value, start_date.value, end_date.value, note.value, status.value);
+    const response = await auth.fetchProtectedApi(
+      "/api/committees",
+      {
+        user_id: userId,
+        name: newName.value,
+        short_description: short_description.value,
+        start_date: start_date.value,
+        end_date: end_date.value,
+        note: note.value,
+        status: status.value,
+      },
+      "POST"
+    );
+
     Swal.fire({
       icon: 'success',
       title: 'Committee created successfully',
@@ -90,17 +103,30 @@ const createCommittee = async () => {
 // Update committee
 const updateCommittee = async () => {
   try {
-    await auth.updateCommittee(selectedCommittee.value.id, newName.value, short_description.value, start_date.value, end_date.value, note.value, status.value);
+    const response = await auth.fetchProtectedApi(
+      `/api/committees/${selectedCommittee.value.id}`,
+      {
+        user_id: userId,
+        name: newName.value,
+        short_description: short_description.value,
+        start_date: start_date.value,
+        end_date: end_date.value,
+        note: note.value,
+        status: status.value,
+      },
+      "PUT"
+    );
+
     Swal.fire({
       icon: 'success',
-      title: 'Committee updated successfully',
+      title: 'Committee created successfully',
       showConfirmButton: false,
       timer: 1500
     });
     closeModal();
     fetchCommitteeList();
   } catch (error) {
-    console.error("Error updating committee:", error);
+    console.error("Error creating committee:", error);
   }
 };
 
@@ -134,6 +160,7 @@ const deleteCommittee = async (id) => {
 
 onMounted(fetchCommitteeList);
 </script>
+
 
 <template>
   <!-- Heading and Create Button -->
