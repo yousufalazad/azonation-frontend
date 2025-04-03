@@ -4,6 +4,13 @@ import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../../store/authStore';
 
+import { defineProps } from 'vue';
+import axios from 'axios';
+
+const props = defineProps({
+  invoiceId: Number
+});
+
 const route = useRoute();
 const router = useRouter();
 const auth = authStore;
@@ -27,6 +34,15 @@ const fetchInvoiceDetails = async () => {
     console.error('Error fetching invoice details:', error);
     Swal.fire('Error!', 'An error occurred. Please try again.', 'error');
     router.push({ name: 'invoice-list' });
+  }
+};
+
+const payInvoice = async () => {
+  try {
+    const response = await axios.get(`/payment-gateway-stripe/checkout/${props.invoiceId}`);
+    window.location.href = response.data.url; // Redirect to Stripe checkout
+  } catch (error) {
+    console.error("Payment error:", error);
   }
 };
 
@@ -146,6 +162,12 @@ onMounted(() => {
 
     <p class="text-sm text-gray-600 mt-4">Thanks for your business.</p>
     <p class="text-xs text-gray-500">{{ invoiceData.invoice_note }}</p>
+  </div>
+
+  <div>
+    <button @click="payInvoice" class="bg-green-500 text-white px-4 py-2 rounded">
+    Pay with Stripe
+  </button>
   </div>
 
 </template>
