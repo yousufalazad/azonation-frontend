@@ -1,37 +1,36 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../../store/authStore';
+
+import { defineProps } from 'vue';
 import axios from 'axios';
+
+const props = defineProps({
+  invoiceId: Number
+});
+
+const invoiceId = ref(null);
 
 const route = useRoute();
 const router = useRouter();
 const auth = authStore;
 
-// Store the invoice ID from the route
-const invoiceId = ref(route.params.id);
-console.log("Initial Invoice ID:", invoiceId.value);
-
 // Invoice details
 const invoiceData = ref({});
 
-// Fetch Invoice Details
+// Load invoice details
 const fetchInvoiceDetails = async () => {
-  if (!invoiceId.value) {
-    Swal.fire('Error!', 'Invalid invoice ID.', 'error');
-    router.push({ name: 'invoice-list' });
-    return;
-  }
-
+  const invoiceId = route.params.id; // Assume route param holds the invoice ID
   try {
-    const response = await auth.fetchProtectedApi(`/api/invoices/${invoiceId.value}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/invoices/${invoiceId}`, {}, 'GET');
     if (response.status) {
       invoiceData.value = response.data;
       console.log('Invoice details fetched:', invoiceData.value);
     } else {
       Swal.fire('Error!', 'Failed to fetch invoice details.', 'error');
-      router.push({ name: 'invoice-list' });
+      router.push({ name: 'invoice-list' }); // Redirect if data not found
     }
   } catch (error) {
     console.error('Error fetching invoice details:', error);
@@ -40,30 +39,30 @@ const fetchInvoiceDetails = async () => {
   }
 };
 
-// Pay Invoice
 const payInvoice = async () => {
   try {
-    const response = await axios.get(`/payment-gateway-stripe/checkout/${invoiceId.value}`);
+    // const response = await axios.get(`/payment-gateway-stripe/checkout/${props.invoiceId}`);
+    const response = await axios.get(`/payment-gateway-stripe/checkout/${route.params.id}`);
     window.location.href = response.data.url; // Redirect to Stripe checkout
   } catch (error) {
     console.error("Payment error:", error);
   }
 };
 
-// Fetch data when component is mounted
 onMounted(() => {
-  console.log("Route params:", route.params);
-  fetchInvoiceDetails();
-});
-
-// Watch for route changes (useful if switching invoices without reloading)
-watch(() => route.params.id, (newId) => {
-  invoiceId.value = newId;
+  invoiceId.value = route.params.id;
+  console.log("Invoice ID:", invoiceId.value);
+  if (!invoiceId.value) {
+    Swal.fire('Error!', 'Invalid invoice ID.', 'error');
+    router.push({ name: 'invoice-list' });
+    return;
+  }
   fetchInvoiceDetails();
 });
 </script>
 
 <template>
+  <!-- Header -->
   <div class="flex justify-between items-center mb-5">
     <h2 class="text-2xl font-bold text-gray-800">Invoice Details</h2>
     <button @click="$router.push({ name: 'invoice-list' })"
@@ -72,21 +71,38 @@ watch(() => route.params.id, (newId) => {
     </button>
   </div>
 
-  <div class="mx-auto bg-white p-6 rounded-lg shadow-lg">
+  <div class="mx-auto bg-white p-6 rounded-lg shadow-lg mx-0">
     <div class="flex justify-between items-center border-b pb-4 mb-4">
       <div>
         <h1 class="text-xl font-bold">{{ invoiceData.user_name }}</h1>
-        <p class="text-sm text-gray-600">
-          Mirpur, Dhaka, Bangladesh<br>
-          {{ invoiceData?.order?.user?.email }}<br>
+        <p class="text-sm text-gray-600">Mirpur, Dhaka, Bangladesh
+          <br>
+          {{ invoiceData?.order?.user?.email }}
+          <br>
         </p>
       </div>
       <div class="text-right">
         <h2 class="text-2xl font-bold text-blue-600">INVOICE</h2>
         <p class="text-sm text-gray-600">Invoice #: <strong>{{ invoiceData?.invoice_code }}</strong></p>
         <p class="text-sm text-gray-600">Invoice Date: <strong>{{ invoiceData?.issue_date }}</strong></p>
+        <p class="text-sm text-gray-600">Terms: <strong>{{ invoiceData?.terms }}</strong></p>
         <p class="text-sm text-gray-600">Due Date: <strong>{{ invoiceData?.due_date }}</strong></p>
       </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <div>
+        <h3 class="font-bold">Bill To</h3>
+        <p class="text-sm text-gray-600">{{ invoiceData.user_name }}
+          <br>{{ invoiceData?.order?.user?.email }}
+        </p>
+      </div>
+
+      <div v-if="invoiceData?.order?.order_detail?.shipping_address">
+        <h3 class="font-bold">Ship To</h3>
+        <p class="text-sm text-gray-600">{{ invoiceData?.order?.order_detail?.shipping_address }}</p>
+      </div>
+
     </div>
 
     <table class="w-full border-collapse border border-gray-300 mb-4">
@@ -102,6 +118,7 @@ watch(() => route.params.id, (newId) => {
       <tbody>
         <tr v-for="(item, index) in invoiceData?.order?.order_items ?? []" :key="item?.id ?? index"
           class="border-b border-gray-300">
+
           <td class="p-2">{{ index + 1 }}</td>
           <td class="p-2">{{ item?.product_name ?? '--' }}</td>
           <td class="p-2 text-right">{{ item?.quantity ? parseFloat(item.quantity).toFixed(2) : '0.00' }}</td>
@@ -115,13 +132,42 @@ watch(() => route.params.id, (newId) => {
       <table class="text-right">
         <tr>
           <td class="p-2">Subtotal:</td>
-          <td class="p-2 font-bold">{{ invoiceData?.order?.sub_total ?? '0.00' }}</td>
+          <td class="p-2 font-bold">
+            {{ invoiceData?.order?.sub_total ?? '0.00' }}
+          </td>
         </tr>
         <tr>
-          <td class="p-2">Total:</td>
-          <td class="p-2 font-bold">{{ invoiceData?.order?.total_amount ?? '0.00' }}</td>
+          <td class="p-2">
+            Tax Rate ({{ invoiceData?.order?.tax_rate ?? '0.00' }}%):
+          </td>
+          <td class="p-2 font-bold">
+            {{ invoiceData?.order?.total_tax ?? '0.00' }}
+          </td>
+        </tr>
+        <tr class="bg-blue-100">
+          <td class="p-2 font-bold">Total:</td>
+          <td class="p-2 font-bold">
+            {{ invoiceData?.order?.total_amount ?? '0.00' }}
+          </td>
+        </tr>
+        <tr class="bg-blue-200">
+          <td class="p-2 font-bold">Total Paid:</td>
+          <td class="p-2 font-bold">
+            {{ invoiceData?.order?.credit_applied ?? '0.00' }}
+          </td>
+        </tr>
+        <tr class="bg-blue-300">
+          <td class="p-2 font-bold">Balance Due:</td>
+          <td class="p-2 font-bold">
+            {{
+              (parseFloat(invoiceData?.order?.total_amount ?? 0) -
+                parseFloat(invoiceData?.order?.credit_applied ?? 0)).toFixed(2)
+            }}
+          </td>
         </tr>
       </table>
+
+
     </div>
 
     <p class="text-sm text-gray-600 mt-4">Thanks for your business.</p>
@@ -130,9 +176,10 @@ watch(() => route.params.id, (newId) => {
 
   <div>
     <button @click="payInvoice" class="bg-green-500 text-white px-4 py-2 rounded">
-      Pay with Stripe
-    </button>
+    Pay with Stripe
+  </button>
   </div>
+
 </template>
 
 <style scoped>
