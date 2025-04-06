@@ -1,4 +1,4 @@
-<!-- Office record -->
+<!-- Office document -->
 <script setup>
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
@@ -13,22 +13,22 @@ const document = ref(null); // Document file for upload
 const description = ref(''); // Plain textarea for description
 const privacySetupId = ref(1); // Default to "Only Me"
 const isEditMode = ref(false); // Toggle between add and edit modes
-const selectedRecordId = ref(null); // Store the ID of the record to edit
-const recordList = ref([]); // Data list for the table
+const selectedDocumentId = ref(null); // Store the ID of the document to edit
+const documentList = ref([]); // Data list for the table
 const baseURL = 'http://localhost:8000/storage/'; // Adjust baseURL as per your setup
 
 // Fetch list of records
-const getRecords = async () => {
+const getDocuments = async () => {
     try {
         const response = await auth.fetchProtectedApi('/api/office-documents', {}, 'GET');
         if (response.status) {
-            recordList.value = response.data;
+            documentList.value = response.data;
         } else {
-            recordList.value = [];
+            documentList.value = [];
         }
     } catch (error) {
         console.error('Error fetching records:', error);
-        recordList.value = [];
+        documentList.value = [];
     }
 };
 
@@ -40,7 +40,7 @@ const resetForm = () => {
     description.value = ''; // Reset description text
     privacySetupId.value = 1; // Default to "Only Me"
     isEditMode.value = false;
-    selectedRecordId.value = null;
+    selectedDocumentId.value = null;
 };
 
 // Handle document file change
@@ -68,7 +68,7 @@ const removeImage = (index) => {
     images.value.splice(index, 1);
 };
 
-// Add or update a record
+// Add or update a document
 const submitForm = async () => {
     const formData = new FormData();
     formData.append('user_id', userId);
@@ -93,13 +93,13 @@ const submitForm = async () => {
     try {
         let apiUrl = '/api/office-documents';
 
-        if (isEditMode.value && selectedRecordId.value) {
-            apiUrl = `/api/office-documents/${selectedRecordId.value}`;
+        if (isEditMode.value && selectedDocumentId.value) {
+            apiUrl = `/api/office-documents/${selectedDocumentId.value}`;
         }
 
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this record?`,
+            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this document?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, save it!',
@@ -112,58 +112,58 @@ const submitForm = async () => {
             });
 
             if (response.status) {
-                await Swal.fire('Success!', `Record ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
-                getRecords(); // Refresh the record list
+                await Swal.fire('Success!', `Document ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
+                getDocuments(); // Refresh the document list
                 resetForm(); // Reset the form fields
             } else {
-                Swal.fire('Failed!', 'Failed to save record.', 'error');
+                Swal.fire('Failed!', 'Failed to save document.', 'error');
             }
         }
     } catch (error) {
-        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} record:`, error);
-        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} record.`, 'error');
+        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} document:`, error);
+        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} document.`, 'error');
     }
 };
 
-// Edit record
-const editRecord = (record) => {
-    title.value = record.title;
-    description.value = record.description; // Load description text
-    privacySetupId.value = record.status;
-    selectedRecordId.value = record.id;
+// Edit document
+const editRecord = (document) => {
+    title.value = document.title;
+    description.value = document.description; // Load description text
+    privacySetupId.value = document.status;
+    selectedDocumentId.value = document.id;
     isEditMode.value = true; // Switch to edit mode
 };
 
 // View PDF document
-const viewDocument = (record) => {
-    if (record.document) {
-        window.open(`${baseURL}${record.document}`, '_blank'); // Open PDF in a new tab
+const viewDocument = (document) => {
+    if (document.document) {
+        window.open(`${baseURL}${document.document}`, '_blank'); // Open PDF in a new tab
     } else {
-        Swal.fire('No Document', 'This record does not have a document attached.', 'info');
+        Swal.fire('No Document', 'This document does not have a document attached.', 'info');
     }
 };
 
 // View Images
-const viewImages = (record) => {
-    if (record.images && record.images.length) {
+const viewImages = (document) => {
+    if (document.images && document.images.length) {
         // Open modal to view multiple images
         Swal.fire({
             title: 'Images',
-            html: record.images.map((img) => `<img src="${baseURL}${img.image}" style="width: 100%; max-width: 300px; margin: 5px;">`).join(''),
+            html: document.images.map((img) => `<img src="${baseURL}${img.image}" style="width: 100%; max-width: 300px; margin: 5px;">`).join(''),
             showCloseButton: true,
             focusConfirm: false,
         });
     } else {
-        Swal.fire('No Images', 'This record does not have images attached.', 'info');
+        Swal.fire('No Images', 'This document does not have images attached.', 'info');
     }
 };
 
-// Delete record
+// Delete document
 const deleteRecord = async (id) => {
     try {
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: 'Do you want to delete this record?',
+            text: 'Do you want to delete this document?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, delete it!',
@@ -174,15 +174,15 @@ const deleteRecord = async (id) => {
             const response = await auth.fetchProtectedApi(`/api/office-documents/${id}`, {}, 'DELETE');
 
             if (response.status) {
-                await Swal.fire('Deleted!', 'Record has been deleted.', 'success');
-                getRecords(); // Refresh the record list
+                await Swal.fire('Deleted!', 'document has been deleted.', 'success');
+                getDocuments(); // Refresh the document list
             } else {
-                Swal.fire('Failed!', 'Failed to delete record.', 'error');
+                Swal.fire('Failed!', 'Failed to delete document.', 'error');
             }
         }
     } catch (error) {
-        console.error('Error deleting record:', error);
-        Swal.fire('Error!', 'Failed to delete record.', 'error');
+        console.error('Error deleting document:', error);
+        Swal.fire('Error!', 'Failed to delete document.', 'error');
     }
 };
 
@@ -196,7 +196,7 @@ const sanitize = (html) => {
 
 // Fetch records when component is mounted
 onMounted(() => {
-    getRecords();
+    getDocuments();
 });
 </script>
 
@@ -204,10 +204,10 @@ onMounted(() => {
     <div class="max-w-7xl mx-auto w-10/12">
         <section>
             <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">Record List</h5>
-                <button @click="$router.push({ name: 'create-record' })"
+                <h5 class="text-md font-semibold mt-2">document List</h5>
+                <button @click="$router.push({ name: 'create-document' })"
                     class="bg-blue-500 text-white font-semibold py-2 px-2 mx-3 rounded-md">
-                    Add Record
+                    Add document
                 </button>
             </div>
             <div class="overflow-x-auto">
@@ -224,17 +224,17 @@ onMounted(() => {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="record in recordList" :key="record.id" class="border border-gray-200">
-                            <td class="p-3">{{ record.title }}</td>
-                            <td class="p-3" v-html="sanitize(record.description)"></td>
+                        <tr v-for="document in documentList" :key="document.id" class="border border-gray-200">
+                            <td class="p-3">{{ document.title }}</td>
+                            <td class="p-3" v-html="sanitize(document.description)"></td>
                             <td class="p-3">
-                                <span v-if="record.status === 1">Only Me</span>
-                                <span v-else-if="record.status === 2">Public</span>
-                                <span v-else-if="record.status === 3">Selected Users</span>
+                                <span v-if="document.status === 1">Only Me</span>
+                                <span v-else-if="document.status === 2">Public</span>
+                                <span v-else-if="document.status === 3">Selected Users</span>
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-center">
-                                <div v-if="record.documents && record.documents.length">
-                                    <button @click="viewDocument(record)"
+                                <div v-if="document.documents && document.documents.length">
+                                    <button @click="viewDocument(document)"
                                         class="bg-blue-500 text-white px-2 py-1 rounded-md">
                                         View Document
                                     </button>
@@ -244,8 +244,8 @@ onMounted(() => {
                             </td>
                             <!-- View Images -->
                             <td class="border border-gray-300 p-2">
-                                <div v-if="record.images && record.images.length">
-                                    <button v-if="record.images.length > 0" @click="viewImages(record)"
+                                <div v-if="document.images && document.images.length">
+                                    <button v-if="document.images.length > 0" @click="viewImages(document)"
                                         class="bg-green-500 text-white rounded-md py-1 px-3 hover:bg-green-600 transition">
                                         View Image
                                     </button>
@@ -254,12 +254,12 @@ onMounted(() => {
                                 </div>
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-center">
-                                <!-- <button @click="editRecord(record)" class="bg-green-500 text-white px-2 py-1 rounded-md">
+                                <!-- <button @click="editRecord(document)" class="bg-green-500 text-white px-2 py-1 rounded-md">
                                 Edit
                             </button> -->
-                                <button @click="$router.push({ name: 'edit-record', params: { id: record.id } })"
+                                <button @click="$router.push({ name: 'edit-document', params: { id: document.id } })"
                                     class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">Edit</button>
-                                <button @click="deleteRecord(record.id)"
+                                <button @click="deleteRecord(document.id)"
                                     class="bg-red-500 text-white px-2 py-1 rounded-md ml-2">
                                     Delete
                                 </button>

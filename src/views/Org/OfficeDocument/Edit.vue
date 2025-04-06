@@ -7,7 +7,7 @@ import { authStore } from '../../../store/authStore';
 const router = useRouter();
 const route = useRoute();
 const auth = authStore;
-const recordId = route.params.id; // Assumes route parameter `id` is passed
+const documentId = route.params.id; // Assumes route parameter `id` is passed
 const userId = auth.user.id;
 
 const title = ref('');
@@ -17,10 +17,10 @@ const description = ref('');
 const privacySetupId = ref(1);
 const isLoading = ref(false);
 
-const fetchRecordDetails = async () => {
+const fetchDocumentDetails = async () => {
     isLoading.value = true;
     try {
-        const response = await auth.fetchProtectedApi(`/api/office-documents/${recordId}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/office-documents/${documentId}`, {}, 'GET');
         if (response.status) {
             const data = response.data;
 
@@ -42,11 +42,11 @@ const fetchRecordDetails = async () => {
                 name: doc.file_name || '',
             }));
         } else {
-            Swal.fire('Error!', 'Failed to fetch record details.', 'error');
+            Swal.fire('Error!', 'Failed to fetch document details.', 'error');
         }
     } catch (error) {
-        console.error('Error fetching record details:', error);
-        Swal.fire('Error!', 'Failed to fetch record details.', 'error');
+        console.error('Error fetching document details:', error);
+        Swal.fire('Error!', 'Failed to fetch document details.', 'error');
     } finally {
         isLoading.value = false;
     }
@@ -134,11 +134,11 @@ const submitForm = async () => {
     });
 
     try {
-        let apiUrl = `/api/office-documents/${recordId}`;
+        let apiUrl = `/api/office-documents/${documentId}`;
 
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: 'Do you want to update this record?',
+            text: 'Do you want to update this document?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, update it!',
@@ -151,21 +151,21 @@ const submitForm = async () => {
             });
 
             if (response.status) {
-                Swal.fire('Success!', 'Record updated successfully.', 'success').then(() => {
-                    router.push({ name: 'index-record' });
+                Swal.fire('Success!', 'Document updated successfully.', 'success').then(() => {
+                    router.push({ name: 'index-document' });
                     resetForm();
                 });
             } else {
-                Swal.fire('Failed!', 'Failed to update record.', 'error');
+                Swal.fire('Failed!', 'Failed to update document.', 'error');
             }
         }
     } catch (error) {
-        console.error('Error updating record:', error);
-        Swal.fire('Error!', 'Failed to update record.', 'error');
+        console.error('Error updating document:', error);
+        Swal.fire('Error!', 'Failed to update document.', 'error');
     }
 };
 
-onMounted(fetchRecordDetails);
+onMounted(fetchDocumentDetails);
 </script>
 
 
@@ -257,7 +257,7 @@ onMounted(fetchRecordDetails);
 
             <!-- Buttons -->
             <div class="flex justify-end gap-4">
-                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Update Record</button>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Update Document</button>
                 <button type="button" @click="resetForm" class="px-6 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500">Reset</button>
             </div>
         </form>

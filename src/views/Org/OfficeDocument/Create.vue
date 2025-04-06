@@ -67,7 +67,7 @@ const submitForm = async () => {
         let apiUrl = '/api/office-documents';
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: 'Do you want to add this record?',
+            text: 'Do you want to add this document?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, save it!',
@@ -81,16 +81,16 @@ const submitForm = async () => {
 
             if (response.status) {
                 Swal.fire('Success!', 'Record added successfully.', 'success').then(() => {
-                    router.push({ name: 'index-record' });
+                    router.push({ name: 'index-document' });
                     resetForm();
                 });
             } else {
-                Swal.fire('Failed!', 'Failed to add record.', 'error');
+                Swal.fire('Failed!', 'Failed to add document.', 'error');
             }
         }
     } catch (error) {
-        console.error('Error adding record:', error);
-        Swal.fire('Error!', 'Failed to add record.', 'error');
+        console.error('Error adding document:', error);
+        Swal.fire('Error!', 'Failed to add document.', 'error');
     }
 };
 </script>

@@ -7,6 +7,8 @@ import fundamentalInfo from "../views/Org/Profile/FundamentalInfo.vue";
 import IndependentMember from "../views/Org/Member/IndependentMember.vue";
 import AddMember from "../views/Org/Member/AddMember.vue";
 import MemberList from "../views/Org/Member/MemberList.vue";
+import FamilyMember from "../views/Org/Member/FamilyMember.vue";
+
 //Founder
 import Founders from "../views/Org/Founder/Create.vue";
 
@@ -58,10 +60,10 @@ import ViewMeetingMinutes from "../views/Org/MeetingMinutes/View.vue";
 import MeetingAttendances from "../views/Org/Meeting/MeetingAttendances.vue";
 import MeetingGuestAttendance from "@/views/Org/Meeting/MeetingGuestAttendances.vue";
 
-//Record
-import OfficeRecord from "../views/Org/OfficeRecord/Index.vue";
-import CreateRecord from "../views/Org/OfficeRecord/Create.vue";
-import EditRecord from "../views/Org/OfficeRecord/Edit.vue";
+//Office Document
+import OfficeDocument from "../views/Org/OfficeDocument/Index.vue";
+import CreateDocument from "../views/Org/OfficeDocument/Create.vue";
+import EditDocument from "../views/Org/OfficeDocument/Edit.vue";
 
 //Project and Project Summary
 import IndexProject from "../views/Org/Project/Index.vue";
@@ -164,6 +166,12 @@ const orgRoutes = [
         path: "member-list",
         name: "member-list",
         component: MemberList,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "family-member",
+        name: "family-member",
+        component: FamilyMember,
         meta: { requiresAuth: true },
       },
       {
@@ -394,21 +402,21 @@ const orgRoutes = [
         props: true
       },
       {
-        path: "office-record",
-        name: "index-record",
-        component: OfficeRecord,
+        path: "office-document",
+        name: "index-document",
+        component: OfficeDocument,
         meta: { requiresAuth: true },
       },
       {
-        path: 'record/create',
-        name: 'create-record',
-        component: CreateRecord,
+        path: 'document/create',
+        name: 'create-document',
+        component: CreateDocument,
         meta: { requiresAuth: true },
       },
       {
-        path: 'record/edit/:id',
-        name: 'edit-record',
-        component: EditRecord,
+        path: 'document/edit/:id',
+        name: 'edit-document',
+        component: EditDocument,
         meta: { requiresAuth: true },
       },
       {

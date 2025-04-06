@@ -13,7 +13,7 @@ const baseURL = 'http://localhost:8000';
 
 const searchIndividuals = async () => {
   try {
-    const response = await auth.fetchPublicApi('/api/org-members/search', { query: searchQuery.value }, 'POST');
+    const response = await auth.fetchProtectedApi('/api/org-members/search', { query: searchQuery.value }, 'POST');
     if (response.status) {
       searchResults.value = response.data;
       console.log(response.data);

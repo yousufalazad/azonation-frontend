@@ -79,9 +79,9 @@ const isSectionOpen = (section) => openSections.value.includes(section);
       <span v-else class="hidden">Assets</span>
     </router-link>
 
-    <router-link to="/org-dashboard/office-record" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
-      <span v-if="isSidebarExpanded">Records</span>
-      <span v-else class="hidden">Records</span>
+    <router-link to="/org-dashboard/office-document" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+      <span v-if="isSidebarExpanded">Documents</span>
+      <span v-else class="hidden">Documents</span>
     </router-link>
     <!-- Report section -->
     <div>
