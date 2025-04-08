@@ -95,7 +95,7 @@ const addMember = async (individualTypeUserId) => {
           <div class="flex-1">
             <p class="font-medium text-lg text-gray-700">{{ individualUser.name }}</p>
             <p class="text-sm text-gray-500">
-              {{ individualUser.city }}, {{ individualUser.country_name }}
+              <!-- {{ individualUser.city }}, {{ individualUser.country_name }} -->
             </p>
             <!-- <p class="text-sm text-gray-500">
               {{ individualUser.email }} | {{ individualUser.dialing_code }}{{
