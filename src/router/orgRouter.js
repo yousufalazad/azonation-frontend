@@ -10,7 +10,7 @@ import MemberList from "../views/Org/Member/MemberList.vue";
 import FamilyMember from "../views/Org/Member/FamilyMember.vue";
 
 //Founder
-import Founders from "../views/Org/Founder/Create.vue";
+import Founders from "../views/Org/Founder/Index.vue";
 
 //Accounts
 import Accounts from "../views/Org/Accounts/Index.vue";

@@ -11,20 +11,22 @@ const userId = auth.user.id; // Assuming the org ID is stored in the logged-in u
 const founderList = ref([]);
 const isEditModalOpen = ref(false); // Controls the display of the edit modal
 const selectedFounder = ref({ id: null, name: '', designation: '', isNameEditable: false }); // Stores the selected founder's info
-
 const searchQuery = ref('');
 const searchResults = ref([]);
-
 const baseURL = 'http://localhost:8000';
-
 const addedFounder = ref([]);
+const showAddFounderSection = ref(false); // controls the display of "Search and Add Founder" section
+const showForm = ref(false);
+// const showForm = ref(true);
 const name = ref('');
 const designation = ref('');
-const isActive = ref(true); // Stores the active status of the founder
-const profile_image = ref([]);
+const profile_image = ref(null);
+const isActive = ref(true); // default status, can be controlled as needed
 
-const showForm = ref(false); // initially, the form is hidden
-const showAddFounderSection = ref(false); // controls the display of "Search and Add Founder" section
+const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file) profile_image.value = file
+}
 
 // Fetch founders list
 const getFounders = async () => {
@@ -40,18 +42,6 @@ const getFounders = async () => {
         founderList.value = [];
     }
 };
-
-// Open edit modal and show name for all
-// const openEditModal = (founder) => {
-//     const isNameEditable = !founder.founders || !founder.founders.name; // Name is editable if it's not from founders table
-//     selectedFounder.value = {
-//         id: founder.id,
-//         name: isNameEditable ? founder.name : founder.founders.name,
-//         designation: founder.designation,
-//         isNameEditable: isNameEditable
-//     }; // Set founder's name and designation
-//     isEditModalOpen.value = true;
-// };
 
 // Open edit modal and allow name editing conditionally
 const openEditModal = (founder) => {
@@ -126,7 +116,7 @@ const closeEditModal = () => {
 
 const searchIndividuals = async () => {
     try {
-        const response = await auth.fetchPublicApi('/api/org-members/search', { query: searchQuery.value }, 'POST');
+        const response = await auth.fetchProtectedApi('/api/org-members/search', { query: searchQuery.value }, 'POST');
         if (response.status) {
             searchResults.value = response.data;
             //console.log(response.data);
@@ -159,7 +149,9 @@ const addFounder = async (individualTypeUserId) => {
                     'Founder added successfully.',
                     'success'
                 );
-                window.location.reload();
+                getFounders();
+
+                // window.location.reload();
             } else {
                 Swal.fire(
                     'Failed!',
@@ -177,55 +169,65 @@ const addFounder = async (individualTypeUserId) => {
         );
     }
 };
-
 const addUnlinkFounder = async () => {
     try {
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: "Do you want to add as a founder?",
+            text: 'Do you want to add as a founder?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, add it!',
-            cancelButtonText: 'No, cancel!'
+            cancelButtonText: 'No, cancel!',
         });
-        if (result.isConfirmed) {
-            console.log(name.value, designation.value, isActive.value, profile_image.value);
-            const response = await authStore.fetchProtectedApi('/api/founders', { 
-                user_id: userId,
-                name: name.value,
-                designation: designation.value,
-                is_active: isActive.value,
-                profile_image: profile_image.value
-            }, 'POST');
-            if (response.status && response.data) {
-                addedFounder.value = response.data;
-                //console.log(addedFounder);
-                await Swal.fire(
-                    'Added!',
-                    // addedFounder.name - addedFounder.designation,
-                    'Founder added successfully.',
-                    'success'
-                );
-                window.location.reload();
 
-            } else {
-                addedFounder.value = [];
-                Swal.fire(
-                    'Failed!',
-                    'Failed to add founder.',
-                    'error'
-                );
-            }
+        if (!result.isConfirmed) return;
+
+        const formData = new FormData();
+        formData.append('user_id', userId);
+        formData.append('name', name.value);
+        formData.append('designation', designation.value || '');
+        formData.append('is_active', isActive.value ? '1' : '0');
+        if (profile_image.value) {
+            formData.append('profile_image', profile_image.value);
+        }
+
+        const response = await authStore.uploadProtectedApi('/api/founders', formData, 'POST', {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        if (response.status && response.data) {
+            addedFounder.value = response.data;
+
+            await Swal.fire(
+                'Added!',
+                'Founder added successfully.',
+                'success'
+            );
+            getFounders();
+            // window.location.reload();
+        } else {
+            addedFounder.value = [];
+            Swal.fire(
+                'Failed!',
+                'Failed to add founder.',
+                'error'
+            );
         }
     } catch (error) {
-        console.error("Error fetching member list:", error);
+        console.error('Error adding founder:', error);
         addedFounder.value = [];
+        Swal.fire(
+            'Error!',
+            'An error occurred. Please try again.',
+            'error'
+        );
     }
 };
 
-// Get founders when the component is mounted
-onMounted(getFounders);
-
+onMounted(() => {
+    getFounders();
+    closeEditModal();
+});
 </script>
 
 
@@ -283,36 +285,46 @@ onMounted(getFounders);
                 </p>
             </div>
 
-            <!-- Add Founder Form -->
             <div v-if="showForm" class="flex flex-wrap ml-0 md:ml-[100px] mt-2 md:mt-6">
-                <div class="w-full md:w-3/12 mr-2"><label for="name"
-                        class="block text-gray-700 font-semibold mb-2">Founder
-                        name <span class="text-red-500">*</span></label>
+                <!-- Founder Name -->
+                <div class="w-full md:w-3/12 mr-2">
+                    <label for="name" class="block text-gray-700 font-semibold mb-2">
+                        Founder name <span class="text-red-500">*</span>
+                    </label>
                     <input v-model="name" type="text" id="name"
                         class="w-full border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Founder name" required>
+                        placeholder="Founder name" required />
                     <p v-if="auth.errors?.name" class="text-red-500 mt-2">{{ auth.errors?.name[0] }}</p>
                 </div>
-                <div class="w-full md:w-3/12 mr-2"><label for="designation"
-                        class="block text-gray-700 font-semibold mb-2">Designation</label>
+
+                <!-- Designation -->
+                <div class="w-full md:w-3/12 mr-2">
+                    <label for="designation" class="block text-gray-700 font-semibold mb-2">Designation</label>
                     <input v-model="designation" type="text" id="designation"
                         class="w-full border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Optional">
+                        placeholder="Optional" />
                     <p v-if="auth.errors?.designation" class="text-red-500 mt-2">{{ auth.errors?.designation[0] }}</p>
                 </div>
-                <div class="w-full md:w-3/12 mr-2"><label for="profile_image"
-                        class="block text-gray-700 font-semibold mb-2">Profile Image</label>
-                    <input type="file" id="profile_image"
-                        class="w-full border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Optional">
+
+                <!-- Profile Image -->
+                <div class="w-full md:w-3/12 mr-2">
+                    <label for="profile_image" class="block text-gray-700 font-semibold mb-2">Profile Image</label>
+                    <input type="file" id="profile_image" @change="handleFileChange"
+                        class="w-full border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                     <p v-if="auth.errors?.profile_image" class="text-red-500 mt-2">{{ auth.errors?.profile_image[0] }}
                     </p>
                 </div>
-                <div>
-                    <button @click="addUnlinkFounder(name, designation, isActive, profile_image)"
-                        class="bg-blue-600 text-white rounded-md hover:bg-blue-700 py-2 px-4 mb-2 mt-2 md:mt-8">Submit</button>
+
+                <!-- Submit Button -->
+                <div class="mt-2 md:mt-8">
+                    <button @click="addUnlinkFounder"
+                        class="bg-blue-600 text-white rounded-md hover:bg-blue-700 py-2 px-6">
+                        Submit
+                    </button>
                 </div>
             </div>
+
+            
         </div>
     </section>
 
@@ -359,7 +371,7 @@ onMounted(getFounders);
             <table class="min-w-full table-auto border-collapse border border-gray-300">
                 <thead>
                     <tr>
-                        <th class="border px-4 py-2">Sl</th>
+                        <th class="border px-4 py-2">Profile Image</th>
                         <th class="border px-4 py-2">Name</th>
                         <th class="border px-4 py-2">Designation</th>
                         <th class="border px-4 py-2">Active</th>

@@ -75,11 +75,11 @@ import SuperAdminReceiptEdit from "@/views/SuperAdmin/Financial/Receipt/Edit.vue
 import SuperAdminReceiptView from "@/views/SuperAdmin/Financial/Receipt/View.vue";
 
 //Payment Log
-import SuperAdminPaymentLog from "../views/SuperAdmin/Financial/Payment/Index.vue";
-import SuperAdminPaymentLogList from "../views/SuperAdmin/Financial/Payment/Index.vue";
-import SuperAdminPaymentLogCreate from "../views/SuperAdmin/Financial/Payment/Create.vue";
-import SuperAdminPaymentLogEdit from "../views/SuperAdmin/Financial/Payment/Edit.vue";
-import SuperAdminPaymentLogView from "../views/SuperAdmin/Financial/Payment/View.vue";
+import SuperAdminPaymentLog from "../views/SuperAdmin/Financial/PaymentLog/Index.vue";
+import SuperAdminPaymentLogList from "../views/SuperAdmin/Financial/PaymentLog/Index.vue";
+import SuperAdminPaymentLogCreate from "../views/SuperAdmin/Financial/PaymentLog/Create.vue";
+import SuperAdminPaymentLogEdit from "../views/SuperAdmin/Financial/PaymentLog/Edit.vue";
+import SuperAdminPaymentLogView from "../views/SuperAdmin/Financial/PaymentLog/View.vue";
 
 //SuperAdmin E-commerce Setting
 import IndexBusinessType from "../views/SuperAdmin/E-commerce/BusinessType.vue";
