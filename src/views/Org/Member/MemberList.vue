@@ -89,8 +89,8 @@ onMounted(fetchMemberList);
             <td class="px-6 py-4 text-sm text-gray-800">{{ member.membership_start_date }}</td>
             <td class="px-6 py-4 text-sm">
               <button @click="viewMemberDetails(member)"
-                class="text-green-600 hover:text-green-800 font-medium transition">
-                View Details
+                class="text-blue-600 hover:text-green-800 font-medium transition">
+                Details
               </button>
             </td>
           </tr>
