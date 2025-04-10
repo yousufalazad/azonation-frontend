@@ -48,79 +48,93 @@ onMounted(() => getRecords());
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-10/12">
-        <section>
-            <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">Event List</h5>
-                <div>
-                    <button @click="$router.push({ name: 'create-event' })"
-                        class="bg-blue-500 text-white font-semibold py-2 px-2 mx-3 rounded-md">
-                        Add Event
+    <div class="max-w-7xl mx-auto w-11/12">
+      <section class="my-6">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+          <h2 class="text-xl font-semibold text-gray-800">Event List</h2>
+          <div class="flex flex-wrap gap-3 mt-3 md:mt-0">
+            <button
+              @click="$router.push({ name: 'create-event' })"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition">
+              Add Event
+            </button>
+            <button
+              @click="$router.push({ name: 'index-event-summary' })"
+              class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition">
+              Event Summary List
+            </button>
+          </div>
+        </div>
+  
+        <!-- Table -->
+        <div class="overflow-x-auto rounded-lg shadow">
+          <table class="min-w-full divide-y divide-gray-200 bg-white">
+            <thead class="bg-gray-100 text-gray-700 text-sm uppercase text-left">
+              <tr>
+                <th class="px-4 py-3">ID</th>
+                <th class="px-4 py-3">Title</th>
+                <th class="px-4 py-3">Name</th>
+                <th class="px-4 py-3">Date</th>
+                <th class="px-4 py-3">Time</th>
+                <th class="px-4 py-3">Venue</th>
+                <th class="px-4 py-3">Status</th>
+                <th class="px-4 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="text-gray-800 text-sm divide-y divide-gray-100">
+              <tr v-for="(record, index) in recordList" :key="index" class="hover:bg-gray-50">
+                <td class="px-4 py-2">{{ record.user_id }}</td>
+                <td class="px-4 py-2">{{ record.title }}</td>
+                <td class="px-4 py-2">{{ record.name }}</td>
+                <td class="px-4 py-2">{{ record.date }}</td>
+                <td class="px-4 py-2">{{ record.time }}</td>
+                <td class="px-4 py-2">{{ record.venue_name }}</td>
+                <td class="px-4 py-2">
+                  <span
+                    :class="record.status === 0 ? 'text-green-600 font-medium' : 'text-red-500 font-medium'">
+                    {{ record.status === 0 ? 'Active' : 'Disabled' }}
+                  </span>
+                </td>
+                <td class="px-4 py-2">
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      @click="$router.push({ name: 'create-event-summary', params: { eventId: record.id } })"
+                      class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded-md text-sm transition">
+                      Summary
                     </button>
-                    <button @click="$router.push({ name: 'index-event-summary' })"
-                        class="bg-blue-500 text-white font-semibold py-2 px-2 mx-2 rounded-md">
-                        Event Summary List
+                    <button
+                      @click="$router.push({ name: 'event-attendances', params: { id: record.id } })"
+                      class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition">
+                      Attendances
                     </button>
-                </div>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                    <thead>
-                        <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                            <th class="border px-4 py-2"> ID</th>
-                            <th class="border px-4 py-2">Title</th>
-                            <th class="border px-4 py-2">Name</th>
-                            <!-- <th class="border px-4 py-2">Short Description</th>
-                            <th class="border px-4 py-2">Description</th> -->
-                            <th class="border px-4 py-2">Date</th>
-                            <th class="border px-4 py-2">Time</th>
-                            <th class="border px-4 py-2">Venue</th>
-                            <!-- <th class="border px-4 py-2">Venue Address</th>
-                            <th class="border px-4 py-2">Note</th> -->
-                            <th class="border px-4 py-2">Status</th>
-                            <th class="border px-4 py-2">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(record, index) in recordList" :key="index">
-                            <td class="border px-4 py-2">{{ record.user_id }}</td>
-                            <td class="border px-4 py-2">{{ record.title }}</td>
-                            <td class="border px-4 py-2">{{ record.name }}</td>
-                            <!-- <td class="border px-4 py-2">{{ record.short_description }}</td>
-                            <td class="border px-4 py-2">{{ record.description }}</td> -->
-                            <td class="border px-4 py-2">{{ record.date }}</td>
-                            <td class="border px-4 py-2">{{ record.time }}</td>
-                            <td class="border px-4 py-2">{{ record.venue_name }}</td>
-                            <!-- <td class="border px-4 py-2">{{ record.venue_address }}</td>
-                            <td class="border px-4 py-2">{{ record.note }}</td> -->
-                            <td class="border px-4 py-2">{{ record.status === 0 ? 'Active' : 'Disable' }}</td>
-                            <td class="border px-1 py-2 w-50">
-                                <button
-                                    @click="$router.push({ name: 'create-event-summary', params: { eventId: record.id } })"
-                                    class="bg-sky-500 hover:bg-sky-600 text-white px-2 py-1 m-2 rounded">Event Summary
-                                </button>
-
-                                <button @click="$router.push({ name: 'event-attendances', params: { id: record.id } })"
-                                    class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 m-2 rounded">Attendances
-                                </button>
-                                
-                                <button
-                                    @click="$router.push({ name: 'event-guest-attendance', params: { id: record.id } })"
-                                    class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 m-2 rounded">Guest
-                                    Attendances </button>
-
-
-                                <button @click="$router.push({ name: 'edit-event', params: { id: record.id } })"
-                                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">Edit</button>
-                                <button @click="$router.push({ name: 'view-event', params: { id: record.id } })"
-                                    class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 m-2 rounded">View</button>
-                                <button @click="deleteRecord(record.id)"
-                                    class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">Delete</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+                    <button
+                      @click="$router.push({ name: 'event-guest-attendance', params: { id: record.id } })"
+                      class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition">
+                      Guests
+                    </button>
+                    <button
+                      @click="$router.push({ name: 'edit-event', params: { id: record.id } })"
+                      class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-sm transition">
+                      Edit
+                    </button>
+                    <button
+                      @click="$router.push({ name: 'view-event', params: { id: record.id } })"
+                      class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-sm transition">
+                      View
+                    </button>
+                    <button
+                      @click="deleteRecord(record.id)"
+                      class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm transition">
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
-</template>
+  </template>
+<style scoped>  </style>  

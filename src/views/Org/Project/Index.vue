@@ -49,96 +49,75 @@ onMounted(() => getRecords());
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto w-10/12">
+  <div class="max-w-7xl mx-auto w-full px-4 py-6">
     <section>
-      <div class="flex justify-between left-color-shade py-2 my-3">
-        <h5 class="text-md font-semibold mt-2">Project List</h5>
-        <div>
+      <div class="flex justify-between items-center mb-6">
+        <h5 class="text-lg font-semibold text-gray-800">Project List</h5>
+        <div class="space-x-3">
           <button @click="$router.push({ name: 'create-project' })"
-            class="bg-blue-500 text-white font-semibold py-2 px-2 mx-3 rounded-md">
+                  class="bg-blue-600 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition">
             Add Project
           </button>
           <button @click="$router.push({ name: 'index-project-summary' })"
-            class="bg-blue-500 text-white font-semibold py-2 px-2 mx-2 rounded-md">
+                  class="bg-blue-600 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition">
             Project Summary List
           </button>
         </div>
       </div>
-      <!-- Table container inside the card body -->
-      <div v-if="recordList.length" class="p-4">
-        <div class="overflow-x-auto">
-          <table class="min-w-full bg-white border border-gray-200">
-            <thead class="bg-gray-50">
-              <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                <th class="border px-1 py-3 text-left" style="width:10px">ID</th>
-                <th class="border px-1 py-3 text-left" style="width:250px">Title</th>
-                <th class="border px-1 py-3 text-left">Start Date</th>
-                <th class="border px-1 py-3 text-left">End Date</th>
-                <!-- <th class="border px-1 py-3 text-left">Start Time</th>
-                <th class="border px-1 py-3 text-left">End Time</th> -->
-                <th class="border px-1 py-3 text-left">Status</th>
-                <th class="border px-1 py-3 text-left" style="width:300px">Action</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-              <tr v-for="project in recordList" :key="project.id"
-               class="border-b border-gray-200 hover:bg-gray-100 transition duration-200">
-                <td class="border px-1 py-2" style="width:10px">{{ project.id }}</td>
-                <td class="border px-1 py-2" style="width:250px">{{ project.title }}</td>
-                <td class="border px-1 py-2">{{ project.start_date }}</td>
-                <td class="border px-1 py-2">{{ project.end_date }}</td>
-                <!-- <td class="border px-1 py-2">{{ project.start_time }}</td>
-                <td class="border px-1 py-2">{{ project.end_time }}</td> -->
-                <td class="border px-1 py-2"
-                  :class="project.status === 1 ? 'text-green-500' : 'text-yellow-500'">
-                  {{ project.status === 1 ? 'Active' : 'Disable' }}
-                </td>
-                <td class="px-4 py-3" style="width:350px">
-                  <button @click="$router.push({ name: 'create-project-summary', params: { projectId: project.id } })"
-                    class="bg-sky-500 hover:bg-sky-600 text-white px-2 py-1 m-2 rounded">Add Project Summary
-                  </button>
-                  <button @click="$router.push({ name: 'project-attendances', params: { id: project.id } })"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 m-2 rounded">Attendances </button>
-                  <button @click="$router.push({ name: 'edit-project', params: { id: project.id } })"
-                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">Edit</button>
-                  <button @click="$router.push({ name: 'view-project', params: { id: project.id } })"
-                    class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 m-2 rounded">View</button>
-                  <button @click="deleteRecord(project.id)"
-                    class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">Delete</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+
+      <div v-if="recordList.length" class="overflow-x-auto rounded-lg bg-white shadow-md">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">ID</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">Title</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">Start Date</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">End Date</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">Status</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr v-for="project in recordList" :key="project.id" class="hover:bg-gray-50 transition duration-200">
+              <td class="px-6 py-3 text-sm font-medium text-gray-800">{{ project.id }}</td>
+              <td class="px-6 py-3 text-sm font-medium text-gray-800">{{ project.title }}</td>
+              <td class="px-6 py-3 text-sm text-gray-600">{{ project.start_date }}</td>
+              <td class="px-6 py-3 text-sm text-gray-600">{{ project.end_date }}</td>
+              <td class="px-6 py-3 text-sm">
+                <span :class="project.status === 1 ? 'text-green-500' : 'text-yellow-500'">
+                  {{ project.status === 1 ? 'Active' : 'Disabled' }}
+                </span>
+              </td>
+              <td class="px-6 py-3 space-x-2">
+                <button @click="$router.push({ name: 'create-project-summary', params: { projectId: project.id } })"
+                        class="bg-sky-600 text-white font-medium py-2 px-4 rounded-md hover:bg-sky-700 transition">
+                  Add Summary
+                </button>
+                <button @click="$router.push({ name: 'project-attendances', params: { id: project.id } })"
+                        class="bg-blue-600 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition">
+                  Attendances
+                </button>
+                <button @click="$router.push({ name: 'edit-project', params: { id: project.id } })"
+                        class="bg-yellow-600 text-white font-medium py-2 px-4 rounded-md hover:bg-yellow-700 transition">
+                  Edit
+                </button>
+                <button @click="$router.push({ name: 'view-project', params: { id: project.id } })"
+                        class="bg-green-600 text-white font-medium py-2 px-4 rounded-md hover:bg-green-700 transition">
+                  View
+                </button>
+                <button @click="deleteRecord(project.id)"
+                        class="bg-red-600 text-white font-medium py-2 px-4 rounded-md hover:bg-red-700 transition">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div v-else class="p-4">
-        <p class="text-center text-gray-500">No projects available. Click "Create Project" to add a new one.</p>
+
+      <div v-else class="text-center text-gray-500 py-6">
+        <p>No projects available. Click "Add Project" to create a new one.</p>
       </div>
     </section>
   </div>
 </template>
-<style scoped>
-table {
-  border-collapse: collapse;
-  width: 100%;
-}
-
-th,
-td {
-  padding: 5px;
-  text-align: left;
-}
-
-th {
-  background-color: #f8f9fa;
-  font-weight: bold;
-}
-
-td {
-  border-bottom: 1px solid #ddd;
-}
-
-button {
-  margin-right: 5px;
-}
-</style>

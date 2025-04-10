@@ -13,7 +13,6 @@ const fetchMemberList = async () => {
 
     if (response.status) {
       memberList.value = response.data;
-
     } else {
       memberList.value = [];
     }
@@ -21,6 +20,13 @@ const fetchMemberList = async () => {
     console.error("Error fetching member list:", error);
     memberList.value = [];
   }
+};
+
+// Example method for action button
+const viewMemberDetails = (member) => {
+  console.log("Viewing member details:", member);
+  // Example: Navigate or open modal
+  // router.push(`/org-dashboard/member/${member.id}`);
 };
 
 onMounted(fetchMemberList);
@@ -32,81 +38,65 @@ onMounted(fetchMemberList);
       <div>
         <h5 class="text-md font-semibold mt-2">Member list</h5>
       </div>
-      <div>
-
-        <a href="/org-dashboard/add-member">
-          <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mr-2">
-            Full list
+      <div class="flex flex-wrap gap-2 items-center justify-end">
+        <a href="/org-dashboard/member-list">
+          <button
+            class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">
+            Full List
           </button>
         </a>
-
-        <a href="/org-dashboard/add-member">
-          <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
-            Print
-          </button>
-        </a>
-
-        <a href="/org-dashboard/add-member">
-          <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
-            PDF
-          </button>
-        </a>
-
-        <a href="/org-dashboard/add-member">
-          <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
-            Excel
-          </button>
-        </a>
-
-        <a href="/org-dashboard/add-member">
-          <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
-            Settings
+        <button class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">
+          Print
+        </button>
+        <button class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">
+          PDF
+        </button>
+        <button class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">
+          Excel
+        </button>
+        <a href="/org-dashboard/past-members">
+          <button
+            class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">
+            Past Members
           </button>
         </a>
         <a href="/org-dashboard/add-member">
-          <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
-            Past members
-          </button>
-        </a>
-        <a href="/org-dashboard/add-member">
-          <button class="text-md text-white font-semibold bg-blue-600 p-2 rounded mx-2">
-            + Add member
+          <button class="bg-blue-600 hover:bg-blue-700 text-sm text-white font-medium px-4 py-2 rounded-lg shadow-sm">
+            + Add Member
           </button>
         </a>
       </div>
     </div>
-    <div v-if="memberList.length" class="bg-white">
-      <table class="min-w-full table-auto border-collapse border border-gray-300">
-        <thead>
+
+    <div v-if="memberList.length" class="bg-white shadow-md rounded-2xl overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-200">
           <tr>
-            <!-- <th class="border px-4 py-2">ID Number</th> -->
-            <!-- <th class="border px-4 py-2">Photo</th> -->
-            <th class="border px-4 py-2">Name</th>
-            <!-- <th class="border px-4 py-2">Email</th> -->
-            <!-- <th class="border px-4 py-2">Azon ID</th> -->
-            <!-- <th class="border px-4 py-2">Individual ID</th> -->
-            <!-- <th class="border px-4 py-2">Joining Date</th> -->
-            <!-- <th class="border px-4 py-2">Membership Type</th> -->
-            <!-- <th class="border px-4 py-2">End Date</th> -->
+            <!-- <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Sl</th> -->
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Membership ID</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Membership Type</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Joining Date</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
           </tr>
         </thead>
-        <tbody>
-          <tr v-for="member in memberList" :key="member.id" class="hover:bg-gray-50">
-            <!-- <td class="border px-4 py-2">{{ member.existing_org_membership_id }}</td> -->
-            <!-- <td class="border px-4 py-2">{{ member.memberProfileImage.image_path }}</td> -->
-            <td class="border px-4 py-2">{{ member.individual.name }}</td>
-            <!-- <td class="border px-4 py-2">{{ member.individual.email }}</td> -->
-            <!-- <td class="border px-4 py-2">{{ member.individual.azon_id }}</td> -->
-            <!-- <td class="border px-4 py-2">{{ member.individual.id }}</td> -->
-            <!-- <td class="border px-4 py-2">{{ member.joining_date }}</td> -->
-            <!-- <td class="border px-4 py-2">{{ member.membership_type.name }}</td> -->
-            <!-- <td class="border px-4 py-2">{{ member.end_date }}</td> -->
+        <tbody class="bg-white divide-y divide-gray-100">
+          <tr v-for="(member, index) in memberList" :key="member.id" class="hover:bg-gray-50 transition-colors">
+            <!-- <td class="px-6 py-4 text-sm text-gray-800">{{ index + 1 }}</td> -->
+            <td class="px-6 py-4 text-sm text-gray-800">{{ member.individual.name }}</td>
+            <td class="px-6 py-4 text-sm text-gray-800">{{ member.existing_membership_id }}</td>
+            <td class="px-6 py-4 text-sm text-gray-800">{{ member.membership_type.name }}</td>
+            <td class="px-6 py-4 text-sm text-gray-800">{{ member.membership_start_date }}</td>
+            <td class="px-6 py-4 text-sm">
+              <button @click="viewMemberDetails(member)"
+                class="text-green-600 hover:text-green-800 font-medium transition">
+                View Details
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
-    <!-- Spacing -->
-    <div class="my-8"></div>
   </div>
 </template>
 

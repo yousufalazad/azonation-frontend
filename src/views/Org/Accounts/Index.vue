@@ -407,7 +407,7 @@ const submitForm = async () => {
                 <table class="min-w-full table-auto border-collapse border border-gray-300 text-left">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="border px-4 py-2 min-w-[10px]">SL</th>
+                            <th class="border px-0 py-2 min-w-[10px]">SL</th>
                             <th class="p-2 border border-gray-300 min-w-[100px]">Date</th>
                             <th class="p-2 border border-gray-300 min-w-[130px]">Transaction ID</th>
                             <th class="p-2 border border-gray-300 min-w-[100px]">Title</th>
