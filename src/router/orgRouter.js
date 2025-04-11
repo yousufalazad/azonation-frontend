@@ -5,8 +5,8 @@ import fundamentalInfo from "../views/Org/Profile/FundamentalInfo.vue";
 
 //Org Member
 import IndependentMember from "../views/Org/Member/IndependentMember.vue";
-import AddMember from "../views/Org/Member/AddMember.vue";
-import MemberList from "../views/Org/Member/MemberList.vue";
+import CreateMember from "../views/Org/Member/Create.vue";
+import IndexMember from "../views/Org/Member/Index.vue";
 import FamilyMember from "../views/Org/Member/FamilyMember.vue";
 
 //Founder
@@ -157,15 +157,15 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "add-member",
-        name: "add-member",
-        component: AddMember,
+        path: "create-member",
+        name: "create-member",
+        component: CreateMember,
         meta: { requiresAuth: true },
       },
       {
-        path: "member-list",
-        name: "member-list",
-        component: MemberList,
+        path: "index-member",
+        name: "index-member",
+        component: IndexMember,
         meta: { requiresAuth: true },
       },
       {

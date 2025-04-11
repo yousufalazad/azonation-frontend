@@ -222,7 +222,7 @@
                 </button>
               </li>
               <li class="border-t"></li>
-              <li class="py-4 px-3.5"><img src="../../../../assets/Logo/Azonation.png" alt="Azonation"
+              <li class="py-4 px-3.5"><img src="../../../assets/Logo/Azonation.png" alt="Azonation"
                   class="max-h-[50px] max-w-[100px]"></li>
   
             </ul>

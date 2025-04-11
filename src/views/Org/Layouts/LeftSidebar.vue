@@ -29,7 +29,7 @@ const isSectionOpen = (section) => openSections.value.includes(section);
       <span v-else class="hidden">Dashboard</span>
     </router-link>
 
-    <router-link to="/org-dashboard/member-list" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+    <router-link to="/org-dashboard/index-member" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
       <span v-if="isSidebarExpanded">Members</span>
       <span v-else class="hidden">Members</span>
     </router-link>

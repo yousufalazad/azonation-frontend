@@ -15,7 +15,7 @@ const password = ref('')
     <div class="container mx-auto flex justify-between items-center px-4 py-3">
       
       <div>
-        <img src="../../../assets/Logo/Azonation.png" alt="Azonation" class="w-44">
+        <img src="../../assets/Logo/Azonation.png" alt="Azonation" class="w-44">
       </div>
 
       <div class="hidden md:flex">
