@@ -159,7 +159,7 @@ onMounted(fetchMemberList);
               <td class="px-2 py-4 text-sm text-gray-800">{{ member.existing_membership_id }}</td>
               <td class="px-5 py-4 text-sm text-gray-800">{{ member.membership_type?.name || '' }}</td>
               <td class="px-2 py-4 text-sm text-gray-800">{{ calculateMembershipAge(member.membership_start_date) }}
-              </td> <!-- Less padding for Membership Age -->
+              </td>
               <td class="px-2 py-4 text-sm">
                 <button @click="viewMemberDetail(member)"
                   class="text-gray-800 hover:underline hover:text-blue-800 transition font-medium">
