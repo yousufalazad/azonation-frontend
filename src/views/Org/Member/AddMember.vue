@@ -1,6 +1,7 @@
 <!-- AddMember.vue -->
 <script setup>
 import { ref } from 'vue';
+import router from "../../../router/router";
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
 
@@ -16,7 +17,6 @@ const searchIndividuals = async () => {
     const response = await auth.fetchProtectedApi('/api/org-members/search', { query: searchQuery.value }, 'POST');
     if (response.status) {
       searchResults.value = response.data;
-      console.log(response.data);
     } else {
       searchResults.value = [];
     }
@@ -28,6 +28,20 @@ const searchIndividuals = async () => {
 
 const addMember = async (individualTypeUserId) => {
   try {
+
+    // Check if the individual is already in the org_members list
+    const responseCheck = await auth.fetchProtectedApi('/api/org-members/check', { org_type_user_id: orgTypeUserId, individual_type_user_id: individualTypeUserId }, 'POST');
+    
+    if (responseCheck.status && responseCheck.data.exists) {
+      // If the individual is already a member, show a message
+      await Swal.fire(
+        'Already a Member!',
+        'This individual is already a member of your organization.',
+        'info'
+      );
+      return; // Exit the function without adding the member
+    }
+
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: "Do you want to add this member?",
@@ -48,6 +62,7 @@ const addMember = async (individualTypeUserId) => {
         selectedIndividual.value = null;
         searchResults.value = [];
         searchQuery.value = '';
+        router.push({ name: "member-list" });
       } else {
         Swal.fire(
           'Failed!',
@@ -64,6 +79,7 @@ const addMember = async (individualTypeUserId) => {
       'error'
     );
   }
+
 };
 </script>
 

@@ -41,11 +41,11 @@ const isSectionOpen = (section) => openSections.value.includes(section);
       <span v-else class="hidden">Independent Member</span>
     </router-link>
 
-    <router-link to="/org-dashboard/family-member"
+    <!-- <router-link to="/org-dashboard/family-member"
       class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
       <span v-if="isSidebarExpanded">Family Member</span>
       <span v-else class="hidden">Family Member</span>
-    </router-link>
+    </router-link> -->
 
 
     <router-link to="/org-dashboard/committee-list" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">

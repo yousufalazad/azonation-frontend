@@ -137,7 +137,7 @@ const submitForm = async () => {
 </script>
 
 <template>
-    <div class="container mx-auto max-w-7xl w-10/12 p-8 bg-white rounded-lg shadow-lg mt-12">
+    <div class="min-h-screen overflow-y-auto p-8 bg-white rounded-lg shadow-lg mt-12">
         <!-- Header -->
         <div class="flex justify-between items-center mb-8">
             <h2 class="text-2xl font-bold text-gray-800">Add New Project</h2>
