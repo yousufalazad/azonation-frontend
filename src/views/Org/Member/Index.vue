@@ -4,11 +4,17 @@
 import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 import router from "../../../router/router";
+import Swal from 'sweetalert2';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
 const memberList = ref([]);
+const membershipTypeId = ref([]);
 const selectedMember = ref(null);
 const viewModal = ref(false);
 const editModal = ref(false);
+
 
 const fetchMemberList = async () => {
   try {
@@ -26,42 +32,130 @@ const fetchMemberList = async () => {
   }
 };
 
-const calculateMembershipAge = (startDate) => {
-  if (!startDate) return '';
-  const start = new Date(startDate);
-  const now = new Date();
-  const years = now.getFullYear() - start.getFullYear();
-  const months = now.getMonth() - start.getMonth();
-  const totalMonths = years * 12 + months;
-  return `${Math.floor(totalMonths / 12)}y ${totalMonths % 12}m`;
+// Fetch membership types
+const fetchMembershipType = async () => {
+    try {
+        const response = await auth.fetchProtectedApi('/api/membership-types', {}, 'GET');
+        membershipTypeId.value = response.status ? response.data : [];
+    } catch (error) {
+        console.error('Error fetching membership types:', error);
+        membershipTypeId.value = [];
+    }
 };
 
 const updateMember = async () => {
   try {
     const memberId = selectedMember.value?.id;
-    const payload = {
-      individual_name: selectedMember.value?.individual?.name,
-      existing_membership_id: selectedMember.value?.existing_membership_id,
-      membership_type: selectedMember.value?.membership_type?.name,
-      membership_start_date: selectedMember.value?.membership_start_date,
-      sponsored_user_id: selectedMember.value?.sponsored_user_id,
-      is_active: selectedMember.value?.is_active,
+    const membershipStartDate = selectedMember.value?.membership_start_date;
 
+    if (!membershipStartDate) {
+      return Swal.fire({
+        icon: 'warning',
+        title: 'Missing Date',
+        text: 'Please provide a membership start date before updating.',
+      });
+    }
+
+    const payload = {
+      existing_membership_id: selectedMember.value?.existing_membership_id,
+      membership_start_date: membershipStartDate,
     };
 
     const response = await authStore.fetchProtectedApi(`/api/org-members/${memberId}`, payload, 'PUT');
 
     if (response.status) {
-      // Re-fetch list after update
       await fetchMemberList();
       closeEditModal();
+      closeViewModal();
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Member Updated',
+        text: 'The member information has been successfully updated.',
+        timer: 3000,
+        showConfirmButton: false,
+      });
+      router.push({ name: "index-member" });
+
     } else {
-      alert('Failed to update member.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Update Failed',
+        text: 'Failed to update member.',
+      });
     }
   } catch (error) {
     console.error("Error updating member:", error);
-    alert('An error occurred.');
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'An unexpected error occurred while updating the member.',
+    });
   }
+};
+
+const deleteMember = async (memberId) => {
+  try {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This action cannot be undone.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
+
+    if (result.isConfirmed) {
+      const response = await authStore.fetchProtectedApi(`/api/org-members/${memberId}`, {}, 'DELETE');
+      if (response.status) {
+        await fetchMemberList();
+        closeViewModal();
+        Swal.fire(
+          'Deleted!',
+          'The member has been deleted successfully.',
+          'success'
+        );
+      } else {
+        Swal.fire(
+          'Error!',
+          'Failed to delete member.',
+          'error'
+        );
+      }
+    } else {
+      // If the user cancels the deletion
+      Swal.fire(
+        'Cancelled',
+        'The member was not deleted.',
+        'info'
+      );
+    }
+  } catch (error) {
+    console.error("Error deleting member:", error);
+    Swal.fire(
+      'Error!',
+      'An error occurred while trying to delete the member.',
+      'error'
+    );
+  }
+};
+
+
+dayjs.extend(duration);
+dayjs.extend(relativeTime);
+
+const calculateMembershipAge = (startDate) => {
+  if (!startDate) return '';
+
+  const start = dayjs(startDate);
+  const now = dayjs();
+
+  const diffYears = now.diff(start, 'year');
+  const diffMonths = now.diff(start.add(diffYears, 'year'), 'month');
+  const diffDays = now.diff(start.add(diffYears, 'year').add(diffMonths, 'month'), 'day');
+
+  return `${diffYears}y ${diffMonths}m ${diffDays}d`;
 };
 
 const viewMemberDetail = (member) => {
@@ -86,22 +180,11 @@ const closeEditModal = () => {
   editModal.value = false;
 };
 
-const deleteMember = async (memberId) => {
-  try {
-    const result = await authStore.fetchProtectedApi(`/api/org-members/${memberId}`, {}, 'DELETE');
-    if (result.status) {
-      await fetchMemberList();
-      closeViewModal();
-    } else {
-      alert('Failed to delete member.');
-    }
-  } catch (error) {
-    console.error("Error deleting member:", error);
-    alert('An error occurred.');
-  }
-};
 
-onMounted(fetchMemberList);
+onMounted(() => {
+  fetchMemberList();
+  fetchMembershipType();
+});
 </script>
 
 <template>
@@ -208,21 +291,26 @@ onMounted(fetchMemberList);
               <div class="space-y-4">
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700">Name</label>
-                  <input v-model="selectedMember.individual.name" type="text"
-                    class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                </div>
-
-                <div>
                   <label class="block text-sm font-medium text-gray-700">Membership Id</label>
                   <input v-model="selectedMember.existing_membership_id" type="text"
                     class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                 </div>
 
-                <div>
+                <!-- <div>
                   <label class="block text-sm font-medium text-gray-700">Membership Type</label>
                   <input v-model="selectedMember.membership_type.name" type="text"
                     class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                </div> -->
+
+                <!-- Membership Type -->
+                <div>
+                    <label for="membershipTypeId" class="block text-sm font-medium text-gray-700">Membership type</label>
+                    <select v-model="membershipTypeId" id="membershipTypeId"
+                    class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    <option value="">Select membership type</option>
+                                    <option v-for="type in membershipTypeId" :key="type.id" :value="type.id">{{ type.name }}
+                                    </option>
+                    </select>
                 </div>
 
                 <div>
@@ -231,20 +319,20 @@ onMounted(fetchMemberList);
                     class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                 </div>
 
-                <div>
+                <!-- <div>
                   <label class="block text-sm font-medium text-gray-700">Reference / Sponsored by</label>
                   <input v-model="selectedMember.sponsored_user_id" type="text"
                     class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                </div>
+                </div> -->
 
-                <div>
+                <!-- <div>
                   <label class="block text-sm font-medium text-gray-700">Membership Status</label>
                   <select v-model="selectedMember.is_active" class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     <option value="1">Active</option>
                     <option value="0">Inactive</option>
                   </select>
-                </div>
-                <!-- Add other fields as needed -->
+                </div> -->
+
               </div>
 
               <div class="mt-6 flex justify-end gap-3">

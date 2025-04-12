@@ -29,83 +29,57 @@ const fetchMemberList = async () => {
   }
 };
 
-const calculateMembershipAge = (membership_start_date) => {
-  if (!membership_start_date) return '';
-  const start = new Date(membership_start_date);
-  const now = new Date();
-  const years = now.getFullYear() - start.getFullYear();
-  const months = now.getMonth() - start.getMonth();
-  const totalMonths = years * 12 + months;
-  return `${Math.floor(totalMonths / 12)}y ${totalMonths % 12}m`;
-};
-
-
-const totalOrgMemberCount = async () => {
-  try {
-    const response = await auth.fetchProtectedApi('/api/total-org-member-count', {}, 'GET');
-    if (response.status && response.data) {
-      totalOrgMember.value = response.data;
-    }
-  } catch (error) {
-    console.error("Error fetching total members:", error);
-  }
-};
-
 
 const updateMember = async () => {
   try {
     const memberId = selectedMember.value?.id;
-    const payload = {
-      individual_name: selectedMember.value?.individual?.name,
-      existing_membership_id: selectedMember.value?.existing_membership_id,
-      membership_type: selectedMember.value?.membership_type?.name,
-      membership_start_date: selectedMember.value?.membership_start_date,
-      sponsored_user_id: selectedMember.value?.sponsored_user_id,
-      is_active: selectedMember.value?.is_active,
+    const membershipStartDate = selectedMember.value?.membership_start_date;
 
+    if (!membershipStartDate) {
+      return Swal.fire({
+        icon: 'warning',
+        title: 'Missing Date',
+        text: 'Please provide a membership start date before updating.',
+      });
+    }
+
+    const payload = {
+      existing_membership_id: selectedMember.value?.existing_membership_id,
+      membership_start_date: membershipStartDate,
     };
 
     const response = await authStore.fetchProtectedApi(`/api/org-members/${memberId}`, payload, 'PUT');
 
     if (response.status) {
-      // Re-fetch list after update
       await fetchMemberList();
       closeEditModal();
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Member Updated',
+        text: 'The member information has been successfully updated.',
+        timer: 3000,
+        showConfirmButton: false,
+      });
     } else {
-      alert('Failed to update member.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Update Failed',
+        text: 'Failed to update member.',
+      });
     }
   } catch (error) {
     console.error("Error updating member:", error);
-    alert('An error occurred.');
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'An unexpected error occurred while updating the member.',
+    });
   }
 };
-
-const viewMemberDetail = (member) => {
-  console.log("Viewing member details:", member);
-  selectedMember.value = member;
-  viewModal.value = true;
-};
-
-const editMember = () => {
-  if (selectedMember.value) {
-    editModal.value = true;
-  }
-};
-
-const closeViewModal = () => {
-  selectedMember.value = null;
-  viewModal.value = false;
-};
-
-const closeEditModal = () => {
-  selectedMember.value = null;
-  editModal.value = false;
-};
-
 
 const deleteMember = async (memberId) => {
   try {
-    // Show confirmation dialog using SweetAlert2
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: 'This action cannot be undone.',
@@ -116,7 +90,6 @@ const deleteMember = async (memberId) => {
       reverseButtons: true
     });
 
-    // If the user confirms the delete action
     if (result.isConfirmed) {
       const response = await authStore.fetchProtectedApi(`/api/org-members/${memberId}`, {}, 'DELETE');
       if (response.status) {
@@ -152,6 +125,50 @@ const deleteMember = async (memberId) => {
   }
 };
 
+const calculateMembershipAge = (startDate) => {
+  if (!startDate) return '';
+  const start = new Date(startDate);
+  const now = new Date();
+  const years = now.getFullYear() - start.getFullYear();
+  const months = now.getMonth() - start.getMonth();
+  const totalMonths = years * 12 + months;
+  return `${Math.floor(totalMonths / 12)}y ${totalMonths % 12}m`;
+};
+
+
+const totalOrgMemberCount = async () => {
+  try {
+    const response = await auth.fetchProtectedApi('/api/total-org-member-count', {}, 'GET');
+    if (response.status && response.data) {
+      totalOrgMember.value = response.data;
+    }
+  } catch (error) {
+    console.error("Error fetching total members:", error);
+  }
+};
+
+
+const viewMemberDetail = (member) => {
+  console.log("Viewing member details:", member);
+  selectedMember.value = member;
+  viewModal.value = true;
+};
+
+const editMember = () => {
+  if (selectedMember.value) {
+    editModal.value = true;
+  }
+};
+
+const closeViewModal = () => {
+  selectedMember.value = null;
+  viewModal.value = false;
+};
+
+const closeEditModal = () => {
+  selectedMember.value = null;
+  editModal.value = false;
+};
 
 onMounted(totalOrgMemberCount);
 onMounted(fetchMemberList);
@@ -280,22 +297,16 @@ onMounted(fetchMemberList);
               <div class="space-y-4">
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700">Name</label>
-                  <input v-model="selectedMember.individual.name" type="text"
-                    class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                </div>
-
-                <div>
                   <label class="block text-sm font-medium text-gray-700">Membership Id</label>
                   <input v-model="selectedMember.existing_membership_id" type="text"
                     class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                 </div>
 
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Membership Type</label>
-                  <input v-model="selectedMember.membership_type.name" type="text"
-                    class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                </div>
+                <!-- <div>
+  <label class="block text-sm font-medium text-gray-700">Membership Type</label>
+  <input v-model="selectedMember.membership_type.name" type="text"
+    class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+</div> -->
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700">Membership Start Date</label>
@@ -303,21 +314,20 @@ onMounted(fetchMemberList);
                     class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                 </div>
 
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Reference / Sponsored by</label>
-                  <input v-model="selectedMember.sponsored_user_id" type="text"
-                    class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                </div>
+                <!-- <div>
+  <label class="block text-sm font-medium text-gray-700">Reference / Sponsored by</label>
+  <input v-model="selectedMember.sponsored_user_id" type="text"
+    class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+</div> -->
 
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Membership Status</label>
-                  <select v-model="selectedMember.is_active"
-                    class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                    <option value="1">Active</option>
-                    <option value="0">Inactive</option>
-                  </select>
-                </div>
-                <!-- Add other fields as needed -->
+                <!-- <div>
+  <label class="block text-sm font-medium text-gray-700">Membership Status</label>
+  <select v-model="selectedMember.is_active" class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+    <option value="1">Active</option>
+    <option value="0">Inactive</option>
+  </select>
+</div> -->
+
               </div>
 
               <div class="mt-6 flex justify-end gap-3">

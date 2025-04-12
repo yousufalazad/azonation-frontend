@@ -62,7 +62,7 @@ const addMember = async (individualTypeUserId) => {
         selectedIndividual.value = null;
         searchResults.value = [];
         searchQuery.value = '';
-        router.push({ name: "member-list" });
+        router.push({ name: "index-member" });
       } else {
         Swal.fire(
           'Failed!',

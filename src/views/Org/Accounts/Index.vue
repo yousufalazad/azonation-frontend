@@ -117,7 +117,6 @@ const deleteTransaction = async (id) => {
     }
 };
 
-// Fetch transactions on mount
 onMounted(() => {
     getFunds();
     getTransactions();
