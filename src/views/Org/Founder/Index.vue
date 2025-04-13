@@ -224,10 +224,9 @@ const addUnlinkFounder = async () => {
     }
 };
 
-onMounted(() => {
-    getFounders();
-    closeEditModal();
-});
+// Fetch founders list on component mount
+onMounted(getFounders);
+
 </script>
 
 
@@ -262,7 +261,7 @@ onMounted(() => {
                         <div class="flex-1">
                             <p class="font-medium text-lg text-gray-700">{{ individualUser.name }}</p>
                             <p class="text-sm text-gray-500">{{ individualUser.city }}, {{ individualUser.country_name
-                                }}</p>
+                            }}</p>
                             <p class="text-sm text-gray-500">Username: {{ individualUser.username }}</p>
                             <p class="text-sm text-gray-500">Azon Id: {{ individualUser.azon_id }}</p>
                         </div>
@@ -323,8 +322,6 @@ onMounted(() => {
                     </button>
                 </div>
             </div>
-
-            
         </div>
     </section>
 
@@ -371,7 +368,7 @@ onMounted(() => {
             <table class="min-w-full table-auto border-collapse border border-gray-300">
                 <thead>
                     <tr>
-                        <th class="border px-4 py-2">Profile Image</th>
+                        <th class="border px-4 py-2">Image</th>
                         <th class="border px-4 py-2">Name</th>
                         <th class="border px-4 py-2">Designation</th>
                         <th class="border px-4 py-2">Active</th>
@@ -380,7 +377,11 @@ onMounted(() => {
                 </thead>
                 <tbody>
                     <tr v-for="founder in founderList" :key="founder.id" class="hover:bg-gray-50">
-                        <td class="border px-4 py-2">{{ founder.id }}</td>
+                        <td class="border px-4 py-2">
+                            <img v-if="founder.image_url" :src="founder.image_url" alt="Founder Image"
+                                class="h-12 w-12 rounded-full object-cover">
+                            <span v-else class="text-gray-400 italic">No Image</span>
+                        </td>
                         <td class="border px-4 py-2">{{ founder.founders && founder.founders.name ?
                             founder.founders.name : founder.name }}</td>
                         <td class="border px-4 py-2">{{ founder.designation }}</td>

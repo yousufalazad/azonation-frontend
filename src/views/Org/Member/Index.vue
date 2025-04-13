@@ -238,9 +238,10 @@ onMounted(() => {
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-200">
             <tr>
+              <th class="px-2 py-3 w-1/6">Image</th>
               <th class="px-10 py-3 text-left text-sm font-semibold text-gray-700 w-1/3">Name</th>
               <th class="px-2 py-3 text-left text-sm font-semibold text-gray-700 w-1/6">Membership Id</th>
-              <th class="px-5 py-3 text-left text-sm font-semibold text-gray-700 w-1/4">Membership type</th>
+              <th class="px-2 py-3 text-left text-sm font-semibold text-gray-700 w-1/4">Membership type</th>
               <th class="px-2 py-3 text-left text-sm font-semibold text-gray-700 w-1/6">Membership age</th>
               <!-- Less padding -->
               <th class="px-2 py-3 text-left text-sm font-semibold text-gray-700 w-1/6">Details</th>
@@ -249,6 +250,12 @@ onMounted(() => {
           </thead>
           <tbody class="bg-white divide-y divide-gray-100">
             <tr v-for="member in memberList" :key="member.id" class="hover:bg-gray-50 transition">
+
+              <td class="px-2 py-4">
+                <img v-if="member.image_url" :src="member.image_url" alt="Member Image"
+                  class="h-12 w-12 rounded-full object-cover">
+              </td>
+
               <td class="px-10 py-4 text-sm text-gray-800">{{ member.individual.name }}</td>
               <!-- More padding for Name -->
               <td class="px-2 py-4 text-sm text-gray-800">{{ member.existing_membership_id }}</td>
@@ -299,14 +306,14 @@ onMounted(() => {
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric'
-                }) || 'Not provided'
+                  }) || 'Not provided'
                 }}
               </span>
             </div>
             <div class="flex justify-between">
               <span class="font-medium text-gray-600">Membership age:</span>
               <span class="text-right">{{ calculateMembershipAge(selectedMember?.membership_start_date ?? 'Not provided'
-                ) }}</span>
+              ) }}</span>
             </div>
             <div class="flex justify-between">
               <span class="font-medium text-gray-600">Reference/sponsored by:</span>
@@ -314,7 +321,7 @@ onMounted(() => {
               <span class="text-right">{{
                 viewModal && selectedMember?.sponsored_user_id ? memberList.find(member => member.individual.id ===
                   selectedMember.sponsored_user_id)?.individual.name : 'Not provided'
-                }}</span>
+              }}</span>
             </div>
 
             <div class="flex justify-between">
@@ -342,7 +349,7 @@ onMounted(() => {
       <!-- Edit Member Modal -->
       <div v-if="editModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
         <div class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 relative">
-          <h2 class="text-lg font-semibold mb-4">Edit Member</h2>
+          <h2 class="text-lg font-semibold mb-4">{{ selectedMember?.individual?.name }}</h2>
           <form @submit.prevent="updateMember">
             <div class="space-y-4">
 

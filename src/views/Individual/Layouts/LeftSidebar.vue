@@ -61,71 +61,11 @@
             <span v-else class="hidden">Reports</span>
           </router-link>
 
-          <router-link to="/org-dashboard/profile" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+          
+          <router-link to="/individual-dashboard/individual-profile-update" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Profile</span>
             <span v-else class="hidden">Profile</span>
           </router-link>
-
-          <!-- Reports Section -->
-          <!-- <div>
-            <button @click="toggleSection('reports')"
-              class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
-              <span v-if="isSidebarExpanded">Reports</span>
-              <svg v-if="isSectionOpen('reports')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-              </svg>
-            </button>
-            <div v-if="isSectionOpen('reports') && isSidebarExpanded" class="space-y-1">
-              <router-link to="/dashboard/reports/project1"
-                class="block px-4 text-gray-500 py-2 hover:text-gray-900">Report 1</router-link>
-              <router-link to="/dashboard/reports/project2"
-                class="block px-4 text-gray-500 py-2 hover:text-gray-900">Report 2</router-link>
-            </div>
-          </div> -->
-
-          <!-- Profile Section -->
-          <!-- <div>
-            <button @click="toggleSection('profile')"
-              class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
-              <span v-if="isSidebarExpanded">Profile</span>
-              <svg v-if="isSectionOpen('profile')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-              </svg>
-            </button>
-            <div v-if="isSectionOpen('profile') && isSidebarExpanded" class="space-y-1">
-              
-              <router-link to="/org-dashboard/profile"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Profile</router-link>
-
-              <router-link to="/org-dashboard/profile"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Founders</router-link>
-
-              <router-link to="/org-dashboard/profile"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Strategic plan</router-link>
-
-              <router-link to="/org-dashboard/profile"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Awards/achievement</router-link>
-
-              <router-link to="/org-dashboard/profile"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Success story</router-link>
-
-              <router-link to="/org-dashboard/profile"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">History</router-link>
-
-              <router-link to="/org-dashboard/profile"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Year plan</router-link>
-            </div>
-          </div> -->
 
           <router-link to="/org-dashboard/profile" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Settings</span>
