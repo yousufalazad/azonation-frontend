@@ -307,8 +307,7 @@ const submitForm = async () => {
                                 <select v-model="fund_id" id="fund_id"
                                     class="w-full border border-gray-300 rounded-md p-2" required>
                                     <option value="">Select Fund</option>
-                                    <option v-for="fund in fundList" :key="fund.id" :value="fund.id">{{ fund.name }}
-                                    </option>
+                                    <option v-for="fund in fundList" :key="fund.id" :value="fund.id">{{ fund.name }}</option>
                                 </select>
                             </div>
 

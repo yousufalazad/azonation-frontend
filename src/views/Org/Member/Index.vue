@@ -9,8 +9,16 @@ import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
+dayjs.extend(duration);
+dayjs.extend(relativeTime);
+
+const auth = authStore;
 const memberList = ref([]);
-const membershipTypeId = ref([]);
+const membershipTypes = ref([]);
+const membership_start_date = ref("");
+const membership_type_id = ref("");
+const sponsored_user_id = ref("");
+//const is_active = ref(""); // we will never delete member, so no need to update this field when member is not active
 const selectedMember = ref(null);
 const viewModal = ref(false);
 const editModal = ref(false);
@@ -32,33 +40,36 @@ const fetchMemberList = async () => {
   }
 };
 
-// Fetch membership types
+//Fetch membership types for update member details
 const fetchMembershipType = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/membership-types', {}, 'GET');
-        membershipTypeId.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching membership types:', error);
-        membershipTypeId.value = [];
-    }
+  try {
+    const response = await auth.fetchProtectedApi('/api/membership-types', {}, 'GET');
+    membershipTypes.value = response.status ? response.data : [];
+    console.log("Membership types:", membershipTypes.value);
+  } catch (error) {
+    console.error('Error fetching membership types:', error);
+    membershipTypes.value = [];
+  }
 };
 
 const updateMember = async () => {
   try {
     const memberId = selectedMember.value?.id;
-    const membershipStartDate = selectedMember.value?.membership_start_date;
 
-    if (!membershipStartDate) {
-      return Swal.fire({
-        icon: 'warning',
-        title: 'Missing Date',
-        text: 'Please provide a membership start date before updating.',
-      });
-    }
+    // if (!selectedMember.value?.membership_start_date) {
+    //   return Swal.fire({
+    //     icon: 'warning',
+    //     title: 'Missing Date',
+    //     text: 'Please provide a membership start date before updating.',
+    //   });
+    // }
 
     const payload = {
       existing_membership_id: selectedMember.value?.existing_membership_id,
-      membership_start_date: membershipStartDate,
+      membership_start_date: selectedMember.value?.membership_start_date,
+      membership_type_id: membership_type_id.value,
+      sponsored_user_id: sponsored_user_id.value,
+      // is_active: is_active.value,  // we will never delete member, so no need to update this field when member is not active
     };
 
     const response = await authStore.fetchProtectedApi(`/api/org-members/${memberId}`, payload, 'PUT');
@@ -141,10 +152,6 @@ const deleteMember = async (memberId) => {
   }
 };
 
-
-dayjs.extend(duration);
-dayjs.extend(relativeTime);
-
 const calculateMembershipAge = (startDate) => {
   if (!startDate) return '';
 
@@ -166,10 +173,13 @@ const viewMemberDetail = (member) => {
 
 const editMember = () => {
   if (selectedMember.value) {
+    membership_type_id.value = selectedMember.value.membership_type_id;
+    membership_start_date.value = selectedMember.value.membership_start_date;
+    sponsored_user_id.value = selectedMember.value.sponsored_user_id;
+    // is_active.value = selectedMember.value.is_active; // we will never delete member, so no need to update this field when member is not active
     editModal.value = true;
   }
 };
-
 const closeViewModal = () => {
   selectedMember.value = null;
   viewModal.value = false;
@@ -177,10 +187,12 @@ const closeViewModal = () => {
 
 const closeEditModal = () => {
   selectedMember.value = null;
+  membership_type_id.value = null;
+  membership_start_date.value = null;
+  sponsored_user_id.value = null;
   editModal.value = false;
+  closeViewModal();
 };
-
-
 onMounted(() => {
   fetchMemberList();
   fetchMembershipType();
@@ -255,77 +267,131 @@ onMounted(() => {
       </div>
       <div v-else class="text-gray-500 text-sm mt-4">No members found.</div>
 
-     <!-- View Member Modal -->
-     <div v-if="viewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 relative">
-            <h2 class="text-lg font-semibold mb-4">Member Details</h2>
-            <div class="space-y-2 text-sm text-gray-700">
-              <p><strong>Name:</strong> {{ selectedMember?.individual?.name }}</p>
-              <p><strong>Membership ID:</strong> {{ selectedMember?.existing_membership_id }}</p>
-              <p><strong>Membership Type:</strong> {{ selectedMember?.membership_type?.name }}</p>
-              <p><strong>Membership Start Date:</strong> {{ selectedMember?.membership_start_date }}</p>
-              <p><strong>Membership Age:</strong> {{ calculateMembershipAge(selectedMember?.membership_start_date) }}
-                <p><strong>Reference/Sponsored by: </strong> Member Id: {{ selectedMember?.sponsored_user_id}}</p>
-                <p><strong>Membership Status:</strong>{{ selectedMember?.is_active === 1 ? 'Active' : 'Inactive' }}</p>
-              </p> 
+      <!-- View Member Modal -->
+      <div v-if="viewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-8 relative">
+
+          <div class="flex justify-between items-start border-b pb-4 mb-6">
+            <div>
+              <h2 class="text-2xl font-semibold text-gray-800">{{ selectedMember?.individual?.name ?? '--' }}</h2>
+              <p class="text-sm text-gray-500">Org Id: {{ selectedMember?.existing_membership_id }}</p>
+              <!-- <p class="text-sm text-gray-500">Azon Id: {{ selectedMember?.individual?.azon_id }}</p> -->
             </div>
-
-            <div class="mt-6 flex justify-end gap-3">
-              <button @click="editMember"
-                class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg">Edit</button>
-              
-              <button @click="deleteMember(selectedMember.id)"
-                class="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-lg">Delete</button>
-
-                <button @click="closeViewModal"
-                class="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded-lg">Close</button>
+            <div class="text-right">
+              <span class="text-sm px-3 py-1 rounded-full"
+                :class="selectedMember?.is_active === 1 ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'">
+                {{ selectedMember?.is_active === 1 ? 'Active' : 'Inactive' }}
+              </span>
             </div>
           </div>
+
+          <div class="grid grid-cols-1 gap-y-4 gap-x-8 text-sm text-gray-700">
+            <div class="flex justify-between">
+              <span class="font-medium text-gray-600">Membership type:</span>
+              <span class="text-right">{{ selectedMember?.membership_type?.name ?? '--' }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="font-medium text-gray-600">Start date:</span>
+              <!-- <span class="text-right">{{ selectedMember?.membership_start_date ?? 'Date not provided' }}</span> -->
+              <span class="text-right">
+                {{
+                  new Date(selectedMember?.membership_start_date).toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                }) || 'Not provided'
+                }}
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="font-medium text-gray-600">Membership age:</span>
+              <span class="text-right">{{ calculateMembershipAge(selectedMember?.membership_start_date ?? 'Not provided'
+                ) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="font-medium text-gray-600">Reference/sponsored by:</span>
+              <!-- <span class="text-right">{{ selectedMember?.sponsored_user_id ?? 'Not provided' }}</span> -->
+              <span class="text-right">{{
+                viewModal && selectedMember?.sponsored_user_id ? memberList.find(member => member.individual.id ===
+                  selectedMember.sponsored_user_id)?.individual.name : 'Not provided'
+                }}</span>
+            </div>
+
+            <div class="flex justify-between">
+              <span class="font-medium text-gray-600">Admin note:</span>
+              <!-- <span class="text-right">{{ selectedMember?.admin_note ?? '--' }}</span> -->
+            </div>
+
+          </div>
+
+          <div class="mt-8 flex justify-end gap-3">
+            <button @click="editMember" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-5 py-2 rounded-lg">
+              Edit
+            </button>
+            <button @click="deleteMember(selectedMember.id)"
+              class="bg-red-600 hover:bg-red-700 text-white text-sm px-5 py-2 rounded-lg">
+              Delete
+            </button>
+            <button @click="closeViewModal" class="bg-gray-200 hover:bg-gray-300 text-sm px-5 py-2 rounded-lg">
+              Close
+            </button>
+          </div>
         </div>
+      </div>
 
-        <!-- Edit Member Modal -->
-        <div v-if="editModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 relative">
-            <h2 class="text-lg font-semibold mb-4">Edit Member</h2>
-            <form @submit.prevent="updateMember">
-              <div class="space-y-4">
+      <!-- Edit Member Modal -->
+      <div v-if="editModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 relative">
+          <h2 class="text-lg font-semibold mb-4">Edit Member</h2>
+          <form @submit.prevent="updateMember">
+            <div class="space-y-4">
 
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Membership Id</label>
-                  <input v-model="selectedMember.existing_membership_id" type="text"
-                    class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Membership Id</label>
+                <input v-model="selectedMember.existing_membership_id" type="text"
+                  class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+              </div>
 
-                <!-- <div>
+              <!-- <div>
                   <label class="block text-sm font-medium text-gray-700">Membership Type</label>
                   <input v-model="selectedMember.membership_type.name" type="text"
                     class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                 </div> -->
 
-                <!-- Membership Type -->
-                <div>
-                    <label for="membershipTypeId" class="block text-sm font-medium text-gray-700">Membership type</label>
-                    <select v-model="membershipTypeId" id="membershipTypeId"
-                    class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                                    <option value="">Select membership type</option>
-                                    <option v-for="type in membershipTypeId" :key="type.id" :value="type.id">{{ type.name }}
-                                    </option>
-                    </select>
-                </div>
+              <!-- Membership Type -->
+              <div>
+                <label for="membership_type_id" class="block text-sm font-medium text-gray-700">Membership type</label>
+                <select v-model="membership_type_id" id="membership_type_id"
+                  class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                  <option value="" disabled>Select membership type</option>
+                  <option v-for="membershipType in membershipTypes" :key="membershipType.id" :value="membershipType.id">
+                    {{ membershipType.name }}
+                  </option>
+                </select>
+              </div>
 
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Membership Start Date</label>
-                  <input v-model="selectedMember.membership_start_date" type="date"
-                    class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                </div>
 
-                <!-- <div>
-                  <label class="block text-sm font-medium text-gray-700">Reference / Sponsored by</label>
-                  <input v-model="selectedMember.sponsored_user_id" type="text"
-                    class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                </div> -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Membership Start Date</label>
+                <input v-model="selectedMember.membership_start_date" type="date"
+                  class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+              </div>
 
-                <!-- <div>
+              <!-- Reference/Sponsored User ID, must me individual user ID and associated org member -->
+              <div>
+                <label for="sponsored_user_id" class="block text-sm font-medium text-gray-700">Reference/Sponsored
+                  Member</label>
+                <select v-model="sponsored_user_id" id="sponsored_user_id"
+                  class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                  <option value="" disabled>Select Reference/Sponsored Member</option>
+                  <option v-for="orgMember in memberList" :key="orgMember.individual.id"
+                    :value="orgMember.individual.id">{{ orgMember.individual.name }}
+                  </option>
+                </select>
+              </div>
+
+
+              <!-- <div>
                   <label class="block text-sm font-medium text-gray-700">Membership Status</label>
                   <select v-model="selectedMember.is_active" class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     <option value="1">Active</option>
@@ -333,19 +399,18 @@ onMounted(() => {
                   </select>
                 </div> -->
 
-              </div>
+            </div>
 
-              <div class="mt-6 flex justify-end gap-3">
-                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg">
-                  Save
-                </button>
-                <button @click="closeEditModal" type="button"
-                  class="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded-lg">Cancel</button>
-              </div>
-            </form>
-          </div>
+            <div class="mt-6 flex justify-end gap-3">
+              <button type="submit" class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg">
+                Save
+              </button>
+              <button @click="closeEditModal" type="button"
+                class="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded-lg">Cancel</button>
+            </div>
+          </form>
         </div>
-
+      </div>
 
       <div class="py-9">
       </div>
