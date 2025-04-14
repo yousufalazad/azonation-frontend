@@ -8,6 +8,9 @@ import Swal from 'sweetalert2';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
+// import placeholderImage from '@/assets/Placeholder/Azonation-profile-image2.jpg';
+// import placeholderImage from '@/assets/Placeholder/Azonation-profile-image3.png';
 
 dayjs.extend(duration);
 dayjs.extend(relativeTime);
@@ -238,38 +241,53 @@ onMounted(() => {
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-200">
             <tr>
-              <th class="px-2 py-3 w-1/6">Image</th>
-              <th class="px-10 py-3 text-left text-sm font-semibold text-gray-700 w-1/3">Name</th>
-              <th class="px-2 py-3 text-left text-sm font-semibold text-gray-700 w-1/6">Membership Id</th>
-              <th class="px-2 py-3 text-left text-sm font-semibold text-gray-700 w-1/4">Membership type</th>
-              <th class="px-2 py-3 text-left text-sm font-semibold text-gray-700 w-1/6">Membership age</th>
-              <!-- Less padding -->
-              <th class="px-2 py-3 text-left text-sm font-semibold text-gray-700 w-1/6">Details</th>
-              <!-- Less padding -->
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-20">Image</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 w-1/4">Name</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-1/5">Membership ID</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-1/5">Membership Type</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-1/5">Joining Date</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-1/5">Membership Age</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-24">Details</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-100">
             <tr v-for="member in memberList" :key="member.id" class="hover:bg-gray-50 transition">
-
-              <td class="px-2 py-4">
-                <img v-if="member.image_url" :src="member.image_url" alt="Member Image"
-                  class="h-12 w-12 rounded-full object-cover">
+              <td class="px-4 py-4">
+                <img :src="member.image_url ? member.image_url : placeholderImage" alt="Member Image"
+                  class="h-12 w-12 rounded-full object-cover" />
               </td>
-
-              <td class="px-10 py-4 text-sm text-gray-800">{{ member.individual.name }}</td>
-              <!-- More padding for Name -->
-              <td class="px-2 py-4 text-sm text-gray-800">{{ member.existing_membership_id }}</td>
-              <td class="px-5 py-4 text-sm text-gray-800">{{ member.membership_type?.name || '' }}</td>
-              <td class="px-2 py-4 text-sm text-gray-800">{{ calculateMembershipAge(member.membership_start_date) }}
+              <td class="px-6 py-4 text-sm text-gray-800">
+                {{ member.individual.name }}
               </td>
-              <td class="px-2 py-4 text-sm">
+              <td class="px-4 py-4 text-sm text-gray-800">
+                {{ member.existing_membership_id }}
+              </td>
+              <td class="px-4 py-4 text-sm text-gray-800">
+                {{ member.membership_type?.name || '' }}
+              </td>
+              <td class="px-4 py-4 text-sm text-gray-800">
+                {{
+                  member.membership_start_date
+                    ? new Date(member.membership_start_date).toLocaleDateString('en-GB', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric'
+                    })
+                : '--'
+                }}
+              </td>
+              <td class="px-4 py-4 text-sm text-gray-800">
+                {{ calculateMembershipAge(member.membership_start_date) }}
+              </td>
+              <td class="px-4 py-4 text-sm">
                 <button @click="viewMemberDetail(member)"
                   class="text-gray-800 hover:underline hover:text-blue-800 transition font-medium">
                   Details
                 </button>
-              </td> <!-- Less padding for Details -->
+              </td>
             </tr>
           </tbody>
+
         </table>
       </div>
       <div v-else class="text-gray-500 text-sm mt-4">No members found.</div>
