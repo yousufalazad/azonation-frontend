@@ -43,6 +43,18 @@ const getFounders = async () => {
     }
 };
 
+// Open edit modal and show name for all
+// const openEditModal = (founder) => {
+//     const isNameEditable = !founder.founders || !founder.founders.name; // Name is editable if it's not from founders table
+//     selectedFounder.value = {
+//         id: founder.id,
+//         name: isNameEditable ? founder.name : founder.founders.name,
+//         designation: founder.designation,
+//         isNameEditable: isNameEditable
+//     }; // Set founder's name and designation
+//     isEditModalOpen.value = true;
+// };
+
 // Open edit modal and allow name editing conditionally
 const openEditModal = (founder) => {
     // If the founder has a name in the relational table, don't allow editing
@@ -224,7 +236,52 @@ const addUnlinkFounder = async () => {
     }
 };
 
-// Fetch founders list on component mount
+// const addUnlinkFounder = async () => {
+//     try {
+//         const result = await Swal.fire({
+//             title: 'Are you sure?',
+//             text: "Do you want to add as a founder?",
+//             icon: 'warning',
+//             showCancelButton: true,
+//             confirmButtonText: 'Yes, add it!',
+//             cancelButtonText: 'No, cancel!'
+//         });
+//         if (result.isConfirmed) {
+//             // console.log(name.value, designation.value, isActive.value, profile_image.value);
+//             const response = await authStore.fetchProtectedApi('/api/founders', {
+//                 user_id: userId,
+//                 name: name.value,
+//                 designation: designation.value,
+//                 is_active: isActive.value,
+//                 // profile_image: profile_image.value
+//             }, 'POST');
+//             if (response.status && response.data) {
+//                 addedFounder.value = response.data;
+//                 //console.log(addedFounder);
+//                 await Swal.fire(
+//                     'Added!',
+//                     // addedFounder.name - addedFounder.designation,
+//                     'Founder added successfully.',
+//                     'success'
+//                 );
+//                 window.location.reload();
+
+//             } else {
+//                 addedFounder.value = [];
+//                 Swal.fire(
+//                     'Failed!',
+//                     'Failed to add founder.',
+//                     'error'
+//                 );
+//             }
+//         }
+//     } catch (error) {
+//         console.error("Error fetching member list:", error);
+//         addedFounder.value = [];
+//     }
+// };
+
+// Get founders when the component is mounted
 onMounted(getFounders);
 
 </script>
@@ -322,6 +379,37 @@ onMounted(getFounders);
                     </button>
                 </div>
             </div>
+
+            <!-- Add Founder Form -->
+            <!-- <div v-if="showForm" class="flex flex-wrap ml-0 md:ml-[100px] mt-2 md:mt-6">
+                <div class="w-full md:w-3/12 mr-2"><label for="name"
+                        class="block text-gray-700 font-semibold mb-2">Founder
+                        name <span class="text-red-500">*</span></label>
+                    <input v-model="name" type="text" id="name"
+                        class="w-full border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Founder name" required>
+                    <p v-if="auth.errors?.name" class="text-red-500 mt-2">{{ auth.errors?.name[0] }}</p>
+                </div>
+                <div class="w-full md:w-3/12 mr-2"><label for="designation"
+                        class="block text-gray-700 font-semibold mb-2">Designation</label>
+                    <input v-model="designation" type="text" id="designation"
+                        class="w-full border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Optional">
+                    <p v-if="auth.errors?.designation" class="text-red-500 mt-2">{{ auth.errors?.designation[0] }}</p>
+                </div>
+                <div class="w-full md:w-3/12 mr-2"><label for="profile_image"
+                        class="block text-gray-700 font-semibold mb-2">Profile Image</label>
+                    <input type="file" id="profile_image"
+                        class="w-full border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Optional">
+                    <p v-if="auth.errors?.profile_image" class="text-red-500 mt-2">{{ auth.errors?.profile_image[0] }}
+                    </p>
+                </div>
+                <div>
+                    <button @click="addUnlinkFounder(name, designation, isActive, profile_image)"
+                        class="bg-blue-600 text-white rounded-md hover:bg-blue-700 py-2 px-4 mb-2 mt-2 md:mt-8">Submit</button>
+                </div>
+            </div> -->
         </div>
     </section>
 
