@@ -9,8 +9,6 @@ import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
-// import placeholderImage from '@/assets/Placeholder/Azonation-profile-image2.jpg';
-// import placeholderImage from '@/assets/Placeholder/Azonation-profile-image3.png';
 
 dayjs.extend(duration);
 dayjs.extend(relativeTime);
@@ -29,7 +27,7 @@ const editModal = ref(false);
 
 const fetchMemberList = async () => {
   try {
-    const response = await authStore.fetchProtectedApi('/api/org-members/all', {}, 'GET');
+    const response = await authStore.fetchProtectedApi('/api/org-members/', {}, 'GET');
     console.log(response.data);
 
     if (response.status) {
@@ -273,9 +271,10 @@ onMounted(() => {
                       month: 'long',
                       year: 'numeric'
                     })
-                : '--'
+                    : '--'
                 }}
               </td>
+              
               <td class="px-4 py-4 text-sm text-gray-800">
                 {{ calculateMembershipAge(member.membership_start_date) }}
               </td>

@@ -3,6 +3,8 @@
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
+import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
+
 
 const auth = authStore;
 const userId = auth.user.id; // Assuming the org ID is stored in the logged-in user
@@ -465,11 +467,12 @@ onMounted(getFounders);
                 </thead>
                 <tbody>
                     <tr v-for="founder in founderList" :key="founder.id" class="hover:bg-gray-50">
+
                         <td class="border px-4 py-2">
-                            <img v-if="founder.image_url" :src="founder.image_url" alt="Founder Image"
+                            <img :src="founder.image_url ? founder.image_url : placeholderImage" alt="Founder Image"
                                 class="h-12 w-12 rounded-full object-cover">
-                            <span v-else class="text-gray-400 italic">No Image</span>
                         </td>
+
                         <td class="border px-4 py-2">{{ founder.founders && founder.founders.name ?
                             founder.founders.name : founder.name }}</td>
                         <td class="border px-4 py-2">{{ founder.designation }}</td>

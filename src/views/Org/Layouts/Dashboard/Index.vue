@@ -3,7 +3,8 @@
 import { ref, onMounted, computed } from 'vue';
 import { authStore } from '../../../../store/authStore';
 import router from "../../../../router/router";
-
+import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
+import Swal from 'sweetalert2';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -11,7 +12,6 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(duration);
 dayjs.extend(relativeTime);
 
-import Swal from 'sweetalert2';
 
 const userType = computed(() => auth.user?.type);
 const auth = authStore;
@@ -30,10 +30,9 @@ const editModal = ref(false);
 
 const fetchMemberList = async () => {
   try {
-    const response = await authStore.fetchProtectedApi('/api/org-members/all', {}, 'GET');
+    const response = await authStore.fetchProtectedApi('/api/org-members/', {}, 'GET');
     if (response.status) {
       memberList.value = response.data;
-      console.log("Member List:", memberList.value);
     } else {
       memberList.value = [];
     }
@@ -246,35 +245,36 @@ onMounted(() => {
         </div>
 
         <!-- Top Controls -->
-      <div class="flex justify-between mb-4 left-color-shade py-2 mt-8">
-        <div>
-          <h5 class="text-md font-semibold mt-2">Member list</h5>
+        <div class="flex justify-between mb-4 left-color-shade py-2 mt-8">
+          <div>
+            <h5 class="text-md font-semibold mt-2">Member list</h5>
+          </div>
+          <div class="flex flex-wrap gap-2 items-center justify-end">
+            <!-- Buttons -->
+            <a href="/org-dashboard/member-list">
+              <button
+                class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">Full
+                List</button>
+            </a>
+            <button
+              class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">Print</button>
+            <button
+              class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">PDF</button>
+            <button
+              class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">Excel</button>
+            <a href="/org-dashboard/past-members">
+              <button
+                class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">Past
+                Members</button>
+            </a>
+            <a href="/org-dashboard/create-member">
+              <button
+                class="bg-blue-600 hover:bg-blue-700 text-sm text-white font-medium px-4 py-2 rounded-lg shadow-sm">+
+                Add
+                Member</button>
+            </a>
+          </div>
         </div>
-        <div class="flex flex-wrap gap-2 items-center justify-end">
-          <!-- Buttons -->
-          <a href="/org-dashboard/member-list">
-            <button
-              class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">Full
-              List</button>
-          </a>
-          <button
-            class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">Print</button>
-          <button
-            class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">PDF</button>
-          <button
-            class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">Excel</button>
-          <a href="/org-dashboard/past-members">
-            <button
-              class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">Past
-              Members</button>
-          </a>
-          <a href="/org-dashboard/create-member">
-            <button
-              class="bg-blue-600 hover:bg-blue-700 text-sm text-white font-medium px-4 py-2 rounded-lg shadow-sm">+ Add
-              Member</button>
-          </a>
-        </div>
-      </div>
 
         <!-- Member List Table -->
         <div class="mt-2">
@@ -282,24 +282,45 @@ onMounted(() => {
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-200">
                 <tr>
-                  <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 w-1/3">Name</th>
-                  <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 w-1/6">Membership Id</th>
-                  <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 w-1/4">Membership type</th>
-                  <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 w-1/6">Membership age</th>
-                  <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 w-1/6">Details</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-20">Image</th>
+                  <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 w-1/4">Name</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-1/5">Membership ID</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-1/5">Membership Type</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-1/5">Joining Date</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-1/5">Membership Age</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-24">Details</th>
                 </tr>
               </thead>
 
               <tbody class="bg-white divide-y divide-gray-100">
                 <tr v-for="member in memberList.slice(0, 5)" :key="member.id" class="hover:bg-gray-50 transition">
+
+                  <td class="px-4 py-4 text-sm text-gray-800">
+                    <img :src="member.image_url ? member.image_url : placeholderImage" alt="Member Image"
+                      class="h-12 w-12 rounded-full object-cover">
+                  </td>
                   <td class="px-6 py-4 text-sm text-gray-800">{{ member.individual.name }}</td>
                   <td class="px-6 py-4 text-sm text-gray-800">{{ member.existing_membership_id }}</td>
                   <td class="px-6 py-4 text-sm text-gray-800">
                     {{ member.membership_type?.name || '' }}
                   </td>
+
+                  <td class="px-4 py-4 text-sm text-gray-800">
+                    {{
+                      member.membership_start_date
+                        ? new Date(member.membership_start_date).toLocaleDateString('en-GB', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        })
+                        : '--'
+                    }}
+                  </td>
+
                   <td class="px-6 py-4 text-sm text-gray-800">
                     {{ calculateMembershipAge(member.membership_start_date) }}
                   </td>
+
                   <td class="px-6 py-4 text-sm">
                     <button @click="viewMemberDetail(member)"
                       class="text-blue-600 hover:underline hover:text-blue-800 transition font-medium">
@@ -309,16 +330,14 @@ onMounted(() => {
                 </tr>
                 <tr></tr>
               </tbody>
-
-              <div class="px-6 py-4">
-                <router-link to="/org-dashboard/index-member">
-                  <button class="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium">
-                    View all members →
-                  </button>
-                </router-link>
-              </div>
-
             </table>
+            <div class="px-6 py-4">
+              <router-link to="/org-dashboard/index-member">
+                <button class="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium">
+                  View all members →
+                </button>
+              </router-link>
+            </div>
           </div>
           <div v-else class="text-gray-500 text-sm mt-4">No members found.</div>
         </div>
@@ -345,35 +364,32 @@ onMounted(() => {
                 <span class="font-medium text-gray-600">Membership type:</span>
                 <span class="text-right">{{ selectedMember?.membership_type?.name ?? '--' }}</span>
               </div>
-              <!-- <div class="flex justify-between">
+
+              <div class="flex justify-between">
                 <span class="font-medium text-gray-600">Start date:</span>
-                <span class="text-right">{{ selectedMember?.membership_start_date ?? 'Not provided' }}</span>
-              </div> -->
+                <span class="text-right">
+                  {{
+                    new Date(selectedMember?.membership_start_date).toLocaleDateString('en-GB', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric'
+                    }) || 'Not provided'
+                  }}
+                </span>
+              </div>
               <div class="flex justify-between">
-              <span class="font-medium text-gray-600">Start date:</span>
-              <!-- <span class="text-right">{{ selectedMember?.membership_start_date ?? 'Date not provided' }}</span> -->
-              <span class="text-right">
-                {{
-                  new Date(selectedMember?.membership_start_date).toLocaleDateString('en-GB', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                }) || 'Not provided'
-                }}
-              </span>
-            </div>
-            <div class="flex justify-between">
-              <span class="font-medium text-gray-600">Membership age:</span>
-              <span class="text-right">{{ calculateMembershipAge(selectedMember?.membership_start_date ?? 'Not provided'
-                ) }}</span>
-            </div>
+                <span class="font-medium text-gray-600">Membership age:</span>
+                <span class="text-right">{{ calculateMembershipAge(selectedMember?.membership_start_date ?? '--')
+                  }}</span>
+              </div>
               <div class="flex justify-between">
-              <span class="font-medium text-gray-600">Reference/sponsored by:</span>
-              <!-- <span class="text-right">{{ selectedMember?.sponsored_user_id ?? 'Not provided' }}</span> -->
-              <span class="text-right">{{
-              viewModal && selectedMember?.sponsored_user_id ? memberList.find(member => member.individual.id === selectedMember.sponsored_user_id)?.individual.name : 'Not provided'
-              }}</span>
-            </div>
+                <span class="font-medium text-gray-600">Reference/sponsored by:</span>
+                <!-- <span class="text-right">{{ selectedMember?.sponsored_user_id ?? 'Not provided' }}</span> -->
+                <span class="text-right">{{
+                  viewModal && selectedMember?.sponsored_user_id ? memberList.find(member => member.individual.id ===
+                    selectedMember.sponsored_user_id)?.individual.name : 'Not provided'
+                }}</span>
+              </div>
             </div>
 
             <div class="mt-8 flex justify-end gap-3">
