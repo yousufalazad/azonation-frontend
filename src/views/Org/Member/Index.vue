@@ -298,7 +298,7 @@ onMounted(() => {
           <div class="flex justify-between items-start border-b pb-4 mb-6">
             <div>
               <h2 class="text-2xl font-semibold text-gray-800">{{ selectedMember?.individual?.name ?? '--' }}</h2>
-              <p class="text-sm text-gray-500">Org Id: {{ selectedMember?.existing_membership_id }}</p>
+              <p class="text-sm text-gray-500">ID: {{ selectedMember?.existing_membership_id }}</p>
               <!-- <p class="text-sm text-gray-500">Azon Id: {{ selectedMember?.individual?.azon_id }}</p> -->
             </div>
             <div class="text-right">

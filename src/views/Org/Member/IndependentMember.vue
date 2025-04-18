@@ -43,7 +43,7 @@ const handleFileUpload = (event) => {
 // };
 
 const openModal = (member = null) => {
-  form.value = member ? {  ...member, is_active: member.is_active ===1 } : { is_active: true };
+  form.value = member ? { ...member, is_active: member.is_active === 1 } : { is_active: true };
 
   previewImage.value = null;
   if (member && member.image_path) {
@@ -212,8 +212,8 @@ onMounted(() => {
             </td>
             <td class="px-6 py-4 text-center">
               <button @click="openViewModal(member)"
-                  class="bg-blue-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-blue-600 transition">
-                  View
+                class="bg-blue-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-blue-600 transition">
+                View
               </button>
 
               <button @click="openModal(member)"
@@ -247,24 +247,21 @@ onMounted(() => {
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input v-model="form.email" type="email"
-              class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"
-               />
+              class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2" />
           </div>
           <!-- Mobile -->
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Mobile</label>
             <input v-model="form.mobile" type="text"
-              class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"
-               />
+              class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2" />
           </div>
           <!-- Address -->
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
             <textarea v-model="form.address"
-              class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"
-              ></textarea>
+              class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"></textarea>
           </div>
-          
+
           <!-- Admin Note -->
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Admin Note</label>
@@ -292,8 +289,7 @@ onMounted(() => {
           <div class="col-span-2 mt-4 flex justify-between">
             <button type="button" @click="closeModal"
               class="bg-gray-500 text-white px-6 py-2 rounded-lg">Cancel</button>
-            <button type="submit"
-              class="bg-blue-600 text-white px-6 py-2 rounded-lg">Save</button>
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg">Save</button>
           </div>
         </form>
       </div>
@@ -312,13 +308,13 @@ onMounted(() => {
           </div>
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input v-model="selectedMember.email" type="email" class="w-full border border-gray-300 rounded-lg px-4 py-2"
-              disabled />
+            <input v-model="selectedMember.email" type="email"
+              class="w-full border border-gray-300 rounded-lg px-4 py-2" disabled />
           </div>
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Mobile</label>
-            <input v-model="selectedMember.mobile" type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2"
-              disabled />
+            <input v-model="selectedMember.mobile" type="text"
+              class="w-full border border-gray-300 rounded-lg px-4 py-2" disabled />
           </div>
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
@@ -332,13 +328,13 @@ onMounted(() => {
           </div>
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Admin Note</label>
-            <textarea v-model="selectedMember.note"
-              class="w-full border border-gray-300 rounded-lg px-4 py-2" disabled></textarea>
+            <textarea v-model="selectedMember.note" class="w-full border border-gray-300 rounded-lg px-4 py-2"
+              disabled></textarea>
           </div>
           <div class="col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-1">Active</label>
-            <select v-model="selectedMember.is_active"
-              class="w-full border border-gray-300 rounded-lg px-4 py-2" disabled>
+            <select v-model="selectedMember.is_active" class="w-full border border-gray-300 rounded-lg px-4 py-2"
+              disabled>
               <option :value="true">Yes</option>
               <option :value="false">No</option>
             </select>
