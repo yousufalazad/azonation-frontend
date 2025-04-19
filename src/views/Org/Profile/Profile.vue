@@ -368,47 +368,48 @@
         </div>
     </section>
 
-    <!-- User primary country section -->
+    <!-- country section -->
     <section>
         <div class="space-y-4">
-            <h3 class="text-lg font-bold mb-2 left-color-shade py-2">User primary country</h3>
+            <h3 class="text-lg font-bold mb-2 left-color-shade py-2">Country</h3>
             <div class="flex justify-between">
                 <div>
-                    <p class="ml-5 pb-9">{{ country_name }}
+                    <p class="ml-5 pb-9">{{ userCountry }}
                     </p>
                 </div>
-                <div><button @click="openEmailModal()" class="text-blue-500 pl-9 pr-2">Edit</button></div>
+                <div><button @click="openCountryModal()" class="text-blue-500 pl-9 pr-2">Edit</button></div>
             </div>
 
         </div>
 
-        <!-- User primary country Modal -->
-        <div v-if="modalVisibleUserEmail"
+        <!-- Country Modal -->
+        <div v-if="modalOpenCountry"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
                 <h2 class="text-2xl font-bold mb-4 text-center">
-                    Edit User Email
+                    Change your country
                 </h2>
 
                 <div class="mb-4">
-                    <label for="newEmail" class="block text-sm font-medium text-gray-700">User email address</label>
-                    <input v-model="newEmail" type="newEmail" id="newEmail"
+                    <label for="countryChangeRequest" class="block text-sm font-medium text-gray-700">Country change request</label>
+                    <p class="text-sm text-gray-500 mb-2">Please provide a country name and a reason for change request</p>
+                    <input v-model="countryChangeRequest" type="textarea" id="countryChangeRequest"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         required />
-                    <p v-if="auth.errors?.newEmail" class="text-red-500 text-sm mt-1">{{
-                        auth.errors?.newEmail[0] }}</p>
+                    <p v-if="auth.errors?.countryChangeRequest" class="text-red-500 text-sm mt-1">{{
+                        auth.errors?.countryChangeRequest[0] }}</p>
                 </div>
 
 
                 <div class="flex justify-end">
                     <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
-                        @click="closeEmailModal">
+                        @click="closeCountryModal">
                         Close
                     </button>
 
                     <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                        @click="updateUserEmail()">
-                        Update
+                        @click="updateCountry()">
+                        Submit
                     </button>
                 </div>
             </div>
@@ -440,6 +441,7 @@ const address_line_two = ref('');
 const city = ref('');
 const state_or_region = ref('');
 const postal_code = ref('');
+const userCountry = ref('');
 const country_id = ref('');
 const country_name = ref('');
 const modalVisibleAddress = ref(false);
@@ -469,6 +471,11 @@ const newUsername = ref('');
 // Org User Email Change
 const modalVisibleUserEmail = ref(false);
 const newEmail = ref('');
+
+// Org Country Change
+const modalOpenCountry = ref(false);
+const countryChangeRequest = ref('');
+
 
 
 const fetchLogo = async () => {
@@ -581,39 +588,6 @@ const updateUsername = async () => {
         }
     }
 };
-
-// const updateUsername = async () => {
-//     try {
-//         const response = await auth.fetchProtectedApi(`/api/update-username/${userId}`, {
-//             username: newUsername.value,
-//         }, 'PUT');
-//         if (response.status) {
-//             // Success handling
-//             Swal.fire('Success', response.message || 'Username updated successfully', 'success');
-
-//             // Close the modal after successful update
-//             closeUsernameModal();
-
-//             // Update the name in sessionStorage explicitly
-//             let user = JSON.parse(sessionStorage.getItem('user'));
-//             if (user) {
-//                 user.username = newUsername.value;
-//                 sessionStorage.setItem('user', JSON.stringify(user));
-//             }
-
-//             // Optionally, you can reload the page or update the UI without reloading
-//             window.location.reload();
-//         } else {
-//             // Display error message from server response
-//             Swal.fire('Error', response.message || 'Failed to update username, please try again.', 'error');
-//         }
-
-//     } catch (error) {
-//         // Catch block for any other errors
-//         console.error("Error updating username:", error);
-//         Swal.fire('Error', error.response?.data?.message || 'An unexpected error occurred while updating the username', 'error');
-//     }
-// };
 
 const fetchOrgAddress = async () => {
     try {
@@ -769,6 +743,52 @@ const updateUserEmail = async () => {
     }
 };
 
+// const updateCountry = async () => {
+//     try {
+//         const response = await auth.fetchProtectedApi("/api/update-country/", {
+//             country_name: newCountry.value,
+//         }, 'PUT');
+//         if (response.status) {
+//             Swal.fire('Success', 'Country updated successfully', 'success');
+//             // Close the modal after successful update
+//             closeCountryModal();
+
+//             // Update the name in sessionStorage explicitly
+//             let user = JSON.parse(sessionStorage.getItem('user'));
+//             if (user) {
+//                 user.country_name = newCountry.value;
+//                 sessionStorage.setItem('user', JSON.stringify(user));
+//             }
+//             // Now refresh the current page
+//             window.location.reload();
+//         } else {
+//             Swal.fire('Error', 'Failed to update country', 'error');
+//         }
+
+//     } catch (error) {
+//         console.error("Error updating country:", error);
+//         Swal.fire('Error', 'Failed to update country', 'error');
+//     }
+// };
+
+
+const fetchOrgCountry = async () => {
+    try {
+        const response = await auth.fetchProtectedApi("/api/user-countries/country-name/", {}, 'GET');
+        console.log(response.data);
+        
+        if (response.status && response.data) {
+            userCountry.value = response.data.user_country_name.name || '';
+        } else {
+            //Swal.fire('Error', 'Failed to fetch organization country', 'error');
+        }
+    } catch (error) {
+        console.error("Error fetching organization country:", error);
+        Swal.fire('Error', 'Failed to fetch organization country', 'error');
+    }
+};
+
+
 const handleImageUpload = (event) => {
     selectedImage.value = event.target.files[0];
 };
@@ -830,11 +850,23 @@ const closeEmailModal = () => {
     modalVisibleUserEmail.value = false;
 };
 
-onMounted(fetchDialingCode);
-onMounted(fetchOrgAddress);
-onMounted(fetchOrgPhoneNumber);
-onMounted(fetchLogo);
+//Country
+const openCountryModal = () => {
+    modalOpenCountry.value = true;
+    countryChangeRequest.value = userCountry.value;
+};
 
+const closeCountryModal = () => {
+    modalOpenCountry.value = false;
+};
+
+onMounted(() => {
+    fetchLogo();
+    fetchDialingCode();
+    fetchOrgAddress();
+    fetchOrgPhoneNumber();
+    fetchOrgCountry();
+});
 </script>
 
 <style scoped>

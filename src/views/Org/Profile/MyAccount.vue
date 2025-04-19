@@ -25,17 +25,11 @@ import { RouterView } from 'vue-router';
               Settings
             </router-link>
           </li>
-          
-          <li>
-            <router-link to="#" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
-              Temporary
-            </router-link>
-          </li>
-          <li>
+          <!-- <li>
             <router-link to="/org-dashboard/my-account/package" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
               Package
             </router-link>
-          </li>
+          </li> -->
           <li>
             <router-link to="/org-dashboard/my-account/subscription" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
               Subscription
@@ -46,29 +40,19 @@ import { RouterView } from 'vue-router';
               Bill-calculation
             </router-link>
           </li>
-          <li>
+          <!-- <li>
             <router-link to="/org-dashboard/my-account/bill-list" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
               Billings
             </router-link>
-          </li>
+          </li> -->
           <li>
             <router-link to="/org-dashboard/my-account/invoice-list" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
-              Invoice list
-            </router-link>
-          </li>
-          <li>
-            <router-link to="/org-dashboard/my-account/view-invoice" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
-              View Invoice
+              Invoice
             </router-link>
           </li>
           <li>
             <router-link to="/org-dashboard/my-account/org-receipt-list" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
-              Receipt List
-            </router-link>
-          </li>
-          <li>
-            <router-link to="/org-dashboard/my-account/view-org-receipt" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
-              View Receipt
+              Receipt
             </router-link>
           </li>
           <li>
