@@ -26,6 +26,7 @@ import ViewAsset from "../views/Org/Asset/View.vue";
 import CommitteeList from "../views/Org/Committee/CommitteeList.vue";
 import CreateCommittee from "../views/Org/Committee/CreateCommittee.vue";
 import FormerCommitteeList from "../views/Org/Committee/FormerCommitteeList.vue";
+import CommitteeMember from "../views/Org/Committee/CommitteeMember.vue";
 
 //Event
 import IndexEvent from "../views/Org/Event/Index.vue";
@@ -228,6 +229,12 @@ const orgRoutes = [
         path: "committee-list",
         name: "committee-list",
         component: CommitteeList,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "index-committee-member/:committeeId",
+        name: "index-committee-member",
+        component: CommitteeMember,
         meta: { requiresAuth: true },
       },
       {

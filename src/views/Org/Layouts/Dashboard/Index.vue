@@ -300,9 +300,9 @@ onMounted(() => {
                       class="h-12 w-12 rounded-full object-cover">
                   </td>
                   <td class="px-6 py-4 text-sm text-gray-800">{{ member.individual.name }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-800">{{ member.existing_membership_id }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-800">{{ member.existing_membership_id || '--'}}</td>
                   <td class="px-6 py-4 text-sm text-gray-800">
-                    {{ member.membership_type?.name || '' }}
+                    {{ member.membership_type?.name || '--' }}
                   </td>
 
                   <td class="px-4 py-4 text-sm text-gray-800">

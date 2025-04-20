@@ -258,10 +258,10 @@ onMounted(() => {
                 {{ member.individual.name }}
               </td>
               <td class="px-4 py-4 text-sm text-gray-800">
-                {{ member.existing_membership_id }}
+                {{ member.existing_membership_id || '--' }}
               </td>
               <td class="px-4 py-4 text-sm text-gray-800">
-                {{ member.membership_type?.name || '' }}
+                {{ member.membership_type?.name || '--' }}
               </td>
               <td class="px-4 py-4 text-sm text-gray-800">
                 {{
@@ -276,7 +276,7 @@ onMounted(() => {
               </td>
               
               <td class="px-4 py-4 text-sm text-gray-800">
-                {{ calculateMembershipAge(member.membership_start_date) }}
+                {{ calculateMembershipAge(member.membership_start_date) || '--' }}
               </td>
               <td class="px-4 py-4 text-sm">
                 <button @click="viewMemberDetail(member)"
@@ -393,7 +393,6 @@ onMounted(() => {
                   </option>
                 </select>
               </div>
-
 
               <div>
                 <label class="block text-sm font-medium text-gray-700">Membership Start Date</label>

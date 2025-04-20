@@ -1,6 +1,6 @@
 <!-- Org register page -->
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { authStore } from '../../store/authStore';
 const auth = authStore
 
@@ -9,11 +9,25 @@ const type = 'organisation'  // Set the type value directly
 const email = ref('')
 const password = ref('')
 
+const country_id = ref('')
+const countryNames = ref([])
+const fetchCountries = async () => {
+  try {
+    const response = await auth.fetchPublicApi('/api/countries', {}, 'GET');
+    countryNames.value = response.data
+  } catch (error) {
+    console.error('Error fetching countries:', error)
+  }
+}
+onMounted(() => {
+  fetchCountries()
+})
+
 </script>
 <template>
   <header class="fixed top-0 left-0 w-full bg-white shadow-md z-50">
     <div class="container mx-auto flex justify-between items-center px-4 py-3">
-      
+
       <div>
         <img src="../../assets/Logo/Azonation.png" alt="Azonation" class="w-44">
       </div>
@@ -21,7 +35,8 @@ const password = ref('')
       <div class="hidden md:flex">
         <ul class="flex space-x-4">
           <li>
-            <router-link class="text-gray-600 hover:text-blue-600" to="/individual-register">Individual Register</router-link>
+            <router-link class="text-gray-600 hover:text-blue-600" to="/individual-register">Individual
+              Register</router-link>
           </li>
           <li>
             <router-link class="text-gray-600 hover:text-blue-600" to="/">Login</router-link>
@@ -37,19 +52,37 @@ const password = ref('')
 
       <div class="mb-4">
         <label for="name" class="block text-sm font-medium text-gray-700">Org Name</label>
-        <input v-model="name" type="text" id="name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Name" required>
+        <input v-model="name" type="text" id="name"
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          placeholder="Name" required>
         <p v-if="auth.errors?.name" class="text-red-500 text-sm mt-2">{{ auth.errors?.name[0] }}</p>
       </div>
 
       <div class="mb-4">
         <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-        <input v-model="email" type="email" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Email" required>
+        <input v-model="email" type="email" id="email"
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          placeholder="Email" required>
         <p v-if="auth.errors?.email" class="text-red-500 text-sm mt-2">{{ auth.errors?.email[0] }}</p>
+      </div>
+
+      <!-- Country -->
+      <div>
+        <label for="country_id" class="block text-sm font-medium text-gray-700">Country</label>
+        <select v-model="country_id" id="country_id"
+          class="mt-1 mb-4 block w-full px-3 py-2  border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <option value="" disabled>Select country</option>
+          <option v-for="countryName in countryNames" :key="countryName.id" :value="countryName.id">
+            {{ countryName.name }}
+          </option>
+        </select>
       </div>
 
       <div class="mb-4">
         <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-        <input v-model="password" type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="••••••••" required>
+        <input v-model="password" type="password" id="password"
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          placeholder="••••••••" required>
         <p v-if="auth.errors?.password" class="text-red-500 text-sm mt-2">{{ auth.errors?.password[0] }}</p>
       </div>
 
@@ -58,7 +91,8 @@ const password = ref('')
       </div>
 
       <div class="text-right pb-4">
-        <button @click="auth.register(name, type, email, password)" class="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+        <button @click="auth.register(name, type, email, country_id, password)"
+          class="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
           Sign Up
         </button>
       </div>
