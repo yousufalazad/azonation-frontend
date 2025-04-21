@@ -2,8 +2,6 @@
 import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
-import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
-
 
 const auth = authStore
 
@@ -177,7 +175,50 @@ const closeViewModal = () => {
       </button>
     </div>
 
-    <!-- Independent Members Table -->
+    <!-- Members Table -->
+    <table class="w-full table-auto border mt-4">
+      <thead>
+        <tr class="bg-gray-200">
+          <th class="px-4 py-2 text-left">Name</th>
+          <th class="px-4 py-2 text-left">Image</th>
+          <th class="px-4 py-2 text-left">Email</th>
+          <th class="px-4 py-2 text-left">Mobile</th>
+          <th class="px-4 py-2 text-left">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="member in members" :key="member.id" class="border-t">
+          <td class="px-4 py-2">{{ member.name }}</td>
+          <td class="px-4 py-2">
+            <img :src="member.image_url" alt="Member Image" class="w-16 h-16 object-cover rounded"
+              v-if="member.image_url">
+            <span v-else class="text-gray-400 italic">No Image</span>
+          </td>
+          <td class="px-4 py-2">{{ member.email }}</td>
+          <td class="px-4 py-2">{{ member.mobile }}</td>
+          <td class="px-4 py-2">
+            <!-- View Button -->
+            <button @click="openViewModal(member)"
+              class="bg-blue-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-blue-600 transition">
+              View
+            </button>
+
+            <!-- Edit Button -->
+            <button @click="openModal(member)"
+              class="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-yellow-600 transition">
+              Edit
+            </button>
+
+            <!-- Delete Button -->
+            <button @click="deleteMember(member.id)"
+              class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition">
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
     <table class="min-w-full divide-y divide-gray-200">
       <thead class="bg-gray-50">
         <tr>
@@ -192,8 +233,8 @@ const closeViewModal = () => {
       <tbody class="bg-white divide-y divide-gray-200">
         <tr v-for="member in members" :key="member.id" class="hover:bg-gray-50 transition">
           <td class="px-4 py-2">
-            <img :src="member.image_url" alt="Member Image" class="h-12 w-12 rounded-full object-cover"
-              v-if="member.image_url ? member.image_url : placeholderImage" />
+            <img :src="member.image_url" alt="Member Image" class="w-16 h-16 object-cover rounded"
+              v-if="member.image_url">
             <span v-else class="text-gray-400 italic">No Image</span>
           </td>
           <td class="px-6 py-4 text-sm text-gray-700">{{ member.name }}</td>

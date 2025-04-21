@@ -21,9 +21,8 @@ const isSectionOpen = (section) => openSections.value.includes(section);
 
 <template>
   <nav class="flex-1 px-2 py-4 space-y-2">
-    <!-- v-if="auth.isAuthenticated && userType == 'organisation'" -->
     <!-- Static Links -->
-    <router-link to="/org-dashboard/index"
+    <router-link :to="{ name: 'org-index' }"
       class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
       <span v-if="isSidebarExpanded">Dashboard</span>
       <span v-else class="hidden">Dashboard</span>
