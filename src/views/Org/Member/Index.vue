@@ -203,36 +203,46 @@ onMounted(() => {
 <template>
   <div class="min-h-screen overflow-y-auto">
     <div class="h-screen overflow-auto p-4">
+
       <!-- Top Controls -->
-      <div class="flex justify-between mb-4 left-color-shade py-2">
-        <div>
-          <h5 class="text-md font-semibold mt-2">Member list</h5>
-        </div>
-        <div class="flex flex-wrap gap-2 items-center justify-end">
-          <!-- Buttons -->
-          <a href="/org-dashboard/member-list">
-            <button
-              class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">Full
-              List</button>
-          </a>
-          <button
-            class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">Print</button>
-          <button
-            class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">PDF</button>
-          <button
-            class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">Excel</button>
+      <div class="flex justify-between items-center py-4 border-gray-200">
+        <!-- Section Title -->
+        <h2 class="text-lg font-semibold text-gray-600">Member List</h2>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-2">
+          <!-- Navigation Buttons -->
+          <router-link :to="{ name: 'index-member' }">
+              <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+                Full List
+              </button>
+          </router-link>
+
+          <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+            Print
+          </button>
+          <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+            PDF
+          </button>
+          <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+            Excel
+          </button>
+
           <a href="/org-dashboard/past-members">
-            <button
-              class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">Past
-              Members</button>
+            <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+              Past Members
+            </button>
           </a>
+
+          <!-- Add Member Button -->
           <a href="/org-dashboard/create-member">
-            <button
-              class="bg-blue-600 hover:bg-blue-700 text-sm text-white font-medium px-4 py-2 rounded-lg shadow-sm">+ Add
-              Member</button>
+            <button class="px-4 py-1.5 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
+              + Add Member
+            </button>
           </a>
         </div>
       </div>
+
 
       <!-- Table -->
       <div v-if="memberList.length" class="bg-white shadow-md rounded-2xl overflow-x-auto">
@@ -274,7 +284,7 @@ onMounted(() => {
                     : '--'
                 }}
               </td>
-              
+
               <td class="px-4 py-4 text-sm text-gray-800">
                 {{ calculateMembershipAge(member.membership_start_date) || '--' }}
               </td>

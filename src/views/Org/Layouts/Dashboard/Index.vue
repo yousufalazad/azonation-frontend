@@ -245,36 +245,45 @@ onMounted(() => {
         </div>
 
         <!-- Top Controls -->
-        <div class="flex justify-between mb-4 left-color-shade py-2 mt-8">
-          <div>
-            <h5 class="text-md font-semibold mt-2">Member list</h5>
-          </div>
-          <div class="flex flex-wrap gap-2 items-center justify-end">
-            <!-- Buttons -->
-            <a href="/org-dashboard/member-list">
-              <button
-                class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">Full
-                List</button>
-            </a>
-            <button
-              class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">Print</button>
-            <button
-              class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">PDF</button>
-            <button
-              class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">Excel</button>
+        <div class="flex justify-between items-center py-2 mt-8 border-gray-200">
+          <!-- Section Title -->
+          <h2 class="text-lg font-semibold text-gray-600">Members</h2>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-wrap gap-2">
+            
+            <router-link :to="{ name: 'index-member' }">
+              <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+                Full List
+              </button>
+            </router-link>
+
+            <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+              Print
+            </button>
+
+            <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+              PDF
+            </button>
+
+            <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+              Excel
+            </button>
+
             <a href="/org-dashboard/past-members">
-              <button
-                class="bg-gray-100 hover:bg-gray-200 text-sm text-gray-800 font-medium px-4 py-2 rounded-lg shadow-sm">Past
-                Members</button>
+              <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+                Past Members
+              </button>
             </a>
+
             <a href="/org-dashboard/create-member">
-              <button
-                class="bg-blue-600 hover:bg-blue-700 text-sm text-white font-medium px-4 py-2 rounded-lg shadow-sm">+
-                Add
-                Member</button>
+              <button class="px-4 py-1.5 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
+                + Add Member
+              </button>
             </a>
           </div>
         </div>
+
 
         <!-- Member List Table -->
         <div class="mt-2">
@@ -300,7 +309,7 @@ onMounted(() => {
                       class="h-12 w-12 rounded-full object-cover">
                   </td>
                   <td class="px-6 py-4 text-sm text-gray-800">{{ member.individual.name }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-800">{{ member.existing_membership_id || '--'}}</td>
+                  <td class="px-6 py-4 text-sm text-gray-800">{{ member.existing_membership_id || '--' }}</td>
                   <td class="px-6 py-4 text-sm text-gray-800">
                     {{ member.membership_type?.name || '--' }}
                   </td>
@@ -380,7 +389,7 @@ onMounted(() => {
               <div class="flex justify-between">
                 <span class="font-medium text-gray-600">Membership age:</span>
                 <span class="text-right">{{ calculateMembershipAge(selectedMember?.membership_start_date ?? '--')
-                  }}</span>
+                }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="font-medium text-gray-600">Reference/sponsored by:</span>
@@ -409,57 +418,59 @@ onMounted(() => {
 
         <!-- Edit Member Modal -->
         <div v-if="editModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 relative">
-          <h2 class="text-lg font-semibold mb-4">{{ selectedMember?.individual?.name }}</h2>
-          <form @submit.prevent="updateMember">
-            <div class="space-y-4">
+          <div class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 relative">
+            <h2 class="text-lg font-semibold mb-4">{{ selectedMember?.individual?.name }}</h2>
+            <form @submit.prevent="updateMember">
+              <div class="space-y-4">
 
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Membership Id</label>
-                <input v-model="selectedMember.existing_membership_id" type="text"
-                  class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-              </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Membership Id</label>
+                  <input v-model="selectedMember.existing_membership_id" type="text"
+                    class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                </div>
 
-              <!-- <div>
+                <!-- <div>
                   <label class="block text-sm font-medium text-gray-700">Membership Type</label>
                   <input v-model="selectedMember.membership_type.name" type="text"
                     class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                 </div> -->
 
-              <!-- Membership Type -->
-              <div>
-                <label for="membership_type_id" class="block text-sm font-medium text-gray-700">Membership type</label>
-                <select v-model="membership_type_id" id="membership_type_id"
-                  class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                  <option value="" disabled>Select membership type</option>
-                  <option v-for="membershipType in membershipTypes" :key="membershipType.id" :value="membershipType.id">
-                    {{ membershipType.name }}
-                  </option>
-                </select>
-              </div>
+                <!-- Membership Type -->
+                <div>
+                  <label for="membership_type_id" class="block text-sm font-medium text-gray-700">Membership
+                    type</label>
+                  <select v-model="membership_type_id" id="membership_type_id"
+                    class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <option value="" disabled>Select membership type</option>
+                    <option v-for="membershipType in membershipTypes" :key="membershipType.id"
+                      :value="membershipType.id">
+                      {{ membershipType.name }}
+                    </option>
+                  </select>
+                </div>
 
 
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Membership Start Date</label>
-                <input v-model="selectedMember.membership_start_date" type="date"
-                  class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-              </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Membership Start Date</label>
+                  <input v-model="selectedMember.membership_start_date" type="date"
+                    class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                </div>
 
-              <!-- Reference/Sponsored User ID, must me individual user ID and associated org member -->
-              <div>
-                <label for="sponsored_user_id" class="block text-sm font-medium text-gray-700">Reference/Sponsored
-                  Member</label>
-                <select v-model="sponsored_user_id" id="sponsored_user_id"
-                  class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                  <option value="" disabled>Select Reference/Sponsored Member</option>
-                  <option v-for="orgMember in memberList" :key="orgMember.individual.id"
-                    :value="orgMember.individual.id">{{ orgMember.individual.name }}
-                  </option>
-                </select>
-              </div>
+                <!-- Reference/Sponsored User ID, must me individual user ID and associated org member -->
+                <div>
+                  <label for="sponsored_user_id" class="block text-sm font-medium text-gray-700">Reference/Sponsored
+                    Member</label>
+                  <select v-model="sponsored_user_id" id="sponsored_user_id"
+                    class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <option value="" disabled>Select Reference/Sponsored Member</option>
+                    <option v-for="orgMember in memberList" :key="orgMember.individual.id"
+                      :value="orgMember.individual.id">{{ orgMember.individual.name }}
+                    </option>
+                  </select>
+                </div>
 
 
-              <!-- <div>
+                <!-- <div>
                   <label class="block text-sm font-medium text-gray-700">Membership Status</label>
                   <select v-model="selectedMember.is_active" class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     <option value="1">Active</option>
@@ -467,18 +478,18 @@ onMounted(() => {
                   </select>
                 </div> -->
 
-            </div>
+              </div>
 
-            <div class="mt-6 flex justify-end gap-3">
-              <button type="submit" class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg">
-                Save
-              </button>
-              <button @click="closeEditModal" type="button"
-                class="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded-lg">Cancel</button>
-            </div>
-          </form>
+              <div class="mt-6 flex justify-end gap-3">
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg">
+                  Save
+                </button>
+                <button @click="closeEditModal" type="button"
+                  class="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded-lg">Cancel</button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
 
 
       </div>

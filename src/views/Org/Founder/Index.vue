@@ -3,8 +3,6 @@
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
-import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
-
 
 const auth = authStore;
 const userId = auth.user.id; // Assuming the org ID is stored in the logged-in user
@@ -283,14 +281,29 @@ const addUnlinkFounder = async () => {
 //     }
 // };
 
+const deleteFounderMember = async (id) => {
+    const confirm = await Swal.fire({
+        title: 'Are you sure?',
+        text: 'This Founder Member will be deleted!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (confirm.isConfirmed) {
+        const res = await auth.fetchProtectedApi(`/api/founders/${id}`, {}, 'DELETE');
+        if (res.status) {
+            Swal.fire('Deleted!', 'Founder Member deleted.', 'success');
+            getFounders();
+        } else {
+            Swal.fire('Error!', 'Failed to delete.', 'error');
+        }
+    }
+};
 // Get founders when the component is mounted
 onMounted(getFounders);
 
 </script>
-
-
-
-
 
 <template>
     <!-- Search and Add Founder section - initially hidden, toggled by the button -->
@@ -320,7 +333,7 @@ onMounted(getFounders);
                         <div class="flex-1">
                             <p class="font-medium text-lg text-gray-700">{{ individualUser.name }}</p>
                             <p class="text-sm text-gray-500">{{ individualUser.city }}, {{ individualUser.country_name
-                            }}</p>
+                                }}</p>
                             <p class="text-sm text-gray-500">Username: {{ individualUser.username }}</p>
                             <p class="text-sm text-gray-500">Azon Id: {{ individualUser.azon_id }}</p>
                         </div>
@@ -417,83 +430,86 @@ onMounted(getFounders);
 
     <!-- Founder list and options show -->
     <section>
-        <div class="flex justify-between left-color-shade py-2 my-3">
-            <div>
-                <h5 class="text-md font-semibold mt-2">Member list</h5>
-            </div>
-            <div>
-                <a href="/org-dashboard/add-member">
-                    <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mr-2">
-                        Full list
-                    </button>
-                </a>
-                <a href="/org-dashboard/add-member">
-                    <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
-                        Print
-                    </button>
-                </a>
-                <a href="/org-dashboard/add-member">
-                    <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
-                        PDF
-                    </button>
-                </a>
-                <a href="/org-dashboard/add-member">
-                    <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
-                        Excel
-                    </button>
-                </a>
-                <a href="/org-dashboard/add-member">
-                    <button class="text-md text-white font-semibold bg-gray-400 p-2 rounded mx-2">
-                        Settings
-                    </button>
-                </a>
-                <!-- Add founder button to toggle the "Search & Add Founder" section -->
+
+        <div class="flex justify-between items-center py-4 border-gray-200">
+            <!-- Title -->
+            <h2 class="text-lg font-semibold text-gray-800">Founders</h2>
+
+            <!-- Actions -->
+            <div class="flex flex-wrap gap-2">
+                <!-- Export Buttons -->
+                <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+                    Print
+                </button>
+                <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+                    PDF
+                </button>
+                <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+                    Excel
+                </button>
+
+                <!-- Add Founder Button -->
                 <button @click="showAddFounderSection = !showAddFounderSection"
-                    class="text-md text-white font-semibold bg-blue-600 p-2 rounded mx-2">
+                    class="px-4 py-1.5 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
                     + Add Founder
                 </button>
             </div>
         </div>
-        <div v-if="founderList.length" class="bg-white">
-            <table class="min-w-full table-auto border-collapse border border-gray-300">
-                <thead>
+
+        
+
+
+        <div v-if="founderList.length" class="bg-white shadow-sm rounded-md overflow-hidden">
+            <table class="min-w-full table-auto text-sm text-gray-700">
+                <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
-                        <th class="border px-4 py-2">Image</th>
-                        <th class="border px-4 py-2">Name</th>
-                        <th class="border px-4 py-2">Designation</th>
-                        <th class="border px-4 py-2">Active</th>
-                        <th class="border px-4 py-2">Action</th>
+                        <th class="px-4 py-3 text-left font-medium">Image</th>
+                        <th class="px-4 py-3 text-left font-medium">Name</th>
+                        <th class="px-4 py-3 text-left font-medium">Designation</th>
+                        <th class="px-4 py-3 text-left font-medium">Status</th>
+                        <th class="px-4 py-3 text-right font-medium">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="founder in founderList" :key="founder.id" class="hover:bg-gray-50">
-
-                        <td class="border px-4 py-2">
-                            <img :src="founder.image_url ? founder.image_url : placeholderImage" alt="Founder Image"
-                                class="h-12 w-12 rounded-full object-cover">
+                    <tr v-for="founder in founderList" :key="founder.id" class="hover:bg-gray-50 transition">
+                        <!-- Image -->
+                        <td class="px-4 py-3">
+                            <img v-if="founder.image_url" :src="founder.image_url" alt="Founder Image"
+                                class="h-10 w-10 rounded-full object-cover">
+                            <span v-else class="text-gray-400 italic">No Image</span>
                         </td>
 
-                        <td class="border px-4 py-2">{{ founder.founders && founder.founders.name ?
-                            founder.founders.name : founder.name }}</td>
-                        <td class="border px-4 py-2">{{ founder.designation }}</td>
+                        <!-- Name -->
+                        <td class="px-4 py-3">
+                            {{ founder.founders?.name || founder.name }}
+                        </td>
 
-                        <td class="border px-4 py-2">
-                            <span :class="founder.is_active ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'"
-                                class="px-2 py-1 rounded-full text-xs font-medium">
-                                {{ founder.is_active ? 'Yes' : 'No' }}
+                        <!-- Designation -->
+                        <td class="px-4 py-3">
+                            {{ founder.designation }}
+                        </td>
+
+                        <!-- Status -->
+                        <td class="px-4 py-3">
+                            <span :class="founder.is_active ? 'text-green-600' : 'text-red-500'" class="text-sm">
+                                {{ founder.is_active ? 'Active' : 'Inactive' }}
                             </span>
                         </td>
 
-                        <td class="border px-4 py-2 text-right">
-                            <button @click="openEditModal(founder)"
-                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">
+                        <!-- Actions -->
+                        <td class="px-4 py-3 text-right space-x-2">
+                            <button @click="openEditModal(founder)" class="text-blue-600 hover:underline">
                                 Edit
+                            </button>
+                            <button @click="deleteFounderMember(founder.id)" class="text-red-500 hover:underline">
+                                Delete
                             </button>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
+
     </section>
 
     <section>

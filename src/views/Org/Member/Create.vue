@@ -4,6 +4,8 @@ import { ref } from 'vue';
 import router from "../../../router/router";
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
+import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
+
 
 const auth = authStore;
 const searchQuery = ref('');
@@ -31,7 +33,7 @@ const addMember = async (individualTypeUserId) => {
 
     // Check if the individual is already in the org_members list
     const responseCheck = await auth.fetchProtectedApi('/api/org-members/check', { org_type_user_id: orgTypeUserId, individual_type_user_id: individualTypeUserId }, 'POST');
-    
+
     if (responseCheck.status && responseCheck.data.exists) {
       // If the individual is already a member, show a message
       await Swal.fire(
@@ -85,7 +87,7 @@ const addMember = async (individualTypeUserId) => {
 
 <template>
   <div class="add-member max-w-7xl mx-auto p-8">
-    <h2 class="mb-8 text-center text-2xl text-gray-500">Search  &  add member</h2>
+    <h2 class="mb-8 text-center text-2xl text-gray-500">Search & add member</h2>
 
     <!-- Search Input -->
     <div class="flex justify-center mb-6">
@@ -104,8 +106,11 @@ const addMember = async (individualTypeUserId) => {
       <ul class="divide-y divide-gray-200">
         <li v-for="individualUser in searchResults" :key="individualUser.id" class="flex items-center py-4">
           <!-- Profile Image -->
-          <img :src="`${baseURL}/storage/${individualUser.image}`" alt="Profile picture"
-            class="w-20 h-20 rounded-full object-cover mr-4" />
+          <!-- <img :src="`${baseURL}/storage/${individualUser.image}` || placeholderImage" alt="Profile picture"
+            class="w-20 h-20 rounded-full object-cover mr-4" /> -->
+
+          <img :src="individualUser.image ? `${baseURL}/storage/${individualUser.image}` : placeholderImage"
+            alt="Profile picture" class="w-20 h-20 rounded-full object-cover mr-4" />
 
           <!-- User Details -->
           <div class="flex-1">

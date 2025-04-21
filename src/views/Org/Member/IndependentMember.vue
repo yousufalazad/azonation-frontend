@@ -169,48 +169,82 @@ const closeViewModal = () => {
 </script>
 
 <template>
-  <div class="p-6">
-    <!-- Add Button -->
-    <div class="mt-4 text-right">
-      <button @click="openModal()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition">
-        Add Member
-      </button>
+  <div>
+    <!-- Header Section -->
+    <div class="flex justify-between items-center py-4 border-gray-200">
+      <!-- Section Title -->
+      <h2 class="text-lg font-semibold text-gray-600">Independent members</h2>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-2">
+
+        <router-link :to="{ name: 'index-member' }">
+          <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+            Full List
+          </button>
+        </router-link>
+
+        <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+          Print
+        </button>
+
+        <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+          PDF
+        </button>
+
+        <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+          Excel
+        </button>
+
+        <button @click="openModal()" class="px-4 py-1.5 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
+          + Add independent member
+        </button>
+      </div>
     </div>
 
     <!-- Independent Members Table -->
     <table class="min-w-full divide-y divide-gray-200">
       <thead class="bg-gray-50">
         <tr>
-          <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Image</th>
-          <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Name</th>
+          <th class="pl-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Image</th>
+          <th class="py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Name</th>
           <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Email</th>
           <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Mobile</th>
-          <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Active</th>
-          <th class="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
+          <th class="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Details</th>
         </tr>
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
         <tr v-for="member in members" :key="member.id" class="hover:bg-gray-50 transition">
-          <td class="px-4 py-2">
-            <img :src="member.image_url" alt="Member Image" class="h-12 w-12 rounded-full object-cover"
-              v-if="member.image_url ? member.image_url : placeholderImage" />
-            <span v-else class="text-gray-400 italic">No Image</span>
+
+          <!-- Image Cell -->
+          <td class="pl-6 py-4">
+            <img :src="member.image_url || placeholderImage" alt="Member Image"
+              class="h-12 w-12 rounded-full object-cover" />
           </td>
-          <td class="px-6 py-4 text-sm text-gray-700">{{ member.name }}</td>
+
+          <!-- Name Cell -->
+          <td class="py-4 text-sm text-gray-700 align-middle">
+            {{ member.name }}
+          </td>
+
+          <!-- Email -->
           <td class="px-6 py-4 text-sm text-gray-700">{{ member.email }}</td>
+
+          <!-- Mobile -->
           <td class="px-6 py-4 text-sm text-gray-700">{{ member.mobile }}</td>
-          <td class="px-6 py-4 text-sm text-gray-700">
-            <span :class="member.is_active ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'"
-              class="px-2 py-1 rounded-full text-xs font-medium">
-              {{ member.is_active ? 'Yes' : 'No' }}
-            </span>
+
+          <!-- Actions -->
+          <td class="px-4 py-4 text-sm">
+            <button @click="openViewModal(member)"
+              class="text-gray-800 hover:underline hover:text-blue-800 transition font-medium">
+              Details
+            </button>
           </td>
-          <td class="px-6 py-4 text-center">
+          <!-- <td class="px-6 py-4 text-center">
             <button @click="openViewModal(member)"
               class="bg-blue-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-blue-600 transition">
               View
             </button>
-
             <button @click="openModal(member)"
               class="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-yellow-600 transition">
               Edit
@@ -219,10 +253,11 @@ const closeViewModal = () => {
               class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition">
               Delete
             </button>
-          </td>
+          </td> -->
         </tr>
       </tbody>
     </table>
+
 
     <!-- Add/Edit Modal -->
     <div v-if="isModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -308,6 +343,21 @@ const closeViewModal = () => {
         <div class="mt-4 text-right">
           <button @click="closeViewModal" class="px-4 py-2 bg-blue-600 text-white rounded">Close</button>
         </div>
+
+        <div class="mt-4 text-right">
+          <button @click="openModal(selectedMember)"
+            class="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-yellow-600 transition">
+            Edit
+          </button>
+        </div>
+
+        <div class="mt-4 text-right">
+          <button @click="deleteMember(selectedMember.id)"
+            class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition">
+            Delete
+          </button>
+        </div>
+
       </div>
     </div>
   </div>
