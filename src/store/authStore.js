@@ -114,11 +114,11 @@ const authStore = reactive({
     return res.data;
   },
 
-  register(name, type, email, password) {
+  register(name, type, email, country_id, password) {
     this
       .fetchPublicApi(
         "/api/register",
-        { name: name, type: type, email: email, password: password },
+        { name: name, type: type, email: email, country_id: country_id, password: password },
         "POST"
       )
       .then((res) => {

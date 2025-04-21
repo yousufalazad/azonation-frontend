@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { authStore } from '../../store/authStore';
 
 const auth = authStore
@@ -9,6 +9,20 @@ const email = ref('')
 const password = ref('')
 const confirmPassword = ref('') // New ref for password confirmation
 const type = 'individual'
+const country_id = ref('')
+const countryNames = ref([])
+
+const fetchCountries = async () => {
+  try {
+    const response = await auth.fetchPublicApi('/api/countries', {}, 'GET');
+    countryNames.value = response.data
+  } catch (error) {
+    console.error('Error fetching countries:', error)
+  }
+}
+onMounted(() => {
+  fetchCountries()
+})
 
 // Computed property to check if the passwords match
 const passwordsMatch = computed(() => {
@@ -68,6 +82,18 @@ const canSignUp = computed(() => {
         <p v-if="auth.errors?.email" class="text-red-500 text-sm mt-2">{{ auth.errors?.email[0] }}</p>
       </div>
 
+      <!-- Country -->
+      <div>
+        <label for="country_id" class="block text-sm font-medium text-gray-700">Country</label>
+        <select v-model="country_id" id="country_id"
+          class="mt-1 mb-4 block w-full px-3 py-2  border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <option value="" disabled required>Select country</option>
+          <option v-for="countryName in countryNames" :key="countryName.id" :value="countryName.id">
+            {{ countryName.name }}
+          </option>
+        </select>
+      </div>
+
       <!-- Password Input -->
       <div class="mb-4">
         <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
@@ -85,7 +111,7 @@ const canSignUp = computed(() => {
       <!-- Sign Up Button -->
       <div class="text-right pb-4">
         <button 
-          @click="auth.register(name, type, email, password)" 
+          @click="auth.register(name, type, email, country_id, password)" 
           :disabled="!canSignUp"  
           class="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           :class="{'opacity-50 cursor-not-allowed': !canSignUp}">
