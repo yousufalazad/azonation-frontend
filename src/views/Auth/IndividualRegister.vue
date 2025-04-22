@@ -138,7 +138,7 @@ onMounted(() => {
       <div class="space-y-2 mt-4">
         <!-- Google Sign Up Button -->
         <button @click="auth.signupWithGoogle"
-          class="w-full py-2 px-4 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
+          class="w-full py-2 px-4 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 48 48"
             class="w-5 h-5 mr-2">
             <defs>
@@ -158,7 +158,7 @@ onMounted(() => {
 
         <!-- Apple Sign Up Button -->
         <button @click="auth.signupWithApple"
-          class="w-full py-2 px-4 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
+          class="w-full py-2 px-4 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 17" class="w-5 h-5 mr-2" fill="currentColor">
             <path
               d="M10.681 9.124c-.019-1.929 1.578-2.856 1.65-2.9-.901-1.314-2.302-1.496-2.794-1.51-1.185-.12-2.31.697-2.91.697-.596 0-1.531-.676-2.52-.658-1.295.019-2.51.756-3.179 1.923-1.36 2.35-.347 5.819.979 7.723.643.944 1.406 2.006 2.411 1.969.964-.04 1.33-.629 2.501-.629 1.17 0 1.499.629 2.52.61 1.041-.019 1.696-.946 2.332-1.893.711-1.048 1-2.063 1.016-2.114-.022-.011-2.606-1.007-2.626-3.986zm-1.003-7.089c.543-.665.911-1.594.811-2.51-.782.029-1.72.512-2.276 1.152-.496.574-.928 1.505-.812 2.39.86.066 1.734-.43 2.277-1.032z" />

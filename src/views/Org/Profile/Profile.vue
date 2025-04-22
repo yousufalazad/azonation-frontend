@@ -121,9 +121,6 @@
                 </div>
                 <div><button @click="openAddressModal()" class="text-blue-500 pl-9 pr-2">Edit</button></div>
             </div>
-
-
-
         </div>
 
         <!-- Modal -->
@@ -175,14 +172,6 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
                     <p v-if="auth.errors?.postal_code" class="text-red-500 text-sm mt-1">{{ auth.errors?.postal_code[0]
                         }}</p>
-                </div>
-
-                <div class="mb-4">
-                    <label for="country_id" class="block text-sm font-medium text-gray-700">country</label>
-                    <textarea v-model="country_id" id="country_id"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
-                    <p v-if="auth.errors?.country_id" class="text-red-500 text-sm mt-1">{{ auth.errors?.country_id[0] }}
-                    </p>
                 </div>
 
                 <div class="flex justify-end">
@@ -591,7 +580,7 @@ const updateUsername = async () => {
 
 const fetchOrgAddress = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/addresses/${userId}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi("/api/addresses/", {}, 'GET');
 
         // Ensure the response status is true and data exists
         if (response.status && response.data) {
@@ -601,7 +590,6 @@ const fetchOrgAddress = async () => {
             city.value = response.data.city || '';
             state_or_region.value = response.data.state_or_region || '';
             postal_code.value = response.data.postal_code || '';
-            country_name.value = response.data.country_name || '';
         } else {
             Swal.fire('Error', 'Failed to fetch organization address try-else', 'error');
         }
@@ -614,13 +602,11 @@ const fetchOrgAddress = async () => {
 const createAddress = async () => {
     try {
         const response = await auth.fetchProtectedApi("/api/addresses/", {
-            user_id: userId,
             address_line_one: address_line_one.value,
             address_line_two: address_line_two.value,
             city: city.value,
             state_or_region: state_or_region.value,
-            postal_code: postal_code.value,
-            country_id: country_id.value,
+            postal_code: postal_code.value
         }, 'POST');
         if (response.status) {
             Swal.fire('Success', 'Address created successfully', 'success');
@@ -642,8 +628,7 @@ const updateAddress = async () => {
             address_line_two: address_line_two.value,
             city: city.value,
             state_or_region: state_or_region.value,
-            postal_code: postal_code.value,
-            country_id: country_id.value,
+            postal_code: postal_code.value
         }, 'PUT');
         if (response.status) {
             Swal.fire('Success', 'Address updated successfully', 'success');

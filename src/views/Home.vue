@@ -5,7 +5,7 @@
   
       <!-- Subheading -->
       <p class="text-lg font-light mb-8 text-center max-w-xl">
-        Azonation is an organisation management solution, designed to make organisations paperless.
+        <!-- Azonation is an organisation management solution, designed to make organisations paperless. -->
       </p>
   
       <!-- Buttons --> 
