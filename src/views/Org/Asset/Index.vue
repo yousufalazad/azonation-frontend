@@ -1,4 +1,3 @@
-
 <script setup>
 import { onMounted, ref } from 'vue';
 import { authStore } from '../../../store/authStore';
@@ -49,67 +48,63 @@ onMounted(() => getRecords());
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-10/12">
-        <section>
-            <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">Asset List</h5>
-                <button @click="$router.push({ name: 'create-asset' })"
-                    class="bg-blue-500 text-white font-semibold py-2 px-2 mx-3 rounded-md">
-                    Add Asset
-                </button>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                    <thead>
-                        <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                        <th class="p-3 border">#</th>
-                        <th class="p-3 border">Name</th>
-                        <!-- <th class="p-3 border">Description</th> -->
-                        <th class="p-3 border">Qty</th>
-                        <!-- <th class="p-3 border">Value</th> -->
-                        <!-- <th class="p-3 border">In-kind Value</th> -->
-                        <!-- <th class="p-3 border">Long Term</th> -->
-                        <!-- <th class="p-3 border">Tangible</th> -->
-                        <!-- <th class="p-3 border">Privacy Setup</th>
-                        <th class="p-3 border">Active</th> -->
-                        <th class="p-3 border">Responsible Person</th>
-                        <!-- <th class="p-3 border">Responsible From</th>
-                        <th class="p-3 border">Responsible End</th> -->
-                        <th class="p-3 border">Status</th>
-                        <!-- <th class="p-3 border">Note</th> -->
-                        <th class="p-3 border min-w-[190px]">Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(record, index) in recordList" :key="record.id">
-                        <td class="p-3 border">{{ index + 1 }}</td>
-                        <td class="p-3 border">{{ record.name }}</td>
-                        <!-- <td class="p-3 border">{{ record.description }}</td> -->
-                        <td class="p-3 border">{{ record.quantity }}</td>
-                        <!-- <td class="p-3 border">{{ record.value_amount }}</td> -->
-                        <!-- <td class="p-3 border">{{ record.inkind_value }}</td> -->
-                        <!-- <td class="p-3 border">{{ record.is_long_term === 0 ? 'No' : 'Yes' }}</td> -->
-                        <!-- <td class="p-3 border">{{ record.is_tangible === 0 ? 'No' : 'Yes' }}</td> -->
-                        <!-- <td class="p-3 border">{{ record.privacy_setup_name }}</td>
-                        <td class="p-3 border">{{ record.is_active === 0 ? 'No' : 'Yes' }}</td> -->
-                        <td class="p-3 border">{{ record.responsible_user_name }}</td>
-                        <!-- <td class="p-3 border">{{ record.assignment_start_date }}</td>
-                        <td class="p-3 border">{{ record.assignment_end_date }}</td> -->
-                        <td class="p-3 border">{{ record.asset_lifecycle_statuses_name }}</td>
-                        <!-- <td class="p-3 border">{{ record.note }}</td> -->
-
-                            <td class="border px-1 py-2 w-50">
-                                <button @click="$router.push({ name: 'edit-asset', params: { id: record.id } })"
-                                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded">Edit</button>
-                                <button @click="$router.push({ name: 'view-asset', params: { id: record.id } })"
-                                    class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 m-2 rounded">View</button>
-                                <button @click="deleteRecord(record.id)"
-                                    class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">Delete</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </div>
-</template>
+    <section>
+      <!-- Header Section -->
+      <div class="flex justify-between items-center bg-gray-100 px-4 py-3 rounded-md shadow-sm mb-4">
+        <h2 class="text-lg font-semibold text-gray-700">Assets</h2>
+        <button
+          @click="$router.push({ name: 'create-asset' })"
+          class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-md transition">
+          + Add Asset
+        </button>
+      </div>
+  
+      <!-- Table Section -->
+      <div class="overflow-x-auto bg-white rounded-lg shadow-md">
+        <table class="min-w-full table-auto text-sm text-left">
+            <thead class="bg-gray-50">
+                <tr>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">#</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">Name</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">Quantity</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">Responsible User</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">Status</th>
+                <th class="px-3 py-2 font-medium text-gray-700 text-center">Actions</th>
+                </tr>   
+            </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr
+              v-for="(record, index) in recordList"
+              :key="record.id"
+              class="hover:bg-gray-50 transition">
+              <td class="px-4 py-2">{{ index + 1 }}</td>
+              <td class="px-4 py-2">{{ record.name }}</td>
+              <td class="px-4 py-2">{{ record.quantity }}</td>
+              <td class="px-4 py-2">{{ record.responsible_user_name }}</td>
+              <td class="px-4 py-2">{{ record.asset_lifecycle_statuses_name }}</td>
+              <td class="px-2 py-2 text-center">
+                <div class="flex justify-center gap-2">
+                  <button
+                    @click="$router.push({ name: 'edit-asset', params: { id: record.id } })"
+                    class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded text-xs transition">
+                    Edit
+                  </button>
+                  <button
+                    @click="$router.push({ name: 'view-asset', params: { id: record.id } })"
+                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition">
+                    View
+                  </button>
+                  <button
+                    @click="deleteRecord(record.id)"
+                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition">
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </template>
+  
