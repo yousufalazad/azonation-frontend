@@ -327,7 +327,7 @@ onMounted(() => {
                   </td>
 
                   <td class="px-6 py-4 text-sm text-gray-800">
-                    {{ calculateMembershipAge(member.membership_start_date) }}
+                    {{ calculateMembershipAge(member.membership_start_date) || '--' }}
                   </td>
 
                   <td class="px-6 py-4 text-sm">

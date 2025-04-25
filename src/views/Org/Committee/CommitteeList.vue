@@ -1,272 +1,338 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
+import Swal from 'sweetalert2';
 
-import { useRoute, useRouter } from 'vue-router';
-const router = useRouter();
-const route = useRoute();
 const auth = authStore;
-
-const isModalOpen = ref(false);
-const isViewModalOpen = ref(false);
+const committeeList = ref([]);
+const modalVisible = ref(false);
+const viewModalVisible = ref(false);
 const isEditMode = ref(false);
-const selectedCommitteeMemberId = ref(null);
-
-const user_id = ref('');
-const designation_id = ref('');
+const selectedCommittee = ref(null);
+const newName = ref('');
+const short_description = ref('');
 const start_date = ref('');
 const end_date = ref('');
 const note = ref('');
-const status = ref('1');
+const status = ref("1");
+const userId = authStore.user.id;
 
-const viewData = ref({});
-const userList = ref([]);
-const designationList = ref([]);
-const committeeMemberList = ref([]);
-
-const committeeId = ref(route.params.committeeId || null);
-
-const getOrgUserList = async () => {
-    const res = await auth.fetchProtectedApi('/api/project-attendances/org-user-list', {}, 'GET');
-    if (res.status) userList.value = res.data;
+// Fetch committee list
+const fetchCommitteeList = async () => {
+  try {
+    const response = await auth.fetchProtectedApi("/api/committees", {}, 'GET');
+    if (response.status) {
+      committeeList.value = response.data;
+    } else {
+      committeeList.value = [];
+    }
+  } catch (error) {
+    console.error("Error fetching committee list:", error);
+    committeeList.value = [];
+  }
 };
 
-const getDesignationList = async () => {
-    const res = await auth.fetchProtectedApi('/api/designations', {}, 'GET');
-    if (res.status) designationList.value = res.data;
-};
-
-const getCommitteeMemberList = async () => {
-    const res = await auth.fetchProtectedApi('/api/committee-members', {}, 'GET');
-    if (res.status) committeeMemberList.value = res.data;
-};
-
-const resetForm = () => {
-    user_id.value = '';
-    designation_id.value = '';
+// Open modal for create/edit
+const openModal = (committee = null) => {
+  if (committee) {
+    isEditMode.value = true;
+    selectedCommittee.value = committee;
+    newName.value = committee.name;
+    short_description.value = committee.short_description;
+    start_date.value = committee.start_date;
+    end_date.value = committee.end_date;
+    note.value = committee.note;
+    status.value = committee.status;
+  } else {
+    isEditMode.value = false;
+    selectedCommittee.value = null;
+    newName.value = '';
+    short_description.value = '';
     start_date.value = '';
     end_date.value = '';
     note.value = '';
-    status.value = '1';
-    selectedCommitteeMemberId.value = null;
-    isEditMode.value = false;
-    isModalOpen.value = false;
+    status.value = "1";
+  }
+  modalVisible.value = true;
 };
 
-const openModalForAdd = () => {
-    resetForm();
-    isModalOpen.value = true;
+// Open view modal
+const openViewModal = (committee) => {
+  selectedCommittee.value = committee;
+  viewModalVisible.value = true;
 };
 
-const openModalForEdit = (member) => {
-    user_id.value = member.user_id;
-    designation_id.value = member.designation_id;
-    start_date.value = member.start_date;
-    end_date.value = member.end_date;
-    note.value = member.note;
-    status.value = member.status;
-    selectedCommitteeMemberId.value = member.id;
-    isEditMode.value = true;
-    isModalOpen.value = true;
+// Close modals
+const closeModal = () => {
+  modalVisible.value = false;
+};
+const closeViewModal = () => {
+  viewModalVisible.value = false;
 };
 
-const openViewModal = (item) => {
-    viewData.value = item;
-    isViewModalOpen.value = true;
-};
-
-const submitForm = async () => {
-    const payload = {
-        committee_id: committeeId.value,
-        user_id: user_id.value,
-        designation_id: designation_id.value,
+// Create committee
+const createCommittee = async () => {
+  try {
+    const response = await auth.fetchProtectedApi(
+      "/api/committees",
+      {
+        user_id: userId,
+        name: newName.value,
+        short_description: short_description.value,
         start_date: start_date.value,
         end_date: end_date.value,
         note: note.value,
-        status: status.value
-    };
+        status: status.value,
+      },
+      "POST"
+    );
 
-    const method = isEditMode.value ? 'PUT' : 'POST';
-    const url = isEditMode.value
-        ? `/api/committee-members/${selectedCommitteeMemberId.value}`
-        : '/api/committee-members';
-
-    const confirm = await Swal.fire({
-        title: 'Are you sure?',
-        text: `You want to ${isEditMode.value ? 'update' : 'add'} this member?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, save it!'
+    Swal.fire({
+      icon: 'success',
+      title: 'Committee created successfully',
+      showConfirmButton: false,
+      timer: 1500
     });
-
-    if (confirm.isConfirmed) {
-        const res = await auth.fetchProtectedApi(url, payload, method);
-        if (res.status) {
-            Swal.fire('Success!', 'Saved successfully.', 'success');
-            getCommitteeMemberList();
-            resetForm();
-        } else {
-            Swal.fire('Error!', 'Failed to save.', 'error');
-        }
-    }
+    closeModal();
+    fetchCommitteeList();
+  } catch (error) {
+    console.error("Error creating committee:", error);
+  }
 };
 
-const deleteMember = async (id) => {
-    const confirm = await Swal.fire({
-        title: 'Are you sure?',
-        text: 'This member will be deleted!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, delete it!'
-    });
+// Update committee
+const updateCommittee = async () => {
+  try {
+    const response = await auth.fetchProtectedApi(
+      `/api/committees/${selectedCommittee.value.id}`,
+      {
+        user_id: userId,
+        name: newName.value,
+        short_description: short_description.value,
+        start_date: start_date.value,
+        end_date: end_date.value,
+        note: note.value,
+        status: status.value,
+      },
+      "PUT"
+    );
 
-    if (confirm.isConfirmed) {
-        const res = await auth.fetchProtectedApi(`/api/committee-members/${id}`, {}, 'DELETE');
-        if (res.status) {
-            Swal.fire('Deleted!', 'Member deleted.', 'success');
-            getCommitteeMemberList();
-        } else {
-            Swal.fire('Error!', 'Failed to delete.', 'error');
-        }
-    }
+    Swal.fire({
+      icon: 'success',
+      title: 'Committee created successfully',
+      showConfirmButton: false,
+      timer: 1500
+    });
+    closeModal();
+    fetchCommitteeList();
+  } catch (error) {
+    console.error("Error creating committee:", error);
+  }
 };
 
-onMounted(() => {
-    getOrgUserList();
-    getDesignationList();
-    getCommitteeMemberList();
-});
+// Delete committee
+const deleteCommittee = async (id) => {
+  try {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to delete this committee?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'No, cancel!'
+    });
+
+    if (result.isConfirmed) {
+      const response = await auth.fetchProtectedApi(`/api/committees/${id}`, {}, 'DELETE');
+
+      if (response.status) {
+        await Swal.fire('Deleted!', 'Committee has been deleted.', 'success');
+        fetchCommitteeList();
+      } else {
+        Swal.fire('Failed!', 'Failed to delete committee.', 'error');
+      }
+    }
+  } catch (error) {
+    console.error('Error deleting committee:', error);
+    Swal.fire('Error!', 'Failed to delete committee.', 'error');
+  }
+};
+
+onMounted(fetchCommitteeList);
 </script>
 
+
 <template>
-    <div class="max-w-7xl mx-auto w-10/12">
-        <!-- Add/Edit Modal -->
-        <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div class="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6">
-                <h2 class="text-xl font-semibold mb-4">{{ isEditMode ? 'Edit' : 'Add' }} Committee Member</h2>
-                <form @submit.prevent="submitForm">
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                        <div class="col-span-4">
-                            <label class="block text-gray-700 mb-1">User Name</label>
-                            <select v-model="user_id" class="w-full border border-gray-300 rounded p-2" required>
-                                <option value="">Select User</option>
-                                <option v-for="user in userList" :key="user.id" :value="user.id">{{ user.name }}
-                                </option>
-                            </select>
-                        </div>
-                        <div class="col-span-4">
-                            <label class="block text-gray-700 mb-1">Designation</label>
-                            <select v-model="designation_id" class="w-full border border-gray-300 rounded p-2" required>
-                                <option value="">Select Designation</option>
-                                <option v-for="d in designationList" :key="d.id" :value="d.id">{{ d.name }}</option>
-                            </select>
-                        </div>
-                        <div class="col-span-2">
-                            <label class="block text-gray-700 mb-1">Start Date</label>
-                            <input v-model="start_date" type="date" class="w-full border border-gray-300 rounded p-2" />
-                        </div>
-                        <div class="col-span-2">
-                            <label class="block text-gray-700 mb-1">End Date</label>
-                            <input v-model="end_date" type="date" class="w-full border border-gray-300 rounded p-2" />
-                        </div>
-                        <div class="col-span-4">
-                            <label class="block text-gray-700 mb-1">Note</label>
-                            <input v-model="note" type="text" class="w-full border border-gray-300 rounded p-2" />
-                        </div>
-                        <div class="col-span-3">
-                            <label class="block text-gray-700 mb-1">Status</label>
-                            <select v-model="status" class="w-full border border-gray-300 rounded p-2">
-                                <option value="1">Active</option>
-                                <option value="0">Disabled</option>
-                            </select>
-                        </div>
-                        <div class="col-span-5 flex items-end space-x-3">
-                            <button type="submit" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-500">
-                                {{ isEditMode ? 'Update' : 'Add' }}
-                            </button>
-                            <button @click="resetForm" type="button"
-                                class="bg-yellow-600 text-white py-2 px-4 rounded hover:bg-yellow-500">Reset</button>
-                            <button @click="isModalOpen = false" type="button"
-                                class="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-500">Cancel</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- View Modal -->
-        <div v-if="isViewModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div class="bg-white rounded-lg shadow-lg w-full max-w-3xl p-6">
-                <h2 class="text-xl font-semibold mb-4">View Committee Member</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><strong>User:</strong> {{ viewData.user_name }}</div>
-                    <div><strong>Designation:</strong> {{ viewData.designation_name }}</div>
-                    <div><strong>Start Date:</strong> {{ viewData.start_date }}</div>
-                    <div><strong>End Date:</strong> {{ viewData.end_date }}</div>
-                    <div><strong>Note:</strong> {{ viewData.note }}</div>
-                    <div><strong>Status:</strong> <span
-                            :class="viewData.status == 1 ? 'text-green-600' : 'text-red-600'">
-                            {{ viewData.status == 1 ? 'Active' : 'Disabled' }}</span>
-                    </div>
-                </div>
-                <div class="mt-4 text-right">
-                    <button @click="isViewModalOpen = false"
-                        class="bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-600">
-                        Close
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Member List Table -->
-        <section class="mt-6">
-            <div class="flex justify-between left-color-shade bg-sky-100 py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">Committee Member List</h5>
-
-                <div class="">
-                    <button @click="openModalForAdd"
-                        class="bg-green-600 text-white py-2 px-4 mx-3 rounded hover:bg-green-500">
-                        Add Committee Member
-                    </button>
-                    <button @click="router.push({ name: 'committee-list' })"
-                        class="bg-blue-500 text-white rounded-md py-2 px-4 hover:bg-blue-600">
-                        Back to Committee List
-                    </button>
-                </div>
-            </div>
-            <table class="min-w-full border border-gray-300 text-left table-auto">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="border px-4 py-2">SL</th>
-                        <th class="border px-4 py-2">User</th>
-                        <th class="border px-4 py-2">Designation</th>
-                        <th class="border px-4 py-2">Start Date</th>
-                        <th class="border px-4 py-2">End Date</th>
-                        <th class="border px-4 py-2">Status</th>
-                        <th class="border px-4 py-2 w-60">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(item, index) in committeeMemberList" :key="item.id">
-                        <td class="border px-4 py-2">{{ index + 1 }}</td>
-                        <td class="border px-4 py-2">{{ item.user_name }}</td>
-                        <td class="border px-4 py-2">{{ item.designation_name }}</td>
-                        <td class="border px-4 py-2">{{ item.start_date }}</td>
-                        <td class="border px-4 py-2">{{ item.end_date }}</td>
-                        <td class="border px-4 py-2">
-                            <span :class="item.status == 1 ? 'text-green-600' : 'text-red-600'">
-                                {{ item.status == 1 ? 'Active' : 'Disabled' }}
-                            </span>
-                        </td>
-                        <td class="border px-4 py-2 space-x-2">
-                            <button @click="openViewModal(item)" class="bg-blue-600 text-white rounded-md py-1 px-2 hover:bg-blue-700">View</button>
-                            <button @click="openModalForEdit(item)" class="bg-yellow-400 text-white rounded-md py-1 px-2 hover:bg-yellow-500">Edit</button>
-                            <button @click="deleteMember(item.id)" class="bg-red-600 text-white rounded-md py-1 px-2 hover:bg-red-700">Delete</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
+  <!-- Heading and Create Button -->
+  <div class="my-6 px-6 py-4 bg-white shadow rounded-2xl">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-semibold text-gray-800">Committees</h2>
+      <button @click="openModal()"
+        class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-xl transition duration-200">
+        + Create Committee
+      </button>
     </div>
+  </div>
+
+  <!-- Committee Table -->
+  <div class="px-6 py-4 bg-white shadow rounded-2xl">
+    <div v-if="committeeList.length">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm text-left text-gray-700 border-t border-gray-200">
+          <thead class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
+            <tr>
+              <th class="px-4 py-3">#</th>
+              <th class="px-4 py-3">Committee Name</th>
+              <th class="px-4 py-3">Start Date</th>
+              <th class="px-4 py-3">End Date</th>
+              <th class="px-4 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(committee, index) in committeeList" :key="committee.id"
+              class="border-b border-gray-200 hover:bg-gray-50 transition duration-150">
+              <td class="px-4 py-3">{{ index + 1 }}</td>
+              <td class="px-4 py-3">{{ committee.name }}</td>
+              <td class="px-4 py-3">{{ committee.start_date }}</td>
+              <td class="px-4 py-3">{{ committee.end_date }}</td>
+              <td class="px-4 py-3 text-right space-x-2">
+                <button @click="$router.push({ name: 'index-committee-member', params: { committeeId: committee.id } })"
+                  class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded-lg text-xs">
+                  Members
+                </button>
+                <button @click="openViewModal(committee)"
+                  class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-xs">
+                  View
+                </button>
+                <button @click="openModal(committee)"
+                  class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded-lg text-xs">
+                  Edit
+                </button>
+                <button @click="deleteCommittee(committee.id)"
+                  class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-xs">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div v-else class="text-center py-6 text-gray-500 text-sm">
+      No committee entries found.
+    </div>
+  </div>
+
+
+  <!-- Create/Edit Modal -->
+<div v-if="modalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl mx-auto p-6 md:p-8">
+    <!-- Modal Header -->
+    <h2 class="text-lg md:text-2xl font-semibold text-center text-gray-800 mb-6">
+      {{ isEditMode ? 'Edit Committee' : 'Create Committee' }}
+    </h2>
+
+    <!-- Scrollable Form -->
+    <div class="max-h-[28rem] overflow-y-auto space-y-4">
+      <!-- Committee Name -->
+      <div>
+        <label for="newName" class="block text-sm font-medium text-gray-700 mb-1">Committee Name</label>
+        <input v-model="newName" id="newName" type="text"
+          class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <!-- Short Description -->
+      <div>
+        <label for="short_description" class="block text-sm font-medium text-gray-700 mb-1">Short Description</label>
+        <input v-model="short_description" id="short_description" type="text"
+          class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <!-- Dates -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+          <input v-model="start_date" id="start_date" type="date"
+            class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <div>
+          <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+          <input v-model="end_date" id="end_date" type="date"
+            class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+      </div>
+
+      <!-- Note -->
+      <div>
+        <label for="note" class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+        <textarea v-model="note" id="note" rows="3"
+          class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+        <select v-model="status" id="status"
+          class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="1">Active</option>
+          <option value="0">Disable</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex justify-end mt-6 space-x-3">
+      <button @click="closeModal"
+        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+        Cancel
+      </button>
+      <button @click="isEditMode ? updateCommittee() : createCommittee()"
+        class="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
+        {{ isEditMode ? 'Update' : 'Submit' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- View Modal -->
+<div v-if="viewModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl mx-auto p-6 md:p-8">
+    <!-- Header -->
+    <h2 class="text-lg md:text-2xl font-semibold text-center text-gray-800 mb-6">
+      View Committee
+    </h2>
+
+    <!-- Committee Info Table -->
+    <div class="max-h-[28rem] overflow-y-auto">
+      <table class="w-full table-auto border-separate border-spacing-y-3">
+        <tbody class="text-gray-700 text-sm md:text-base">
+          <tr v-for="(value, label) in {
+            'Name': selectedCommittee.name,
+            'Short Description': selectedCommittee.short_description,
+            'Start Date': selectedCommittee.start_date,
+            'End Date': selectedCommittee.end_date,
+            'Note': selectedCommittee.note,
+            'Status': selectedCommittee.status == '1' ? 'Active' : 'Disabled'
+          }" :key="label">
+            <td class="font-medium text-gray-600 w-40 align-top">{{ label }}</td>
+            <td class="text-gray-500">:</td>
+            <td class="text-gray-800">{{ value }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-right mt-6">
+      <button @click="closeViewModal"
+        class="px-5 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
 </template>
