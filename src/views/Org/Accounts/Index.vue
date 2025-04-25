@@ -252,213 +252,195 @@ const submitForm = async () => {
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-10/12">
-        <section class="mb-5">
-            <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">Transaction List</h5>
-                <div>
-                    <button @click="openModal(null)"
-                        class="bg-blue-600 text-white rounded-md p-2 mx-4 hover:bg-blue-700">Add
-                        Transaction</button>
-                    <button @click="funds" class="bg-yellow-500 text-white rounded-md p-2 mx-4 hover:bg-yellow-600">Add
-                        Fund</button>
-                </div>
-
+    <!-- Header & Actions -->
+    <section>
+        <div>
+            <div class="flex justify-end gap-3">
+                <button @click="openModal(null)"
+                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                    + Add New Transaction
+                </button>
+                <button @click="funds"
+                    class="px-4 py-2 text-sm font-medium text-white bg-yellow-500 rounded-md hover:bg-yellow-600">
+                    Fund Types
+                </button>
             </div>
-            <div v-if="transactionModal"
-                class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
-                <div class="bg-white rounded-lg shadow-lg w-2/4 h-auto max-h-[80%] overflow-y-auto p-5">
+        </div>
+    </section>
+    <!-- Table Section -->
+    <section>
+        <div class="border-b border-gray-200 py-1 mb-4">
+            <h2 class="text-lg font-semibold text-gray-800">Transactions</h2>
+        </div>
 
-                    <div class="flex justify-between left-color-shade bg-blue-100 py-2 mt-3 mb-5">
-                        <h5 class="text-md font-semibold my-2">{{ selectedTransactionId ? 'Edit' : 'Add' }} Transaction
-                        </h5>
-                    </div>
-                    <form @submit.prevent="submitForm">
-
-                        <!-- Input Fields Row -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-5">
-
-                            <!-- Transaction Date -->
-                            <div class="mb-4">
-                                <label for="date" class="block text-gray-700 font-semibold mb-2">Date</label>
-                                <input v-model="date" type="date" id="date"
-                                    class="w-full border border-gray-300 rounded-md p-2" required
-                                    :max="new Date().toISOString().split('T')[0]" />
-                            </div>
-                            <!-- transaction_title -->
-                            <div class="mb-4">
-                                <label for="transaction_title"
-                                    class="block text-gray-700 font-semibold mb-2">Title</label>
-                                <input v-model="transaction_title" id="transaction_title"
-                                    class="w-full border border-gray-300 rounded-md p-2" />
-                            </div>
-
-                            <!-- Description -->
-                            <div class="mb-4">
-                                <label for="description"
-                                    class="block text-gray-700 font-semibold mb-2">Description</label>
-                                <input v-model="description" id="description"
-                                    class="w-full border border-gray-300 rounded-md p-2" />
-                            </div>
-
-                            <!-- Fund dropdown -->
-                            <div class="mb-4">
-                                <label for="fund_id" class="block text-gray-700 font-semibold mb-2">Fund</label>
-                                <select v-model="fund_id" id="fund_id"
-                                    class="w-full border border-gray-300 rounded-md p-2" required>
-                                    <option value="">Select Fund</option>
-                                    <option v-for="fund in fundList" :key="fund.id" :value="fund.id">{{ fund.name }}</option>
-                                </select>
-                            </div>
-
-
-                            <!-- Transaction Type dropdown -->
-                            <div class="mb-4">
-                                <label for="transaction_type" class="block text-gray-700 font-semibold mb-2">Transaction
-                                    type</label>
-                                <select v-model="transaction_type" id="transaction_type"
-                                    class="w-full border border-gray-300 rounded-md p-2" required>
-                                    <option value="">Select Type</option>
-                                    <option value="income">Income</option>
-                                    <option value="expense">Expense</option>
-                                </select>
-                            </div>
-
-                            <!-- Transaction Amount input -->
-                            <div class="mb-4">
-                                <label for="amount" class="block text-gray-700 font-semibold mb-2">Amount</label>
-                                <input v-model="amount" type="number" id="amount"
-                                    class="w-full border border-gray-300 rounded-md p-2" min="0" required />
-                            </div>
-                        </div>
-
-                        <!-- Images Upload -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
-                            <div class="space-y-3">
-                                <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
-                                    <input type="file" class="border border-gray-300 rounded-md py-2 px-4"
-                                        accept="image/*" @change="event => handleFileChange(event, images, index)" />
-
-                                    <div v-if="file.file && file.file.preview"
-                                        class="w-16 h-16 border rounded-md overflow-hidden">
-                                        <img :src="file.file.preview" alt="Preview"
-                                            class="w-full h-full object-cover" />
-                                    </div>
-
-                                    <button type="button"
-                                        class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-                                        @click="removeFile(images, index)">X</button>
-                                </div>
-                            </div>
-                            <button type="button"
-                                class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
-                                @click="() => addMoreFiles(images)">
-                                Add more image
-                            </button>
-                        </div>
-
-                        <!-- Documents Upload -->
-                        <div class="mb-4">
-                            <label class="block text-gray-700 font-semibold mb-2">Upload Documents</label>
-                            <div class="space-y-3">
-                                <div v-for="(file, index) in documents" :key="file.id" class="flex items-center gap-4">
-                                    <input type="file" class="border border-gray-300 rounded-md py-2 px-4"
-                                        accept=".pdf,.doc,.docx"
-                                        @change="event => handleFileChange(event, documents, index)" />
-
-                                    <span v-if="file.file" class="truncate w-32">{{ file.file.name }}</span>
-
-                                    <button type="button"
-                                        class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-                                        @click="removeFile(documents, index)">X</button>
-                                </div>
-                            </div>
-                            <button type="button"
-                                class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
-                                @click="() => addMoreFiles(documents)">
-                                Add more document
-                            </button>
-                        </div>
-
-                        <!-- Submit button -->
-                        <div class="flex justify-center pt-5 pb-3">
-                            <button type="submit" class="bg-blue-600 text-white rounded-md p-2 hover:bg-blue-700 mr-2">
-                                {{ selectedTransactionId ? 'Update' : 'Submit' }}
-                            </button>
-                            <button type="button" @click="closeModal"
-                                class="bg-red-600 text-white rounded-md p-2 hover:bg-red-700">
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </section>
-
-        <!-- Transaction list -->
-        <section>
-            <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">Transaction List</h5>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full table-auto border-collapse border border-gray-300 text-left">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="border px-0 py-2 min-w-[10px]">SL</th>
-                            <th class="p-2 border border-gray-300 min-w-[100px]">Date</th>
-                            <th class="p-2 border border-gray-300 min-w-[130px]">Transaction ID</th>
-                            <th class="p-2 border border-gray-300 min-w-[100px]">Title</th>
-                            <!-- <th class="p-2 border border-gray-300 min-w-[120px]">Description</th> -->
-                            <th class="p-2 border border-gray-300 min-w-[100px]">Fund</th>
-                            <th class="p-2 border border-gray-300 min-w-[100px]">Income</th>
-                            <th class="p-2 border border-gray-300 min-w-[100px]">Expense</th>
-                            <!-- <th class="p-2 border border-gray-300 min-w-[110px]">Balance</th> -->
-                            <th class="p-2 border border-gray-300 min-w-[100px]">Actions</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        <tr v-for="(transaction, index) in transactionList" :key="transaction.id">
-                            <td class="p-2 border">{{ index + 1 }}</td>
-                            <td class="p-2 border">{{ transaction.date }}</td>
-                            <td class="p-2 border">{{ transaction.transaction_code }}</td>
-                            <td class="p-2 border">{{ transaction.transaction_title }}</td>
-                            <!-- <td class="p-2 border">{{ transaction.description }}</td> -->
-                            <td class="p-2 border">{{ transaction.fund_name }}</td>
-                            <td class="p-2 border" v-if="transaction.type === 'income'">
-                                {{ transaction.amount }}
-                            </td>
-                            <td class="p-2 border" v-else></td>
-                            <td class="p-2 border" v-if="transaction.type === 'expense'">
-                                {{ transaction.amount }}
-                            </td>
-                            <td class="p-2 border" v-else></td>
-                            <!-- <td class="p-2 border">{{ transaction.balance_after }}</td> -->
-
-                            <td class="p-2 border flex gap-2">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 border border-gray-200 text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-3 py-2 text-left font-medium text-gray-700">#</th>
+                        <th class="px-3 py-2 text-left font-medium text-gray-700">Date</th>
+                        <th class="px-3 py-2 text-left font-medium text-gray-700">Transaction ID</th>
+                        <th class="px-3 py-2 text-left font-medium text-gray-700">Title</th>
+                        <th class="px-3 py-2 text-left font-medium text-gray-700">Fund</th>
+                        <th class="px-3 py-2 text-left font-medium text-gray-700">Income</th>
+                        <th class="px-3 py-2 text-left font-medium text-gray-700">Expense</th>
+                        <th class="px-3 py-2 text-left font-medium text-gray-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    <tr v-for="(transaction, index) in transactionList" :key="transaction.id">
+                        <td class="px-3 py-2">{{ index + 1 }}</td>
+                        <td class="px-3 py-2">{{ transaction.date }}</td>
+                        <td class="px-3 py-2">{{ transaction.transaction_code }}</td>
+                        <td class="px-3 py-2">{{ transaction.transaction_title }}</td>
+                        <td class="px-3 py-2">{{ transaction.fund_name }}</td>
+                        <td class="px-3 py-2 text-green-600 font-medium" v-if="transaction.type === 'income'">
+                            {{ transaction.amount }}
+                        </td>
+                        <td class="px-3 py-2" v-else></td>
+                        <td class="px-3 py-2 text-red-600 font-medium" v-if="transaction.type === 'expense'">
+                            {{ transaction.amount }}
+                        </td>
+                        <td class="px-3 py-2" v-else></td>
+                        <td class="px-3 py-2">
+                            <div class="flex gap-2">
                                 <button @click="openModal(transaction)"
-                                    class="bg-green-600 text-white rounded-md py-1 px-2 hover:bg-green-700">
+                                    class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600">
                                     Edit
                                 </button>
-                                <button @click="deleteTransaction(transaction.id)"
-                                    class="bg-red-600 text-white rounded-md py-1 px-2 hover:bg-red-700">
+                                <!-- <button @click="deleteTransaction(transaction.id)"
+                                    class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">
                                     Delete
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                </button> -->
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section>
+        <!-- Transaction Modal -->
+        <div v-if="transactionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-y-auto max-h-[90vh] p-8 space-y-6">
+                <!-- Modal Header -->
+                <div class="border-b border-gray-200 pb-4">
+                    <h3 class="text-2xl font-semibold text-gray-800">
+                        {{ selectedTransactionId ? 'Edit' : 'Add' }} Transaction
+                    </h3>
+                </div>
+
+                <!-- Form -->
+                <form @submit.prevent="submitForm" class="space-y-6">
+                    <!-- Date -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <input v-model="date" type="date"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-500"
+                            :max="new Date().toISOString().split('T')[0]" required />
+                    </div>
+
+                    <!-- Title -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                        <input v-model="transaction_title" type="text"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-500" />
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <input v-model="description" type="text"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-500" />
+                    </div>
+
+                    <!-- Fund -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Fund</label>
+                        <select v-model="fund_id"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-500"
+                            required>
+                            <option value="">Select Fund</option>
+                            <option v-for="fund in fundList" :key="fund.id" :value="fund.id">{{ fund.name }}</option>
+                        </select>
+                    </div>
+
+                    <!-- Transaction Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Transaction Type</label>
+                        <select v-model="transaction_type"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-500"
+                            required>
+                            <option value="">Select Type</option>
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
+                    </div>
+
+                    <!-- Amount -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                        <input v-model="amount" type="number" min="0"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-500"
+                            required />
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Upload Images</label>
+                        <div class="space-y-3">
+                            <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
+                                <input type="file" accept="image/*"
+                                    @change="event => handleFileChange(event, images, index)"
+                                    class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                                <div v-if="file.file && file.file.preview" class="w-16 h-16 rounded overflow-hidden">
+                                    <img :src="file.file.preview" class="w-full h-full object-cover" />
+                                </div>
+                                <button type="button" @click="removeFile(images, index)"
+                                    class="text-red-600 hover:underline text-sm">Remove</button>
+                            </div>
+                            <button type="button" @click="() => addMoreFiles(images)"
+                                class="text-blue-600 hover:underline text-sm">
+                                + Add more image
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Document Upload -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Upload Documents</label>
+                        <div class="space-y-3">
+                            <div v-for="(file, index) in documents" :key="file.id" class="flex items-center gap-4">
+                                <input type="file" accept=".pdf,.doc,.docx"
+                                    @change="event => handleFileChange(event, documents, index)"
+                                    class="w-full border border-gray-300 rounded-md px-3 py-2" />
+                                <span v-if="file.file" class="text-sm truncate w-32">{{ file.file.name }}</span>
+                                <button type="button" @click="removeFile(documents, index)"
+                                    class="text-red-600 hover:underline text-sm">Remove</button>
+                            </div>
+                            <button type="button" @click="() => addMoreFiles(documents)"
+                                class="text-blue-600 hover:underline text-sm">
+                                + Add more document
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex justify-end gap-3">
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            {{ selectedTransactionId ? 'Update' : 'Submit' }}
+                        </button>
+                        <button type="button" @click="closeModal"
+                            class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+
+
             </div>
+        </div>
 
-        </section>
-
-    </div>
+    </section>
 </template>
-
-<style scoped>
-.left-color-shade {
-    background-color: rgba(76, 175, 80, 0.1);
-    /* Slightly green background */
-}
-</style>

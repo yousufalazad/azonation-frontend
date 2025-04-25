@@ -82,32 +82,33 @@ const editFund = (fund) => {
 };
 
 // Delete fund
-const deleteFund = async (id) => {
-    try {
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'Do you want to delete this fund?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, cancel!'
-        });
+//Fund can not be deleted if it is used in any transaction
+// const deleteFund = async (id) => {
+//     try {
+//         const result = await Swal.fire({
+//             title: 'Are you sure?',
+//             text: 'Do you want to delete this fund?',
+//             icon: 'warning',
+//             showCancelButton: true,
+//             confirmButtonText: 'Yes, delete it!',
+//             cancelButtonText: 'No, cancel!'
+//         });
 
-        if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/funds/${id}`, {}, 'DELETE');
+//         if (result.isConfirmed) {
+//             const response = await auth.fetchProtectedApi(`/api/funds/${id}`, {}, 'DELETE');
 
-            if (response.status) {
-                await Swal.fire('Deleted!', 'Fund has been deleted.', 'success');
-                getFunds();
-            } else {
-                Swal.fire('Failed!', 'Failed to delete fund.', 'error');
-            }
-        }
-    } catch (error) {
-        console.error('Error deleting fund:', error);
-        Swal.fire('Error!', 'Failed to delete fund.', 'error');
-    }
-};
+//             if (response.status) {
+//                 await Swal.fire('Deleted!', 'Fund has been deleted.', 'success');
+//                 getFunds();
+//             } else {
+//                 Swal.fire('Failed!', 'Failed to delete fund.', 'error');
+//             }
+//         }
+//     } catch (error) {
+//         console.error('Error deleting fund:', error);
+//         Swal.fire('Error!', 'Failed to delete fund.', 'error');
+//     }
+// };
 
 // Fetch funds on mount
 onMounted(() => {
@@ -180,7 +181,7 @@ const accounts = () => {
                         <td class="py-2 px-4 border">{{ fund.status === 1 ? 'Active' : 'Inactive' }}</td>
                         <td class="py-2 px-4 border flex gap-2">
                             <button @click="editFund(fund)" class="bg-yellow-400 text-white rounded-md py-1 px-2 hover:bg-yellow-500">Edit</button>
-                            <button @click="deleteFund(fund.id)" class="bg-red-600 text-white rounded-md py-1 px-2 hover:bg-red-700">Delete</button>
+                            <!-- <button @click="deleteFund(fund.id)" class="bg-red-600 text-white rounded-md py-1 px-2 hover:bg-red-700">Delete</button> -->
                         </td>
                     </tr>
                 </tbody>
