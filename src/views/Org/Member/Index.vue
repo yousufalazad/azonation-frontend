@@ -201,9 +201,6 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen overflow-y-auto">
-    <div class="h-screen overflow-auto p-4">
-
       <!-- Top Controls -->
       <div class="flex justify-between items-center py-4 border-gray-200">
         <!-- Section Title -->
@@ -242,7 +239,6 @@ onMounted(() => {
           </a>
         </div>
       </div>
-
 
       <!-- Table -->
       <div v-if="memberList.length" class="bg-white shadow-md rounded-2xl overflow-x-auto">
@@ -449,8 +445,6 @@ onMounted(() => {
       </div>
       <div class="py-9">
       </div>
-    </div>
-  </div>
 </template>
 
 <style scoped></style>
