@@ -584,7 +584,7 @@ const fetchOrgAddress = async () => {
 
         // Ensure the response status is true and data exists
         if (response.status && response.data) {
-            address_user_id.value = response.data.user_id;
+            console.log(response.data);
             address_line_one.value = response.data.address_line_one || '';  // Use default values if data is missing
             address_line_two.value = response.data.address_line_two || '';
             city.value = response.data.city || '';
