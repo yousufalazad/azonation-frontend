@@ -410,6 +410,8 @@
 import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from "sweetalert2";
+import functions from "../../../global/cookie";
+
 
 const auth = authStore;
 const userId = auth.user.id;
@@ -511,10 +513,10 @@ const updateName = async () => {
             closeNameModal();
 
             // Update the name in sessionStorage explicitly
-            let user = JSON.parse(sessionStorage.getItem('user'));
+            let user = JSON.parse(functions.getCookie('user'));
             if (user) {
                 user.name = newName.value;
-                sessionStorage.setItem('user', JSON.stringify(user));
+                functions.setCookie('user', JSON.stringify(user));
             }
 
             // Optionally, you can reload the page or update the UI without reloading
@@ -814,6 +816,7 @@ const openNameModal = () => {
 
 const closeNameModal = () => {
     modalVisibleName.value = false;
+    newName.value = {};
 };
 
 const openUsernameModal = () => {

@@ -201,73 +201,78 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-10/12">
-        <section>
-            <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">document List</h5>
-                <button @click="$router.push({ name: 'create-document' })"
-                    class="bg-blue-500 text-white font-semibold py-2 px-2 mx-3 rounded-md">
-                    Add document
+    <section>
+      <div class="flex justify-between items-center bg-gray-100 px-4 py-3 rounded-md mb-4">
+        <h2 class="text-lg font-semibold text-gray-800">Document List</h2>
+        <button
+          @click="$router.push({ name: 'create-document' })"
+          class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-md transition"
+        >
+          Add Document
+        </button>
+      </div>
+  
+      <div class="overflow-x-auto bg-white shadow-sm rounded-md">
+        <table class="min-w-full text-sm text-gray-700 border border-gray-200">
+          <thead class="bg-gray-200 text-left text-xs font-semibold">
+            <tr>
+              <th class="px-4 py-3 border-b border-gray-300">Title</th>
+              <th class="px-4 py-3 border-b border-gray-300">Description</th>
+              <th class="px-4 py-3 border-b border-gray-300">Privacy</th>
+              <th class="px-4 py-3 border-b border-gray-300 text-center">Document</th>
+              <th class="px-4 py-3 border-b border-gray-300 text-center">Images</th>
+              <th class="px-4 py-3 border-b border-gray-300 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="document in documentList"
+              :key="document.id"
+              class="hover:bg-gray-50 border-b border-gray-100"
+            >
+              <td class="px-4 py-3">{{ document.title }}</td>
+              <td class="px-4 py-3" v-html="sanitize(document.description)"></td>
+              <td class="px-4 py-3">
+                <span v-if="document.status === 1">Only Me</span>
+                <span v-else-if="document.status === 2">Public</span>
+                <span v-else-if="document.status === 3">Selected Users</span>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <button
+                  v-if="document.documents && document.documents.length"
+                  @click="viewDocument(document)"
+                  class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md transition"
+                >
+                  View
                 </button>
-            </div>
-            <div class="overflow-x-auto">
-
-                <table class="w-full border-collapse border border-gray-200 rounded-md overflow-hidden">
-                    <thead>
-                        <tr class="bg-gray-200 text-left">
-                            <th class="p-3 border border-gray-200">Title</th>
-                            <th class="p-3 border border-gray-200">Description</th>
-                            <th class="p-3 border border-gray-200">Privacy</th>
-                            <th class="p-3 border border-gray-200">Document</th>
-                            <th class="p-3 border border-gray-200">Images</th>
-                            <th class="p-3 border border-gray-200">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="document in documentList" :key="document.id" class="border border-gray-200">
-                            <td class="p-3">{{ document.title }}</td>
-                            <td class="p-3" v-html="sanitize(document.description)"></td>
-                            <td class="p-3">
-                                <span v-if="document.status === 1">Only Me</span>
-                                <span v-else-if="document.status === 2">Public</span>
-                                <span v-else-if="document.status === 3">Selected Users</span>
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2 text-center">
-                                <div v-if="document.documents && document.documents.length">
-                                    <button @click="viewDocument(document)"
-                                        class="bg-blue-500 text-white px-2 py-1 rounded-md">
-                                        View Document
-                                    </button>
-                                </div>
-                                <div v-else>
-                                </div>
-                            </td>
-                            <!-- View Images -->
-                            <td class="border border-gray-300 p-2">
-                                <div v-if="document.images && document.images.length">
-                                    <button v-if="document.images.length > 0" @click="viewImages(document)"
-                                        class="bg-green-500 text-white rounded-md py-1 px-3 hover:bg-green-600 transition">
-                                        View Image
-                                    </button>
-                                </div>
-                                <div v-else>
-                                </div>
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2 text-center">
-                                <!-- <button @click="editRecord(document)" class="bg-green-500 text-white px-2 py-1 rounded-md">
-                                Edit
-                            </button> -->
-                                <button @click="$router.push({ name: 'edit-document', params: { id: document.id } })"
-                                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 m-2 rounded">Edit</button>
-                                <button @click="deleteRecord(document.id)"
-                                    class="bg-red-500 text-white px-2 py-1 rounded-md ml-2">
-                                    Delete
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </div>
-</template>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <button
+                  v-if="document.images && document.images.length"
+                  @click="viewImages(document)"
+                  class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md transition"
+                >
+                  View
+                </button>
+              </td>
+              <td class="px-4 py-3 text-center space-x-2">
+                <button
+                  @click="$router.push({ name: 'edit-document', params: { id: document.id } })"
+                  class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md transition"
+                >
+                  Edit
+                </button>
+                <button
+                  @click="deleteRecord(document.id)"
+                  class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md transition"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </template>
+  
