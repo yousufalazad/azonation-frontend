@@ -12,17 +12,17 @@ const userId = auth.user.id;
 // Form Fields
 const name = ref('');
 const description = ref('');
-const is_long_term = ref(1); // Default to 1 (true)
+const is_long_term = ref(''); //true/false
 const quantity = ref(1);
-const value_amount = ref(0);
-const inkind_value = ref(0);
-const is_tangible = ref(1); // Default to 1 (true)
-const responsible_user_id = ref(null);
+const value_amount = ref('');
+const inkind_value = ref('');
+const is_tangible = ref(''); //true/false
+const responsible_user_id = ref('');
 const assignment_start_date = ref('');
 const assignment_end_date = ref('');
 const note = ref('');
-const asset_lifecycle_statuses_id = ref(null);
-const privacy_setup_id = ref(null);
+const asset_lifecycle_statuses_id = ref('');
+const privacy_setup_id = ref('');
 const is_active = ref(1); // Default to 1 (true)
 const images = ref([{ id: Date.now(), file: null }]);
 const documents = ref([{ id: Date.now(), file: null }]);
@@ -47,11 +47,11 @@ const fetchDropdownData = async (url, stateRef) => {
 const resetForm = () => {
     name.value = '';
     description.value = '';
-    is_long_term.value = 1;
+    is_long_term.value = '';
     quantity.value = 1;
-    value_amount.value = 0;
-    inkind_value.value = 0;
-    is_tangible.value = 1;
+    value_amount.value = '';
+    inkind_value.value = '';
+    is_tangible.value = '';
     responsible_user_id.value = null;
     assignment_start_date.value = '';
     assignment_end_date.value = '';
@@ -186,30 +186,30 @@ onMounted(() => {
             <div class="mb-4">
                 <label for="name" class="block text-gray-700 font-semibold mb-2">Name</label>
                 <input v-model="name" type="text" id="name" class="w-full border border-gray-300 rounded-md py-2 px-4"
-                    required />
+                     />
             </div>
 
             <div class="mb-4">
                 <label for="description" class="block text-gray-700 font-semibold mb-2">Description</label>
                 <input v-model="description" type="text" id="description"
-                    class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
+                    class="w-full  border border-gray-300 rounded-md py-2 px-4" />
             </div>
 
             <div class="grid grid-cols-3 gap-4 mb-4">
                 <div>
                     <label for="quantity" class="block text-gray-700 font-semibold mb-2">Quantity</label>
                     <input v-model="quantity" type="number" id="quantity" min="0"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4" />
                 </div>
                 <div>
                     <label for="value_amount" class="block text-gray-700 font-semibold mb-2">Value Amount</label>
                     <input v-model="value_amount" type="number" id="value_amount" min="0"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4" />
                 </div>
                 <div>
                     <label for="inkind_value" class="block text-gray-700 font-semibold mb-2">In-Kind Value</label>
                     <input v-model="inkind_value" type="number" id="inkind_value" min="0"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4" />
                 </div>
             </div>
 
@@ -217,7 +217,7 @@ onMounted(() => {
                 <div>
                     <label for="is_long_term" class="block text-gray-700 font-semibold mb-2">Is Long Term?</label>
                     <select v-model="is_long_term" id="is_long_term"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required>
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4" >
                         <option :value="1">Yes</option>
                         <option :value="0">No</option>
                     </select>
@@ -226,7 +226,7 @@ onMounted(() => {
                 <div>
                     <label for="is_tangible" class="block text-gray-700 font-semibold mb-2">Is Tangible?</label>
                     <select v-model="is_tangible" id="is_tangible"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required>
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4" >
                         <option :value="1">Yes</option>
                         <option :value="0">No</option>
                     </select>
@@ -250,13 +250,13 @@ onMounted(() => {
                     <label for="assignment_start_date" class="block text-gray-700 font-semibold mb-2">Start
                         Date</label>
                     <input v-model="assignment_start_date" type="date" id="assignment_start_date"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4"  />
                 </div>
 
                 <div>
                     <label for="assignment_end_date" class="block text-gray-700 font-semibold mb-2">End Date</label>
                     <input v-model="assignment_end_date" type="date" id="assignment_end_date"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4"  />
                 </div>
             </div>
 
@@ -271,7 +271,7 @@ onMounted(() => {
                     <label for="asset_lifecycle_statuses_id" class="block text-gray-700 font-semibold mb-2">Lifecycle
                         Status</label>
                     <select v-model="asset_lifecycle_statuses_id" id="asset_lifecycle_statuses_id"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required>
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4" >
                         <option value="" disabled>Select Lifecycle Status</option>
                         <option v-for="status in assetLifecycleSetups" :key="status.id" :value="status.id">{{
                             status.name }}</option>
@@ -282,7 +282,7 @@ onMounted(() => {
                     <label for="privacy_setup_id" class="block text-gray-700 font-semibold mb-2">Privacy
                         Setup</label>
                     <select v-model="privacy_setup_id" id="privacy_setup_id"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required>
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4" >
                         <option value="" disabled>Select Privacy Setup</option>
                         <option v-for="setup in privacySetups" :key="setup.id" :value="setup.id">{{ setup.name }}
                         </option>
@@ -293,7 +293,7 @@ onMounted(() => {
             <div class="mb-4">
                 <label for="is_active" class="block text-gray-700 font-semibold mb-2">Is Active?</label>
                 <select v-model="is_active" id="is_active" class="w-full  border border-gray-300 rounded-md py-2 px-4"
-                    required>
+                    >
                     <option :value="1">Yes</option>
                     <option :value="0">No</option>
                 </select>
