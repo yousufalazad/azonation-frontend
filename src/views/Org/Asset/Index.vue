@@ -4,7 +4,6 @@ import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
 
 const auth = authStore;
-const userId = auth.user.id;
 const recordList = ref([]);
 
 const getRecords = async () => {

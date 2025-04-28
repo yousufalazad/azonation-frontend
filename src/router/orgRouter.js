@@ -232,7 +232,7 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "index-committee-member/:committeeId",
+        path: "index-committee-member/:committeeId/:committeeName",
         name: "index-committee-member",
         component: CommitteeMember,
         meta: { requiresAuth: true },

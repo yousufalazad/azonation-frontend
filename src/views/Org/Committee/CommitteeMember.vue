@@ -2,12 +2,13 @@
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
-
 import { useRoute, useRouter } from 'vue-router';
+
 const router = useRouter();
 const route = useRoute();
 const auth = authStore;
-
+const committeeId = ref(route.params.committeeId || null);
+const committeeName = ref(route.params.committeeName || null); // From router params
 const isModalOpen = ref(false);
 const isViewModalOpen = ref(false);
 const isEditMode = ref(false);
@@ -25,8 +26,8 @@ const userList = ref([]);
 const designationList = ref([]);
 const committeeMemberList = ref([]);
 
-const committeeId = ref(route.params.committeeId || null);
-console.log('committeeId', committeeId.value);
+console.log('Committee ID:', committeeId.value);
+console.log('Committee Name:', committeeName.value);
 
 const getOrgUserList = async () => {
     const res = await auth.fetchProtectedApi('/api/project-attendances/org-user-list', {}, 'GET');
@@ -145,7 +146,7 @@ onMounted(() => {
         <!-- Committee Member List Section -->
         <section class="mt-8">
             <div class="flex items-center justify-between  bg-white rounded-lg p-4 shadow-sm">
-                <h2 class="text-lg font-semibold text-gray-800">Committee Members</h2>
+                <h2 class="text-lg font-semibold text-gray-800">{{ committeeName }} Members</h2>
                 <div class="flex gap-3">
                     <button @click="openModalForAdd"
                         class="bg-green-600 hover:bg-green-500 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-150">

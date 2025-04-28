@@ -196,7 +196,7 @@ onMounted(fetchCommitteeList);
               <td class="px-4 py-3">{{ committee.start_date }}</td>
               <td class="px-4 py-3">{{ committee.end_date }}</td>
               <td class="px-4 py-3 text-right space-x-2">
-                <button @click="$router.push({ name: 'index-committee-member', params: { committeeId: committee.id } })"
+                <button @click="$router.push({ name: 'index-committee-member', params: { committeeId: committee.id, committeeName: committee.name } })"
                   class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded-lg text-xs">
                   Members
                 </button>

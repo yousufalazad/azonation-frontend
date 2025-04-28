@@ -151,6 +151,7 @@ const submitForm = async () => {
             if (response.status) {
                 Swal.fire('Success!', 'Asset saved successfully.', 'success').then(() => {
                     // Redirect to asset list
+
                     router.push({ name: 'index-asset' });
                 });
             } else {
@@ -235,10 +236,10 @@ onMounted(() => {
 
             <div class="mb-4">
                 <label for="responsible_user_id" class="block text-gray-700 font-semibold mb-2">Responsible
-                    User</label>
+                    Person</label>
                 <select v-model="responsible_user_id" id="responsible_user_id"
                     class="w-full  border border-gray-300 rounded-md py-2 px-4">
-                    <option value="" disabled>Select Responsible User</option>
+                    <option value="" disabled>Select Responsible Person</option>
                     
                     <option v-for=" orgMember in getOrgAllMemberName" :key="orgMember.individual.id" :value="orgMember.individual.id">
                         {{ orgMember.individual.name }}</option>
@@ -247,14 +248,14 @@ onMounted(() => {
 
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label for="assignment_start_date" class="block text-gray-700 font-semibold mb-2">Start
+                    <label for="assignment_start_date" class="block text-gray-700 font-semibold mb-2">Responsibility Start
                         Date</label>
                     <input v-model="assignment_start_date" type="date" id="assignment_start_date"
                         class="w-full  border border-gray-300 rounded-md py-2 px-4"  />
                 </div>
 
                 <div>
-                    <label for="assignment_end_date" class="block text-gray-700 font-semibold mb-2">End Date</label>
+                    <label for="assignment_end_date" class="block text-gray-700 font-semibold mb-2">Responsibility End Date</label>
                     <input v-model="assignment_end_date" type="date" id="assignment_end_date"
                         class="w-full  border border-gray-300 rounded-md py-2 px-4"  />
                 </div>
