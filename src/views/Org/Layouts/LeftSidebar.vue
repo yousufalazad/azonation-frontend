@@ -20,7 +20,7 @@ const isSectionOpen = (section) => openSections.value.includes(section);
 </script>
 
 <template>
-  <nav class="flex-1 px-2 py-4 space-y-2">
+  <nav class="flex-1 px-2 py-4 space-y-2 mb-6 pb-6">
     <!-- Static Links -->
     <router-link :to="{ name: 'org-index' }"
       class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
@@ -106,7 +106,6 @@ const isSectionOpen = (section) => openSections.value.includes(section);
     </div>
 
     <!-- Profile Section -->
-    <div>
       <button @click="toggleSection('profile')"
         class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
         <span v-if="isSidebarExpanded">Profile</span>
@@ -137,6 +136,8 @@ const isSectionOpen = (section) => openSections.value.includes(section);
         <router-link to="/org-dashboard/year-plan" class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Year
           plan</router-link>
       </div>
+      <div class="mb-6, pb-6"></div>
+    <div>
     </div>
   </nav>
 </template>

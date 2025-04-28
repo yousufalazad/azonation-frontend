@@ -2,7 +2,7 @@
     <div class="flex flex-col h-screen overflow-y-auto pb-7 pr-7">
         <!-- Logo Section -->
         <section>
-            <h2 class="text-lg font-bold mb-4 py-2">Logo</h2>
+            <h2 class="text-lg font-bold mb-4 left-color-shade py-2">Logo</h2>
             <div class="mb-4 flex justify-between pb-9">
                 <div v-if="logoPath">
                     <img :src="`${baseURL}${logoPath}`" alt="Logo" class="rounded-lg h-[150px] ml-5">
@@ -19,16 +19,18 @@
 
         <!-- Org name section -->
         <section>
-            <div class="space-y-2">
-                <div class="flex items-center justify-between border-b pb-2">
+            <div class="space-y-4">
+
+                <h3 class="text-lg font-bold mb-4 left-color-shade py-2">Name</h3>
+                <div class="flex justify-between">
                     <div>
-                        <h3 class="text-sm font-semibold text-gray-700">Name</h3>
-                        <p class="text-gray-900 mt-1">{{ name }}</p>
+                        <p class="ml-5 pb-9">{{ name }}
+                        </p>
                     </div>
-                    <button @click="openNameModal()" class="text-sm text-primary hover:underline">
-                        Edit
-                    </button>
+                    <div><button @click="openNameModal()" class="text-blue-500 pl-9 pr-2">Edit</button></div>
                 </div>
+
+
             </div>
 
             <!-- Org name Modal -->
@@ -66,18 +68,19 @@
 
         <!-- Username section -->
         <section>
-            <div class="space-y-2 mt-5">
-                <div class="flex items-center justify-between border-b pb-2">
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-700">Username</h3>
-                        <p class="text-gray-900 mt-1">{{ username }}</p>
-                    </div>
-                    <button @click="openUsernameModal()" class="text-sm text-primary hover:underline">
-                        Edit
-                    </button>
-                </div>
-            </div>
+            <div class="space-y-4">
 
+                <h3 class="text-lg font-bold mb-4 left-color-shade py-2">Username</h3>
+                <div class="flex justify-between">
+                    <div>
+                        <p class="ml-5 pb-9">{{ username }}
+                        </p>
+                    </div>
+                    <div><button @click="openUsernameModal()" class="text-blue-500 pl-9 pr-2">Edit</button></div>
+                </div>
+
+
+            </div>
 
             <!-- Username Modal -->
             <div v-if="modalVisibleUsername"
@@ -114,23 +117,15 @@
 
         <!-- Address Section -->
         <section>
-            <div class="space-y-2 mt-5">
-                <div class="flex items-start justify-between border-b pb-2">
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold mb-4 left-color-shade py-2">Address</h3>
+                <div class="flex justify-between">
                     <div>
-                        <h3 class="text-sm font-semibold text-gray-700">Address</h3>
-                        <p class="text-gray-900 mt-1 leading-relaxed">
-                            <span>{{ address_line_one }}</span>,
-                            <span>{{ address_line_two }}</span>,
-                            <span>{{ city }}</span>,
-                            <span>{{ state_or_region }}</span>,
-                            <span>{{ postal_code }}</span>,
-                            <span>{{ country_name }}</span>
+                        <p class="ml-5 pb-9"><span>{{ address_line_one }}</span>,{{ address_line_two }}, {{ city }}, {{
+                            state_or_region }}, {{ postal_code }}, {{ country_name }}
                         </p>
                     </div>
-                    <button @click="openAddressModal()"
-                        class="text-sm text-primary hover:underline whitespace-nowrap ml-4">
-                        Edit
-                    </button>
+                    <div><button @click="openAddressModal()" class="text-blue-500 pl-9 pr-2">Edit</button></div>
                 </div>
             </div>
 
@@ -206,29 +201,33 @@
 
         <!-- Mobile number section -->
         <section>
-            <div class="space-y-2 mt-5">
-                <div class="flex items-start justify-between border-b pb-2">
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold mb-4 left-color-shade py-2">Mobile number</h3>
+
+                <div class="flex justify-between">
                     <div>
-                        <h3 class="text-sm font-semibold text-gray-700">Mobile Number</h3>
-                        <p class="text-gray-900 mt-1 leading-relaxed">
+                        <p class="ml-5 pb-9 flex">
                             <span>{{ dialing_code }}{{ phone_number }}</span>
-                            <span class="ml-6">Type:
+                            <span class="ml-16">Type:
                                 {{ phone_type === 1 ? 'Mobile' : phone_type === 2 ? 'Work' : phone_type === 3 ? 'Home' :
                                     'Others' }}
-                            </span>
-                            <span class="ml-6">Status:
-                                {{ statusPhone === 1 ? 'Private' : statusPhone === 2 ? 'Connected Organisation' :
-                                    statusPhone === 3 ? 'Public' : 'Others' }}
-                            </span>
+                            </span>,
+                            <span class="ml-16">Status: {{ statusPhone === 1 ? 'Private' : statusPhone === 2 ?
+                                'Connected organisation and only for connected organisations member' : statusPhone === 3
+                                    ?
+                                    'Public' :
+                                'Others' }}</span>
                         </p>
-                    </div>
-                    <button @click="openPhoneModal()"
-                        class="text-sm text-primary hover:underline ml-4 whitespace-nowrap">
-                        Edit
-                    </button>
-                </div>
-            </div>
 
+                    </div>
+
+                    <div>
+                        <button @click="openPhoneModal()" class="text-blue-500 pl-9 ml-16 pr-2">Edit</button>
+
+                    </div>
+                </div>
+
+            </div>
 
             <!-- Mobile number Modal -->
             <div v-if="modalVisiblePhone"
@@ -321,25 +320,22 @@
 
         <!-- User email section -->
         <section>
-            <div class="space-y-2 mt-5">
-                <div class="flex items-start justify-between border-b pb-2">
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold mb-2 left-color-shade py-2">User Email</h3>
+                <div class="flex justify-between">
                     <div>
-                        <h3 class="text-sm font-semibold text-gray-700">User Email</h3>
-                        <p class="text-gray-900 mt-1 leading-relaxed">
-                            {{ email }}
-                            <span class="ml-6">Status:
-                                {{ statusPhone === 1 ? 'Private' : statusPhone === 2 ? 'Connected Organisation' :
-                                    statusPhone === 3 ? 'Public' : 'Others' }}
-                            </span>
+                        <p class="ml-5 pb-9">{{ email }}
+                            <span class="ml-16">Status: {{ statusPhone === 1 ? 'Private' : statusPhone === 2 ?
+                                'Connected organisation and only for connected organisations member' : statusPhone === 3
+                                    ?
+                                    'Public' :
+                                'Others' }}</span>
                         </p>
                     </div>
-                    <button @click="openEmailModal()"
-                        class="text-sm text-primary hover:underline ml-4 whitespace-nowrap">
-                        Edit
-                    </button>
+                    <div><button @click="openEmailModal()" class="text-blue-500 pl-9 pr-2">Edit</button></div>
                 </div>
-            </div>
 
+            </div>
 
             <!-- User email Modal -->
             <div v-if="modalVisibleUserEmail"
@@ -376,21 +372,17 @@
 
         <!-- country section -->
         <section>
-            <div class="space-y-4 mt-5 pb-5 mb-5">
-                <div class="flex items-start justify-between border-b pb-2">
+            <div class="space-y-4 pb-5 mb-5">
+                <h3 class="text-lg font-bold mb-2 left-color-shade py-2">Country</h3>
+                <div class="flex justify-between">
                     <div>
-                        <h3 class="text-sm font-semibold text-gray-700">Country</h3>
-                        <p class="text-gray-900 mt-1 leading-relaxed">
-                            {{ userCountry }}
+                        <p class="ml-5 pb-9">{{ userCountry }}
                         </p>
                     </div>
-                    <button @click="openCountryModal()"
-                        class="text-sm text-primary hover:underline ml-4 whitespace-nowrap">
-                        Edit
-                    </button>
+                    <div><button @click="openCountryModal()" class="text-blue-500 pl-9 pr-2">Edit</button></div>
                 </div>
-            </div>
 
+            </div>
 
             <!-- Country Modal -->
             <div v-if="modalOpenCountry"
@@ -428,7 +420,7 @@
             </div>
         </section>
 
-        <section class="mt-5 pb-5 mb-5">
+        <section class="pb-5 mb-5">
         </section>
     </div>
 </template>
@@ -883,3 +875,49 @@ onMounted(() => {
     fetchOrgCountry();
 });
 </script>
+
+<style scoped>
+.fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.bg-opacity-75 {
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
+.max-w-md {
+    max-width: 28rem;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.flex {
+    display: flex;
+}
+
+.justify-end {
+    justify-content: flex-end;
+}
+</style>

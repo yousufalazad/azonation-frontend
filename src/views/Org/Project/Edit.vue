@@ -155,9 +155,9 @@ const submitForm = async () => {
 </script>
 
 <template>
-  <div class="container mx-auto max-w-7xl w-10/12 p-8 bg-white rounded-lg shadow-lg mt-12">
+  <div>
     <!-- Header -->
-    <div class="flex justify-between items-center mb-8">
+    <div class="flex justify-between items-center">
       <h2 class="text-2xl font-bold text-gray-800">Edit Project</h2>
       <button @click="$router.push({ name: 'index-project' })"
         class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-lg shadow focus:ring-2 focus:ring-blue-300 focus:outline-none">

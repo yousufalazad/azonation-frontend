@@ -49,17 +49,17 @@ onMounted(() => getRecords());
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto w-full px-4 py-6">
+  <div class="mx-auto py-6">
     <section>
       <div class="flex justify-between items-center mb-6">
         <h5 class="text-lg font-semibold text-gray-800">Project List</h5>
         <div class="space-x-3">
           <button @click="$router.push({ name: 'create-project' })"
-                  class="bg-blue-600 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition">
+                  class="bg-blue-600 text-white font-medium py-2 px-4 rounded hover:bg-blue-700 transition">
             Add Project
           </button>
           <button @click="$router.push({ name: 'index-project-summary' })"
-                  class="bg-blue-600 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition">
+                  class="bg-blue-600 text-white font-medium py-2 px-4 rounded hover:bg-blue-700 transition">
             Project Summary List
           </button>
         </div>
@@ -90,23 +90,23 @@ onMounted(() => getRecords());
               </td>
               <td class="px-6 py-3 space-x-2">
                 <button @click="$router.push({ name: 'create-project-summary', params: { projectId: project.id } })"
-                        class="bg-sky-600 text-white font-medium py-2 px-4 rounded-md hover:bg-sky-700 transition">
+                        class="bg-sky-600 text-white font-medium py-2 px-4 rounded hover:bg-sky-700 transition">
                   Add Summary
                 </button>
                 <button @click="$router.push({ name: 'project-attendances', params: { id: project.id } })"
-                        class="bg-blue-600 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition">
+                        class="bg-blue-600 text-white font-medium py-2 px-4 rounded hover:bg-blue-700 transition">
                   Attendances
                 </button>
                 <button @click="$router.push({ name: 'edit-project', params: { id: project.id } })"
-                        class="bg-yellow-600 text-white font-medium py-2 px-4 rounded-md hover:bg-yellow-700 transition">
+                        class="bg-yellow-600 text-white font-medium py-2 px-4 rounded hover:bg-yellow-700 transition">
                   Edit
                 </button>
                 <button @click="$router.push({ name: 'view-project', params: { id: project.id } })"
-                        class="bg-green-600 text-white font-medium py-2 px-4 rounded-md hover:bg-green-700 transition">
+                        class="bg-green-600 text-white font-medium py-2 px-4 rounded hover:bg-green-700 transition">
                   View
                 </button>
                 <button @click="deleteRecord(project.id)"
-                        class="bg-red-600 text-white font-medium py-2 px-4 rounded-md hover:bg-red-700 transition">
+                        class="bg-red-600 text-white font-medium py-2 px-4 rounded hover:bg-red-700 transition">
                   Delete
                 </button>
               </td>

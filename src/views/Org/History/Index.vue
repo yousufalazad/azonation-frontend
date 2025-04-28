@@ -1,6 +1,5 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import DOMPurify from 'dompurify';
 import { authStore } from '../../../store/authStore';
@@ -79,7 +78,7 @@ onMounted(() => {
 });
 </script>
 <template>
-    <div class="max-w-7xl mx-auto w-10/12">
+    <div>
         <section>
             <!-- Header Section -->
             <div class="flex justify-between items-center mb-5">
@@ -90,40 +89,44 @@ onMounted(() => {
             </div>
 
             <!-- Table Section -->
-            <div class="overflow-auto">
-                <table class="min-w-full border-collapse block md:table">
-                    <thead class="block md:table-header-group">
-                        <tr class="border border-gray-300 md:border-none block md:table-row">
-                            <th class="p-2 md:border md:border-gray-300 text-left block md:table-cell">#</th>
-                            <th class="p-2 md:border md:border-gray-300 text-left block md:table-cell">Title</th>
-                            <th class="p-2 md:border md:border-gray-300 text-left block md:table-cell">History</th>
-                            <th class="p-2 md:border md:border-gray-300 text-left block md:table-cell">Active</th>
-                            <th class="p-2 md:border md:border-gray-300 text-left block md:table-cell">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody class="block md:table-row-group">
-                        <tr v-for="(history, index) in historyList" :key="history.id"
-                            class="border border-gray-300 md:border-none block md:table-row">
-                            <td class="p-2 md:border md:border-gray-300 block md:table-cell">{{ index + 1 }}</td>
-                            <td class="p-2 md:border md:border-gray-300 block md:table-cell">{{ history.title }}</td>
-                            <td class="p-2 md:border md:border-gray-300 block md:table-cell"
-                                v-html="sanitize(history.history)"></td>
-                            <td class="p-2 md:border md:border-gray-300 block md:table-cell">{{ history.is_active === 1 ?
-                                'Yes' : 'No' }}</td>
-                            <td class="p-2 md:border md:border-gray-300 block md:table-cell">
-                                <button @click="$router.push({ name: 'edit-history', params: { id: history.id } })"
-                                    class="bg-yellow-500 text-white px-4 py-1 mx-1 rounded hover:bg-yellow-600">Edit
-                                </button>
+            <table class="min-w-full table-auto border-collapse border border-gray-300 text-left">
+    <thead class="bg-gray-100">
+        <tr>
+            <th class="border px-4 py-2">SL</th>
+            <th class="border px-4 py-2">Title</th>
+            <th class="border px-4 py-2">History</th>
+            <th class="border px-4 py-2">Active</th>
+            <th class="border px-4 py-2 text-right">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr v-for="(history, index) in historyList" :key="history.id" class="hover:bg-gray-50 transition-colors duration-200">
+            <td class="border px-4 py-2">{{ index + 1 }}</td>
+            <td class="border px-4 py-2">{{ history.title }}</td>
+            <td class="border px-4 py-2" v-html="sanitize(history.history)"></td>
+            <td class="border px-4 py-2">
+                <span :class="history.is_active === 1 ? 'text-green-600' : 'text-red-600'">
+                    {{ history.is_active === 1 ? 'Yes' : 'No' }}
+                </span>
+            </td>
+            <td class="flex justify-end px-4 py-2">
+                <button @click="$router.push({ name: 'edit-history', params: { id: history.id } })"
+                        class="bg-yellow-500 text-white px-4 py-2 mx-1 rounded hover:bg-yellow-600">
+                    Edit
+                </button>
+                <button @click="$router.push({ name: 'view-history', params: { id: history.id } })"
+                        class="bg-green-500 text-white px-4 py-2 mx-1 rounded hover:bg-green-600">
+                    View
+                </button>
+                <button @click="deleteHistory(history.id)"
+                        class="bg-red-500 text-white px-4 py-2 mx-1 rounded hover:bg-red-600">
+                    Delete
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>
 
-                                <button @click="$router.push({ name: 'view-history', params: { id: history.id } })"
-                                    class="bg-green-500 text-white px-4 py-1 mx-1 rounded hover:bg-green-600">View </button>
-                                <button @click="deleteHistory(history.id)"
-                                    class="bg-red-500 text-white px-4 py-1 mx-1 rounded hover:bg-red-600">Delete</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
         </section>
     </div>
 </template>

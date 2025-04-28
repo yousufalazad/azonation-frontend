@@ -1,11 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
-import { useRoute, useRouter } from 'vue-router';
 import { authStore } from '../../../store/authStore';
 
-const router = useRouter();
-const route = useRoute();
 const auth = authStore;
 const recordList = ref([]);
 
@@ -58,7 +55,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-10/12">
+    <div>
         <!-- Add button -->
         <div class="flex justify-between items-center mb-6">
             <h5 class="text-xl font-semibold">Success Story List</h5>
@@ -77,7 +74,7 @@ onMounted(() => {
                     <th class="border px-4 py-2">Title</th>
                     <th class="border px-4 py-2">Story</th>
                     <th class="border px-4 py-2">Status</th>
-                    <th class="border px-4 py-2">Action</th>
+                    <th class="border px-4 py-2 text-right">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -93,7 +90,7 @@ onMounted(() => {
                             {{ record.status == 1 ? 'Active' : 'Disabled' }}
                         </span>
                     </td>
-                    <td class="border px-4 py-2">                        
+                    <td class="border px-4 py-2 flex justify-end">                        
                         <button @click="$router.push({ name: 'edit-success-story', params: { id: record.id } })"
                                 class="bg-yellow-500 text-white px-4 py-1 mx-1 rounded hover:bg-yellow-600">Edit </button>
                         <button @click="$router.push({ name: 'view-success-story', params: { id: record.id } })"

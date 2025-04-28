@@ -217,9 +217,7 @@ onMounted(() => {
 
 <template>
   <div class="h-screen overflow-y-auto py-2">
-
     <div v-if="auth.isAuthenticated && userType === 'organisation'">
-
       <!-- Dashboard Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
@@ -488,6 +486,9 @@ onMounted(() => {
           </form>
         </div>
       </div>
+    </div>
+    <div v-else class="flex items-center justify-center h-screen">
+      <p class="text-gray-500 text-lg">You are not authorized to view this page.</p>
     </div>
   </div>
 </template>

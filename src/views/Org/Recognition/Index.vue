@@ -62,7 +62,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-10/12">
+    <div>
         <!-- Header Section -->
         <div class="flex justify-between items-center mb-5">
             <h2 class="text-xl font-semibold">Recognition List</h2>
@@ -82,7 +82,7 @@ onMounted(() => {
                         <th class="border px-4 py-2 w-1/5">Recognition Date</th>
                         <th class="border px-4 py-2 w-1/8">Privacy</th>
                         <th class="border px-4 py-2 w-1/8">Status</th> 
-                        <th class="border px-4 py-2 w-1/3">Actions</th>
+                        <th class="border px-4 py-2 w-1/3 text-right">Actions</th>
                     </tr>
                 </thead>
                 
@@ -100,7 +100,7 @@ onMounted(() => {
                             }}
                         </td>
                         <td class="border px-4 py-2">{{ record.status === 1 ? 'Active' : 'Disabled' }}</td>
-                        <td class="border px-4 py-2 space-x-2">
+                        <td class="border px-4 py-2 space-x-2 flex justify-end">
                             <button @click="$router.push({ name: 'edit-recognition', params: { id: record.id } })"
                                 class="bg-yellow-500 text-white px-4 py-1 rounded hover:bg-yellow-600">Edit </button>
 

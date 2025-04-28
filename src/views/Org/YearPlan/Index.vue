@@ -2,10 +2,6 @@
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
-import { useRoute, useRouter } from 'vue-router';
-
-const router = useRouter();
-const route = useRoute();
 const auth = authStore;
 const recordList = ref([]);
 
@@ -58,7 +54,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-10/12">
+    <div>
         <div class="flex justify-between items-center mb-6">
             <h5 class="text-xl font-semibold">Year Plans</h5>
             <button @click="router.push({ name: 'create-year-plan' })"
@@ -76,7 +72,7 @@ onMounted(() => {
                         <th class="px-4 py-2 border">Budget</th>
                         <th class="px-4 py-2 border">Start Date</th>
                         <th class="px-4 py-2 border">End Date</th>
-                        <th class="px-4 py-2 border">Actions</th>
+                        <th class="px-4 py-2 border text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -87,11 +83,11 @@ onMounted(() => {
                         <td class="px-4 py-2 border text-center">{{ record.budget }}</td>
                         <td class="px-4 py-2 border text-center">{{ record.start_date }}</td>
                         <td class="px-4 py-2 border text-center">{{ record.end_date }}</td>
-                        <td class="px-4 py-2 border text-center">
-                            <button @click="$router.push({ name: 'edit-year-plan', params: { id: record.id } })"
+                        <td class="px-4 py-2 border flex justify-end">
+                            <button @click="router.push({ name: 'edit-year-plan', params: { id: record.id } })"
                                 class="bg-yellow-500 text-white px-4 py-1 mx-1 rounded hover:bg-yellow-600">Edit
                             </button>
-                            <button @click="$router.push({ name: 'view-year-plan', params: { id: record.id } })"
+                            <button @click="router.push({ name: 'view-year-plan', params: { id: record.id } })"
                                 class="bg-green-500 text-white px-4 py-1 mx-1 rounded hover:bg-green-600">View </button>
 
                             <button @click="deleteRecord(record.id)"

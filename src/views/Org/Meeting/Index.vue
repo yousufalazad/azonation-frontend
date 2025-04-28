@@ -67,9 +67,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-4">
+  <div>
     <section class="mb-6">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between bg-gray-100 px-4 py-3 rounded-lg mb-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between bg-gray-100 py-3 mb-4">
         <h2 class="text-lg font-semibold text-gray-700">Meeting List</h2>
         <div class="flex flex-wrap gap-2 mt-2 md:mt-0">
           <button
@@ -93,7 +93,7 @@ onMounted(() => {
         </div>
       </div>
 
-      <div class="overflow-x-auto bg-white shadow rounded-lg">
+      <div class="overflow-x-auto bg-white">
         <table class="min-w-full text-sm text-left text-gray-700">
           <thead class="bg-gray-200 uppercase text-xs font-semibold text-gray-600">
             <tr>

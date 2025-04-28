@@ -55,7 +55,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto w-10/12">
+  <div class="mx-auto w-10/12">
     <section class="mb-5">
       <div class="flex justify-between left-color-shade py-2 my-3">
         <h5 class="text-md font-semibold mt-2">Meeting Minutes List</h5>

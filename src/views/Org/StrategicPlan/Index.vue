@@ -1,12 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import DOMPurify from 'dompurify';
 import { authStore } from '../../../store/authStore';
 const auth = authStore;
-const router = useRouter();
-const route = useRoute();
 const recordList = ref([]);
 
 // Fetch the list of records
@@ -67,7 +64,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-10/12">
+    <div>
         <section>
             <div class="flex justify-between py-2 my-3">
                 <h5 class="text-md font-semibold">Strategic Plans List</h5>
@@ -85,7 +82,7 @@ onMounted(() => {
                         <th class="px-4 py-2 border">Start Date</th>
                         <th class="px-4 py-2 border">End Date</th>
                         <th class="px-4 py-2 border">Status</th>
-                        <th class="px-4 py-2 border">Action</th>
+                        <th class="px-4 py-2 border text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -99,7 +96,7 @@ onMounted(() => {
                         <td class="border px-4 py-2">
                             {{ record.status === 1 ? 'Active' : 'Disabled' }}
                         </td>
-                        <td class="border px-4 py-2 flex space-x-2">
+                        <td class="border px-4 py-2 flex space-x-2 justify-end">
                             <button @click="$router.push({ name: 'edit-strategic-plan', params: { id: record.id } })"
                                 class="bg-yellow-500 text-white px-4 py-1 rounded hover:bg-yellow-600">Edit </button>
                             <button @click="$router.push({ name: 'view-strategic-plan', params: { id: record.id } })"
