@@ -104,7 +104,7 @@ const remember_token = ref(false)
           </div>
 
           <div class="text-center mt-4">
-            <p class="text-sm text-gray-600"><router-link :to="{ name: 'individual-register' }"
+            <p class="text-sm text-gray-600"><router-link :to="{ name: 'forgot-password' }"
                 class="text-blue-600 hover:text-blue-500">Forgot password</router-link></p>
           </div>
         </div>

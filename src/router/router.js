@@ -9,6 +9,9 @@ import Home from "../views/Home.vue";
 
 //Auth
 import Login from "../views/Auth/Login.vue";
+import ForgotPassword from '../views/Auth/ForgotPassword.vue';
+import VerifyCode from '../views/Auth/VerifyCode.vue';
+import ResetPassword from '../views/Auth/ResetPassword.vue';
 
 //Individual
 import IndividualRegister from "../views/Auth/IndividualRegister.vue";
@@ -29,6 +32,21 @@ const baseRoutes = [
     path: "/",
     name: "home",
     component: Home,
+  },
+  {
+    path: "/forgot-password",
+    name: "forgot-password",
+    component: ForgotPassword,
+  },
+  {
+    path: "/verify-code",
+    name: "verify-code",
+    component: VerifyCode,
+  },
+  {
+    path: "/reset-password",
+    name: "reset-password",
+    component: ResetPassword,
   },
   {
     path: "/login",

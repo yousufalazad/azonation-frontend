@@ -41,6 +41,7 @@ const getTransactions = async () => {
         const response = await auth.fetchProtectedApi('/api/transactions', {}, 'GET');
 
         if (response.status) {
+            //need for logic purposes
             const transactions = response.data;
 
             // Update the transaction list
@@ -91,31 +92,31 @@ const getTransactions = async () => {
 };
 
 // Delete transaction
-const deleteTransaction = async (id) => {
-    try {
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'Do you want to delete this transaction?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, cancel!'
-        });
+// const deleteTransaction = async (id) => {
+//     try {
+//         const result = await Swal.fire({
+//             title: 'Are you sure?',
+//             text: 'Do you want to delete this transaction?',
+//             icon: 'warning',
+//             showCancelButton: true,
+//             confirmButtonText: 'Yes, delete it!',
+//             cancelButtonText: 'No, cancel!'
+//         });
 
-        if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/transactions/${id}`, {}, 'DELETE');
-            if (response.status) {
-                await Swal.fire('Deleted!', 'Transaction has been deleted.', 'success');
-                getTransactions();
-            } else {
-                Swal.fire('Failed!', 'Failed to delete transaction.', 'error');
-            }
-        }
-    } catch (error) {
-        console.error('Error deleting transaction:', error);
-        Swal.fire('Error!', 'Failed to delete transaction.', 'error');
-    }
-};
+//         if (result.isConfirmed) {
+//             const response = await auth.fetchProtectedApi(`/api/transactions/${id}`, {}, 'DELETE');
+//             if (response.status) {
+//                 await Swal.fire('Deleted!', 'Transaction has been deleted.', 'success');
+//                 getTransactions();
+//             } else {
+//                 Swal.fire('Failed!', 'Failed to delete transaction.', 'error');
+//             }
+//         }
+//     } catch (error) {
+//         console.error('Error deleting transaction:', error);
+//         Swal.fire('Error!', 'Failed to delete transaction.', 'error');
+//     }
+// };
 
 onMounted(() => {
     getFunds();
@@ -248,7 +249,6 @@ const submitForm = async () => {
     }
 };
 
-
 </script>
 
 <template>
@@ -293,7 +293,7 @@ const submitForm = async () => {
                         <td class="px-3 py-2">{{ transaction.date }}</td>
                         <td class="px-3 py-2">{{ transaction.transaction_code }}</td>
                         <td class="px-3 py-2">{{ transaction.transaction_title }}</td>
-                        <td class="px-3 py-2">{{ transaction.fund_name }}</td>
+                        <td class="px-3 py-2">{{ transaction.funds.name }}</td>
                         <td class="px-3 py-2 text-green-600 font-medium" v-if="transaction.type === 'income'">
                             {{ transaction.amount }}
                         </td>
