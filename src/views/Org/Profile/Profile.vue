@@ -2,7 +2,7 @@
     <div class="flex flex-col h-screen overflow-y-auto pb-7 pr-7">
         <!-- Logo Section -->
         <section>
-            <h2 class="text-lg font-bold mb-4 py-2">Logo</h2>
+            <h2 class="text-sm font-semibold text-gray-700 mb-4 py-2">Logo</h2>
             <div class="mb-4 flex justify-between pb-9">
                 <div v-if="logoPath">
                     <img :src="`${baseURL}${logoPath}`" alt="Logo" class="rounded-lg h-[150px] ml-5">
@@ -124,7 +124,7 @@
                             <span>{{ city }}</span>,
                             <span>{{ state_or_region }}</span>,
                             <span>{{ postal_code }}</span>,
-                            <span>{{ country_name }}</span>
+                            <span>{{ userCountry }}</span>
                         </p>
                     </div>
                     <button @click="openAddressModal()"

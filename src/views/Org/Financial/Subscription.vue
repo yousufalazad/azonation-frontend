@@ -2,36 +2,36 @@
   <div class="p-6">
     <h1 class="text-3xl font-semibold mb-6">Subscriptions</h1>
 
-    <!-- Subscriptions Table -->
+    <!-- managementSubscriptions Table -->
     <div class="overflow-x-auto shadow rounded-lg">
       <table class="min-w-full bg-white border border-gray-200">
         <thead class="bg-gray-100">
           <tr>
             <th class="px-4 py-3 text-left font-medium text-gray-700">Package name</th>
             <th class="px-4 py-3 text-left font-medium text-gray-700">Started from</th>
-            <th class="px-4 py-3 text-left font-medium text-gray-700">Status</th>
+            <th class="px-4 py-3 text-left font-medium text-gray-700">Subscription status</th>
             <!-- <th class="px-4 py-3 text-left font-medium text-gray-700">Actions</th> -->
           </tr>
         </thead>
         <tbody>
           <tr
-            v-for="subscription in subscriptions"
-            :key="subscription.id"
+            v-for="managementSubscription in managementSubscriptions"
+            :key="managementSubscription.id"
             class="hover:bg-gray-50"
           >
-            <td class="px-4 py-3 border-t text-gray-600">{{ subscription.package_name }}</td>
-            <td class="px-4 py-3 border-t text-gray-600">{{ subscription.start_date }}</td>
+            <td class="px-4 py-3 border-t text-gray-600">{{ managementSubscription.management_package.name }}</td>
+            <td class="px-4 py-3 border-t text-gray-600">{{ managementSubscription.start_date }}</td>
             <td class="px-4 py-3 border-t">
               <span
-                :class="subscription.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
+                :class="managementSubscription.subscription_status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
                 class="inline-block px-3 py-1 text-sm rounded-full"
               >
-                {{ subscription.status ? 'Active' : 'Inactive' }}
+                {{ managementSubscription.subscription_status }}
               </span>
             </td>
             <!-- <td class="px-4 py-3 border-t">
               <button
-                @click="editSubscription(subscription)"
+                @click="editSubscription(managementSubscription)"
                 class="text-blue-500 hover:underline"
               >
                 Edit
@@ -120,7 +120,7 @@
           <tbody>
             <tr>
               <td class="px-4 py-3 text-center text-gray-600">
-                <span class="font-bold">{{ userPriceRate.currency_code }} {{ userPriceRate.price }}</span>
+                <span class="font-bold">{{ currency.currency_code }} {{ userPriceRate }}</span>
                 <br />
                 <span class="text-sm">Per member per day</span>
               </td>
@@ -139,7 +139,7 @@ import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
 
 const auth = authStore;
-const subscriptions = ref([]);
+const managementSubscriptions = ref([]);
 const isModalOpen = ref(false);
 
 const subscription_id = ref(null);
@@ -148,13 +148,16 @@ const package_id = ref('');
 // const package_name = ref('');
 const end_date = ref('');
 const status = ref(true);
+const userPriceRate = ref([]);
+const errorMessage = ref('');
+const currency = ref([]);
 
 const getSubscriptions = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/subscription', {}, 'GET');
-    subscriptions.value = response.status ? response.data : [];
+    const response = await auth.fetchProtectedApi('/api/management-subscriptions', {}, 'GET');
+    managementSubscriptions.value = response.status ? response.data : [];
   } catch (error) {
-    console.error('Error fetching subscriptions:', error);
+    console.error('Error fetching managementSubscriptions:', error);
   }
 };
 
@@ -197,18 +200,14 @@ const updateSubscription = async () => {
   }
 };
 
-// User price rate ----------------------------------------------------------------
-const userPriceRate = ref([]);
-const errorMessage = ref('');
 
 // Fetch data from the API
 const fetchUserPriceRate = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/management-pricings', {}, 'GET');
-    console.log(response.data);
+    const response = await auth.fetchProtectedApi('/api/management-subscriptions/daily-price-rate', {}, 'GET');
     if (response.status) {
-      userPriceRate.value = response.data;
-      // filteredUserPriceRates.value = data.data;
+      userPriceRate.value = response.daily_price_rate;
+      console.log(userPriceRate.value);
     } else {
       userPriceRate.value = [];
     }
@@ -218,8 +217,22 @@ const fetchUserPriceRate = async () => {
   }
 };
 
+const fetchCurrency = async () => {
+  try {
+    const response = await auth.fetchProtectedApi('/api/management-subscriptions/currencies', {}, 'GET');
+    if (response.status) {
+      currency.value = response.data;
+    } else {
+      currency.value = [];
+    }
+  } catch (error) {
+    errorMessage.value = error.message;
+  }
+};
+
 onMounted(() => {
   getSubscriptions();
   fetchUserPriceRate();
+  fetchCurrency();
 });
 </script>
