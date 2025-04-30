@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
 import { useRouter } from 'vue-router';
+import { computed } from 'vue';
 
 const router = useRouter();
 const auth = authStore;
@@ -23,6 +24,15 @@ const selectedTransactionId = ref(null);
 const transactionList = ref([]);
 const fundList = ref([]);
 const transactionModal = ref(false);
+
+const viewModal = ref(false);
+const selectedTransaction = ref(null);
+
+const openViewModal = (transaction) => {
+    selectedTransaction.value = transaction;
+    viewModal.value = true;
+};
+
 
 // Fetch funds
 const getFunds = async () => {
@@ -118,10 +128,8 @@ const getTransactions = async () => {
 //     }
 // };
 
-onMounted(() => {
-    getFunds();
-    getTransactions();
-});
+
+
 
 // Navigation and modal handling
 const funds = () => {
@@ -249,6 +257,17 @@ const submitForm = async () => {
     }
 };
 
+const balance = computed(() => {
+    return transactionList.value.reduce((acc, trx) => {
+        return trx.type === 'income'
+            ? acc + Number(trx.amount)
+            : acc - Number(trx.amount);
+    }, 0);
+});
+onMounted(() => {
+    getFunds();
+    getTransactions();
+});
 </script>
 
 <template>
@@ -256,6 +275,10 @@ const submitForm = async () => {
     <section>
         <div>
             <div class="flex justify-end gap-3">
+                <div v-if="transactionList.length > 0"
+                    class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700">
+                    Balance: {{ balance }}
+                </div>
                 <button @click="openModal(null)"
                     class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
                     + Add New Transaction
@@ -267,6 +290,7 @@ const submitForm = async () => {
             </div>
         </div>
     </section>
+
     <!-- Table Section -->
     <section>
         <div class="border-b border-gray-200 py-1 mb-4">
@@ -279,7 +303,6 @@ const submitForm = async () => {
                     <tr>
                         <th class="px-3 py-2 text-left font-medium text-gray-700">#</th>
                         <th class="px-3 py-2 text-left font-medium text-gray-700">Date</th>
-                        <th class="px-3 py-2 text-left font-medium text-gray-700">Transaction ID</th>
                         <th class="px-3 py-2 text-left font-medium text-gray-700">Title</th>
                         <th class="px-3 py-2 text-left font-medium text-gray-700">Fund</th>
                         <th class="px-3 py-2 text-left font-medium text-gray-700">Income</th>
@@ -291,7 +314,6 @@ const submitForm = async () => {
                     <tr v-for="(transaction, index) in transactionList" :key="transaction.id">
                         <td class="px-3 py-2">{{ index + 1 }}</td>
                         <td class="px-3 py-2">{{ transaction.date }}</td>
-                        <td class="px-3 py-2">{{ transaction.transaction_code }}</td>
                         <td class="px-3 py-2">{{ transaction.transaction_title }}</td>
                         <td class="px-3 py-2">{{ transaction.funds.name }}</td>
                         <td class="px-3 py-2 text-green-600 font-medium" v-if="transaction.type === 'income'">
@@ -312,6 +334,11 @@ const submitForm = async () => {
                                     class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">
                                     Delete
                                 </button> -->
+
+                                <button @click="openViewModal(transaction)"
+                                    class="px-2 py-1 text-xs text-white bg-gray-500 rounded hover:bg-gray-600">
+                                    View
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -319,6 +346,7 @@ const submitForm = async () => {
             </table>
         </div>
     </section>
+
 
     <section>
         <!-- Transaction Modal -->
@@ -443,4 +471,68 @@ const submitForm = async () => {
         </div>
 
     </section>
+
+    <!-- View Transaction Modal -->
+    <div v-if="viewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-3xl relative overflow-y-auto max-h-[90vh]">
+            <!-- Close button -->
+            <button @click="viewModal = false"
+                class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition duration-150">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Transaction Details</h2>
+
+            <div class="space-y-4 text-base text-gray-700">
+                <div class="flex justify-between">
+                    <span class="text-gray-500 font-medium">Date:</span>
+                    <span>{{ selectedTransaction.date }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500 font-medium">Transaction Code:</span>
+                    <span>{{ selectedTransaction.transaction_code }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500 font-medium">Title:</span>
+                    <span>{{ selectedTransaction.transaction_title }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500 font-medium">Type:</span>
+                    <span>{{ selectedTransaction.type }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500 font-medium">Fund:</span>
+                    <span>{{ selectedTransaction.funds?.name || 'N/A' }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500 font-medium">Amount:</span>
+                    <span>{{ selectedTransaction.amount }}</span>
+                </div>
+                <div>
+                    <span class="text-gray-500 font-medium">Description:</span>
+                    <p class="mt-1 text-gray-800 whitespace-pre-line">{{ selectedTransaction.description }}</p>
+                </div>
+            </div>
+
+            <div class="border-t mt-6 pt-4">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Attached Images</h3>
+                <div class="flex flex-wrap gap-2">
+                    <img v-for="img in selectedTransaction.images" :key="img.id" :src="img.image_url"
+                        class="h-20 w-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
+                </div>
+            </div>
+
+            <div class="border-t mt-6 pt-4">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Attached Documents</h3>
+                <ul class="list-disc list-inside space-y-1 text-blue-600 text-base">
+                    <li v-for="doc in selectedTransaction.documents" :key="doc.id">
+                        <a :href="doc.document_url" target="_blank" class="hover:underline">{{ doc.file_name }}</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </template>

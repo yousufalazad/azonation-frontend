@@ -125,8 +125,7 @@ import ViewBilling from "../views/Org/Financial/ManagementAndStorageBilling/View
 
 import OrgInvoiceList from "../views/Org/Financial/Invoice/Index.vue";
 import ViewInvoice from "../views/Org/Financial/Invoice/View.vue";
-import OrgReceiptList from "../views/Org/Financial/Receipt/ReceiptList.vue";
-import ViewOrgReceipt from "../views/Org/Financial/Receipt/ViewReceipt.vue";
+import OrgReceiptIndex from "../views/Org/Financial/Receipt/Index.vue";
 
 
 const orgRoutes = [
@@ -681,18 +680,11 @@ const orgRoutes = [
             meta: { requiresAuth: true },
           },
           {
-            path: "org-receipt-list",
-            name: "org-receipt-list",
-            component: OrgReceiptList,
+            path: "org-receipt-index",
+            name: "org-receipt-index",
+            component: OrgReceiptIndex,
             meta: { requiresAuth: true },
-          },
-          {
-            path: "view-org-receipt",
-            name: "view-org-receipt",
-            component: ViewOrgReceipt,
-            meta: { requiresAuth: true },
-          },
-          
+          },          
         ],
       },
 
