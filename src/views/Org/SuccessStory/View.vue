@@ -8,25 +8,25 @@ const route = useRoute();
 const router = useRouter();
 const id = route.params.id;
 
-const record = ref(null);
+const successStory = ref(null);
 
-// Fetch the record details
-const fetchRecord = async () => {
+// Fetch the successStory details
+const fetchSuccessStory = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/success-stories/${id}`, {}, 'GET');
         if (response.status) {
-            record.value = response.data;
+            successStory.value = response.data;
         } else {
-            record.value = null;
+            successStory.value = null;
         }
     } catch (error) {
-        console.error('Error fetching record:', error);
-        record.value = null;
+        console.error('Error fetching successStory:', error);
+        successStory.value = null;
     }
 };
 
 onMounted(() => {
-    fetchRecord();
+    fetchSuccessStory();
 });
 </script>
 
@@ -42,23 +42,55 @@ onMounted(() => {
             </button>
         </div>
 
-        <section v-if="record" class="mb-5">
-            <h5 class="text-lg font-semibold mb-3">{{ record.title }}</h5>
+        <section v-if="successStory" class="mb-5">
+            <!-- {{successStory}} -->
+            <h5 class="text-lg font-semibold mb-3">{{ successStory.title }}</h5>
             <div class="mb-4">
                 <p class="text-gray-700 mb-2 font-semibold">Story:</p>
-                <p class="text-gray-600">{{ record.story }}</p>
+                <p class="text-gray-600">{{ successStory.story }}</p>
             </div>
-           
+
+            <!-- {{successStory.images}} -->
+
+            <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700">Images</label>
+            <div v-if="successStory.images && successStory.images.length">
+                <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-4">
+                <img v-for="(img, index) in successStory.images" :key="img.id || index" :src="img.image_url"
+                    alt="History Image" class="max-w-full rounded-lg" />
+                </div>
+            </div>
+            <div v-else>
+                <p class="text-gray-700">No images available</p>
+            </div>
+            </div>
+
+            <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700">Documents</label>
+          <div v-if="successStory.documents && successStory.documents.length">
+            <ul class="mt-2 list-disc list-inside text-blue-600">
+              <li v-for="(doc, index) in successStory.documents" :key="doc.id || index">
+                <a :href="doc.document_url" target="_blank" class="hover:text-blue-800">
+                  {{ doc.file_name || 'Download Document' }}
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div v-else>
+            <p class="text-gray-700">No documents available</p>
+          </div>
+        </div>
+
             <div>
                 <p class="text-gray-700 font-semibold mb-1">Status:</p>
-                <span :class="record.status == 1 ? 'text-green-600' : 'text-red-600'">
-                    {{ record.status == 1 ? 'Active' : 'Disabled' }}
+                <span :class="successStory.status == 1 ? 'text-green-600' : 'text-red-600'">
+                    {{ successStory.status == 1 ? 'Active' : 'Disabled' }}
                 </span>
             </div>
         </section>
 
         <section v-else class="text-center">
-            <p class="text-red-500">Record not found or failed to fetch details.</p>
+            <p class="text-red-500">successStory not found or failed to fetch details.</p>
         </section>
     </div>
 </template>

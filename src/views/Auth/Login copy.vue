@@ -9,9 +9,8 @@ const remember_token = ref(false)
 
 </script>
 <template>
-<div class="overflow-y-auto">
-  <header class="bg-white z-50">
-    <div class="flex justify-between items-center my-5 px-4 py-3">
+  <header class="fixed top-0 left-0 w-full bg-white z-50">
+    <div class="container mx-auto flex justify-between items-center my-5 px-4 py-3">
       <div>
         <img src="../../assets/Logo/Azonation.png" alt="Azonation" class="w-44">
       </div>
@@ -31,8 +30,8 @@ const remember_token = ref(false)
     </div>
   </header>
 
-  <div class="mt-20">
-    <div class="flex justify-center p-6">
+  <div class="container mx-auto mt-20">
+    <div class="flex justify-center">
       <div class="w-full max-w-md bg-white rounded-lg shadow-lg mt-10 p-6">
         <h1 class="text-xl font-bold text-center text-gray-800">Sign in</h1>
         <div class="mt-4 space-y-4">
@@ -62,13 +61,13 @@ const remember_token = ref(false)
           </div>
 
 
-          <!-- <div class="relative flex items-center justify-center mt-6">
+          <div class="relative flex items-center justify-center mt-6">
             <div class="w-full border-t border-gray-300"></div>
             <span class="absolute bg-white px-2 text-gray-500">or</span>
-          </div> -->
+          </div>
 
-          <!-- Sign in with Google or Apple -->
-          <!-- <div class="space-y-2">
+          <div class="space-y-2">
+            <!-- Google Sign In Button -->
             <button @click="auth.loginWithGoogle"
               class="w-full py-2 px-4 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 48 48"
@@ -88,6 +87,7 @@ const remember_token = ref(false)
               Sign in with Google
             </button>
 
+            <!-- Apple Sign In Button -->
             <button @click="auth.loginWithApple"
               class="w-full py-2 px-4 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 17" class="w-5 h-5 mr-2" fill="currentColor">
@@ -96,10 +96,10 @@ const remember_token = ref(false)
               </svg>
               Sign in with Apple
             </button>
-          </div> -->
+          </div>
 
           <div class="text-center mt-4">
-            <p class="text-sm text-gray-600"><router-link :to="{ name: 'home' }"
+            <p class="text-sm text-gray-600"><router-link :to="{ name: 'individual-register' }"
                 class="text-blue-600 hover:text-blue-500">Sign up</router-link></p>
           </div>
 
@@ -111,8 +111,8 @@ const remember_token = ref(false)
       </div>
     </div>
   </div>
+  <footer class="bg-white mt-14 py-4 border-gray-200">
 
-  <!-- <footer class="bg-white mt-14 py-4 border-gray-200">
     <div class="text-center mt-4">
       <p class="text-sm text-gray-600">By signing in, you agree to our
         <router-link to="/terms" class="text-blue-600 hover:text-blue-500">Terms of Service</router-link>
@@ -138,9 +138,7 @@ const remember_token = ref(false)
       </p>
     </div>
 
-  </footer> -->
-  
-</div>  
+  </footer>
 </template>
 
 <style>

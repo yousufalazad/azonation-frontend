@@ -2,7 +2,9 @@
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
-
+import { useRoute, useRouter } from 'vue-router';
+const route = useRoute();
+const router = useRouter();
 const auth = authStore;
 const recordList = ref([]);
 
@@ -91,9 +93,9 @@ onMounted(() => {
                         </span>
                     </td>
                     <td class="border px-4 py-2 flex justify-end">                        
-                        <button @click="$router.push({ name: 'edit-success-story', params: { id: record.id } })"
+                        <button @click="router.push({ name: 'edit-success-story', params: { id: record.id } })"
                                 class="bg-yellow-500 text-white px-4 py-1 mx-1 rounded hover:bg-yellow-600">Edit </button>
-                        <button @click="$router.push({ name: 'view-success-story', params: { id: record.id } })"
+                        <button @click="router.push({ name: 'view-success-story', params: { id: record.id } })"
                             class="bg-green-500 text-white px-4 py-1 mx-1 rounded hover:bg-green-600">View </button>
 
                         <button @click="deleteRecord(record.id)" class="bg-red-500 text-white rounded-md py-1 mx-1 px-2">Delete</button>

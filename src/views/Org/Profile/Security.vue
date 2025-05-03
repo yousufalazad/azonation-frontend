@@ -1,149 +1,97 @@
 <template>
     <!-- User Email Section -->
-    <section>
-        <div class="space-y-4">
-            <h3 class="text-lg font-bold mb-2 left-color-shade py-2">User Email</h3>
-            <div class="flex justify-between">
-                <div>
-                    <p class="ml-5 pb-9">{{ email }}
-                        <span class="ml-16">Status: {{ getStatusMessage(statusPhone) }}</span>
-                    </p>
-                </div>
-                <div><button @click="openEmailModal()" class="text-blue-500 pl-9 pr-2">Edit Email</button></div>
-            </div>
+    <section class="mb-8">
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800">Email</h3>
+            <p class="text-sm text-gray-600 mt-1">
+              {{ email }}
+              <span class="ml-4 text-xs text-gray-500">Status: {{ getStatusMessage(statusPhone) }}</span>
+            </p>
+          </div>
+          <button @click="openEmailModal()" class="text-sm text-blue-600 hover:underline">Edit</button>
         </div>
-
-        <!-- User Email Modal -->
-        <div v-if="modalVisibleUserEmail"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
-                <h2 class="text-2xl font-bold mb-4 text-center">Edit User Email</h2>
-
-                <!-- Email Input -->
-                <div class="mb-4">
-                    <label for="newEmail" class="block text-sm font-medium text-gray-700">User email address</label>
-                    <input v-model="newEmail" type="email" id="newEmail"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        required />
-                    <p v-if="auth.errors?.newEmail" class="text-red-500 text-sm mt-1">{{ auth.errors?.newEmail[0] }}</p>
-                </div>
-
-                <!-- Modal Buttons -->
-                <div class="flex justify-end">
-                    <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
-                        @click="closeEmailModal">
-                        Close
-                    </button>
-                    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" @click="updateUserEmail">
-                        Update
-                    </button>
-                </div>
-            </div>
+      </div>
+  
+      <!-- Edit Email Modal -->
+      <div v-if="modalVisibleUserEmail" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+          <h2 class="text-xl font-semibold text-center text-gray-800 mb-4">Edit Email</h2>
+  
+          <div class="mb-4">
+            <label for="newEmail" class="text-sm text-gray-600">New Email</label>
+            <input v-model="newEmail" type="email" id="newEmail" class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <p v-if="auth.errors?.newEmail" class="text-sm text-red-500 mt-1">{{ auth.errors?.newEmail[0] }}</p>
+          </div>
+  
+          <div class="flex justify-end space-x-2">
+            <button @click="closeEmailModal" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Cancel</button>
+            <button @click="updateUserEmail" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">Update</button>
+          </div>
         </div>
+      </div>
     </section>
-
-    <!-- User Password Section -->
+  
+    <!-- Change Password Section -->
     <section>
-        <div class="space-y-4">
-            <h3 class="text-lg font-bold mb-2 left-color-shade py-2">Change Password</h3>
-            <div class="flex justify-between">
-                <div>
-                    <p class="ml-5 pb-9">********</p>
-                </div>
-                <div>
-                    <button @click="openPasswordModal" class="text-blue-500 pl-9 pr-2">Change Password</button>
-                </div>
-            </div>
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800">Change password</h3>
+            <p class="text-sm text-gray-600 mt-1">********</p>
+          </div>
+          <button @click="openPasswordModal" class="text-sm text-blue-600 hover:underline">Change</button>
         </div>
-
-        <!-- Change Password Modal -->
-        <div v-if="modalVisibleUserPassword"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
-                <h2 class="text-2xl font-bold mb-4 text-center">Change Password</h2>
-
-                <!-- Old Password -->
-                <div class="mb-4 relative">
-                    <label for="oldPassword" class="block text-sm font-medium text-gray-700">Current Password</label>
-                    <input :type="showOldPassword ? 'text' : 'password'" v-model="oldPassword" id="oldPassword"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" style="min-height: 40px;"
-                        required />
-                    <!-- Show/Hide Password Button -->
-                    <button type="button" @click="toggleShowOldPassword"
-                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
-                        <span v-if="showOldPassword" class="text-gray-600">Hide</span>
-                        <span v-else class="text-gray-600">Show</span>
-                    </button>
-                    <p v-if="auth.errors?.oldPassword" class="text-red-500 text-sm mt-1">{{ auth.errors?.oldPassword[0]
-                        }}</p>
-                </div>
-
-
-                <!-- New Password -->
-                <div class="mb-4 relative">
-                    <label for="newPassword" class="block text-sm font-medium text-gray-700">New Password</label>
-                    <input :type="showNewPassword ? 'text' : 'password'" v-model="newPassword" id="newPassword"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" style="min-height: 40px;"
-                        required @input="checkPasswordStrength" />
-                    <!-- Show/Hide Password Button -->
-                    <button type="button" @click="toggleShowNewPassword"
-                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
-                        <span v-if="showNewPassword" class="text-gray-600">Hide</span>
-                        <span v-else class="text-gray-600">Show</span>
-                    </button>
-                    <p v-if="auth.errors?.newPassword" class="text-red-500 text-sm mt-1">{{ auth.errors?.newPassword[0]
-                        }}</p>
-
-                    <!-- Password Strength -->
-                    <p class="text-sm mt-1" :class="passwordStrengthColor">{{ passwordStrengthMessage }}</p>
-
-                    <!-- Password Requirements -->
-                    <ul class="text-sm mt-2 space-y-1">
-                        <li :class="passwordRequirements.length ? 'text-green-500' : 'text-gray-500'">At least 8
-                            characters</li>
-                        <li :class="passwordRequirements.uppercase ? 'text-green-500' : 'text-gray-500'">At least 1
-                            uppercase letter</li>
-                        <li :class="passwordRequirements.lowercase ? 'text-green-500' : 'text-gray-500'">At least 1
-                            lowercase letter</li>
-                        <li :class="passwordRequirements.number ? 'text-green-500' : 'text-gray-500'">At least 1 number
-                        </li>
-                        <li :class="passwordRequirements.special ? 'text-green-500' : 'text-gray-500'">At least 1
-                            special character</li>
-                    </ul>
-                </div>
-
-                <!-- Confirm Password -->
-                <div class="mb-4 relative">
-                    <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm New
-                        Password</label>
-                    <input :type="showConfirmPassword ? 'text' : 'password'" v-model="confirmPassword"
-                        id="confirmPassword"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" style="min-height: 40px;"
-                        required />
-                    <!-- Show/Hide Password Button -->
-                    <button type="button" @click="toggleShowConfirmPassword"
-                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
-                        <span v-if="showConfirmPassword" class="text-gray-600">Hide</span>
-                        <span v-else class="text-gray-600">Show</span>
-                    </button>
-                    <p v-if="confirmPasswordError" class="text-red-500 text-sm mt-1">{{ confirmPasswordError }}</p>
-                </div>
-
-                <!-- Modal Buttons -->
-                <div class="flex justify-end">
-                    <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
-                        @click="closePasswordModal">
-                        Close
-                    </button>
-                    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                        @click="updateUserPassword">
-                        Update
-                    </button>
-                </div>
-            </div>
+      </div>
+  
+      <!-- Password Modal -->
+      <div v-if="modalVisibleUserPassword" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+          <h2 class="text-xl font-semibold text-center text-gray-800 mb-4">Update Password</h2>
+  
+          <!-- Old Password -->
+          <div class="mb-4 relative">
+            <label for="oldPassword" class="text-sm text-gray-600">Current Password</label>
+            <input :type="showOldPassword ? 'text' : 'password'" v-model="oldPassword" id="oldPassword" class="w-full mt-1 border border-gray-300 rounded-md p-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <button type="button" @click="toggleShowOldPassword" class="absolute right-3 top-8 text-sm text-gray-500 hover:text-gray-700">{{ showOldPassword ? 'Hide' : 'Show' }}</button>
+            <p v-if="auth.errors?.oldPassword" class="text-sm text-red-500 mt-1">{{ auth.errors?.oldPassword[0] }}</p>
+          </div>
+  
+          <!-- New Password -->
+          <div class="mb-4 relative">
+            <label for="newPassword" class="text-sm text-gray-600">New Password</label>
+            <input :type="showNewPassword ? 'text' : 'password'" v-model="newPassword" id="newPassword" class="w-full mt-1 border border-gray-300 rounded-md p-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" @input="checkPasswordStrength" />
+            <button type="button" @click="toggleShowNewPassword" class="absolute right-3 top-8 text-sm text-gray-500 hover:text-gray-700">{{ showNewPassword ? 'Hide' : 'Show' }}</button>
+            <p v-if="auth.errors?.newPassword" class="text-sm text-red-500 mt-1">{{ auth.errors?.newPassword[0] }}</p>
+            <p class="text-xs mt-1" :class="passwordStrengthColor">{{ passwordStrengthMessage }}</p>
+            <ul class="text-xs mt-2 space-y-1">
+              <li :class="passwordRequirements.length ? 'text-green-600' : 'text-gray-400'">● At least 8 characters</li>
+              <li :class="passwordRequirements.uppercase ? 'text-green-600' : 'text-gray-400'">● One uppercase letter</li>
+              <li :class="passwordRequirements.lowercase ? 'text-green-600' : 'text-gray-400'">● One lowercase letter</li>
+              <li :class="passwordRequirements.number ? 'text-green-600' : 'text-gray-400'">● One number</li>
+              <li :class="passwordRequirements.special ? 'text-green-600' : 'text-gray-400'">● One special character</li>
+            </ul>
+          </div>
+  
+          <!-- Confirm Password -->
+          <div class="mb-6 relative">
+            <label for="confirmPassword" class="text-sm text-gray-600">Confirm Password</label>
+            <input :type="showConfirmPassword ? 'text' : 'password'" v-model="confirmPassword" id="confirmPassword" class="w-full mt-1 border border-gray-300 rounded-md p-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <button type="button" @click="toggleShowConfirmPassword" class="absolute right-3 top-8 text-sm text-gray-500 hover:text-gray-700">{{ showConfirmPassword ? 'Hide' : 'Show' }}</button>
+            <p v-if="confirmPasswordError" class="text-sm text-red-500 mt-1">{{ confirmPasswordError }}</p>
+          </div>
+  
+          <!-- Action Buttons -->
+          <div class="flex justify-end space-x-2">
+            <button @click="closePasswordModal" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Cancel</button>
+            <button @click="updateUserPassword" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">Update</button>
+          </div>
         </div>
+      </div>
     </section>
-</template>
+  </template>
+  
 
 <script setup>
 import { ref } from 'vue';

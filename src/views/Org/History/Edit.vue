@@ -119,13 +119,13 @@ const submitForm = async () => {
     });
 
     if (response.status) {
-      Swal.fire('Success!', 'Meeting Minutes updated successfully.', 'success');
-      router.push({ name: 'success-story' });
+      Swal.fire('Success!', 'History updated successfully.', 'success');
+      router.push({ name: 'history' });
     } else {
-      Swal.fire('Failed!', 'Could not update meeting minutes.', 'error');
+      Swal.fire('Failed!', 'Could not update History.', 'error');
     }
   } catch (error) {
-    Swal.fire('Error!', 'Failed to update meeting minutes.', 'error');
+    Swal.fire('Error!', 'Failed to update History', 'error');
   }
 };
 

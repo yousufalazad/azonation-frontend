@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 const auth = authStore;
 
@@ -8,11 +8,11 @@ const currentMonthName = ref('');
 const currentMonthTotalMember = ref(0);
 const subMonthTotalMember = ref(0);
 const subMonthTotalBillAmount = ref(0);
-const approximateBill = ref(0);
+// Removed duplicate declaration of approximateBill
 const userCurrency = ref('');
 const previousMonthName = ref('');
 const currentMonthMemberCount = ref([]);
-const previousMonthMemberCount = ref([]);
+const subMonthMemberCount = ref([]);
 const previousMonthTotalBillAmount = ref(0);
 
 
@@ -37,6 +37,7 @@ const getCurrentMonthBillCalculation = async () => {
         console.log(response.data)
         if (response.status) {
             currentMonthMemberCount.value = response.data;
+            calculateCurrentMonthTotalMember(); // ✅ Call here after data is loaded
         } else {
         }
     } catch (error) {
@@ -50,23 +51,14 @@ const getSubMonthBillCalculation = async () => {
         const response = await auth.fetchProtectedApi('/api/org-financial/sub-month-bill-calculation', {}, 'GET');
         console.log(response.data)
         if (response.status) {
-            previousMonthMemberCount.value = response.data;
+            subMonthMemberCount.value = response.data;
+            calculateSubMonthTotalMember(); // ✅ Call here after data is loaded
         } else {
         }
     } catch (error) {
         console.error('Error fetching sub month bill calculation:', error);
     }
 };
-
-const calculateCurrentMonthTotalMember = () => {
-    currentMonthTotalMember.value = currentMonthMemberCount.value.reduce((acc, count) => acc + count.day_total_member, 0);
-    approximateBill.value = dailyPriceRate.value * currentMonthTotalMember.value;
-};
-
-// const calculateSubMonthTotalMember = () => {
-//     subMonthTotalMember.value = subMonthMemberCount.value.reduce((acc, count) => acc + count.day_total_member, 0);
-//     subMonthTotalBillAmount.value = subMonthPriceRate.value * subMonthTotalMember.value;
-// };
 
 const getDailyPriceRate = async () => {
     try {
@@ -92,103 +84,130 @@ const getUserCurrency = async () => {
     }
 };
 
+const calculateCurrentMonthTotalMember = () => {
+    currentMonthTotalMember.value = currentMonthMemberCount.value.reduce((acc, count) => acc + count.day_total_member, 0);
+};
+
+const calculateSubMonthTotalMember = () => {
+    subMonthTotalMember.value = subMonthMemberCount.value.reduce((acc, count) => acc + count.day_total_member, 0);
+};
+
+
+const approximateBill = computed(() => {
+    return dailyPriceRate.value * currentMonthTotalMember.value;
+});
+
+const subMonthActualBill = computed(() => {
+    return dailyPriceRate.value * subMonthTotalMember.value;
+});
+
 onMounted(() => {
+    getDailyPriceRate();
+    getUserCurrency();
     getCurrentMonthName();
     getPreviousMonthName();
     getCurrentMonthBillCalculation();
     getSubMonthBillCalculation();
-    calculateCurrentMonthTotalMember();
-    // calculateSubMonthTotalMember();
-    getDailyPriceRate();
-    getUserCurrency();
-});
+    });
 </script>
 
 <template>
-    <div>
-        <h1 class="text-2xl font-bold mb-4">Approximate bill for {{ currentMonthName }}</h1>
-
-        <table class="min-w-full bg-white border border-gray-300 mb-4">
-            <thead>
-                <tr>
-                    <th class="border-b-2 border-gray-300 px-4 py-2">#</th>
-                    <th class="border-b-2 border-gray-300 px-4 py-2">Date</th>
-                    <th class="border-b-2 border-gray-300 px-4 py-2">Day total member</th>
-                    <th class="border-b-2 border-gray-300 px-4 py-2">Day total bill</th>
-                </tr>
+    <div class="max-w-6xl mb-5 pb-5">
+      <!-- Current Month Bill -->
+      <section class="mb-10">
+        <h1 class="text-2xl font-semibold text-gray-800 mb-6">Approximate bill — {{ currentMonthName }}</h1>
+  
+        <div class="overflow-x-auto bg-white shadow rounded-lg">
+          <table class="min-w-full divide-y divide-gray-200 text-sm text-gray-700">
+            <thead class="bg-gray-50 text-left">
+              <tr>
+                <th class="px-4 py-3 font-medium">#</th>
+                <th class="px-4 py-3 font-medium">Date</th>
+                <th class="px-4 py-3 font-medium">Total member</th>
+                <th class="px-4 py-3 font-medium">Day bill</th>
+              </tr>
             </thead>
             <tbody>
-                <tr v-for="(count, index) in currentMonthMemberCount" :key="count.date">
-                    <td class="border-b border-gray-300 px-2 py-2">{{ index + 1 }}</td>
-                    <td class="border-b border-gray-300 px-4 py-2">{{ count.date }}</td>
-                    <td class="border-b border-gray-300 px-4 py-2">{{ count.day_total_member }}</td>
-                    <td class="border-b border-gray-300 px-4 py-2">{{ count.day_total_bill }}</td>
-                </tr>
-                <tr v-if="currentMonthMemberCount.length === 0">
-                    <td colspan="3" class="border-b border-gray-300 px-4 py-2 text-center text-gray-500">There are no
-                        active members</td>
-                </tr>
-                <tr v-if="currentMonthMemberCount.length > 0" class="font-bold">
-                    <td class="border-t border-gray-300 px-4 py-2 text-right" colspan="1">Total Members:</td>
-                    <td class="border-t border-gray-300 px-4 py-2">{{ currentMonthTotalMember }}</td>
-                    <td class="border-t border-gray-300 px-4 py-2"></td>
-                </tr>
+              <tr v-for="(count, index) in currentMonthMemberCount" :key="count.date" class="hover:bg-gray-50">
+                <td class="px-4 py-2">{{ index + 1 }}</td>
+                <td class="px-4 py-2">{{ count.date }}</td>
+                <td class="px-4 py-2">{{ count.day_total_member }}</td>
+                <td class="px-4 py-2">{{ count.day_total_bill }}</td>
+              </tr>
+              <tr v-if="currentMonthMemberCount.length === 0">
+                <td colspan="4" class="text-center text-gray-500 px-4 py-4">There are no members</td>
+              </tr>
+              <tr v-if="currentMonthMemberCount.length > 0" class="font-semibold bg-gray-50">
+                <td colspan="2" class="px-4 py-3 text-right">Total member: {{ currentMonthTotalMember }}</td>
+                <td colspan="2" class="px-4 py-3 text-center">Total bill: {{ userCurrency }} {{ approximateBill }}</td>
+                <td></td>
+                <td></td>
+              </tr>
             </tbody>
-        </table>
-
-        <!-- Approximate Bill Calculation Section for Current Month -->
-        <div class="bg-gray-100 p-4 rounded-lg shadow-md mb-4">
-            <h2 class="text-xl font-semibold mb-2">Approximate bill calculation for {{ currentMonthName }}</h2>
-            <p><strong>Total Members:</strong> {{ currentMonthTotalMember }}</p>
-            <p><strong>Price Rate:</strong> £{{ dailyPriceRate }}</p>
-            <p><strong>Approximate Bill Amount:</strong> £{{ dailyPriceRate * currentMonthTotalMember }}</p>
-            <p><strong>Currency:</strong> {{ userCurrency }}</p>
+          </table>
         </div>
-
-        <!-- ============================================= -->
-        <!-- Sub Month Member Counts Section -->
-        <!-- ============================================= -->
-
-        <h1 class="text-2xl font-bold mb-4 mt-5 pt-5">Bill for {{ previousMonthName }}</h1>
-
-        <table class="min-w-full bg-white border border-gray-300 mb-4">
-            <thead>
-                <tr>
-                    <th class="border-b-2 border-gray-300 px-4 py-2">#</th>
-                    <th class="border-b-2 border-gray-300 px-4 py-2">Date</th>
-                    <th class="border-b-2 border-gray-300 px-4 py-2">Day total member</th>
-                    <th class="border-b-2 border-gray-300 px-4 py-2">Day total bill</th>
-                </tr>
+  
+        <!-- Calculation Summary -->
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6">
+          <h2 class="text-lg font-medium mb-3">Calculation summary</h2>
+          <div class="space-y-1">
+            <p><span class="font-medium">Total member:</span> {{ currentMonthTotalMember }}</p>
+            <p><span class="font-medium">Price per member per day:</span> {{ userCurrency }} {{ dailyPriceRate }}</p>
+            <p><span class="font-medium">Approximate bill:</span> {{ userCurrency }} {{ approximateBill }}</p>
+          </div>
+        </div>
+      </section>
+  
+      <!-- Previous Month Bill -->
+      <section>
+        <h1 class="text-2xl font-semibold text-gray-800 mb-6">Bill — {{ previousMonthName }}</h1>
+  
+        <div class="overflow-x-auto bg-white shadow rounded-lg">
+          <table class="min-w-full divide-y divide-gray-200 text-sm text-gray-700">
+            <thead class="bg-gray-50 text-left">
+              <tr>
+                <th class="px-4 py-3 font-medium">#</th>
+                <th class="px-4 py-3 font-medium">Date</th>
+                <th class="px-4 py-3 font-medium">Total member</th>
+                <th class="px-4 py-3 font-medium">Total bill</th>
+              </tr>
             </thead>
             <tbody>
-                <tr v-for="(count, index) in previousMonthMemberCount" :key="count.date">
-                    <td class="border-b border-gray-300 px-2 py-2">{{ index + 1 }}</td>
-                    <td class="border-b border-gray-300 px-4 py-2">{{ count.date }}</td>
-                    <td class="border-b border-gray-300 px-4 py-2">{{ count.day_total_member }}</td>
-                    <td class="border-b border-gray-300 px-4 py-2">{{ count.day_total_bill }}</td>
-                </tr>
-                <tr v-if="previousMonthMemberCount.length === 0">
-                    <td colspan="3" class="border-b border-gray-300 px-4 py-2 text-center text-gray-500">There are no
-                        members for {{ previousMonthName }}</td>
-                </tr>
-                <tr v-if="previousMonthMemberCount.length > 0" class="font-bold">
-                    <td class="border-t border-gray-300 px-4 py-2 text-right" colspan="1">Total members:</td>
-                    <td class="border-t border-gray-300 px-4 py-2">{{ subMonthTotalMember }}</td>
-                    <td class="border-t border-gray-300 px-4 py-2"></td>
-                </tr>
+              <tr v-for="(count, index) in subMonthMemberCount" :key="count.date" class="hover:bg-gray-50">
+                <td class="px-4 py-2">{{ index + 1 }}</td>
+                <td class="px-4 py-2">{{ count.date }}</td>
+                <td class="px-4 py-2">{{ count.day_total_member }}</td>
+                <td class="px-4 py-2">{{ count.day_total_bill }}</td>
+              </tr>
+              <tr v-if="subMonthMemberCount.length === 0">
+                <td colspan="4" class="text-center text-gray-500 px-4 py-4">
+                  There are no members for {{ previousMonthName }}
+                </td>
+              </tr>
+              <tr v-if="subMonthMemberCount.length > 0" class="font-semibold bg-gray-50">
+                <td colspan="2" class="px-4 py-3 text-right">Total member: {{ subMonthTotalMember }}</td>
+                <td colspan="2" class="px-4 py-3 text-center">Total bill: {{ userCurrency }} {{ subMonthActualBill }}</td>
+                <td></td>
+                <td></td>
+              </tr>
             </tbody>
-        </table>
-
-        <!-- Separate Section for sub Month Bill Calculation -->
-        <div class="bg-gray-100 p-4 rounded-lg shadow-md mb-4">
-            <h2 class="text-xl font-semibold mb-2">Bill calculation for {{ previousMonthName }}</h2>
-            <!-- <p><strong>Price Rate:</strong> change £{{ dailyPriceRate.toFixed(2) }}</p> -->
-            <p><strong>Total Members:</strong> {{ subMonthTotalMember }}</p>
-            <p class="font-bold"><strong>Total Bill Amount:</strong> £{{ previousMonthTotalBillAmount.toFixed(2) }}</p>
-            <p><strong>Currency:</strong> {{ userCurrency }}</p>
+          </table>
         </div>
+  
+        <!-- Sub Month Calculation Summary -->
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6">
+          <h2 class="text-lg font-medium mb-3">Summary</h2>
+          <div class="space-y-1">
+            <p><span class="font-medium">Total member:</span> {{ subMonthTotalMember }}</p>
+            <p><span class="font-medium">Price per member per day:</span> {{ userCurrency }} {{ dailyPriceRate }}</p>
+            <p><span class="font-medium">Total bill:</span> {{ userCurrency }} {{ subMonthActualBill }}</p>
+          </div>
+        </div>
+      </section>
     </div>
-</template>
+    <div class="mb-5 pb-5"></div>
+  </template>
+  
 
 <style scoped>
 /* You can add scoped styles here if needed */

@@ -26,6 +26,7 @@ const sponsored_user_id = ref("");
 const membership_type_id = ref("");
 const viewModal = ref(false);
 const editModal = ref(false);
+const transactionList = ref([]);
 
 
 const fetchMemberList = async () => {
@@ -193,6 +194,7 @@ const editMember = () => {
     editModal.value = true;
   }
 };
+
 const closeViewModal = () => {
   selectedMember.value = null;
   viewModal.value = false;
@@ -206,11 +208,33 @@ const closeEditModal = () => {
   editModal.value = false;
   closeViewModal();
 };
+const getTransactions = async () => {
+    try {
+        const response = await auth.fetchProtectedApi('/api/transactions', {}, 'GET');
+        if (response.status) {
+            const transactions = response.data;
+            transactionList.value = transactions;
+        } else {
+            transactionList.value = [];
+        }
+    } catch (error) {
+        console.error('Error fetching transactions:', error);
+    }
+};
+
+const balance = computed(() => {
+    return transactionList.value.reduce((acc, trx) => {
+        return trx.type === 'income'
+            ? acc + Number(trx.amount)
+            : acc - Number(trx.amount);
+    }, 0);
+});
 
 onMounted(() => {
   fetchMemberList();
   fetchMembershipType();
   totalOrgMemberCount();
+  getTransactions();
 });
 
 </script>
@@ -222,22 +246,22 @@ onMounted(() => {
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
           <h5 class="text-sm text-gray-500 font-medium mb-1">Total member</h5>
-          <p class="text-3xl font-bold text-gray-800">{{ totalOrgMember }}</p>
+          <p class="text-3xl font-bold text-gray-500">{{ totalOrgMember }}</p>
           <a href="#" class="text-blue-500 text-sm hover:underline mt-2 inline-block">See all</a>
         </div>
         <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
           <h5 class="text-sm text-gray-500 font-medium mb-1">Next meeting</h5>
-          <p class="text-3xl font-bold text-gray-800">{{ totalOrgMember }}</p>
+          <p class="text-3xl font-bold text-gray-500">{{ totalOrgMember }}</p>
           <a href="#" class="text-blue-500 text-sm hover:underline mt-2 inline-block">See all</a>
         </div>
         <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
           <h5 class="text-sm text-gray-500 font-medium mb-1">Balance</h5>
-          <p class="text-3xl font-bold text-gray-800">{{ totalOrgMember }}</p>
-          <a href="#" class="text-blue-500 text-sm hover:underline mt-2 inline-block">See all</a>
+          <p class="text-3xl font-bold text-gray-500">{{ balance }}</p>
+          <a href="#" class="text-blue-500 text-sm hover:underline mt-2 inline-block">See all transaction</a>
         </div>
         <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
           <h5 class="text-sm text-gray-500 font-medium mb-1">New members</h5>
-          <p class="text-3xl font-bold text-gray-800">{{ totalOrgMember }}</p>
+          <p class="text-3xl font-bold text-gray-500">{{ totalOrgMember }}</p>
           <a href="#" class="text-blue-500 text-sm hover:underline mt-2 inline-block">This month</a>
         </div>
       </div>

@@ -66,7 +66,7 @@ onMounted(() => {
     </div>
   </header>
 
-<div class="flex flex-col items-center justify-center mt-20 px-3">
+  <div class="flex flex-col items-center justify-center mt-20 px-3">
     <div class="w-full max-w-md bg-white rounded-lg shadow-lg px-6 pb-6">
       <h1 class="text-xl font-bold text-center text-gray-800 py-4">Sign up</h1>
 
@@ -117,7 +117,8 @@ onMounted(() => {
       </div>
 
       <div class="flex justify-between items-center mb-4">
-        <router-link :to="{ name: 'login' }" class="text-blue-600 hover:underline">Already have an account? Login</router-link>
+        <router-link :to="{ name: 'login' }" class="text-blue-600 hover:underline">Already have an account?
+          Login</router-link>
       </div>
 
       <!-- Sign Up Button -->
@@ -141,13 +142,13 @@ onMounted(() => {
         <p>Can Sign Up: {{ canSignUp }}</p>
       </div> -->
 
-      <div class="relative flex items-center justify-center mt-6">
+      <!-- <div class="relative flex items-center justify-center mt-6">
         <div class="w-full border-t border-gray-300"></div>
         <span class="absolute bg-white px-2 text-gray-500">or</span>
-      </div>
+      </div> -->
 
-      <div class="space-y-2 mt-4">
-        <!-- Google Sign Up Button -->
+      <!-- Google and apple Sign Up Button -->
+      <!-- <div class="space-y-2 mt-4">
         <button @click="auth.signupWithGoogle"
           class="w-full py-2 px-4 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 48 48"
@@ -167,7 +168,6 @@ onMounted(() => {
           Sign up with Google
         </button>
 
-        <!-- Apple Sign Up Button -->
         <button @click="auth.signupWithApple"
           class="w-full py-2 px-4 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 17" class="w-5 h-5 mr-2" fill="currentColor">
@@ -176,31 +176,28 @@ onMounted(() => {
           </svg>
           Sign up with Apple
         </button>
-      </div>
+      </div> -->
 
     </div>
   </div>
 
-  <footer class="bg-white mt-14 py-4 border-gray-200">
-
-<div class="text-center mt-4">
-  <p class="text-sm text-gray-600">Need help? <router-link to="/help"
-      class="text-blue-600 hover:text-blue-500">Contact us</router-link>
-  </p>
-</div>
-
-<div class="mx-auto py-4 text-center text-sm text-gray-600">
-  <p>Azonation is a product of <router-link to="/terms" class="text-gray-600 hover:text-blue-500">Azon Group
-      Ltd</router-link></p>
-  <p>© 2025 Azonation. All rights reserved.</p>
-  <p>
-    <router-link to="/terms" class="text-gray-600 hover:text-blue-500">Terms of Service</router-link>
-    and
-    <router-link to="/privacy" class="text-gray-600 hover:text-blue-500">Privacy Policy</router-link>.
-  </p>
-</div>
-
-</footer>
+  <!-- <footer class="bg-white mt-14 py-4 border-gray-200">
+    <div class="text-center mt-4">
+      <p class="text-sm text-gray-600">Need help? <router-link to="/help"
+          class="text-blue-600 hover:text-blue-500">Contact us</router-link>
+      </p>
+    </div>
+    <div class="mx-auto py-4 text-center text-sm text-gray-600">
+      <p>Azonation is a product of <router-link to="/terms" class="text-gray-600 hover:text-blue-500">Azon Group
+          Ltd</router-link></p>
+      <p>© 2025 Azonation. All rights reserved.</p>
+      <p>
+        <router-link to="/terms" class="text-gray-600 hover:text-blue-500">Terms of Service</router-link>
+        and
+        <router-link to="/privacy" class="text-gray-600 hover:text-blue-500">Privacy Policy</router-link>.
+      </p>
+    </div>
+  </footer> -->
 </template>
 <style>
 /* Add any custom styles here if necessary */

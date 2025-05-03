@@ -53,6 +53,7 @@ const baseRoutes = [
     name: "login",
     component: Login,
   },
+  
   {
     path: "/individual-register",
     name: "individual-register",

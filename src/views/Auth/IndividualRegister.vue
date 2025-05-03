@@ -130,13 +130,14 @@ onMounted(() => {
         </button>
       </div>
 
-      <div class="relative flex items-center justify-center mt-6">
+      <!-- Optional: Uncomment if you want to add a divider with "or" text -->
+      <!-- <div class="relative flex items-center justify-center mt-6">
         <div class="w-full border-t border-gray-300"></div>
         <span class="absolute bg-white px-2 text-gray-500">or</span>
-      </div>
+      </div> -->
 
-      <div class="space-y-2 mt-4">
-        <!-- Google Sign Up Button -->
+        <!-- Google and Apple Sign Up Button -->
+      <!-- <div class="space-y-2 mt-4">
         <button @click="auth.signupWithGoogle"
           class="w-full py-2 px-4 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 48 48"
@@ -156,7 +157,6 @@ onMounted(() => {
           Sign up with Google
         </button>
 
-        <!-- Apple Sign Up Button -->
         <button @click="auth.signupWithApple"
           class="w-full py-2 px-4 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 17" class="w-5 h-5 mr-2" fill="currentColor">
@@ -165,14 +165,11 @@ onMounted(() => {
           </svg>
           Sign up with Apple
         </button>
-      </div>
-
-
+      </div> -->
     </div>
   </div>
 
-  <footer class="bg-white mt-14 py-4 border-gray-200">
-
+  <!-- <footer class="bg-white mt-14 py-4 border-gray-200">
     <div class="text-center mt-4">
       <p class="text-sm text-gray-600">Need help? <router-link to="/help"
           class="text-blue-600 hover:text-blue-500">Contact us</router-link>
@@ -190,5 +187,5 @@ onMounted(() => {
       </p>
     </div>
 
-  </footer>
+  </footer> -->
 </template>

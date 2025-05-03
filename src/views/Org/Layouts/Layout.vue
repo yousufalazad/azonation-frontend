@@ -1,6 +1,6 @@
 <script setup>
 import Header from './Header.vue';
-import Footer from './Footer.vue';
+// import Footer from './Footer.vue';
 import MainContent from './MainContent.vue';
 </script>
 
@@ -8,6 +8,6 @@ import MainContent from './MainContent.vue';
     <div>
         <Header />
         <MainContent />
-        <Footer />
+        <!-- <Footer /> -->
     </div>
 </template>

@@ -24,8 +24,8 @@ const isSectionOpen = (section) => openSections.value.includes(section);
     <!-- Static Links -->
     <router-link :to="{ name: 'org-index' }"
       class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
-      <span v-if="isSidebarExpanded">Dashboard</span>
-      <span v-else class="hidden">Dashboard</span>
+      <span v-if="isSidebarExpanded">Home</span>
+      <span v-else class="hidden">Home</span>
     </router-link>
 
     <router-link to="/org-dashboard/index-member" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">

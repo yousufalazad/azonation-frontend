@@ -1,11 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { authStore } from '../../../store/authStore';
 
 const auth = authStore;
 const router = useRouter();
+const route = useRoute();
 
 const title = ref('');
 const history = ref('');
@@ -177,6 +178,10 @@ const submitForm = async () => {
             </div>
           </div>
         </div>
+        <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+          @click="() => addMoreFiles(documents)">
+          Add more document
+        </button>
 
         <!-- Submit Button -->
         <div class="flex justify-center mt-6">
