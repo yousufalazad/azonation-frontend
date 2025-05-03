@@ -28,11 +28,10 @@ const resetPassword = async () => {
 
         message.value = response.data.message || "Password reset successful!"
         localStorage.removeItem('reset_email')
-        router.push('/login')
         
-        // setTimeout(() => {
-        //     router.push('/login')
-        // }, 2000)
+        setTimeout(() => {
+            router.push('/login')
+        }, 3000)
     } catch (err) {
         error.value = err.response?.data?.message || "Something went wrong."
     }

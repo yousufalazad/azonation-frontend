@@ -80,7 +80,7 @@ const submitForgotPassword = async () => {
         </div>
     </main>
 
-    <footer class="bg-white border-t mt-12 py-6">
+    <!-- <footer class="bg-white border-t mt-12 py-6">
         <div class="container mx-auto text-center space-y-3 text-sm text-gray-600">
             <p>
                 By signing in, you agree to our 
@@ -98,5 +98,5 @@ const submitForgotPassword = async () => {
                 © 2025 Azonation. All rights reserved.
             </p>
         </div>
-    </footer>
+    </footer> -->
 </template>
