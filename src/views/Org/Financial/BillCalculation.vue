@@ -106,7 +106,7 @@ onMounted(() => {
 
 <template>
     <div>
-        <h1 class="text-2xl font-bold mb-4">Member count and bill for {{ currentMonthName }}</h1>
+        <h1 class="text-2xl font-bold mb-4">Approximate bill for {{ currentMonthName }}</h1>
 
         <table class="min-w-full bg-white border border-gray-300 mb-4">
             <thead>
@@ -138,7 +138,7 @@ onMounted(() => {
 
         <!-- Approximate Bill Calculation Section for Current Month -->
         <div class="bg-gray-100 p-4 rounded-lg shadow-md mb-4">
-            <h2 class="text-xl font-semibold mb-2">Approximate Bill Calculation for {{ currentMonthName }}</h2>
+            <h2 class="text-xl font-semibold mb-2">Approximate bill calculation for {{ currentMonthName }}</h2>
             <p><strong>Total Members:</strong> {{ currentMonthTotalMember }}</p>
             <p><strong>Price Rate:</strong> £{{ dailyPriceRate }}</p>
             <p><strong>Approximate Bill Amount:</strong> £{{ dailyPriceRate * currentMonthTotalMember }}</p>
@@ -149,7 +149,7 @@ onMounted(() => {
         <!-- Sub Month Member Counts Section -->
         <!-- ============================================= -->
 
-        <h1 class="text-2xl font-bold mb-4">Member count and bill for {{ previousMonthName }}</h1>
+        <h1 class="text-2xl font-bold mb-4 mt-5 pt-5">Bill for {{ previousMonthName }}</h1>
 
         <table class="min-w-full bg-white border border-gray-300 mb-4">
             <thead>
@@ -181,7 +181,7 @@ onMounted(() => {
 
         <!-- Separate Section for sub Month Bill Calculation -->
         <div class="bg-gray-100 p-4 rounded-lg shadow-md mb-4">
-            <h2 class="text-xl font-semibold mb-2">Actual Bill Calculation for {{ previousMonthName }}</h2>
+            <h2 class="text-xl font-semibold mb-2">Bill calculation for {{ previousMonthName }}</h2>
             <!-- <p><strong>Price Rate:</strong> change £{{ dailyPriceRate.toFixed(2) }}</p> -->
             <p><strong>Total Members:</strong> {{ subMonthTotalMember }}</p>
             <p class="font-bold"><strong>Total Bill Amount:</strong> £{{ previousMonthTotalBillAmount.toFixed(2) }}</p>

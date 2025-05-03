@@ -207,15 +207,21 @@ const fetchLogo = async () => {
             <li><a href="/org-dashboard/my-account/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">My
                 account</a>
             </li>
-            <li><a href="/org-dashboard/my-account/org-settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
-            </li>
+            <!-- <li><a href="/org-dashboard/my-account/org-settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
+            </li> -->
             <li><a href="/org-dashboard/my-account/subscription"
                 class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Subscriptions</a></li>
             <li><a href="/org-dashboard/my-account/invoice-list" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Billing</a>
             </li>
-            <li><a href="/org-dashboard/my-account/invite-friend"
+            <!-- <li><a href="/org-dashboard/my-account/invoice-list" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Security</a>
+            </li> -->
+
+            <li><a href="/org-dashboard/my-account/org-security"
+                class="block px-4 py-2 mb-3 text-gray-700 hover:bg-gray-100">Security</a></li>
+
+            <!-- <li><a href="/org-dashboard/my-account/invite-friend"
                 class="block px-4 py-2 mb-3 text-gray-700 hover:bg-gray-100">Invite
-                friends</a></li>
+                friends</a></li> -->
             <li class="border-t">
               <button @click="auth.logout()"
                 class="w-full text-left px-4 py-2 text-blue-600 hover:bg-gray-100 font-semibold">

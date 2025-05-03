@@ -308,7 +308,7 @@ onMounted(getFounders);
 <template>
     <!-- Search and Add Founder section - initially hidden, toggled by the button -->
     <section v-if="showAddFounderSection" class="mb-5 md:mb-16">
-        <div class="add-member max-w-7xl mx-auto">
+        <div class="add-member">
             <h2 class="text-center text-2xl text-gray-500">Search & add founder</h2>
 
             <!-- Search Input -->
@@ -431,7 +431,7 @@ onMounted(getFounders);
     <!-- Founder list and options show -->
     <section>
 
-        <div class="flex justify-between items-center py-4 border-gray-200">
+        <div class="flex justify-between items-center border-gray-200">
             <!-- Title -->
             <h2 class="text-lg font-semibold text-gray-800">Founders</h2>
 
@@ -455,9 +455,6 @@ onMounted(getFounders);
                 </button>
             </div>
         </div>
-
-        
-
 
         <div v-if="founderList.length" class="bg-white shadow-sm rounded-md overflow-hidden">
             <table class="min-w-full table-auto text-sm text-gray-700">

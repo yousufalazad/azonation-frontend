@@ -1,6 +1,6 @@
 <template>
-  <div class="p-6">
-    <h1 class="text-3xl font-semibold mb-6">Subscriptions</h1>
+  <div>
+    <h1 class="text-3xl font-semibold mb-6">Subscription</h1>
 
     <!-- managementSubscriptions Table -->
     <div class="overflow-x-auto shadow rounded-lg">
@@ -108,7 +108,7 @@
 
     <!-- Pricing Section -->
     <section class="mt-12">
-      <h2 class="text-2xl font-semibold mb-4">Your Pricing</h2>
+      <h2 class="text-2xl font-semibold mb-4">Pricing</h2>
       <div v-if="errorMessage" class="text-red-500 mb-4">{{ errorMessage }}</div>
       <div class="bg-white shadow rounded-lg overflow-hidden">
         <table class="min-w-full">
@@ -119,7 +119,7 @@
           </thead>
           <tbody>
             <tr>
-              <td class="px-4 py-3 text-center text-gray-600">
+              <td class="px-4 py-3 text-left text-gray-600">
                 <span class="font-bold">{{ currency.currency_code }} {{ userPriceRate }}</span>
                 <br />
                 <span class="text-sm">Per member per day</span>

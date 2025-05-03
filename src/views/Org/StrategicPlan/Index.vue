@@ -66,7 +66,7 @@ onMounted(() => {
 <template>
     <div>
         <section>
-            <div class="flex justify-between py-2 my-3">
+            <div class="flex justify-between">
                 <h5 class="text-md font-semibold">Strategic Plans List</h5>
                 <button @click="$router.push({ name: 'create-strategic-plan' })"
                     class="bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700">Add Strategic Plan
