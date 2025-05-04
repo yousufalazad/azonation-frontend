@@ -64,11 +64,39 @@ onMounted(() => {
             </div>
             <div>
                 <strong>Privacy:</strong>
-                {{ record.privacy_setup_id === 1 
-                    ? 'Only Me' 
-                    : record.privacy_setup_id === 2 
-                    ? 'Organization' 
-                    : 'Public' }}
+                {{ record.privacy_setup_id === 1
+                    ? 'Only Me'
+                    : record.privacy_setup_id === 2
+                        ? 'Organization'
+                        : 'Public' }}
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Images</label>
+                <div v-if="record.images && record.images.length">
+                    <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <img v-for="(img, index) in record.images" :key="img.id || index" :src="img.image_url"
+                            alt="History Image" class="max-w-full rounded-lg" />
+                    </div>
+                </div>
+                <div v-else>
+                    <p class="text-gray-700">No images available</p>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Documents</label>
+                <div v-if="record.documents && record.documents.length">
+                    <ul class="mt-2 list-disc list-inside text-blue-600">
+                        <li v-for="(doc, index) in record.documents" :key="doc.id || index">
+                            <a :href="doc.document_url" target="_blank" class="hover:text-blue-800">
+                                {{ doc.file_name || 'Download Document' }}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div v-else>
+                    <p class="text-gray-700">No documents available</p>
+                </div>
             </div>
             <div>
                 <strong>Status:</strong> {{ record.status === 1 ? 'Active' : 'Disabled' }}
