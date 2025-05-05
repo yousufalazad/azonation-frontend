@@ -27,6 +27,8 @@ const membership_type_id = ref("");
 const viewModal = ref(false);
 const editModal = ref(false);
 const transactionList = ref([]);
+const nextMeeting = ref(null);
+const nextMeetingResponse = ref(null);
 
 
 const fetchMemberList = async () => {
@@ -48,7 +50,7 @@ const fetchMembershipType = async () => {
   try {
     const response = await auth.fetchProtectedApi('/api/membership-types', {}, 'GET');
     membershipTypes.value = response.status ? response.data : [];
-    console.log("Membership types:", membershipTypes.value);
+    // console.log("Membership types:", membershipTypes.value);
   } catch (error) {
     console.error('Error fetching membership types:', error);
     membershipTypes.value = [];
@@ -180,7 +182,6 @@ const totalOrgMemberCount = async () => {
 };
 
 const viewMemberDetail = (member) => {
-  console.log("Viewing member details:", member);
   selectedMember.value = member;
   viewModal.value = true;
 };
@@ -208,33 +209,44 @@ const closeEditModal = () => {
   editModal.value = false;
   closeViewModal();
 };
+
 const getTransactions = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/transactions', {}, 'GET');
-        if (response.status) {
-            const transactions = response.data;
-            transactionList.value = transactions;
-        } else {
-            transactionList.value = [];
-        }
-    } catch (error) {
-        console.error('Error fetching transactions:', error);
+  try {
+    const response = await auth.fetchProtectedApi('/api/transactions', {}, 'GET');
+    if (response.status) {
+      const transactions = response.data;
+      transactionList.value = transactions;
+    } else {
+      transactionList.value = [];
     }
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+  }
 };
 
 const balance = computed(() => {
-    return transactionList.value.reduce((acc, trx) => {
-        return trx.type === 'income'
-            ? acc + Number(trx.amount)
-            : acc - Number(trx.amount);
-    }, 0);
+  return transactionList.value.reduce((acc, trx) => {
+    return trx.type === 'income'
+      ? acc + Number(trx.amount)
+      : acc - Number(trx.amount);
+  }, 0);
 });
+
+const orgNextMeeting = async () => {
+  try {
+    const response = await auth.fetchProtectedApi('/api/meetings', {}, 'GET');
+    console.log("Next meeting response:", response);
+  } catch (error) {
+    console.error('Error fetching next meeting:', error);
+  }
+}
 
 onMounted(() => {
   fetchMemberList();
   fetchMembershipType();
   totalOrgMemberCount();
   getTransactions();
+  orgNextMeeting();
 });
 
 </script>
@@ -249,11 +261,16 @@ onMounted(() => {
           <p class="text-3xl font-bold text-gray-500">{{ totalOrgMember }}</p>
           <a href="#" class="text-blue-500 text-sm hover:underline mt-2 inline-block">See all</a>
         </div>
+
         <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
           <h5 class="text-sm text-gray-500 font-medium mb-1">Next meeting</h5>
-          <p class="text-3xl font-bold text-gray-500">{{ totalOrgMember }}</p>
+
+          <p class="text-3xl font-bold text-gray-800" v-if="nextMeeting">{{ nextMeeting }}</p>
+          <p class="text-gray-400 text-sm" v-else>No upcoming meeting</p>
+
           <a href="#" class="text-blue-500 text-sm hover:underline mt-2 inline-block">See all</a>
         </div>
+
         <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
           <h5 class="text-sm text-gray-500 font-medium mb-1">Balance</h5>
           <p class="text-3xl font-bold text-gray-500">{{ balance }}</p>
