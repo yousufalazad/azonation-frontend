@@ -9,6 +9,7 @@ const auth = authStore;
 const router = useRouter();
 const route = useRoute();
 const id = route.params.id;
+// const id = ref(route.params.id || null);
 
 // Form fields
 const title = ref('');
@@ -90,35 +91,37 @@ const submitForm = async () => {
         }
     });
 
-    try {
-        // API call using FormData
-        const response = await auth.uploadProtectedApi(`/api/success-stories/${id}`, formData, 'POST', {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        });
-
-        // Handle response
-        if (response?.status) {
-            Swal.fire('Success', 'Success story updated successfully.', 'success');
-            router.push({ name: 'success-story' });
-        } else {
-            Swal.fire('Error', 'Failed to update record.', 'error');
-        }
-    } catch (error) {
-        Swal.fire('Error', 'An error occurred while updating the record.', 'error');
-    }
-
     // try {
-    //     const response = await auth.fetchProtectedApi(`/api/success-stories/${recordId.value}`, formData, 'POST');
-    //     if (response.status) {
-    //         Swal.fire('Success', 'Record updated successfully.', 'success');
-    //         router.push({ name: 'success-story' }); // Redirect to the record list page
+    //     // API call using FormData
+    //     const response = await auth.uploadProtectedApi(`/api/success-stories/${id}`, formData, 'POST', {
+    //         headers: { 'Content-Type': 'multipart/form-data' },
+    //     });
+
+    //     // Handle response
+    //     if (response?.status) {
+    //         Swal.fire('Success', 'Success story updated successfully.', 'success');
+    //         router.push({ name: 'success-story' });
     //     } else {
-    //         Swal.fire('Error', 'Failed to update the record.', 'error');
+    //         Swal.fire('Error', 'Failed to update record.', 'error');
     //     }
     // } catch (error) {
-    //     console.error('Error updating record:', error);
     //     Swal.fire('Error', 'An error occurred while updating the record.', 'error');
     // }
+
+    try {
+    const response = await auth.uploadProtectedApi(`/api/success-stories/${id}`, formData, 'POST', {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    if (response.status) {
+      Swal.fire('Success!', 'Success History updated successfully.', 'success');
+      router.push({ name: 'success-story' });
+    } else {
+      Swal.fire('Failed!', 'Could not update Success History.', 'error');
+    }
+  } catch (error) {
+    Swal.fire('Error!', 'Failed to update Success History', 'error');
+  }
 };
 
 // On component mount
@@ -198,9 +201,12 @@ onMounted(() => {
                 Add more document
             </button>
 
-            <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700">
-                Update
-            </button>
+            <div class="flex justify-center mt-6">
+                <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700">
+                    Update
+                </button>
+            </div>
+
         </form>
     </div>
 </template>

@@ -98,16 +98,28 @@ const removeFile = (fileList, index) => {
 
 // Submit the edited form
 const submitForm = async () => {
-    const payload = {
-        title: title.value,
-        plan: plan.value,
-        start_date: start_date.value,
-        end_date: end_date.value,
-        status: status.value,
-    };
+   
+    const formData = new FormData();
+    formData.append('title', title.value);
+    formData.append('plan', plan.value);
+    formData.append('start_date', start_date.value);
+    formData.append('end_date', end_date.value);
+    formData.append('status', status.value);
+
+    images.value.forEach((fileData, index) => {
+        if (fileData.file) {
+            formData.append(`images[${index}]`, fileData.file.file);
+        }
+    });
+
+    documents.value.forEach((fileData, index) => {
+        if (fileData.file) {
+            formData.append(`documents[${index}]`, fileData.file.file);
+        }
+    });
 
     try {
-        const response = await auth.fetchProtectedApi(`/api/strategic-plans/${id}`, payload, 'PUT');
+        const response = await auth.uploadProtectedApi(`/api/strategic-plans/${id}`, formData, 'POST');
         if (response.status) {
             await Swal.fire('Success!', 'Strategic plan updated successfully.', 'success');
             router.push({ name: 'strategic-plan' });
@@ -226,8 +238,9 @@ onMounted(() => {
                     Add more document
                 </button>
             </div>
-
-            <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded">Update</button>
+            <div class="flex justify-center mt-6">
+                <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded">Update</button>
+            </div>
         </form>
     </div>
 </template>

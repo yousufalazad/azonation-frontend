@@ -82,8 +82,6 @@ const submitForm = async () => {
   formData.append('history', history.value);
   formData.append('is_active', is_active.value);
 
-
-
   images.value.forEach((fileData, index) => {
     if (fileData.file) {
       formData.append(`images[${index}]`, fileData.file.file);

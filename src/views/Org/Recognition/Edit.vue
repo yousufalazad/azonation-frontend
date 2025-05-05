@@ -114,47 +114,48 @@ const removeFile = (fileList, index) => {
 // Submit edited data
 
 const submitForm = async () => {
-  // Validate required fields
-  if (!title.value || !description.value || !recognition_date.value || !privacy_setup_id.value) {
-    Swal.fire('Error!', 'Please fill out all required fields.', 'error');
-    return;
-  }
+    // Validate required fields
+    if (!title.value || !description.value || !recognition_date.value || !privacy_setup_id.value) {
+        Swal.fire('Error!', 'Please fill out all required fields.', 'error');
+        return;
+    }
 
-  // Create FormData
-  const formData = new FormData();
-  formData.append('title', title.value);
-  formData.append('description', description.value);
-  formData.append('recognition_date', recognition_date.value);
-  formData.append('privacy_setup_id', privacy_setup_id.value);
-  formData.append('status', status.value);
-  
-//   images.value.forEach((fileData, index) => {
-//     if (fileData.file) {
-//       formData.append(`images[${index}]`, fileData.file.file);
-//     }
-//   });
+    // Create FormData
+    const formData = new FormData();
+    formData.append('title', title.value);
+    formData.append('description', description.value);
+    formData.append('recognition_date', recognition_date.value);
+    formData.append('privacy_setup_id', privacy_setup_id.value);
+    formData.append('status', status.value);
 
-//   documents.value.forEach((fileData, index) => {
-//     if (fileData.file) {
-//       formData.append(`documents[${index}]`, fileData.file.file);
-//     }
-//   });
-  try {
-    // API call using FormData
-    const response = await auth.uploadProtectedApi(`/api/recognitions/${id}`, formData, 'POST', {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    images.value.forEach((fileData, index) => {
+        if (fileData.file) {
+            formData.append(`images[${index}]`, fileData.file.file);
+        }
     });
 
-    // Handle response
-    if (response?.status) {
-      Swal.fire('Success', 'Record updated successfully.', 'success');
-      router.push({ name: 'recognition' });
-    } else {
-      Swal.fire('Error', 'Failed to update record.', 'error');
+    documents.value.forEach((fileData, index) => {
+        if (fileData.file) {
+            formData.append(`documents[${index}]`, fileData.file.file);
+        }
+    });
+    
+    try {
+        // API call using FormData
+        const response = await auth.uploadProtectedApi(`/api/recognitions/${id}`, formData, 'POST', {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        // Handle response
+        if (response?.status) {
+            Swal.fire('Success', 'Record updated successfully.', 'success');
+            router.push({ name: 'recognition' });
+        } else {
+            Swal.fire('Error', 'Failed to update record.', 'error');
+        }
+    } catch (error) {
+        Swal.fire('Error', 'An error occurred while updating the record.', 'error');
     }
-  } catch (error) {
-    Swal.fire('Error', 'An error occurred while updating the record.', 'error');
-  }
 };
 
 
@@ -178,14 +179,8 @@ onMounted(() => {
             <!-- Title -->
             <div>
                 <label for="title" class="block text-sm font-medium mb-1">Title</label>
-                <input
-                    v-model="title"
-                    type="text"
-                    id="title"
-                    class="w-full border px-4 py-2 rounded-md"
-                    placeholder="Enter title"
-                    required
-                />
+                <input v-model="title" type="text" id="title" class="w-full border px-4 py-2 rounded-md"
+                    placeholder="Enter title" required />
             </div>
 
             <!-- Description -->
@@ -197,23 +192,14 @@ onMounted(() => {
             <!-- Recognition Date -->
             <div>
                 <label for="recognition_date" class="block text-sm font-medium mb-1">Recognition Date</label>
-                <input
-                    v-model="recognition_date"
-                    type="date"
-                    id="recognition_date"
-                    class="w-full border px-4 py-2 rounded-md"
-                    required
-                />
+                <input v-model="recognition_date" type="date" id="recognition_date"
+                    class="w-full border px-4 py-2 rounded-md" required />
             </div>
 
             <!-- Privacy -->
             <div>
                 <label for="privacy_setup_id" class="block text-sm font-medium mb-1">Privacy</label>
-                <select
-                    v-model="privacy_setup_id"
-                    id="privacy_setup_id"
-                    class="w-full border px-4 py-2 rounded-md"
-                >
+                <select v-model="privacy_setup_id" id="privacy_setup_id" class="w-full border px-4 py-2 rounded-md">
                     <option value="1">Only Me</option>
                     <option value="2">Organization</option>
                     <option value="3">Public</option>
@@ -223,18 +209,14 @@ onMounted(() => {
             <!-- Status -->
             <div>
                 <label for="status" class="block text-sm font-medium mb-1">Status</label>
-                <select
-                    v-model="status"
-                    id="status"
-                    class="w-full border px-4 py-2 rounded-md"
-                >
+                <select v-model="status" id="status" class="w-full border px-4 py-2 rounded-md">
                     <option value="1">Active</option>
                     <option value="0">Disabled</option>
                 </select>
             </div>
 
-           <!-- Images Upload -->
-           <div class="mb-4">
+            <!-- Images Upload -->
+            <div class="mb-4">
                 <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
                 <div class="space-y-3">
                     <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
@@ -276,7 +258,7 @@ onMounted(() => {
             </div>
 
             <!-- Submit Button -->
-            <div class="flex justify-end">
+            <div class="flex justify-center mt-6">
                 <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700">
                     Update
                 </button>
