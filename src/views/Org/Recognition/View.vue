@@ -99,7 +99,7 @@ onMounted(() => {
                 </div>
             </div>
             <div>
-                <strong>Status:</strong> {{ record.status === 1 ? 'Active' : 'Disabled' }}
+                <strong>Status:</strong> {{ record.is_active === 1 ? 'Active' : 'Disabled' }}
             </div>
         </div>
 

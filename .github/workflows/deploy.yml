@@ -3,7 +3,7 @@ name: Deploy Frontend (Vite) to cPanel
 on:
   push:
     branches:
-      - main  # Change if your branch is 'master'
+      - master
 
 jobs:
   build-and-deploy:

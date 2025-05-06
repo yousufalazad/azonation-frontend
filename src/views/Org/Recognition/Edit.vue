@@ -14,7 +14,7 @@ const title = ref('');
 const description = ref('');
 const recognition_date = ref('');
 const privacy_setup_id = ref(1);
-const status = ref(1);
+const is_active = ref(1);
 const quillInstance = ref(null);
 
 const images = ref([{ id: Date.now(), file: null }]);
@@ -46,7 +46,7 @@ const fetchRecord = async () => {
             description.value = data.description;
             recognition_date.value = data.recognition_date;
             privacy_setup_id.value = data.privacy_setup_id;
-            status.value = data.status;
+            is_active.value = data.is_active;
 
             // Populate Quill editor with fetched description
             if (quillInstance.value) {
@@ -126,7 +126,7 @@ const submitForm = async () => {
     formData.append('description', description.value);
     formData.append('recognition_date', recognition_date.value);
     formData.append('privacy_setup_id', privacy_setup_id.value);
-    formData.append('status', status.value);
+    formData.append('is_active', is_active.value);
 
     images.value.forEach((fileData, index) => {
         if (fileData.file) {
@@ -208,8 +208,8 @@ onMounted(() => {
 
             <!-- Status -->
             <div>
-                <label for="status" class="block text-sm font-medium mb-1">Status</label>
-                <select v-model="status" id="status" class="w-full border px-4 py-2 rounded-md">
+                <label for="is_active" class="block text-sm font-medium mb-1">Status</label>
+                <select v-model="is_active" id="is_active" class="w-full border px-4 py-2 rounded-md">
                     <option value="1">Active</option>
                     <option value="0">Disabled</option>
                 </select>

@@ -12,7 +12,7 @@ const title = ref('');
 const description = ref('');
 const recognition_date = ref('');
 const privacy_setup_id = ref(1);
-const status = ref(1);
+const is_active = ref(1);
 const quillInstance = ref(null);
 // File Management
 const images = ref([{ id: Date.now(), file: null }]);
@@ -72,7 +72,7 @@ const submitForm = async () => {
   formData.append('description', description.value);
   formData.append('recognition_date', recognition_date.value);
   formData.append('privacy_setup_id', privacy_setup_id.value);
-  formData.append('status', status.value);
+  formData.append('is_active', is_active.value);
   
   images.value.forEach((fileData, index) => {
     if (fileData.file) {
@@ -168,10 +168,10 @@ onMounted(() => {
 
             <!-- Status Field -->
             <div class="mb-5">
-                <label for="status" class="block text-sm font-medium mb-2">Status</label>
+                <label for="is_active" class="block text-sm font-medium mb-2">Is active</label>
                 <select
-                    v-model="status"
-                    id="status"
+                    v-model="is_active"
+                    id="is_active"
                     class="w-full border px-4 py-2 rounded-md"
                 >
                     <option value="1">Active</option>

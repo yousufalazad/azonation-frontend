@@ -27,8 +27,10 @@ const membership_type_id = ref("");
 const viewModal = ref(false);
 const editModal = ref(false);
 const transactionList = ref([]);
-const nextMeeting = ref(null);
-const nextMeetingResponse = ref(null);
+const nextMeetingDate = ref('');
+const thisYearNewMemberCount = ref(0);
+const thisMonthNewMemberCount = ref(0);
+
 
 
 const fetchMemberList = async () => {
@@ -234,12 +236,52 @@ const balance = computed(() => {
 
 const orgNextMeeting = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/meetings', {}, 'GET');
-    console.log("Next meeting response:", response);
+    const response = await auth.fetchProtectedApi(`/api/org-next-meeting`, {}, 'GET');
+    // console.log('Raw response:', response);
+
+    if (response.status && response.data.date) {
+      const rawDate = response.data.date;
+      const parsedDate = new Date(rawDate);
+      // console.log('Parsed date object:', parsedDate);
+
+      const formattedDate = new Intl.DateTimeFormat('en-GB', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      }).format(parsedDate);
+
+      // console.log('Formatted date:', formattedDate);
+      nextMeetingDate.value = formattedDate;
+    } else {
+      nextMeetingDate.value = 'No upcoming meetings found';
+    }
+
   } catch (error) {
-    console.error('Error fetching next meeting:', error);
+    console.error('Error fetching meetings:', error);
+    nextMeetingDate.value = 'Error loading meeting';
   }
-}
+};
+
+const getThisYearNewMemberCount = async () => {
+  try {
+    const response = await auth.fetchProtectedApi('/api/org-members/this-year-new-member-count', {}, 'GET');
+    if (response.status && response.data) {
+      thisYearNewMemberCount.value = response.data;
+    }
+  } catch (error) {
+    console.error("Error fetching this year new member count:", error);
+  }
+};
+// const getThisMonthNewMemberCount = async () => {
+//   try {
+//     const response = await auth.fetchProtectedApi('/api/this-month-new-member-count', {}, 'GET');
+//     if (response.status && response.data) {
+//       thisMonthNewMemberCount.value = response.data;
+//     }
+//   } catch (error) {
+//     console.error("Error fetching this month new member count:", error);
+//   }
+// };
 
 onMounted(() => {
   fetchMemberList();
@@ -247,6 +289,8 @@ onMounted(() => {
   totalOrgMemberCount();
   getTransactions();
   orgNextMeeting();
+  getThisYearNewMemberCount();
+  // getThisMonthNewMemberCount();
 });
 
 </script>
@@ -264,8 +308,7 @@ onMounted(() => {
 
         <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
           <h5 class="text-sm text-gray-500 font-medium mb-1">Next meeting</h5>
-
-          <p class="text-3xl font-bold text-gray-800" v-if="nextMeeting">{{ nextMeeting }}</p>
+          <p class="text-3xl font-bold text-gray-500" v-if="nextMeetingDate">{{ nextMeetingDate }}</p>
           <p class="text-gray-400 text-sm" v-else>No upcoming meeting</p>
 
           <a href="#" class="text-blue-500 text-sm hover:underline mt-2 inline-block">See all</a>
@@ -274,12 +317,12 @@ onMounted(() => {
         <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
           <h5 class="text-sm text-gray-500 font-medium mb-1">Balance</h5>
           <p class="text-3xl font-bold text-gray-500">{{ balance }}</p>
-          <a href="#" class="text-blue-500 text-sm hover:underline mt-2 inline-block">See all transaction</a>
+          <a href="#" class="text-blue-500 text-sm hover:underline mt-2 inline-block">See all transactions</a>
         </div>
         <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
-          <h5 class="text-sm text-gray-500 font-medium mb-1">New members</h5>
-          <p class="text-3xl font-bold text-gray-500">{{ totalOrgMember }}</p>
-          <a href="#" class="text-blue-500 text-sm hover:underline mt-2 inline-block">This month</a>
+          <h5 class="text-sm text-gray-500 font-medium mb-1">This year new members</h5>
+          <p class="text-3xl font-bold text-gray-500">{{ thisYearNewMemberCount }}</p>
+          <a href="#" class="text-blue-500 text-sm hover:underline mt-2 inline-block">See all</a>
         </div>
       </div>
 
@@ -381,7 +424,7 @@ onMounted(() => {
           <div class="px-6 py-4">
             <router-link to="/org-dashboard/index-member">
               <button class="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium">
-                View all members →
+                See all members →
               </button>
             </router-link>
           </div>

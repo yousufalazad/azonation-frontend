@@ -81,7 +81,7 @@ onMounted(() => {
                         <!-- <th class="border px-4 py-2 w-1/8">Description</th> -->
                         <th class="border px-4 py-2 w-1/5">Recognition Date</th>
                         <th class="border px-4 py-2 w-1/8">Privacy</th>
-                        <th class="border px-4 py-2 w-1/8">Status</th> 
+                        <th class="border px-4 py-2 w-1/8">Is Active</th> 
                         <th class="border px-4 py-2 w-1/3 text-right">Actions</th>
                     </tr>
                 </thead>
@@ -99,7 +99,7 @@ onMounted(() => {
                                         'Public'
                             }}
                         </td>
-                        <td class="border px-4 py-2">{{ record.status === 1 ? 'Active' : 'Disabled' }}</td>
+                        <td class="border px-4 py-2">{{ record.is_active === 1 ? 'Active' : 'Disabled' }}</td>
                         <td class="border px-4 py-2 space-x-2 flex justify-end">
                             <button @click="$router.push({ name: 'edit-recognition', params: { id: record.id } })"
                                 class="bg-yellow-500 text-white px-4 py-1 rounded hover:bg-yellow-600">Edit </button>
