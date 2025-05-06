@@ -24,8 +24,8 @@ jobs:
       - name: Build Vite App
         run: npm run build
 
-      - name: Deploy with FTP-Action (wzieba)
-        uses: wzieba/Ftp-Deploy-Action@v1.0.1
+      - name: Deploy with FTP-Action
+        uses: SamKirkland/FTP-Deploy-Action@v4.2.0
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
