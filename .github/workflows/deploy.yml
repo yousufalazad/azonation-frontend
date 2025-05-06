@@ -24,11 +24,12 @@ jobs:
       - name: Build Vite App
         run: npm run build
 
-      - name: Upload to cPanel via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.2.0
+      - name: Deploy with FTP-Action (wzieba)
+        uses: wzieba/Ftp-Deploy-Action@v1.0.1
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/
+          local-dir: /dist/
           server-dir: ./
+          passive: true
