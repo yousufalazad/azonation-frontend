@@ -5,7 +5,8 @@ import { authStore } from "../../../store/authStore";
 const auth = authStore;
 const userId = auth.user.id;
 // const userId = 2;
-const baseURL = 'http://localhost:8000';
+// const baseURL = 'http://localhost:8000'; //for local
+const baseURL = 'https://my.azonation.com/api'; //for production
 const name = computed(() => auth.user?.name);
 const userType = computed(() => auth.user?.type);
 const userEmail = computed(() => auth.user?.email);
