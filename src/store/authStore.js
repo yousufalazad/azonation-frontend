@@ -6,7 +6,7 @@ import functions from "../global/cookie";
 
 const authStore = reactive({
   // apiBase: "http://localhost:8000", //for local
-  apiBase: "https://my.azonation.com/api", // for production
+  apiBase: "https://my.azonation.com/backend", // for production
   isAuthenticated: functions.getCookie("auth") == 1,
   user: functions.getCookie("user") == 'undefined'? {}: JSON.parse(functions.getCookie("user")),
   errors: null,
