@@ -17,8 +17,8 @@ export default defineConfig({
   server: {
     proxy: {
         '/api': {
-            // target: 'http://127.0.0.1:8000', // Laravel backend URL
-            target: 'https://my.azonation.com/backend', // Laravel backend URL for production phase
+            target: 'http://127.0.0.1:8000', // Laravel backend URL
+            // target: 'https://azonation.com/backend', // Laravel backend URL for production phase
             changeOrigin: true,
             secure: false, // true if using https in production
         },
