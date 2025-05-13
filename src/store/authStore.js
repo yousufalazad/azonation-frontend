@@ -5,8 +5,8 @@ import Swal from "sweetalert2";
 import functions from "../global/cookie";
 
 const authStore = reactive({
-  // apiBase: "https://my.azonation.com/backend", // Production API base
-  apiBase: "http://localhost:8000", //for local
+  apiBase: "https://my.azonation.com",
+  // apiBase: "http://localhost:8000", //for local
   isAuthenticated: functions.getCookie("auth") == 1,
   user: functions.getCookie("user") === "undefined" ? {} : JSON.parse(functions.getCookie("user")),
   errors: null,
