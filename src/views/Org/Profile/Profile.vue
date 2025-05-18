@@ -5,7 +5,10 @@
             <h2 class="text-sm font-semibold text-gray-700 mb-4 py-2">Logo</h2>
             <div class="mb-4 flex justify-between pb-9">
                 <div v-if="logoPath">
-                    <img :src="`${baseURL}${logoPath}`" alt="Logo" class="rounded-lg h-[150px] ml-5">
+                    <img :src="`${baseURL}${logoPath}`" alt="Logo" class="rounded-lg w-[350px] ml-5">
+                </div>
+                <div v-else>
+                    <img src="../../../assets/Logo/Your-logo-here.png" alt="Logo" class="rounded-lg w-[350px] ml-5">
                 </div>
                 <div>
                     <label for="logo" class="block text-sm font-medium text-gray-700 mb-4">Upload new logo</label>

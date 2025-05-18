@@ -252,8 +252,6 @@ const orgNextMeeting = async () => {
 
       // console.log('Formatted date:', formattedDate);
       nextMeetingDate.value = formattedDate;
-    } else {
-      nextMeetingDate.value = 'No upcoming meetings found';
     }
 
   } catch (error) {
@@ -303,27 +301,42 @@ onMounted(() => {
         <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
           <h5 class="text-sm text-gray-500 font-medium mb-1">Total member</h5>
           <p class="text-3xl font-bold text-gray-500">{{ totalOrgMember }}</p>
-          <a href="#" class="text-blue-500 text-sm hover:underline mt-2 inline-block">See all</a>
+          <router-link to="/org-dashboard/index-member">
+            <button class="text-blue-500 text-sm hover:underline mt-2 inline-block">
+              See all
+            </button>
+          </router-link>
         </div>
 
         <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
           <h5 class="text-sm text-gray-500 font-medium mb-1">Next meeting</h5>
           <p class="text-3xl font-bold text-gray-500" v-if="nextMeetingDate">{{ nextMeetingDate }}</p>
-          <p class="text-gray-400 text-sm" v-else>No upcoming meeting</p>
-
-          <a href="#" class="text-blue-500 text-sm hover:underline mt-2 inline-block">See all</a>
+          <p class="text-gray-400 text-sm" v-else>No upcoming meeting found</p>
+          <router-link to="/org-dashboard/meetings">
+            <button class="text-blue-500 text-sm hover:underline mt-2 inline-block">
+              See all
+            </button>
+          </router-link>
         </div>
 
         <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
           <h5 class="text-sm text-gray-500 font-medium mb-1">Balance</h5>
           <p class="text-3xl font-bold text-gray-500">{{ balance }}</p>
-          <a href="#" class="text-blue-500 text-sm hover:underline mt-2 inline-block">See all transactions</a>
+          <router-link to="/org-dashboard/accounts">
+            <button class="text-blue-500 text-sm hover:underline mt-2 inline-block">
+              See all transactions
+            </button>
+          </router-link>
         </div>
+
         <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
           <h5 class="text-sm text-gray-500 font-medium mb-1">This year new members</h5>
           <p class="text-3xl font-bold text-gray-500">{{ thisYearNewMemberCount }}</p>
-          <a href="#" class="text-blue-500 text-sm hover:underline mt-2 inline-block">See all</a>
-        </div>
+          <router-link to="/org-dashboard/index-member">
+            <button class="text-blue-500 text-sm hover:underline mt-2 inline-block">
+              See all
+            </button>
+          </router-link>        </div>
       </div>
 
       <!-- Top Controls -->
@@ -470,7 +483,7 @@ onMounted(() => {
             <div class="flex justify-between">
               <span class="font-medium text-gray-600">Membership age:</span>
               <span class="text-right">{{ calculateMembershipAge(selectedMember?.membership_start_date ?? '--')
-              }}</span>
+                }}</span>
             </div>
             <div class="flex justify-between">
               <span class="font-medium text-gray-600">Reference/sponsored by:</span>

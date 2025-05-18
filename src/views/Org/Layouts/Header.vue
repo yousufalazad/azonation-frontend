@@ -3,10 +3,12 @@ import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { authStore } from "../../../store/authStore";
 
 const auth = authStore;
+import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
+
 const userId = auth.user.id;
 // const userId = 2;
-// const baseURL = 'http://localhost:8000'; //for local
-const baseURL = 'https://my.azonation.com/api'; //for production
+const baseURL = 'http://localhost:8000'; //for local
+// const baseURL = 'https://my.azonation.com/api'; //for production
 const name = computed(() => auth.user?.name);
 const userType = computed(() => auth.user?.type);
 const userEmail = computed(() => auth.user?.email);
@@ -141,8 +143,8 @@ const fetchLogo = async () => {
       <!-- Notifications -->
       <div class="relative">
         <button @click="toggleNotificationDropdown" class="relative text-gray-600" ref="notificationButton">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell mr-4 mt-2"
-            viewBox="0 0 16 16">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+            class="bi bi-bell mr-4 mt-2" viewBox="0 0 16 16">
             <path
               d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6" />
           </svg>
@@ -178,6 +180,9 @@ const fetchLogo = async () => {
           <div v-if="logoPath">
             <img :src="`${baseURL}${logoPath}`" alt="Logo" class="w-10 h-10 rounded-full object-covers">
           </div>
+          <div v-else>
+            <img :src="placeholderImage" alt="Logo" class="w-10 h-10 rounded-full object-cover">
+          </div>
         </button>
 
         <!-- Profile Dropdown -->
@@ -185,9 +190,12 @@ const fetchLogo = async () => {
           ref="dropdownMenu">
           <div class="p-4 border-b">
             <!-- Profile info -->
-            <div class="flex items-left space-x-2">
+            <div v-if="logoPath" class="flex items-left space-x-2">
               <img :src="`${baseURL}${logoPath}`" alt="Logo"
                 class="rounded-lg max-h-[90px] max-w-[200px] w-auto h-auto">
+            </div>
+            <div v-else class="flex items-left space-x-2">
+              <img :src="placeholderImage" alt="Logo" class="rounded-lg max-h-[90px] max-w-[200px] w-auto h-auto">
             </div>
           </div>
 
@@ -212,7 +220,8 @@ const fetchLogo = async () => {
             </li> -->
             <li><a href="/org-dashboard/my-account/subscription"
                 class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Subscriptions</a></li>
-            <li><a href="/org-dashboard/my-account/invoice-list" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Billing</a>
+            <li><a href="/org-dashboard/my-account/invoice-list"
+                class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Billing</a>
             </li>
             <!-- <li><a href="/org-dashboard/my-account/invoice-list" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Security</a>
             </li> -->
@@ -231,7 +240,8 @@ const fetchLogo = async () => {
             </li>
             <li class="border-t"></li>
             <li class="py-4 px-3.5"><img src="../../../assets/Logo/Azonation.png" alt=""
-                class="max-h-[50px] max-w-[100px]"></li>
+                class="max-h-[50px] max-w-[100px]">
+            </li>
 
           </ul>
         </div>
@@ -240,5 +250,4 @@ const fetchLogo = async () => {
   </header>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
