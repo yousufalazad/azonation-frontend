@@ -1,6 +1,6 @@
 <!-- Event Index.vue -->
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, computed, ref } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
 
@@ -44,7 +44,22 @@ const deleteRecord = async (eventId) => {
   }
 };
 
-onMounted(() => getRecords());
+const eventSummary = ref([]);
+// Fetch Event details on mount
+const fetchEventDetails = async () => {
+  try {
+    const response = await auth.fetchProtectedApi(`/api/event-summaries`, {}, 'GET');
+    eventSummary.value = response.status ? response.data : [];
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    eventSummary.value = [];
+  }
+};
+
+onMounted(() => {
+  getRecords();
+  fetchEventDetails();
+});
 </script>
 
 <template>
@@ -57,10 +72,6 @@ onMounted(() => getRecords());
           <button @click="$router.push({ name: 'create-event' })"
             class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition">
             Add Event
-          </button>
-          <button @click="$router.push({ name: 'index-event-summary' })"
-            class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition">
-            Event Summary List
           </button>
         </div>
       </div>
@@ -95,10 +106,20 @@ onMounted(() => getRecords());
               </td>
               <td class="px-4 py-2">
                 <div class="flex flex-wrap gap-2">
-                  <button @click="$router.push({ name: 'create-event-summary', params: { eventId: record.id } })"
-                    class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded-md text-sm transition">
-                    Summary
-                  </button>
+                  <div v-if="eventSummary.find(s => s.org_event_id === record.id)">
+                    <button
+                      @click="$router.push({ name: 'view-event-summary', params: { id: eventSummary.find(s => s.org_event_id === record.id).id } })"
+                      class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs">
+                      Summary View
+                    </button>
+                  </div>
+                  <div v-else>
+                    <button @click="$router.push({ name: 'create-event-summary', params: { eventId: record.id } })"
+                      class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded-md text-sm transition">
+                      Summary Add
+                    </button>
+                  </div>
+
                   <button @click="$router.push({ name: 'event-attendances', params: { id: record.id } })"
                     class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition">
                     Attendances

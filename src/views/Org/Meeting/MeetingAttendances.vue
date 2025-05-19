@@ -1,3 +1,5 @@
+<!-- meeting att -->
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
@@ -7,8 +9,8 @@ const router = useRouter();
 const route = useRoute();
 
 const auth = authStore;
-const user_id = ref("");
-const attendance_type_id = ref("");
+const user_id = ref(null);
+const attendance_type_id = ref(null);
 const date = ref('');
 const time = ref('');
 const note = ref('');
@@ -68,8 +70,8 @@ const getMeetingAttendanceList = async () => {
 
 // Reset form fields
 const resetForm = () => {
-    user_id.value = "";
-    attendance_type_id.value = "";
+    user_id.value = null;
+    attendance_type_id.value =null;
     date.value = '';
     time.value = '';
     note.value = '';
@@ -83,7 +85,7 @@ const submitForm = async () => {
     const payload = {
         meeting_id: meetingId.value,
         user_id: user_id.value,
-        attendance_type_id: attendance_type_id.value,
+        attendance_type_id: attendance_type_id.value || null,
         date: date.value,
         time: time.value,
         note: note.value,
@@ -198,7 +200,7 @@ onMounted(() => {
                     <div class="col-span-4 mb-4">
                         <label for="attendance_type_id" class="block text-gray-700 font-semibold mb-2">Type Name</label>
                         <select v-model="attendance_type_id" id="attendance_type_id"
-                            class="w-full border border-gray-300 rounded-md p-2" required>
+                            class="w-full border border-gray-300 rounded-md p-2">
                             <option value="">Select Attendance Type</option>
                             <option v-for="attendanceType in attendanceTypeList" :key="attendanceType.id" :value="attendanceType.id">
                                 {{ attendanceType.name }}</option>
@@ -237,7 +239,7 @@ onMounted(() => {
                             class="bg-yellow-600 text-white rounded-md py-2 px-4 mx-4 hover:bg-yellow-700">
                             Reset
                         </button>
-                        <button @click="router.push({ name: 'index-meeting' })" class="bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700">
+                        <button type="button" @click="router.push({ name: 'index-meeting' })" class="bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700">
                             Back to Meeting List
                         </button>
                     </div>

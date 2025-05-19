@@ -7,9 +7,9 @@ const router = useRouter();
 const auth = authStore;
 const route = useRoute();
 
-const record = ref([]);
 const id = ref(route.params.id); // Selected Meeting ID
 
+const record = ref([]);
 // Fetch meeting minutes details
 const fetchMeetingMinutes = async () => {
     try {
@@ -31,9 +31,14 @@ onMounted(() => {
     <div class="container mx-auto max-w-7xl w-10/12 p-6 bg-white rounded-lg shadow-md mt-10">
         <div class="flex justify-between items-center mb-6">
             <h5 class="text-xl font-semibold">Meeting Minutes Details</h5>
-            <button @click="router.push({ name: 'index-meeting-minutes' })" class="btn-primary">
-                Back to Meeting Minutes List
-            </button>
+            <div>
+                <button @click="$router.push({ name: 'edit-meeting-minutes', params: { id: record.id } })"
+                    class="bg-yellow-500 hover:bg-yellow-600 text-white p-2 m-2 rounded">Meeting Minutes Edit </button>
+
+                <button @click="$router.push({ name: 'index-meeting' })"
+                    class="bg-blue-500 text-white font-semibold py-2 px-2 rounded-md">Back Meeting List
+                </button>
+            </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -70,11 +75,6 @@ onMounted(() => {
                         <td class="px-2 py-2 text-left">{{ record.note }}</td>
                     </tr>
                     <tr>
-                        <td class="px-2 py-2 text-left font-semibold w-36">File Attachments</td>
-                        <td>:</td>
-                        <td class="px-2 py-2 text-left">{{ record.file_attachments }}</td>
-                    </tr>
-                    <tr>
                         <td class="px-2 py-2 text-left font-semibold w-36">Start Time</td>
                         <td>:</td>
                         <td class="px-2 py-2 text-left">{{ record.start_time }}</td>
@@ -108,7 +108,8 @@ onMounted(() => {
                         <td class="px-2 py-2 text-left font-semibold w-36">Video Link</td>
                         <td>:</td>
                         <td class="px-2 py-2 text-left">
-                            <a :href="record.video_link" target="_blank" class="text-blue-500 underline">{{ record.video_link }}</a>
+                            <a :href="record.video_link" target="_blank" class="text-blue-500 underline">{{
+                                record.video_link }}</a>
                         </td>
                     </tr>
                     <tr>
@@ -131,6 +132,39 @@ onMounted(() => {
                         <td>:</td>
                         <td class="px-2 py-2 text-left">{{ record.is_active ? 'Yes' : 'No' }}</td>
                     </tr>
+
+                    <tr>
+                        <td class="px-2 py-2 text-left font-semibold w-36">Images</td>
+                        <td>:</td>
+                        <td class="px-2 py-2 text-left">
+                            <div v-if="record.images && record.images.length">
+                                <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    <img v-for="(img, index) in record.images" :key="img.id || index"
+                                        :src="img.image_url" alt="History Image" class="max-w-full rounded-lg" />
+                                </div>
+                            </div>
+                            <div v-else>
+                                <p class="text-gray-700">No images available</p>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="px-2 py-2 text-left font-semibold w-36">Documents</td>
+                        <td>:</td>
+                        <td class="px-2 py-2 text-left">
+                            <div v-if="record.documents && record.documents.length">
+                                <ul class="mt-2 list-disc list-inside text-blue-600">
+                                    <li v-for="(doc, index) in record.documents" :key="doc.id || index">
+                                        <a :href="doc.document_url" target="_blank" class="hover:text-blue-800">
+                                            {{ doc.file_name || 'Download Document' }}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+
                 </tbody>
             </table>
         </div>
@@ -139,15 +173,15 @@ onMounted(() => {
 
 <style scoped>
 .btn-primary {
-  background-color: #3b82f6;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-weight: 600;
-  transition: background-color 0.3s;
+    background-color: #3b82f6;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: background-color 0.3s;
 }
 
 .btn-primary:hover {
-  background-color: #2563eb;
+    background-color: #2563eb;
 }
 </style>

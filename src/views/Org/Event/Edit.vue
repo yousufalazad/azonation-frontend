@@ -139,7 +139,7 @@ onMounted(() => {
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
                     <input type="text" id="name" v-model="name"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4" />
                 </div>
                 </div>
                 <!-- Short Description -->
@@ -161,12 +161,12 @@ onMounted(() => {
                 <div>
                     <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
                     <input type="date" id="date" v-model="date"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4" />
                 </div>
                 <div>
                     <label for="time" class="block text-sm font-medium text-gray-700">Time</label>
                     <input type="time" id="time" v-model="time"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4" />
                 </div>
                 <div>
                     <label for="venue_name" class="block text-sm font-medium text-gray-700">Venue Name</label>

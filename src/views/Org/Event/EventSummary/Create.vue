@@ -30,8 +30,8 @@ const is_publish = ref('');
 const is_active = ref('1');
 
 // File Attachments
-const image_attachment = ref(null);
-const file_attachment = ref(null);
+// const image_attachment = ref(null);
+// const file_attachment = ref(null);
 
 const images = ref([{ id: Date.now(), file: null }]);
 const documents = ref([{ id: Date.now(), file: null }]);
@@ -68,30 +68,30 @@ const resetForm = () => {
   privacy_setup_id.value = '';
   is_publish.value = '';
   is_active.value = '1';
-  image_attachment.value = null;
-  file_attachment.value = null;
+  // image_attachment.value = null;
+  // file_attachment.value = null;
 
   images.value = [{ id: Date.now(), file: null }];
   documents.value = [{ id: Date.now(), file: null }];
 };
 
 // Validate Form
-const validateForm = () => {
-  if (!summary.value || !privacy_setup_id.value) {
-    Swal.fire('Error!', 'Please fill out all required fields.', 'error');
-    return false;
-  }
-  return true;
-};
+// const validateForm = () => {
+//   if (!summary.value) {
+//     Swal.fire('Error!', 'Please fill summary required fields.', 'error');
+//     return false;
+//   }
+//   return true;
+// };
 
 // Handle File Attachments
-const handleImageAttachment = (event) => {
-  image_attachment.value = event.target.files[0];
-};
+// const handleImageAttachment = (event) => {
+//   image_attachment.value = event.target.files[0];
+// };
 
-const handleFileAttachment = (event) => {
-  file_attachment.value = event.target.files[0];
-};
+// const handleFileAttachment = (event) => {
+//   file_attachment.value = event.target.files[0];
+// };
 
 
 
@@ -120,7 +120,7 @@ const removeFile = (fileList, index) => {
 
 // Submit Form
 const submitForm = async () => {
-  if (!validateForm()) return;
+  // if (!validateForm()) return;
 
   const formData = new FormData();
   formData.append('event_id', eventId.value);
@@ -133,12 +133,12 @@ const submitForm = async () => {
   formData.append('suggestions', suggestions.value);
   formData.append('financial_overview', financial_overview.value);
   formData.append('total_expense', total_expense.value);
-  if (image_attachment.value) {
-    formData.append('image_attachment', image_attachment.value);
-  }
-  if (file_attachment.value) {
-    formData.append('file_attachment', file_attachment.value);
-  }
+  // if (image_attachment.value) {
+  //   formData.append('image_attachment', image_attachment.value);
+  // }
+  // if (file_attachment.value) {
+  //   formData.append('file_attachment', file_attachment.value);
+  // }
 
   images.value.forEach((fileData, index) => {
     if (fileData.file) {
@@ -164,7 +164,7 @@ const submitForm = async () => {
 
     if (response.status) {
       Swal.fire('Success!', 'Event summary saved successfully.', 'success');
-      router.push({ name: 'index-event-summary' });
+      router.push({ name: 'index-event' });
     } else {
       Swal.fire('Failed!', 'Could not save event summary.', 'error');
     }
@@ -181,11 +181,9 @@ onMounted(fetchPrivacySetups);
     <!-- Page Header -->
     <div class="flex justify-between items-center mb-6">
       <h5 class="text-xl font-semibold">Add New Event Summary</h5>
-      <button 
-        @click="router.push({ name: 'index-event-summary' })" 
-        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium">
-        Back to Event Summary List
-      </button>
+       <button @click="$router.push({ name: 'index-event' })"
+          class="bg-blue-500 text-white font-semibold py-2 px-2 rounded-md">Back Event List
+        </button>
     </div>
 
     <!-- Form -->
@@ -245,7 +243,7 @@ onMounted(fetchPrivacySetups);
       </div>
 
       <!-- Attachments -->
-      <div class="grid grid-cols-2 gap-4 mb-4">
+      <!-- <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Image Attachment</label>
           <input @change="handleImageAttachment" type="file" class="w-full p-2 border border-gray-300 rounded-md" />
@@ -254,7 +252,7 @@ onMounted(fetchPrivacySetups);
           <label class="block text-sm font-medium text-gray-700">File Attachment</label>
           <input @change="handleFileAttachment" type="file" class="w-full p-2 border border-gray-300 rounded-md" />
         </div>
-      </div>
+      </div> -->
       <!-- Privacy Setup -->
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
@@ -264,7 +262,7 @@ onMounted(fetchPrivacySetups);
 
         <div>
           <label class="block text-sm font-medium text-gray-700">Privacy Setup</label>
-          <select v-model="privacy_setup_id" class="w-full p-2 border border-gray-300 rounded-md" required>
+          <select v-model="privacy_setup_id" class="w-full p-2 border border-gray-300 rounded-md">
             <option value="">Select Privacy Setup</option>
             <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{ privacy.name }}</option>
           </select>
@@ -285,9 +283,6 @@ onMounted(fetchPrivacySetups);
           </select>
         </div>
       </div>
-
-
-
 
       <!-- Images Upload -->
       <div class="mb-4">

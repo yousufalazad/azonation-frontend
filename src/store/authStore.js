@@ -94,8 +94,8 @@ const authStore = reactive({
           icon: "success",
           title: "Registration successful",
           text: "You have successfully registered.",
-          timer: 1000,
-          showConfirmButton: false,
+          // timer: 15000,
+          showConfirmButton: true,
         });
       } else {
         this.errors = res.errors;

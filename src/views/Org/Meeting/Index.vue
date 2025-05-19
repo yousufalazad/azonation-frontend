@@ -1,3 +1,4 @@
+<!-- meeting index -->
 <script setup>
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
@@ -6,16 +7,16 @@ import { authStore } from '../../../store/authStore';
 
 const auth = authStore;
 const router = useRouter();
-const recordList = ref([]);
+const meetingList = ref([]);
 
 // Fetch list of meetings
-const getRecords = async () => {
+const getMeetings = async () => {
   try {
     const response = await auth.fetchProtectedApi(`/api/meetings`, {}, 'GET');
-    recordList.value = response.status ? response.data : [];
+    meetingList.value = response.status ? response.data : [];
   } catch (error) {
     console.error('Error fetching meetings:', error);
-    recordList.value = [];
+    meetingList.value = [];
   }
 };
 
@@ -25,16 +26,16 @@ const goToCreateMeeting = () => {
 };
 
 // Navigate to edit meeting page
-const editRecord = (recordId) => {
-  router.push({ name: 'edit-meeting', params: { id: recordId } });
+const editMeeting = (meetingId) => {
+  router.push({ name: 'edit-meeting', params: { id: meetingId } });
 };
 // Navigate to view meeting page
-const viewRecord = (recordId) => {
-  router.push({ name: 'view-meeting', params: { id: recordId } });
+const viewMeeting = (meetingId) => {
+  router.push({ name: 'view-meeting', params: { id: meetingId } });
 };
 
 // Delete a meeting
-const deleteRecord = async (recordId) => {
+const deleteMeeting = async (meetingId) => {
   try {
     const confirmed = await Swal.fire({
       title: 'Are you sure?',
@@ -47,9 +48,9 @@ const deleteRecord = async (recordId) => {
     });
 
     if (confirmed.isConfirmed) {
-      const response = await auth.fetchProtectedApi(`/api/meetings/${recordId}`, {}, 'DELETE');
+      const response = await auth.fetchProtectedApi(`/api/meetings/${meetingId}`, {}, 'DELETE');
       if (response.status) {
-        recordList.value = recordList.value.filter(record => record.id !== recordId);
+        meetingList.value = meetingList.value.filter(meeting => meeting.id !== meetingId);
         Swal.fire('Deleted!', 'Meeting has been deleted.', 'success');
       } else {
         Swal.fire('Error!', 'Failed to delete meeting.', 'error');
@@ -60,9 +61,22 @@ const deleteRecord = async (recordId) => {
   }
 };
 
-// Fetch records on mount
+
+const meetingMinuteList = ref([]);
+// Fetch list of meetings
+const getmeetingMinuteMeetings = async () => {
+  try {
+    const response = await auth.fetchProtectedApi(`/api/meeting-minutes`, {}, 'GET');
+    meetingMinuteList.value = response.status ? response.data : [];
+  } catch (error) {
+    console.error('Error fetching meetings:', error);
+    meetingMinuteList.value = [];
+  }
+};
+// Fetch meetings on mount
 onMounted(() => {
-  getRecords();
+  getMeetings();
+  getmeetingMinuteMeetings();
 });
 </script>
 
@@ -72,23 +86,9 @@ onMounted(() => {
       <div class="flex flex-col md:flex-row md:items-center md:justify-between bg-gray-100 py-3 mb-4">
         <h2 class="text-lg font-semibold text-gray-700">Meeting List</h2>
         <div class="flex flex-wrap gap-2 mt-2 md:mt-0">
-          <button
-            @click="goToCreateMeeting"
-            class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-md"
-          >
+          <button @click="goToCreateMeeting"
+            class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-md">
             Create Meeting
-          </button>
-          <button
-            @click="$router.push({ name: 'index-meeting-minutes' })"
-            class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-md"
-          >
-            Meeting Minutes List
-          </button>
-          <button
-            @click="goToCreateMeeting"
-            class="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded-md"
-          >
-            Meeting Attendance List
           </button>
         </div>
       </div>
@@ -108,60 +108,52 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
-            <tr
-              v-for="(record, index) in recordList"
-              :key="index"
-              class="hover:bg-gray-50 transition-colors"
-            >
-              <td class="px-4 py-3">{{ record.name }}</td>
-              <td class="px-4 py-3">{{ record.short_name }}</td>
-              <td class="px-4 py-3">{{ record.subject }}</td>
-              <td class="px-4 py-3">{{ record.date }}</td>
-              <td class="px-4 py-3">{{ record.time }}</td>
+            <tr v-for="(meeting, index) in meetingList" :key="index" class="hover:bg-gray-50 transition-colors">
+              <td class="px-4 py-3">{{ meeting.name }}</td>
+              <td class="px-4 py-3">{{ meeting.short_name }}</td>
+              <td class="px-4 py-3">{{ meeting.subject }}</td>
+              <td class="px-4 py-3">{{ meeting.date }}</td>
+              <td class="px-4 py-3">{{ meeting.time }}</td>
               <td class="px-4 py-3">
-                <span
-                  :class="record.status === 0 ? 'text-green-600' : 'text-red-500'"
-                >
-                  {{ record.status === 0 ? 'Active' : 'Disabled' }}
+                <span :class="meeting.status === 0 ? 'text-green-600' : 'text-red-500'">
+                  {{ meeting.status === 0 ? 'Active' : 'Disabled' }}
                 </span>
               </td>
-              <td class="px-4 py-3">{{ record.conduct_type_name }}</td>
+              <td class="px-4 py-3">{{ meeting.conduct_type_name }}</td>
               <td class="px-4 py-3 space-y-1">
                 <div class="flex flex-wrap gap-2">
-                  <button
-                    @click="$router.push({ name: 'create-meeting-minutes', params: { meetingId: record.id } })"
-                    class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs"
-                  >
-                    Minutes
-                  </button>
-                  <button
-                    @click="$router.push({ name: 'meeting-guest-attendance', params: { id: record.id } })"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
-                  >
+
+                  <div v-if="meetingMinuteList.find(s => s.meeting_id === meeting.id)">
+                    <button @click="$router.push({ name: 'view-meeting-minutes', params: { id: meetingMinuteList.find(s => s.meeting_id === meeting.id).id }})"
+                      class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs">
+                      Minutes view
+                    </button>
+                  </div>
+                  <div v-else>
+                    <button
+                      @click="$router.push({ name: 'create-meeting-minutes',  params: { meetingId: meeting.id } })"
+                      class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs">
+                      Minutes add
+                    </button>
+                  </div>
+                  <button @click="$router.push({ name: 'meeting-guest-attendance', params: { id: meeting.id } })"
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">
                     Guest
                   </button>
-                  <button
-                    @click="$router.push({ name: 'meeting-attendances', params: { id: record.id } })"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
-                  >
+                  <button @click="$router.push({ name: 'meeting-attendances', params: { id: meeting.id } })"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs">
                     Attendees
                   </button>
-                  <button
-                    @click="editRecord(record.id)"
-                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs"
-                  >
+                  <button @click="editMeeting(meeting.id)"
+                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs">
                     Edit
                   </button>
-                  <button
-                    @click="viewRecord(record.id)"
-                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs"
-                  >
+                  <button @click="viewMeeting(meeting.id)"
+                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs">
                     View
                   </button>
-                  <button
-                    @click="deleteRecord(record.id)"
-                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs"
-                  >
+                  <button @click="deleteMeeting(meeting.id)"
+                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">
                     Delete
                   </button>
                 </div>

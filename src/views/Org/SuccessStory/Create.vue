@@ -81,7 +81,7 @@ const submitForm = async () => {
 </script>
 
 <template>
-    <div class="max-w-3xl mx-auto">
+    <div>
         <div class="flex justify-between items-center mb-6">
             <h5 class="text-xl font-semibold">Create Success Story</h5>
             <button @click="router.push({ name: 'success-story' })"

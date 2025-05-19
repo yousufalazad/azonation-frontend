@@ -35,9 +35,6 @@ const is_publish = ref('');
 const is_active = ref('1');
 
 // File Attachments
-const image_attachment = ref(null);
-const file_attachment = ref(null);
-
 const images = ref([{ id: Date.now(), file: null }]);
 const documents = ref([{ id: Date.now(), file: null }]);
 
@@ -116,13 +113,6 @@ const validateForm = () => {
 };
 
 // Handle File Attachments
-const handleImageAttachment = (event) => {
-  image_attachment.value = event.target.files[0];
-};
-
-const handleFileAttachment = (event) => {
-  file_attachment.value = event.target.files[0];
-};
 
 const handleFileChange = (event, fileList, index) => {
   const file = event.target.files[0];
@@ -166,12 +156,6 @@ const submitForm = async () => {
   formData.append('total_expense', total_expense.value);
   formData.append('next_steps', next_steps.value);
   formData.append('outcomes', outcomes.value);
-  if (image_attachment.value) {
-    formData.append('image_attachment', image_attachment.value);
-  }
-  if (file_attachment.value) {
-    formData.append('file_attachment', file_attachment.value);
-  }
 
   images.value.forEach((fileData, index) => {
     if (fileData.file) {
@@ -195,7 +179,7 @@ const submitForm = async () => {
   }
 
   try {
-    const response = await auth.uploadProtectedApi(`/api/project-summaries/${summaryId.value}`, formData, 'PUT', {
+    const response = await auth.uploadProtectedApi(`/api/project-summaries/${summaryId.value}`, formData, 'POST', {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
@@ -238,11 +222,15 @@ onMounted(() => {
   <div class="container mx-auto max-w-7xl p-6 bg-white rounded-lg shadow-md mt-10">
     <!-- Page Header -->
     <div class="flex justify-between items-center mb-6">
-      <h5 class="text-xl font-semibold">Add New Project Summary</h5>
-      <button @click="router.push({ name: 'index-project-summary' })"
-        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium">
-        Back to Project Summary List
-      </button>
+      <h5 class="text-xl font-semibold">Edit Project Summary</h5>
+      <div>
+        <button @click="$router.push({ name: 'view-project-summary', params: { summaryId: summaryId } })"
+          class="bg-green-500 hover:bg-green-600 text-white p-2 m-2 rounded">Project Summary View </button>
+
+        <button @click="$router.push({ name: 'index-project' })"
+          class="bg-blue-500 text-white font-semibold py-2 px-2 rounded-md">Back Project List
+        </button>
+      </div>
     </div>
 
     <!-- Form -->
@@ -315,17 +303,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Attachments -->
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Image Attachment</label>
-          <input @change="handleImageAttachment" type="file" class="w-full p-2 border border-gray-300 rounded-md" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">File Attachment</label>
-          <input @change="handleFileAttachment" type="file" class="w-full p-2 border border-gray-300 rounded-md" />
-        </div>
-      </div>
       <!-- Privacy Setup -->
       <div class="grid grid-cols-3 gap-4 mb-4">
         <div>

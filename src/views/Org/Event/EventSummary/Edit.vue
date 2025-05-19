@@ -12,10 +12,9 @@ const route = useRoute();
 const errorMessage = ref('');
 
 // Selected Event ID
-const id = ref(route.params.id || null);
+const eventId = ref(route.params.eventId || null);
 
 // Form Data States
-const org_event_id = ref('');
 const total_member_attendance = ref('');
 const total_guest_attendance = ref('');
 const summary = ref('');
@@ -31,8 +30,8 @@ const is_publish = ref('');
 const is_active = ref('1');
 
 // File Attachments
-const image_attachment = ref(null);
-const file_attachment = ref(null);
+// const image_attachment = ref(null);
+// const file_attachment = ref(null);
 
 const images = ref([{ id: Date.now(), file: null }]);
 const documents = ref([{ id: Date.now(), file: null }]);
@@ -54,68 +53,46 @@ const fetchPrivacySetups = async () => {
   }
 };
 
-// Fetch Existing Data for Editing
-const fetchEventSummary = async () => {
-  try {
-    const response = await auth.fetchProtectedApi(`/api/event-summaries/${id.value}`);
-    if (response.status) {
-      const data = response.data;
+// Reset Form
+const resetForm = () => {
+  total_member_attendance.value = '';
+  total_guest_attendance.value = '';
+  summary.value = '';
+  highlights.value = '';
+  feedback.value = '';
+  challenges.value = '';
+  suggestions.value = '';
+  financial_overview.value = '';
+  total_expense.value = '';
+  next_steps.value = '';
+  privacy_setup_id.value = '';
+  is_publish.value = '';
+  is_active.value = '1';
+  // image_attachment.value = null;
+  // file_attachment.value = null;
 
-      // Process images
-      images.value = (data.images || []).map((image) => ({
-        id: image.id,
-        file: {
-          preview: image.image_url || '', // Ensure `file_path` contains the correct URL
-          name: image.file_name || '',
-        },
-      }));
-
-      // Process documents
-      documents.value = (data.documents || []).map(doc => ({
-        id: doc.id,
-        file: { preview: doc.document_url, name: doc.file_name },
-      }));
-
-
-      org_event_id.value = data.org_event_id || '';
-      total_member_attendance.value = data.total_member_attendance || '';
-      total_guest_attendance.value = data.total_guest_attendance || '';
-      summary.value = data.summary || '';
-      highlights.value = data.highlights || '';
-      feedback.value = data.feedback || '';
-      challenges.value = data.challenges || '';
-      suggestions.value = data.suggestions || '';
-      financial_overview.value = data.financial_overview || '';
-      total_expense.value = data.total_expense || '';
-      next_steps.value = data.next_steps || '';
-      privacy_setup_id.value = data.privacy_setup_id || '';
-      is_publish.value = data.is_publish || '';
-      is_active.value = data.is_active || '1';
-    } else {
-      Swal.fire('Error!', 'Failed to load event summary details.', 'error');
-    }
-  } catch (error) {
-    Swal.fire('Error!', 'Failed to load event summary details.', 'error');
-  }
+  images.value = [{ id: Date.now(), file: null }];
+  documents.value = [{ id: Date.now(), file: null }];
 };
 
 // Validate Form
-const validateForm = () => {
-  if (!summary.value || !privacy_setup_id.value) {
-    Swal.fire('Error!', 'Please fill out all required fields.', 'error');
-    return false;
-  }
-  return true;
-};
+// const validateForm = () => {
+//   if (!summary.value) {
+//     Swal.fire('Error!', 'Please fill summary required fields.', 'error');
+//     return false;
+//   }
+//   return true;
+// };
 
 // Handle File Attachments
-const handleImageAttachment = (event) => {
-  image_attachment.value = event.target.files[0];
-};
+// const handleImageAttachment = (event) => {
+//   image_attachment.value = event.target.files[0];
+// };
 
-const handleFileAttachment = (event) => {
-  file_attachment.value = event.target.files[0];
-};
+// const handleFileAttachment = (event) => {
+//   file_attachment.value = event.target.files[0];
+// };
+
 
 
 const handleFileChange = (event, fileList, index) => {
@@ -140,12 +117,13 @@ const removeFile = (fileList, index) => {
   fileList.splice(index, 1);
 };
 
+
 // Submit Form
 const submitForm = async () => {
-  if (!validateForm()) return;
+  // if (!validateForm()) return;
 
   const formData = new FormData();
-  formData.append('org_event_id', org_event_id.value);
+  formData.append('event_id', eventId.value);
   formData.append('total_member_attendance', total_member_attendance.value);
   formData.append('total_guest_attendance', total_guest_attendance.value);
   formData.append('summary', summary.value);
@@ -155,12 +133,12 @@ const submitForm = async () => {
   formData.append('suggestions', suggestions.value);
   formData.append('financial_overview', financial_overview.value);
   formData.append('total_expense', total_expense.value);
-  if (image_attachment.value) {
-    formData.append('image_attachment', image_attachment.value);
-  }
-  if (file_attachment.value) {
-    formData.append('file_attachment', file_attachment.value);
-  }
+  // if (image_attachment.value) {
+  //   formData.append('image_attachment', image_attachment.value);
+  // }
+  // if (file_attachment.value) {
+  //   formData.append('file_attachment', file_attachment.value);
+  // }
 
   images.value.forEach((fileData, index) => {
     if (fileData.file) {
@@ -173,49 +151,46 @@ const submitForm = async () => {
       formData.append(`documents[${index}]`, fileData.file.file);
     }
   });
+
   formData.append('next_steps', next_steps.value);
   formData.append('privacy_setup_id', privacy_setup_id.value);
   formData.append('is_publish', is_publish.value);
   formData.append('is_active', is_active.value);
 
   try {
-    const response = await auth.uploadProtectedApi(`/api/event-summaries/${id.value}`, formData, 'POST', {
+    const response = await auth.uploadProtectedApi('/api/event-summaries', formData, 'POST', {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
     if (response.status) {
-      Swal.fire('Success!', 'Event summary updated successfully.', 'success');
-      router.push({ name: 'index-event-summary' });
+      Swal.fire('Success!', 'Event summary saved successfully.', 'success');
+      router.push({ name: 'index-event' });
     } else {
-      Swal.fire('Failed!', 'Could not update event summary.', 'error');
+      Swal.fire('Failed!', 'Could not save event summary.', 'error');
     }
   } catch (error) {
-    Swal.fire('Error!', 'Failed to update event summary.', 'error');
+    Swal.fire('Error!', 'Failed to save event summary.', 'error');
   }
 };
 
 // Fetch Data on Mounted
-onMounted(() => {
-  fetchPrivacySetups();
-  if (id.value) fetchEventSummary();
-});
+onMounted(fetchPrivacySetups);
 </script>
-
 <template>
   <div class="container mx-auto max-w-7xl p-6 bg-white rounded-lg shadow-md mt-10">
+    <!-- Page Header -->
     <div class="flex justify-between items-center mb-6">
-      <h5 class="text-xl font-semibold">Edit Event Summary</h5>
-      <button @click="router.push({ name: 'index-event-summary' })"
-        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium">
-        Back to Event Summary List
-      </button>
+      <h5 class="text-xl font-semibold">Add New Event Summary</h5>
+       <button @click="$router.push({ name: 'index-event' })"
+          class="bg-blue-500 text-white font-semibold py-2 px-2 rounded-md">Back Event List
+        </button>
     </div>
 
+    <!-- Form -->
     <form @submit.prevent="submitForm">
       <!-- Attendance Fields -->
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
-          <input v-model="org_event_id" type="hidden" class="w-full p-2 border border-gray-300 rounded-md" />
           <label class="block text-sm font-medium text-gray-700">Total Member Attendance</label>
           <input v-model="total_member_attendance" type="number" class="w-full p-2 border border-gray-300 rounded-md" />
         </div>
@@ -259,8 +234,7 @@ onMounted(() => {
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Financial Overview</label>
-          <textarea v-model="financial_overview" class="w-full p-2 border border-gray-300 rounded-md"
-            rows="3"></textarea>
+          <textarea v-model="financial_overview" class="w-full p-2 border border-gray-300 rounded-md" rows="3"></textarea>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700">Next Steps</label>
@@ -269,7 +243,7 @@ onMounted(() => {
       </div>
 
       <!-- Attachments -->
-      <div class="grid grid-cols-2 gap-4 mb-4">
+      <!-- <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Image Attachment</label>
           <input @change="handleImageAttachment" type="file" class="w-full p-2 border border-gray-300 rounded-md" />
@@ -278,17 +252,17 @@ onMounted(() => {
           <label class="block text-sm font-medium text-gray-700">File Attachment</label>
           <input @change="handleFileAttachment" type="file" class="w-full p-2 border border-gray-300 rounded-md" />
         </div>
-      </div>
-
-      <!-- Additional Fields -->
+      </div> -->
+      <!-- Privacy Setup -->
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Total Expense</label>
           <input v-model="total_expense" type="number" class="w-full p-2 border border-gray-300 rounded-md" />
         </div>
+
         <div>
           <label class="block text-sm font-medium text-gray-700">Privacy Setup</label>
-          <select v-model="privacy_setup_id" class="w-full p-2 border border-gray-300 rounded-md" required>
+          <select v-model="privacy_setup_id" class="w-full p-2 border border-gray-300 rounded-md">
             <option value="">Select Privacy Setup</option>
             <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{ privacy.name }}</option>
           </select>
@@ -314,30 +288,6 @@ onMounted(() => {
       <div class="mb-4">
         <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
         <div class="space-y-3">
-          <!-- <div v-for="(image, index) in data.images" :key="image.id">
-            <img :src="image.image_url" alt="Preview" class="w-full h-full object-cover" />            
-          </div> -->
-
-
-
-          <!-- <div>
-            <div v-if="images.length" class="flex gap-4">
-              <div v-for="file in images" :key="file.id" class="w-16 h-16">
-                <img v-if="file.file?.preview" :src="file.file.preview" alt="Meeting Image"
-                  class="w-16 h-16 object-cover rounded" />
-                <p class="text-sm text-center truncate">{{ file.file.name }}</p>
-              </div>
-            </div>
-            <div v-else>
-              <p>No images available.</p>
-            </div>
-          </div> -->
-
-          <!-- <div v-for="file in images" :key="file.id">
-            <img v-if="file?.file?.preview" :src="file.file.preview" class="w-16 h-16 object-cover rounded" />
-          </div> -->
-
-
           <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
             <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept="image/*"
               @change="event => handleFileChange(event, images, index)" />
@@ -379,11 +329,13 @@ onMounted(() => {
 
       <!-- Submit Button -->
       <div class="text-center">
-        <button type="submit" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 font-medium">
+        <button
+          type="submit"
+          class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 font-medium">
           Submit
         </button>
       </div>
     </form>
-
   </div>
 </template>
+
