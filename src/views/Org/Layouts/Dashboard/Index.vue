@@ -12,7 +12,6 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(duration);
 dayjs.extend(relativeTime);
 
-
 const userType = computed(() => auth.user?.type);
 const auth = authStore;
 
