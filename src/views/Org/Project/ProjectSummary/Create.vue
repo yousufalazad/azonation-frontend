@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import Swal from 'sweetalert2';
-import { authStore } from '../../../store/authStore';
+import { authStore } from '../../../../store/authStore';
 
 const route = useRoute();
 const projectId = route.params.id;
