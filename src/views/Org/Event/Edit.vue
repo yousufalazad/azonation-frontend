@@ -100,7 +100,7 @@ const submitForm = async () => {
             if (response.status) {
                 Swal.fire('Success!', 'Event updated successfully.', 'success').then(() => {
                     // Redirect to event list
-                    router.push({ name: 'index-event' });
+                    router.push({ name: 'view-event' });
                 });
             } else {
                 Swal.fire('Failed!', 'Failed to update event.', 'error');
@@ -122,10 +122,15 @@ onMounted(() => {
     <div class="container mx-auto max-w-7xl mx-auto w-10/12 p-6 bg-white rounded-lg shadow-md mt-10">
         <div class="flex justify-between items-center mb-6">
             <h5 class="text-xl font-semibold">Edit Event</h5>
-            <button @click="$router.push({ name: 'index-event' })"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
-                Back to Event List
-            </button>
+            <div>
+                <button @click="$router.push({ name: 'view-event', params: { id: eventId} })"
+                    class="bg-green-500 hover:bg-green-600 text-white p-2 m-2 rounded">Event View </button>
+
+                <button @click="$router.push({ name: 'index-event' })"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    Back to Event List
+                </button>
+            </div>
         </div>
         <form @submit.prevent="submitForm">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

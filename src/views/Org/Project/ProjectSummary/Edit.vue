@@ -1,3 +1,4 @@
+<!-- Project Summary Edit Component -->
 <script setup>
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
@@ -105,7 +106,7 @@ const fetchProjectSummary = async () => {
 
 // Validate Form
 const validateForm = () => {
-  if (!summary.value || !privacy_setup_id.value) {
+  if (!summary.value) {
     Swal.fire('Error!', 'Please fill out all required fields.', 'error');
     return false;
   }
@@ -186,7 +187,7 @@ const submitForm = async () => {
 
     if (response.status) {
       Swal.fire('Success!', 'Project summary updated successfully.', 'success');
-      router.push({ name: 'index-project-summary' });
+      router.push({ name: 'view-project-summary', params: { summaryId: summaryId.value } });
     } else {
       Swal.fire('Failed!', 'Could not update project summary.', 'error');
     }

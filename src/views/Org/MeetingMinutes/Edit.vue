@@ -12,9 +12,10 @@ const route = useRoute();
 const errorMessage = ref('');
 
 // Selected Meeting ID
-const meetingId = ref(route.params.meetingId || null);
+const id = ref(route.params.id || null);
 
 // Form Data States
+const meeting_id = ref('');
 const minutes = ref('');
 const decisions = ref('');
 const note = ref('');
@@ -39,11 +40,59 @@ const is_active = ref('1');
 const orgMemberList = ref([]);
 const privacySetups = ref([]);
 
+// Fetch Existing Data for Editing
+const fetchMeetingMinutes = async () => {
+  try {
+    const response = await auth.fetchProtectedApi(`/api/meeting-minutes/${id.value}`, {}, 'GET');
+
+    if (response.status) {
+
+      const data = response.data;
+      // Process images
+      images.value = (data.images || []).map((image) => ({
+        id: image.id,
+        file: {
+          preview: image.image_url || '', // Ensure `file_path` contains the correct URL
+          name: image.file_name || '',
+        },
+      }));
+
+      // Process documents
+      documents.value = (data.documents || []).map(doc => ({
+        id: doc.id,
+        file: { preview: doc.document_url, name: doc.file_name },
+      }));
+
+      meeting_id.value = data.meeting_id || '';
+      minutes.value = data.minutes || '';
+      decisions.value = data.decisions || '';
+      note.value = data.note || '';
+      start_time.value = data.start_time || '';
+      end_time.value = data.end_time || '';
+      follow_up_tasks.value = data.follow_up_tasks || '';
+      tags.value = data.tags || '';
+      action_items.value = data.action_items || '';
+      video_link.value = data.video_link || '';
+      meeting_location.value = data.meeting_location || '';
+      prepared_by.value = data.prepared_by || '';
+      reviewed_by.value = data.reviewed_by || '';
+      privacy_setup_id.value = data.privacy_setup_id || '';
+      is_publish.value = data.is_publish || '';
+      approval_status.value = data.approval_status || '';
+      is_active.value = data.is_active || '1';
+    } else {
+      errorMessage.value = 'Error loading meeting minutes.';
+    }
+  } catch (error) {
+    errorMessage.value = 'Failed to load meeting minutes. Please try again later.';
+  }
+};
+
 // Fetch Dropdown Data
 const fetchData = async () => {
   try {
     const [orgMemberListResponse, privacySetupResponse] = await Promise.all([
-      auth.fetchProtectedApi('/api/org-all-member-list'),
+      auth.fetchProtectedApi('/api/individual-users'),
       auth.fetchProtectedApi('/api/privacy-setups'),
     ]);
 
@@ -63,33 +112,10 @@ const fetchData = async () => {
   }
 };
 
-// Reset Form
-const resetForm = () => {
-  minutes.value = '';
-  decisions.value = '';
-  note.value = '';
-  start_time.value = '';
-  end_time.value = '';
-  follow_up_tasks.value = '';
-  tags.value = '';
-  action_items.value = '';
-  file_attachments.value = null;
-  images.value = [{ id: Date.now(), file: null }];
-  documents.value = [{ id: Date.now(), file: null }];
-  video_link.value = '';
-  meeting_location.value = '';
-  prepared_by.value = '';
-  reviewed_by.value = '';
-  privacy_setup_id.value = '';
-  is_publish.value = '';
-  approval_status.value = '';
-  is_active.value = '1';
-};
-
 // Form Validation
 const validateForm = () => {
   if (!minutes.value || !privacy_setup_id.value) {
-    Swal.fire('Error!', 'Please fill out all required fields.', 'error');
+    Swal.fire('Error!', 'Please fill out all fields.', 'error');
     return false;
   }
   return true;
@@ -122,13 +148,12 @@ const removeFile = (fileList, index) => {
   fileList.splice(index, 1);
 };
 
-
 // Submit Form
 const submitForm = async () => {
   if (!validateForm()) return;
 
   const formData = new FormData();
-  formData.append('meeting_id', meetingId.value);
+  formData.append('meeting_id', meeting_id.value);
   formData.append('minutes', minutes.value);
   formData.append('decisions', decisions.value);
   formData.append('note', note.value);
@@ -161,38 +186,45 @@ const submitForm = async () => {
   formData.append('is_active', is_active.value);
 
   try {
-    // console.log('formData', formData);
-    const response = await auth.uploadProtectedApi('/api/meeting-minutes', formData, 'POST', {
+    const response = await auth.uploadProtectedApi(`/api/meeting-minutes/${id.value}`, formData, 'POST', {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
     if (response.status) {
-      Swal.fire('Success!', 'Meeting Minutes saved successfully.', 'success');
+      Swal.fire('Success!', 'Meeting Minutes updated successfully.', 'success');
       router.push({ name: 'index-meeting' });
     } else {
-      Swal.fire('Failed!', 'Could not save meeting minutes.', 'error');
+      Swal.fire('Failed!', 'Could not update meeting minutes.', 'error');
     }
   } catch (error) {
-    Swal.fire('Error!', 'Failed to save meeting minutes.', 'error');
+    Swal.fire('Error!', 'Failed to update meeting minutes.', 'error');
   }
 };
 
 // Fetch Data on Mounted
-onMounted(fetchData);
+onMounted(() => {
+  fetchData();
+  fetchMeetingMinutes();
+});
 </script>
 
 <template>
   <div class="container mx-auto max-w-7xl p-6 bg-white rounded-lg shadow-md mt-10">
     <div class="flex justify-between items-center mb-6">
-      <h5 class="text-xl font-semibold">Create Meeting Minutes</h5>
-      <button @click="router.push({ name: 'index-meeting' })"
-        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium">
-        Back to Meeting List
-      </button>
+      <h5 class="text-xl font-semibold">Edit Meeting Minutes</h5>
+      <div>
+          <button @click="$router.push({ name: 'view-meeting-minutes', params: { id: id } })"
+                  class="bg-green-500 hover:bg-green-600 text-white p-2 m-2 rounded">Meeting Minutes View</button>
+        <button @click="$router.push({ name: 'index-meeting' })"
+          class="bg-blue-500 text-white font-semibold py-2 px-2 rounded-md">Back Meeting List
+        </button>
+      </div>
     </div>
 
     <form @submit.prevent="submitForm">
       <div class="mb-4">
+        <input v-model="meeting_id" type="hidden" class="w-full p-2 border border-gray-300 rounded-md" />
+
         <label class="block text-sm font-medium text-gray-700">Minutes</label>
         <textarea v-model="minutes" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
       </div>
@@ -211,10 +243,12 @@ onMounted(fetchData);
         <label class="block text-sm font-medium text-gray-700">Follow Up Tasks</label>
         <textarea v-model="follow_up_tasks" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
       </div>
+
       <div class="mb-4">
         <label class="block text-sm font-medium text-gray-700">Action Items</label>
         <textarea v-model="action_items" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
       </div>
+
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Start Time</label>
@@ -225,12 +259,13 @@ onMounted(fetchData);
           <input v-model="end_time" type="time" class="w-full p-2 border border-gray-300 rounded-md" />
         </div>
       </div>
+
       <div class="grid grid-cols-2 gap-4 mb-4">
-        <div>
+        <!-- <div>
           <label class="block text-sm font-medium text-gray-700">File Attachments</label>
           <input @change="handleDocument" type="file" class="w-full p-2 border border-gray-300 rounded-md"
             accept=".pdf,.doc,.docx,.xlsx" />
-        </div>
+        </div> -->
         <div>
           <label class="block text-sm font-medium text-gray-700">Tags</label>
           <input v-model="tags" type="text" class="w-full p-2 border border-gray-300 rounded-md" />
@@ -250,28 +285,25 @@ onMounted(fetchData);
           <label class="block text-sm font-medium text-gray-700">Reviewed By</label>
           <select v-model="reviewed_by" class="w-full p-2 border border-gray-300 rounded-md">
             <option value="">Select Reviewed By</option>
-            <option v-for="orgMember in orgMemberList" :key="orgMember.user_id" :value="orgMember.user_id">{{
-              orgMember.user_name }}</option>
+            <option v-for="orgMember in orgMemberList" :key="orgMember.id" :value="orgMember.id">{{ orgMember.name }}
+            </option>
           </select>
         </div>
-
         <div>
           <label class="block text-sm font-medium text-gray-700">Prepared By</label>
           <select v-model="prepared_by" class="w-full p-2 border border-gray-300 rounded-md">
             <option value="">Select Prepared By</option>
-            <option v-for="orgMember in orgMemberList" :key="orgMember.user_id" :value="orgMember.user_id">{{
-              orgMember.user_name }}</option>
+            <option v-for="orgMember in orgMemberList" :key="orgMember.id" :value="orgMember.id">{{ orgMember.name }}
+            </option>
           </select>
         </div>
-
         <div>
           <label class="block text-sm font-medium text-gray-700">Privacy Setup</label>
-          <select v-model="privacy_setup_id" class="w-full p-2 border border-gray-300 rounded-md" required>
+          <select v-model="privacy_setup_id" class="w-full p-2 border border-gray-300 rounded-md">
             <option value="">Select Privacy Setup</option>
             <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{ privacy.name }}</option>
           </select>
         </div>
-
         <div>
           <label class="block text-sm font-medium text-gray-700">Publish Status</label>
           <select v-model="is_publish" class="w-full p-2 border border-gray-300 rounded-md">
@@ -280,7 +312,6 @@ onMounted(fetchData);
             <option value="1">Yes</option>
           </select>
         </div>
-
         <div>
           <label class="block text-sm font-medium text-gray-700">Approval Status</label>
           <select v-model="approval_status" class="w-full p-2 border border-gray-300 rounded-md">
@@ -298,7 +329,6 @@ onMounted(fetchData);
           </select>
         </div>
       </div>
-
 
       <!-- Images Upload -->
       <div class="mb-4">
@@ -342,9 +372,10 @@ onMounted(fetchData);
         </button>
       </div>
 
+
       <div class="flex justify-end">
         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium">
-          Add Meeting Minutes
+          Update Meeting Minutes
         </button>
       </div>
 

@@ -192,7 +192,7 @@ onMounted(() => {
                     <div class="col-span-4 mb-2">
                         <label for="attendance_type_id" class="block text-gray-700 font-semibold mb-2">Type Name</label>
                         <select v-model="attendance_type_id" id="attendance_type_id"
-                            class="w-full border border-gray-300 rounded-md p-2" required>
+                            class="w-full border border-gray-300 rounded-md p-2">
                             <option value="">Select Attendance Type</option>
                             <option v-for="attendanceType in attendanceTypeList" :key="attendanceType.id"
                                 :value="attendanceType.id">
@@ -233,9 +233,8 @@ onMounted(() => {
                             class="bg-yellow-600 text-white rounded-md py-2 px-4 mx-4 hover:bg-yellow-700">
                             Reset
                         </button>
-                        <button @click="router.push({ name: 'index-event' })"
-                            class="bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700">
-                            Back to event List
+                        <button  type="button" @click="$router.push({ name: 'index-event' })"
+                            class="bg-blue-500 text-white font-semibold py-2 px-2 rounded-md">Back Event List
                         </button>
                     </div>
                 </div>

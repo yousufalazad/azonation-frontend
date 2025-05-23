@@ -28,14 +28,18 @@ onMounted(() => {
 });
 </script>
 <template>
-  <div class="container mx-auto max-w-7xl w-10/12 p-6 bg-white rounded-lg shadow-md mt-10">
-    <div class="flex justify-between items-center mb-6">
+    <div class="container mx-auto max-w-7xl w-10/12 p-6 bg-white rounded-lg shadow-md mt-10">
+        <div class="flex justify-between items-center mb-6">
             <h5 class="text-xl font-semibold">View Event</h5>
-            <button @click="$router.push({ name: 'index-event' })"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
-                Back to Event List
-            </button>
+            <div>
+                <button @click="$router.push({ name: 'edit-event', params: { id: record.id } })"
+                    class="bg-yellow-500 hover:bg-yellow-600 text-white p-2 m-2 rounded">Event Edit </button>
 
+                <button @click="$router.push({ name: 'index-event' })"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    Back to Event List
+                </button>
+            </div>
         </div>
 
         <!-- Event Details Table -->
@@ -83,22 +87,22 @@ onMounted(() => {
                         <td class="p-2">{{ record.venue_name }}</td>
                     </tr>
                     <tr>
-                        <td class="p-2 text-left font-semibold w-36" >Venue Address</td>
+                        <td class="p-2 text-left font-semibold w-36">Venue Address</td>
                         <td class="p-2">:</td>
                         <td class="p-2">{{ record.venue_address }}</td>
                     </tr>
                     <tr>
-                        <td class="p-2 text-left font-semibold w-36" >Requirements</td>
+                        <td class="p-2 text-left font-semibold w-36">Requirements</td>
                         <td class="p-2">:</td>
                         <td class="p-2">{{ record.requirements }}</td>
                     </tr>
                     <tr>
-                        <td class="p-2 text-left font-semibold w-36" >Note</td>
+                        <td class="p-2 text-left font-semibold w-36">Note</td>
                         <td class="p-2">:</td>
                         <td class="p-2">{{ record.note }}</td>
                     </tr>
                     <tr>
-                        <td class="p-2 text-left font-semibold w-36" >Status</td>
+                        <td class="p-2 text-left font-semibold w-36">Status</td>
                         <td class="p-2">:</td>
                         <td class="p-2">
                             <span :class="record.status === 0 ? 'text-green-500' : 'text-red-500'">
@@ -107,7 +111,7 @@ onMounted(() => {
                         </td>
                     </tr>
                     <tr>
-                        <td class="p-2 text-left font-semibold w-36" >Conduct Type</td>
+                        <td class="p-2 text-left font-semibold w-36">Conduct Type</td>
                         <td class="p-2">:</td>
                         <td class="p-2">
                             <span :class="record.conduct_type === 1 ? 'text-blue-500' : 'text-yellow-500'">

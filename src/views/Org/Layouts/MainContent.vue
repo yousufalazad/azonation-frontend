@@ -1,88 +1,55 @@
-<template>
-    <div class="flex min-h-screen bg-gray-100">
-        <!-- Sidebar -->
-        <aside
-            ref="sidebar"
-            :class="isSidebarExpanded ? 'w-64' : 'w-20'"
-            class="bg-white shadow-md transition-all duration-200 ease-in-out h-screen overflow-hidden"
-            @wheel="showScrollbar"
-        >
-            <left-sidebar />
-        </aside>
-
-        <!-- Main Content -->
-        <main class="flex-1 flex flex-col overflow-y-auto h-screen">
-            <div class="py-6 flex-1 overflow-y-auto">
-                <div class="mx-auto px-4 sm:px-6 lg:px-8 mx-5 h-full">
-                    <router-view />
-                </div>
-            </div>
-        </main>
-    </div>
-</template>
-
 <script setup>
-import { ref } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import LeftSidebar from './LeftSidebar.vue';
+const props = defineProps({ isMobileMenuOpen: Boolean, isSidebarExpanded: Boolean });
+const emit = defineEmits(['close-mobile-menu']);
 
-const isSidebarExpanded = ref(true);
-const openSections = ref([]);
-const sidebar = ref(null); // Reference for the sidebar
-
-const toggleSidebar = () => {
-    isSidebarExpanded.value = !isSidebarExpanded.value;
+const closeOnEscape = (e) => {
+  if (e.key === 'Escape') emit('close-mobile-menu');
 };
 
-const toggleSection = (section) => {
-    if (openSections.value.includes(section)) {
-        openSections.value = openSections.value.filter(s => s !== section);
-    } else {
-        openSections.value.push(section);
-    }
-};
-
-// Function to show the scrollbar when user starts scrolling
-const showScrollbar = () => {
-    const sidebarElement = sidebar.value;
-    if (sidebarElement) {
-        sidebarElement.style.overflowY = 'auto'; // Show the scrollbar
-        // Optionally, hide the scrollbar after 2 seconds if no scroll activity
-        setTimeout(() => {
-            sidebarElement.style.overflowY = 'hidden'; // Hide the scrollbar after delay
-        }, 2000);
-    }
-};
+onMounted(() => document.addEventListener('keydown', closeOnEscape));
+onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
 </script>
 
+<template>
+  <div class="flex min-h-screen bg-gray-100 relative">
+    <!-- Backdrop -->
+    <div
+      v-if="props.isMobileMenuOpen"
+      @click="emit('close-mobile-menu')"
+      class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+    ></div>
+
+    <!-- Sidebar -->
+    <aside
+      :class="[
+        'h-screen bg-white shadow-md overflow-y-auto transition-all duration-300 ease-in-out z-40',
+        props.isMobileMenuOpen ? 'fixed top-0 left-0 w-64' : 'hidden',
+        'lg:block', props.isSidebarExpanded ? 'lg:w-64' : 'lg:w-20'
+      ]"
+    >
+      <LeftSidebar :isSidebarExpanded="props.isSidebarExpanded" />
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 flex flex-col overflow-y-auto h-screen">
+      <div class="flex-1 overflow-y-auto py-6 px-4 sm:px-6 lg:px-8 pb-28">
+        <router-view />
+      </div>
+    </main>
+  </div>
+</template>
+
 <style scoped>
-/* Smooth transition for sidebar */
-aside {
-    transition: width 0.2s ease-in-out;
-}
-
-/* Initially hide the scrollbar */
 aside::-webkit-scrollbar {
-    display: none;
+  width: 4px;
 }
-
-/* Ensure content is scrollable when the scrollbar is shown */
-aside {
-    overflow-y: hidden;
-}
-
-/* Style for the thinner scrollbar */
-aside::-webkit-scrollbar {
-    width: 4px; /* Makes the scrollbar width thinner */
-}
-
-/* Scrollbar thumb styling */
 aside::-webkit-scrollbar-thumb {
-    background-color: darkgray;
-    border-radius: 10px;
+  background-color: darkgray;
+  border-radius: 10px;
 }
-
-/* Scrollbar track styling */
 aside::-webkit-scrollbar-track {
-    background: lightgray;
+  background: lightgray;
 }
 </style>

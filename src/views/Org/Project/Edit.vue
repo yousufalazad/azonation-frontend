@@ -159,10 +159,16 @@ const submitForm = async () => {
     <!-- Header -->
     <div class="flex justify-between items-center">
       <h2 class="text-2xl font-bold text-gray-800">Edit Project</h2>
-      <button @click="$router.push({ name: 'index-project' })"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-lg shadow focus:ring-2 focus:ring-blue-300 focus:outline-none">
-        Back to Project List
-      </button>
+      <div>
+        <button @click="$router.push({ name: 'view-project', params: { id: projectId } })"
+          class="bg-green-500 hover:bg-green-600 text-white p-2 m-2 rounded">Project View </button>
+
+        <button @click="$router.push({ name: 'index-project' })"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
+          Back to Project List
+        </button>
+      </div>
+      
     </div>
 
     <!-- Form -->
