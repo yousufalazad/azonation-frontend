@@ -12,7 +12,7 @@ const searchQuery = ref('');
 const searchResults = ref([]);
 const selectedIndividual = ref(null);
 const orgTypeUserId = auth.user.id; // Assuming the org ID is stored in the logged-in user
-const baseURL = 'http://localhost:8000';
+const baseURL = auth.apiBase;
 
 const searchIndividuals = async () => {
   try {

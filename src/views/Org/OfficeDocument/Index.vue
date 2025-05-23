@@ -15,7 +15,8 @@ const privacySetupId = ref(1); // Default to "Only Me"
 const isEditMode = ref(false); // Toggle between add and edit modes
 const selectedDocumentId = ref(null); // Store the ID of the document to edit
 const documentList = ref([]); // Data list for the table
-const baseURL = 'http://localhost:8000/storage/'; // Adjust baseURL as per your setup
+// const baseURL = 'http://localhost:8000/storage/'; // Adjust baseURL as per your setup
+const baseURL = auth.apiBase; // Use the API base URL from auth store
 
 // Fetch list of records
 const getDocuments = async () => {

@@ -3,8 +3,9 @@ import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
 // const baseURL = 'http://localhost:8000';
-
 const auth = authStore;
+const baseURL = auth.apiBase; // Use the base URL from the auth store
+
 const form = ref({});
 const isModalOpen = ref(false);
 const editMode = ref(false);

@@ -4,7 +4,7 @@
   
   const auth = authStore;
   const userId = auth.user.id;
-  const baseURL = 'http://localhost:8000';
+  const baseURL = auth.apiBase;
   const name = computed(() => auth.user?.name);
   const userType = computed(() => auth.user?.type);
   const userEmail = computed(() => auth.user?.email);

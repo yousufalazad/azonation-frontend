@@ -27,7 +27,7 @@ const userId = auth.user.id;
 const name = auth.user.name;
 const email = auth.user.email;
 const username = auth.user.username;
-const baseURL = 'http://localhost:8000';
+const baseURL = auth.apiBase;
 
 // logo
 const logoPath = ref('');

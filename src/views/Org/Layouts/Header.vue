@@ -7,7 +7,7 @@ import Notification from './Notification.vue';
 const emit = defineEmits(['toggle-mobile-sidebar', 'toggle-sidebar']);
 const auth = authStore;
 const name = computed(() => auth.user?.name || 'Azonation');
-const baseURL = 'http://localhost:8000';
+const baseURL = auth.apiBase;
 
 const logoPath = ref('');
 const userId = auth.user.id;

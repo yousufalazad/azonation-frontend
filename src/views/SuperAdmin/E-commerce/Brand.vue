@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
-// const baseURL = 'http://localhost:8000';
+// const baseURL = auth.apiBase;
 
 const auth = authStore;
 const form = ref({});
