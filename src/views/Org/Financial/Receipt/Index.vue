@@ -28,11 +28,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr
-          v-for="(receipt, index) in receipts"
-          :key="receipt.id"
-          class="hover:bg-gray-50 transition"
-        >
+        <tr v-for="(receipt, index) in receipts" :key="receipt.id" class="hover:bg-gray-50 transition">
           <td class="py-2 px-4 border">{{ index + 1 }}</td>
           <td class="py-2 px-4 border">{{ receipt.receipt_code }}</td>
           <td class="py-2 px-4 border">{{ receipt.invoice_id }}</td>
@@ -46,10 +42,7 @@
             </span>
           </td>
           <td class="py-2 px-4 border">
-            <button
-              @click="openModal(receipt)"
-              class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
-            >
+            <button @click="openModal(receipt)" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
               View
             </button>
           </td>
@@ -59,93 +52,92 @@
   </div>
 
   <!-- Receipt Modal -->
-<div
-  v-if="showModal"
-  class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
->
-  <div class="bg-white rounded-xl shadow-lg p-6 max-w-2xl w-full relative font-mono print:font-sans">
-    <!-- Close Button -->
-    <button
-      @click="closeModal"
-      class="absolute top-3 right-3 text-gray-600 hover:text-red-500 text-xl font-bold print:hidden"
-    >
-      &times;
-    </button>
-
-    <!-- Receipt Container with dotted border -->
-    <div class="border border-dotted border-gray-400 p-6 rounded-md">
-      <!-- Header -->
-      <div class="text-center mb-4">
-        <h2 class="text-2xl font-bold text-gray-800 uppercase tracking-wide">
-          Payment Receipt
-        </h2>
-        <p class="text-sm text-gray-500 mt-1">
-          Receipt Code:
-          <span class="font-semibold">{{ selectedReceipt.receipt_code }}</span>
-        </p>
-      </div>
-
-      <!-- Dashed Separator -->
-      <hr class="border-t border-dashed border-gray-400 my-4" />
-
-      <!-- Info Table -->
-      <div class="grid grid-cols-2 gap-y-3 gap-x-8 text-sm text-gray-800">
-        <div>
-          <span class="font-semibold">Invoice ID:</span>
-          {{ selectedReceipt.invoice_id }}
-        </div>
-        <div>
-          <span class="font-semibold">Payment Date:</span>
-          {{ formatDate(selectedReceipt.payment_date) }}
-        </div>
-        <div>
-          <span class="font-semibold">Amount Received:</span>
-          {{ selectedReceipt.amount_received }} {{ selectedReceipt.currency_code }}
-        </div>
-        <div>
-          <span class="font-semibold">Payment Method:</span>
-          {{ selectedReceipt.payment_method }}
-        </div>
-        <div>
-          <span class="font-semibold">Transaction Reference:</span>
-          {{ selectedReceipt.transaction_reference || 'N/A' }}
-        </div>
-        <div>
-          <span class="font-semibold">Status:</span>
-          <span :class="statusClass(selectedReceipt.status)">
-            {{ selectedReceipt.status }}
-          </span>
-        </div>
-        <div class="col-span-2">
-          <span class="font-semibold">Note:</span>
-          {{ selectedReceipt.note || 'N/A' }}
-        </div>
-        <div class="col-span-2">
-          <span class="font-semibold">Admin Note:</span>
-          {{ selectedReceipt.admin_note || 'N/A' }}
-        </div>
-      </div>
-
-      <!-- Dashed Separator -->
-      <hr class="border-t border-dashed border-gray-400 my-4" />
-
-      <!-- Footer -->
-      <div class="text-right text-xs text-gray-500 mt-4">
-        Printed on: {{ formatDate(new Date()) }}
-      </div>
-    </div>
-
-    <!-- Download PDF -->
-    <div class="mt-6 flex justify-end print:hidden">
-      <button
-        @click="downloadPDF"
-        class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-      >
-        Download PDF
+  <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-xl shadow-lg p-6 max-w-2xl w-full relative font-mono print:font-sans">
+      <!-- Close Button -->
+      <button @click="closeModal"
+        class="absolute top-3 right-3 text-gray-600 hover:text-red-500 text-xl font-bold print:hidden">
+        &times;
       </button>
+
+      <!-- Receipt Container with dotted border -->
+      <div class="border border-dotted border-gray-400 p-6 rounded-md">
+        <!-- Header -->
+        <div class="text-center mb-4">
+          <h2 class="text-2xl font-bold text-gray-800 uppercase tracking-wide">
+            Payment Receipt
+          </h2>
+          <p class="text-sm text-gray-500 mt-1">
+            Receipt Code:
+            <span class="font-semibold">{{ selectedReceipt.receipt_code }}</span>
+          </p>
+        </div>
+
+        <!-- Dashed Separator -->
+        <hr class="border-t border-dashed border-gray-400 my-4" />
+
+        <!-- Info Table -->
+        <div class="grid grid-cols-2 gap-y-3 gap-x-8 text-sm text-gray-800">
+          <div>
+            <span class="font-semibold">Invoice ID:</span>
+            {{ selectedReceipt.invoice_id }}
+          </div>
+          <div>
+            <span class="font-semibold">Payment Date:</span>
+            {{ formatDate(selectedReceipt.payment_date) }}
+          </div>
+          <div>
+            <span class="font-semibold">Amount Received:</span>
+            {{ selectedReceipt.amount_received }} {{ selectedReceipt.currency_code }}
+          </div>
+          <div>
+            <span class="font-semibold">Payment Method:</span>
+            {{ selectedReceipt.payment_method }}
+          </div>
+          <div>
+            <span class="font-semibold">Transaction Reference:</span>
+            {{ selectedReceipt.transaction_reference || 'N/A' }}
+          </div>
+          <div>
+            <span class="font-semibold">Status:</span>
+            <span :class="statusClass(selectedReceipt.status)">
+              {{ selectedReceipt.status }}
+            </span>
+          </div>
+          <div class="col-span-2">
+            <span class="font-semibold">Note:</span>
+            {{ selectedReceipt.note || 'N/A' }}
+          </div>
+          <div class="col-span-2">
+            <span class="font-semibold">Admin Note:</span>
+            {{ selectedReceipt.admin_note || 'N/A' }}
+          </div>
+        </div>
+
+        <!-- Dashed Separator -->
+        <hr class="border-t border-dashed border-gray-400 my-4" />
+
+        <!-- Footer -->
+        <div class="text-right text-xs text-gray-500 mt-4">
+          Printed on: {{ formatDate(new Date()) }}
+        </div>
+      </div>
+
+      <!-- Download PDF -->
+      <!-- Footer Buttons -->
+      <div class="mt-6 flex justify-between print:hidden">
+        <!-- Download PDF Button -->
+        <button @click="downloadPDF" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+          Download PDF
+        </button>
+
+        <!-- Close Button -->
+        <button @click="closeModal" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">
+          Close
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
 </template>
 
