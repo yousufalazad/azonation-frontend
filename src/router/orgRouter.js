@@ -65,6 +65,7 @@ import MeetingGuestAttendance from "@/views/Org/Meeting/MeetingGuestAttendances.
 import OfficeDocument from "../views/Org/OfficeDocument/Index.vue";
 import CreateDocument from "../views/Org/OfficeDocument/Create.vue";
 import EditDocument from "../views/Org/OfficeDocument/Edit.vue";
+import ViewDocument from "../views/Org/OfficeDocument/View.vue";
 
 //Project and Project Summary
 import IndexProject from "../views/Org/Project/Index.vue";
@@ -423,6 +424,12 @@ const orgRoutes = [
         path: 'document/edit/:id',
         name: 'edit-document',
         component: EditDocument,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'document/view/:id',
+        name: 'view-document',
+        component: ViewDocument,
         meta: { requiresAuth: true },
       },
       {

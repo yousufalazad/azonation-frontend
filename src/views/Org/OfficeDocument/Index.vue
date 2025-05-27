@@ -1,4 +1,4 @@
-<!-- Office document -->
+<!-- Office document Index-->
 <script setup>
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
@@ -15,8 +15,21 @@ const privacySetupId = ref(1); // Default to "Only Me"
 const isEditMode = ref(false); // Toggle between add and edit modes
 const selectedDocumentId = ref(null); // Store the ID of the document to edit
 const documentList = ref([]); // Data list for the table
-// const baseURL = 'http://localhost:8000/storage/'; // Adjust baseURL as per your setup
-const baseURL = auth.apiBase; // Use the API base URL from auth store
+
+const privacySetups = ref([]);
+const fetchPrivacySetups = async () => {
+  try {    
+    const response = await auth.fetchProtectedApi(`/api/privacy-setups`, {}, 'GET');
+    if (response.status) {
+      privacySetups.value = response.data;
+    } else {
+      Swal.fire('Error!', 'Failed to fetch privacySetups.', 'error');
+    }
+  } catch (error) {
+    console.error('Error fetching privacySetups:', error);
+    Swal.fire('Error!', 'An error occurred. Please try again.', 'error');
+  }
+};
 
 // Fetch list of records
 const getDocuments = async () => {
@@ -30,132 +43,6 @@ const getDocuments = async () => {
     } catch (error) {
         console.error('Error fetching records:', error);
         documentList.value = [];
-    }
-};
-
-// Reset form fields
-const resetForm = () => {
-    title.value = '';
-    images.value = [];
-    document.value = null;
-    description.value = ''; // Reset description text
-    privacySetupId.value = 1; // Default to "Only Me"
-    isEditMode.value = false;
-    selectedDocumentId.value = null;
-};
-
-// Handle document file change
-const handleDocument = (event) => {
-    document.value = event.target.files[0]; // Store the uploaded document
-};
-
-// Handle multiple image file change and show preview
-const handleImages = (event) => {
-    const uploadedFiles = Array.from(event.target.files);
-    uploadedFiles.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            images.value.push({
-                file,
-                preview: e.target.result
-            });
-        };
-        reader.readAsDataURL(file);
-    });
-};
-
-// Remove image from the list
-const removeImage = (index) => {
-    images.value.splice(index, 1);
-};
-
-// Add or update a document
-const submitForm = async () => {
-    const formData = new FormData();
-    formData.append('user_id', userId);
-    formData.append('title', title.value);
-    formData.append('description', description.value);
-    formData.append('status', privacySetupId.value);
-
-    if (document.value) {
-        formData.append('document', document.value); // Handle document upload
-    }
-    if (images.value.length) {
-        images.value.forEach((img, index) => {
-            formData.append(`images[${index}]`, img.file); // Handle multiple image upload
-        });
-    }
-
-    // Add _method='PUT' only if editing
-    if (isEditMode.value) {
-        formData.append('_method', 'PUT');
-    }
-
-    try {
-        let apiUrl = '/api/office-documents';
-
-        if (isEditMode.value && selectedDocumentId.value) {
-            apiUrl = `/api/office-documents/${selectedDocumentId.value}`;
-        }
-
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this document?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, save it!',
-            cancelButtonText: 'No, cancel!'
-        });
-
-        if (result.isConfirmed) {
-            const response = await auth.uploadProtectedApi(apiUrl, formData, 'POST', {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
-
-            if (response.status) {
-                await Swal.fire('Success!', `Document ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
-                getDocuments(); // Refresh the document list
-                resetForm(); // Reset the form fields
-            } else {
-                Swal.fire('Failed!', 'Failed to save document.', 'error');
-            }
-        }
-    } catch (error) {
-        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} document:`, error);
-        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} document.`, 'error');
-    }
-};
-
-// Edit document
-const editRecord = (document) => {
-    title.value = document.title;
-    description.value = document.description; // Load description text
-    privacySetupId.value = document.status;
-    selectedDocumentId.value = document.id;
-    isEditMode.value = true; // Switch to edit mode
-};
-
-// View PDF document
-const viewDocument = (document) => {
-    if (document.document) {
-        window.open(`${baseURL}${document.document}`, '_blank'); // Open PDF in a new tab
-    } else {
-        Swal.fire('No Document', 'This document does not have a document attached.', 'info');
-    }
-};
-
-// View Images
-const viewImages = (document) => {
-    if (document.images && document.images.length) {
-        // Open modal to view multiple images
-        Swal.fire({
-            title: 'Images',
-            html: document.images.map((img) => `<img src="${baseURL}${img.image}" style="width: 100%; max-width: 300px; margin: 5px;">`).join(''),
-            showCloseButton: true,
-            focusConfirm: false,
-        });
-    } else {
-        Swal.fire('No Images', 'This document does not have images attached.', 'info');
     }
 };
 
@@ -198,6 +85,7 @@ const sanitize = (html) => {
 // Fetch records when component is mounted
 onMounted(() => {
     getDocuments();
+    fetchPrivacySetups();
 });
 </script>
 
@@ -220,8 +108,7 @@ onMounted(() => {
               <th class="px-4 py-3 border-b border-gray-300">Title</th>
               <th class="px-4 py-3 border-b border-gray-300">Description</th>
               <th class="px-4 py-3 border-b border-gray-300">Privacy</th>
-              <th class="px-4 py-3 border-b border-gray-300 text-center">Document</th>
-              <th class="px-4 py-3 border-b border-gray-300 text-center">Images</th>
+              <th class="px-4 py-3 border-b border-gray-300">Is Active</th>
               <th class="px-4 py-3 border-b border-gray-300 text-center">Actions</th>
             </tr>
           </thead>
@@ -232,31 +119,14 @@ onMounted(() => {
               class="hover:bg-gray-50 border-b border-gray-100"
             >
               <td class="px-4 py-3">{{ document.title }}</td>
+
               <td class="px-4 py-3" v-html="sanitize(document.description)"></td>
-              <td class="px-4 py-3">
-                <span v-if="document.status === 1">Only Me</span>
-                <span v-else-if="document.status === 2">Public</span>
-                <span v-else-if="document.status === 3">Selected Users</span>
-              </td>
-              <td class="px-4 py-3 text-center">
-                <button
-                  v-if="document.documents && document.documents.length"
-                  @click="viewDocument(document)"
-                  class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md transition"
-                >
-                  View
-                </button>
-              </td>
-              <td class="px-4 py-3 text-center">
-                <button
-                  v-if="document.images && document.images.length"
-                  @click="viewImages(document)"
-                  class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md transition"
-                >
-                  View
-                </button>
-              </td>
+              <td class="px-4 py-3">{{ privacySetups.find(p => p.id === document.privacy_setup_id)?.name || 'Unknown' }}</td>
+              <td class="px-4 py-3">{{ document.is_active === 0 ? 'No' : 'Yes' }}</td>
+              
               <td class="px-4 py-3 text-center space-x-2">
+                <button @click="$router.push({ name: 'view-document', params: { id: document.id } })"
+                  class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 m-2 rounded">View</button>
                 <button
                   @click="$router.push({ name: 'edit-document', params: { id: document.id } })"
                   class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md transition"
