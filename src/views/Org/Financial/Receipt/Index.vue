@@ -21,7 +21,7 @@
           <th class="py-2 px-4 border">Invoice ID</th>
           <th class="py-2 px-4 border">Amount Received</th>
           <th class="py-2 px-4 border">Currency</th>
-          <th class="py-2 px-4 border">Payment Method</th>
+          <th class="py-2 px-4 border">Gateway Type</th>
           <th class="py-2 px-4 border">Payment Date</th>
           <th class="py-2 px-4 border">Status</th>
           <th class="py-2 px-4 border">Action</th>
@@ -34,7 +34,7 @@
           <td class="py-2 px-4 border">{{ receipt.invoice_id }}</td>
           <td class="py-2 px-4 border">{{ receipt.amount_received }}</td>
           <td class="py-2 px-4 border">{{ receipt.currency_code }}</td>
-          <td class="py-2 px-4 border">{{ receipt.payment_method }}</td>
+          <td class="py-2 px-4 border">{{ receipt.gateway_type }}</td>
           <td class="py-2 px-4 border">{{ formatDate(receipt.payment_date) }}</td>
           <td class="py-2 px-4 border">
             <span :class="statusClass(receipt.status)" class="capitalize font-medium">
@@ -91,8 +91,8 @@
             {{ selectedReceipt.amount_received }} {{ selectedReceipt.currency_code }}
           </div>
           <div>
-            <span class="font-semibold">Payment Method:</span>
-            {{ selectedReceipt.payment_method }}
+            <span class="font-semibold">Gateway type:</span>
+            {{ selectedReceipt.gateway_type }}
           </div>
           <div>
             <span class="font-semibold">Transaction Reference:</span>

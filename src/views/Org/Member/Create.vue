@@ -12,21 +12,35 @@ const searchQuery = ref('');
 const searchResults = ref([]);
 const selectedIndividual = ref(null);
 const orgTypeUserId = auth.user.id; // Assuming the org ID is stored in the logged-in user
-const baseURL = auth.apiBase;
+// const baseURL = 'http://localhost:8000';
+
 
 const searchIndividuals = async () => {
+  const currentQuery = searchQuery.value.trim();
+
+  if (!currentQuery) {
+    searchResults.value = [];
+    return;
+  }
+
   try {
-    const response = await auth.fetchProtectedApi('/api/org-members/search', { query: searchQuery.value }, 'POST');
-    if (response.status) {
+    const response = await auth.fetchProtectedApi('/api/org-members/search', { query: currentQuery }, 'POST');
+
+    // Only update if the query hasn't changed while waiting for response
+    if (searchQuery.value.trim() === currentQuery && response.status) {
       searchResults.value = response.data;
-    } else {
+    } else if (searchQuery.value.trim() === currentQuery) {
       searchResults.value = [];
     }
   } catch (error) {
     console.error("Error searching individuals:", error);
-    searchResults.value = [];
+
+    if (searchQuery.value.trim() === currentQuery) {
+      searchResults.value = [];
+    }
   }
 };
+
 
 const addMember = async (individualTypeUserId) => {
   try {
@@ -95,6 +109,7 @@ const addMember = async (individualTypeUserId) => {
         class="form-input flex-1 max-w-lg px-4 py-2 rounded-l-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
         v-model="searchQuery" placeholder="Search by name, email, mobile, username or Azon Id"
         @input="searchIndividuals" />
+
       <button class="bg-blue-500 text-white px-6 py-2 rounded-r-md hover:bg-blue-600 transition-all focus:outline-none"
         @click="searchIndividuals">
         Search
@@ -105,11 +120,14 @@ const addMember = async (individualTypeUserId) => {
     <div v-if="searchResults.length" class="bg-white shadow-lg rounded-lg p-6">
       <ul class="divide-y divide-gray-200">
         <li v-for="individualUser in searchResults" :key="individualUser.id" class="flex items-center py-4">
+
           <!-- Profile Image -->
           <!-- <img :src="`${baseURL}/storage/${individualUser.image}` || placeholderImage" alt="Profile picture"
             class="w-20 h-20 rounded-full object-cover mr-4" /> -->
 
-          <img :src="individualUser.image ? `${baseURL}/storage/${individualUser.image}` : placeholderImage"
+          <!-- <img :src="individualUser.image ? `${baseURL}/storage/${individualUser.image}` : placeholderImage"
+            alt="Profile picture" class="w-20 h-20 rounded-full object-cover mr-4" /> -->
+          <img :src="individualUser.image_url ? individualUser.image_url : placeholderImage"
             alt="Profile picture" class="w-20 h-20 rounded-full object-cover mr-4" />
 
           <!-- User Details -->
