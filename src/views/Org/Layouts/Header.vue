@@ -57,7 +57,7 @@ onBeforeUnmount(() => {
     <div class="flex items-center space-x-4">
       <button @click="emit('toggle-mobile-sidebar')" class="lg:hidden text-gray-600">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
       <button @click="emit('toggle-sidebar')" class="hidden lg:inline text-gray-600">
@@ -73,28 +73,35 @@ onBeforeUnmount(() => {
 
       <div class="relative">
         <button @click="toggleProfileDropdown" ref="profileButton" class="flex items-center">
-          <img
-            :src="logoPath ? `${baseURL}${logoPath}` : placeholderImage"
-            alt="Profile"
-            class="w-10 h-10 rounded-full object-cover"
-          />
+          <img :src="logoPath ? `${baseURL}${logoPath}` : placeholderImage" alt="Profile"
+            class="w-10 h-10 rounded-full object-cover" />
         </button>
 
         <div v-if="isProfileDropdownOpen" ref="profileMenu"
-             class="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg z-50">
+          class="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg z-50">
+
+          <div class="flex items-left space-x-2 p-4 border-b">
+            <img :src="logoPath ? `${baseURL}${logoPath}` : placeholderImage" alt="Logo"
+                class="rounded-lg max-h-[90px] max-w-[200px] w-auto h-auto"/>
+          </div>
+
           <div class="p-4 border-b">
             <div class="text-sm">
-              <p class="font-semibold text-gray-700">{{ auth.user.email }}</p>
-              <p class="text-gray-500 text-xs">Username: {{ auth.user.username }}</p>
-              <p class="text-gray-500 text-xs">Azon ID: {{ auth.user.azon_id }}</p>
+              <p class="py-1 font-semibold text-gray-700">{{ auth.user.email }}</p>
+              <p class="py-1 text-gray-500 text-xs">Username: {{ auth.user.username }}</p>
+              <p class="py-1 text-gray-500 text-xs">Azon ID: {{ auth.user.azon_id }}</p>
             </div>
           </div>
           <ul class="py-2 text-sm">
-            <li><a href="/org-dashboard/my-account/profile" class="block px-4 py-2 hover:bg-gray-100">My Account</a></li>
-            <li><a href="/org-dashboard/my-account/org-security" class="block px-4 py-2 hover:bg-gray-100">Security</a></li>
-            <li><a href="/org-dashboard/my-account/invoice-list" class="block px-4 py-2 hover:bg-gray-100">Billing</a></li>
+            <li><a href="/org-dashboard/my-account/profile" class="block px-4 py-2 hover:bg-gray-100">My Account</a>
+            </li>
+            <li><a href="/org-dashboard/my-account/org-security" class="block px-4 py-2 hover:bg-gray-100">Security</a>
+            </li>
+            <li><a href="/org-dashboard/my-account/invoice-list" class="block px-4 py-2 hover:bg-gray-100">Billing</a>
+            </li>
             <li class="border-t mt-2">
-              <button @click="auth.logout()" class="w-full text-left px-4 py-2 text-blue-600 hover:bg-gray-100 font-semibold">
+              <button @click="auth.logout()"
+                class="w-full text-left px-4 py-2 text-blue-600 hover:bg-gray-100 font-semibold">
                 Logout
               </button>
             </li>
