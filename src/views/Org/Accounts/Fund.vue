@@ -3,11 +3,11 @@ import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
 import { useRouter } from 'vue-router';
-const router = useRouter();
 
+const router = useRouter();
 const auth = authStore;
 const name = ref('');
-const status = ref('1'); // Default to 'Active' status
+const is_active = ref('1'); // Default to 'Active' is_active
 const isEditMode = ref(false);
 const selectedFundId = ref(null);
 const fundList = ref([]);
@@ -26,7 +26,7 @@ const getFunds = async () => {
 // Reset form fields
 const resetForm = () => {
     name.value = '';
-    status.value = '1';
+    is_active.value = '1';
     selectedFundId.value = null;
     isEditMode.value = false;
 };
@@ -35,7 +35,7 @@ const resetForm = () => {
 const submitForm = async () => {
     const payload = {
         name: name.value,
-        status: status.value
+        is_active: is_active.value
     };
 
     try {
@@ -76,7 +76,7 @@ const submitForm = async () => {
 // Edit fund
 const editFund = (fund) => {
     name.value = fund.name;
-    status.value = fund.status.toString();
+    is_active.value = fund.is_active.toString();
     selectedFundId.value = fund.id;
     isEditMode.value = true;
 };
@@ -128,7 +128,6 @@ const accounts = () => {
                 <h5 class="text-md font-semibold mt-2">{{ isEditMode ? 'Edit' : 'Add' }} Fund</h5>
             </div>
             <form @submit.prevent="submitForm">
-                <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> -->
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <!-- Name -->
                     <div class="col-span-4 mb-4">
@@ -136,10 +135,10 @@ const accounts = () => {
                         <input v-model="name" id="name" type="text" class="w-full border border-gray-300 rounded-md py-2 px-4" required />
                     </div>
 
-                    <!-- Status dropdown -->
+                    <!-- Is_active dropdown -->
                     <div class="col-span-2 mb-4">
-                        <label for="status" class="block text-gray-700 font-semibold mb-2">Status</label>
-                        <select v-model="status" id="status" class="w-full border border-gray-300 rounded-md py-2 px-4">
+                        <label for="is_active" class="block text-gray-700 font-semibold mb-2">Active status</label>
+                        <select v-model="is_active" id="is_active" class="w-full border border-gray-300 rounded-md py-2 px-4">
                             <option value="1">Active</option>
                             <option value="0">Inactive</option>
                         </select>
@@ -163,14 +162,14 @@ const accounts = () => {
         <!-- Fund list -->
         <section>
             <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">Fund List</h5>
+                <h5 class="text-md font-semibold mt-2">Funds</h5>
             </div>
             <table class="min-w-full table-auto border-collapse border border-gray-300 text-left">
                 <thead class="bg-gray-100">
                     <tr>
                         <th class="border px-4 py-2">SL</th>
                         <th class="py-2 px-4 border border-gray-300">Name</th>
-                        <th class="py-2 px-4 border border-gray-300">Status</th>
+                        <th class="py-2 px-4 border border-gray-300">Active status</th>
                         <th class="py-2 px-4 border border-gray-300">Actions</th>
                     </tr>
                 </thead>
@@ -178,7 +177,7 @@ const accounts = () => {
                     <tr v-for="(fund, index) in fundList" :key="fund.id">
                         <td class="py-2 px-4 border">{{ index + 1 }}</td>
                         <td class="py-2 px-4 border">{{ fund.name }}</td>
-                        <td class="py-2 px-4 border">{{ fund.status === 1 ? 'Active' : 'Inactive' }}</td>
+                        <td class="py-2 px-4 border">{{ fund.is_active === 1 ? 'Active' : 'Inactive' }}</td>
                         <td class="py-2 px-4 border flex gap-2">
                             <button @click="editFund(fund)" class="bg-yellow-400 text-white rounded-md py-1 px-2 hover:bg-yellow-500">Edit</button>
                             <!-- <button @click="deleteFund(fund.id)" class="bg-red-600 text-white rounded-md py-1 px-2 hover:bg-red-700">Delete</button> -->
