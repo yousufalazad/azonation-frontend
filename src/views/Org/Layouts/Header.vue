@@ -53,7 +53,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <header class="sticky top-0 z-50 flex items-center justify-between bg-white shadow py-3 px-4 sm:px-6 lg:px-8">
+  <header class="sticky top-0 z-50 flex items-center justify-between bg-white shadow py-3 px-4 sm:px-6 lg:px-4">
     <div class="flex items-center space-x-4">
       <button @click="emit('toggle-mobile-sidebar')" class="lg:hidden text-gray-600">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -82,7 +82,7 @@ onBeforeUnmount(() => {
 
           <div class="flex items-left space-x-2 p-4 border-b">
             <img :src="logoPath ? `${baseURL}${logoPath}` : placeholderImage" alt="Logo"
-                class="rounded-lg max-h-[90px] max-w-[200px] w-auto h-auto"/>
+              class="rounded-lg max-h-[90px] max-w-[200px] w-auto h-auto" />
           </div>
 
           <div class="p-4 border-b">
