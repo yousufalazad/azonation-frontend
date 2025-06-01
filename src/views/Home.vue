@@ -22,11 +22,20 @@
         >
           Register as Individual
         </a>
+
         <a
           href="/org-register"
           class="block w-64 text-center bg-white text-blue-700 font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-50 transition"
         >
           Register as Organisation
+        </a>
+
+        <a
+          href="https://azonation.com"
+          target="_blank"
+          class="block w-64 text-center bg-white text-blue-700 font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-50 transition"
+        >
+          Home
         </a>
       </div>
     </div>
