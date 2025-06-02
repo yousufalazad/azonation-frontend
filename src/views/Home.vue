@@ -8,7 +8,7 @@
         <!-- Azonation is an organisation management solution, designed to make organisations paperless. -->
       </p>
   
-      <!-- Buttons --> 
+      <!-- Buttons -->
       <div class="space-y-4">
         <a
           href="/login"
