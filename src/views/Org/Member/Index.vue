@@ -286,7 +286,7 @@ onMounted(() => {
               </td>
               <td class="px-4 py-4 text-sm">
                 <button @click="viewMemberDetail(member)"
-                  class="text-gray-800 hover:underline hover:text-blue-800 transition font-medium">
+                  class="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium">
                   Details
                 </button>
               </td>

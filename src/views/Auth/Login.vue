@@ -9,66 +9,47 @@ const remember_token = ref(false)
 
 </script>
 <template>
-<div class="overflow-y-auto">
-  <header class="bg-white z-50">
-    <div class="flex justify-between items-center my-5 px-4 py-3">
-      <div>
-        <img src="../../assets/Logo/Azonation.png" alt="Azonation" class="w-44">
-      </div>
-
-      <div class="hidden md:flex">
-        <ul class="flex space-x-4">
-          <li>
-            <router-link class="text-gray-600 hover:text-blue-600" to="/individual-register">Individual
-              register</router-link>
-          </li>
-          <li>
-            <router-link class="text-gray-600 hover:text-blue-600" to="/org-register">Organization
-              register</router-link>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </header>
-
-  <div class="mt-20">
-    <div class="flex justify-center p-6">
-      <div class="w-full max-w-md bg-white rounded-lg shadow-lg mt-10 p-6">
-        <h1 class="text-xl font-bold text-center text-gray-800">Sign in</h1>
-        <div class="mt-4 space-y-4">
+  <div class="overflow-y-auto">
+    <div class="mt-20 mb-10">
+      <div class="flex justify-center items-center">
+        <div class="w-full max-w-md bg-white rounded-lg border border-gray-300 mt-10 p-11">
           <div>
-            <label for="username" class="block text-sm font-medium text-gray-700">Email</label>
-            <input v-model="username" id="username" type="text"
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Email" required>
+            <img src="../../assets/Logo/Azonation.png" alt="Azonation" class="w-44 mb-12 mx-auto pb-3">
           </div>
-          <div>
-            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-            <input v-model="password" id="password" type="password"
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="••••••••" required>
-          </div>
-          <div class="flex items-center">
-            <input v-model="remember_token" id="remember_token" type="checkbox"
-              class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-            <label for="remember_token" class="ml-2 block text-sm text-gray-900">Remember me</label>
-          </div>
+          <div class="mt-4 space-y-4">
+            <div>
+              <label for="username" class="block text-sm text-gray-500">Email</label>
+              <input v-model="username" id="username" type="text"
+                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="Email" required>
+            </div>
+            <div>
+              <label for="password" class="block text-sm text-gray-500">Password</label>
+              <input v-model="password" id="password" type="password"
+                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="••••••••" required>
+            </div>
+            <div class="flex items-center">
+              <input v-model="remember_token" id="remember_token" type="checkbox"
+                class="h-3 w-3 text-blue-600 focus:ring-blue-500 rounded">
+              <label for="remember_token" class="ml-2 text-sm text-gray-500">Remember me</label>
+            </div>
 
-          <div class="text-center mt-4">
-            <button @click="auth.authenticate(username, password, remember_token)"
-              class="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-              Login
-            </button>
-          </div>
+            <div class="text-center mt-4">
+              <button @click="auth.authenticate(username, password, remember_token)"
+                class="w-full py-2 px-4 bg-blue-600 text-sm text-white rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                Log In
+              </button>
+            </div>
 
 
-          <!-- <div class="relative flex items-center justify-center mt-6">
-            <div class="w-full border-t border-gray-300"></div>
-            <span class="absolute bg-white px-2 text-gray-500">or</span>
-          </div> -->
+            <div class="relative flex items-center justify-center">
+              <div class="w-full border-t border-gray-300 my-4"></div>
+              <span class="absolute bg-white px-2 text-gray-500">or</span>
+            </div>
 
-          <!-- Sign in with Google or Apple -->
-          <!-- <div class="space-y-2">
+            <!-- Sign in with Google or Apple -->
+            <!-- <div class="space-y-2">
             <button @click="auth.loginWithGoogle"
               class="w-full py-2 px-4 bg-white border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 48 48"
@@ -98,49 +79,33 @@ const remember_token = ref(false)
             </button>
           </div> -->
 
-          <div class="text-center mt-4">
-            <p class="text-sm text-gray-600"><router-link :to="{ name: 'home' }"
-                class="text-blue-600 hover:text-blue-500">Sign up</router-link></p>
-          </div>
+            <router-link :to="{ name: 'home' }" class="text-center">
+              <p
+                class="w-full py-2 my-4 px-4 bg-white text-center text-sm text-gray-500 border border-gray-300 rounded-lg hover:bg-blue-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                Sign Up
+              </p>
+            </router-link>
 
-          <div class="text-center mt-4">
-            <p class="text-sm text-gray-600"><router-link :to="{ name: 'forgot-password' }"
-                class="text-blue-600 hover:text-blue-500">Forgot password</router-link></p>
+            <router-link :to="{ name: 'forgot-password' }" class="text-center">
+              <p
+                class="w-full py-2 my-4 px-4 bg-white text-center text-sm text-gray-500 rounded-lg hover:bg-blue-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                Forgot password?
+              </p>
+            </router-link>
+
           </div>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- <footer class="bg-white mt-14 py-4 border-gray-200">
-    <div class="text-center mt-4">
-      <p class="text-sm text-gray-600">By signing in, you agree to our
-        <router-link to="/terms" class="text-blue-600 hover:text-blue-500">Terms of Service</router-link>
-        and
-        <router-link to="/privacy" class="text-blue-600 hover:text-blue-500">Privacy Policy</router-link>.
-      </p>
+  <footer class="w-full bg-gray-50 text-gray-600 text-[11px] fixed bottom-0 left-0 z-50">
+    <div class="max-w-screen-xl mx-auto px-4 py-2 flex justify-center space-x-6">
+      <router-link to="/contact" class="hover:underline">Contact us</router-link>
+      <router-link to="/privacy" class="hover:underline">Privacy</router-link>
+      <router-link to="/legal" class="hover:underline">Legal</router-link>
+      <router-link to="/terms" class="hover:underline">Terms</router-link>
     </div>
-
-    <div class="text-center mt-4">
-      <p class="text-sm text-gray-600">Need help? <router-link to="/help"
-          class="text-blue-600 hover:text-blue-500">Contact us</router-link>
-      </p>
-    </div>
-
-    <div class="mx-auto py-4 text-center text-sm text-gray-600">
-      <p>Azonation is a product of <router-link to="/terms" class="text-gray-600 hover:text-blue-500">Azon Group
-          Ltd</router-link></p>
-      <p>© 2025 Azonation. All rights reserved.</p>
-      <p>
-        <router-link to="/terms" class="text-gray-600 hover:text-blue-500">Terms of Service</router-link>
-        and
-        <router-link to="/privacy" class="text-gray-600 hover:text-blue-500">Privacy Policy</router-link>.
-      </p>
-    </div>
-
-  </footer> -->
-  
-</div>  
+  </footer>
 </template>
 
 <style>

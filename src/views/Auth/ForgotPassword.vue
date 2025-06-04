@@ -15,14 +15,14 @@ const submitForgotPassword = async () => {
     error.value = ""
 
     // try {
-        const response = await authStore.fetchProtectedApi("/api/forgot-password", { email: email.value }, 'POST')
-        message.value = response.data.message || "Code sent to your email."
+    const response = await authStore.fetchProtectedApi("/api/forgot-password", { email: email.value }, 'POST')
+    message.value = response.data.message || "Code sent to your email."
 
-        // Save email to localStorage to use in verify page
-        localStorage.setItem('reset_email', email.value)
+    // Save email to localStorage to use in verify page
+    localStorage.setItem('reset_email', email.value)
 
-        // Navigate to Verify Code page
-        router.push('/verify-code')
+    // Navigate to Verify Code page
+    router.push('/verify-code')
     // } catch (err) {
     //     error.value = err.response?.data?.message || "An error occurred. Please try again."
     // }
@@ -36,18 +36,9 @@ const submitForgotPassword = async () => {
                 <img src="../../assets/Logo/Azonation.png" alt="Azonation" class="w-40">
             </div>
             <div class="hidden md:flex">
-                <ul class="flex space-x-6">
-                    <li>
-                        <router-link class="text-gray-600 hover:text-blue-600 font-medium" to="/individual-register">
-                            Individual Register
-                        </router-link>
-                    </li>
-                    <li>
-                        <router-link class="text-gray-600 hover:text-blue-600 font-medium" to="/org-register">
-                            Organization Register
-                        </router-link>
-                    </li>
-                </ul>
+                <router-link :to="{ name: 'login' }" class="text-gray-600 hover:text-blue-600 font-medium">
+                    Return to login
+                </router-link>
             </div>
         </div>
     </header>
@@ -57,20 +48,14 @@ const submitForgotPassword = async () => {
             <h2 class="text-2xl font-bold text-center mb-6">Forgot Password</h2>
             <form @submit.prevent="submitForgotPassword" class="space-y-5">
                 <div>
-                    <label class="block mb-1 text-sm font-semibold text-gray-700">Email Address</label>
-                    <input 
-                        type="email" 
-                        v-model="email" 
-                        required 
+                    <label class="block my-3 text-sm font-semibold text-gray-700">Email Address</label>
+                    <input type="email" v-model="email" required
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                        placeholder="Enter your email"
-                    />
+                        placeholder="Enter your email" />
                 </div>
 
-                <button 
-                    type="submit"
-                    class="w-full py-2 px-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition duration-300"
-                >
+                <button type="submit"
+                    class="w-full py-2 px-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition duration-300">
                     Send Code
                 </button>
 

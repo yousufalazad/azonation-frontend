@@ -433,7 +433,7 @@ onMounted(() => {
               <tr></tr>
             </tbody>
           </table>
-          <div class="px-6 py-4">
+          <div class="px-6 py-4 text-right">
             <router-link to="/org-dashboard/index-member">
               <button class="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium">
                 See all members →

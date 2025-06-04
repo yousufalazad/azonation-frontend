@@ -102,7 +102,7 @@ const isActive = (path) => route.path === path;
           <router-link to="/org-dashboard/recognition" class="block px-2 py-1 text-gray-600 hover:bg-gray-100 rounded">Recognition</router-link>
           <router-link to="/org-dashboard/success-story" class="block px-2 py-1 text-gray-600 hover:bg-gray-100 rounded">Success Story</router-link>
           <router-link to="/org-dashboard/history" class="block px-2 py-1 text-gray-600 hover:bg-gray-100 rounded">History</router-link>
-          <router-link to="/org-dashboard/year-plan" class="block px-2 py-1 text-gray-600 hover:bg-gray-100 rounded">Year Plan</router-link>
+          <router-link to="/org-dashboard/year-plan" class="block px-2 py-1 pb-28 text-gray-600 hover:bg-gray-100 rounded">Year Plan</router-link>
         </div>
       </transition>
     </div>
