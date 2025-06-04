@@ -2,6 +2,8 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router/router";
 import "./assets/css/tailwind.css";
+// main.js or main.ts
+import 'quill/dist/quill.snow.css';
 
 // 👇 Import all icons from lucide-vue-next
 import * as icons from "lucide-vue-next";

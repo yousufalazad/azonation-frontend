@@ -10,7 +10,6 @@ const id = route.params.id;
 
 const record = ref(null);
 
-// Fetch the record data
 const fetchRecord = async () => {
   try {
     const response = await auth.fetchProtectedApi(`/api/strategic-plans/${id}`, {}, 'GET');
@@ -49,10 +48,11 @@ onMounted(() => {
             <td class="px-2 py-2 text-left">{{ record?.title }}</td>
           </tr>
           <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Plan</td>
-            <td>:</td>
+            <td class="px-2 py-2 text-left font-semibold w-36 align-top">Plan</td>
+            <td class="align-top">:</td>
             <td class="px-2 py-2 text-left">
-              <div v-html="record?.plan" class="border p-3 rounded bg-gray-50"></div>
+              <!-- Updated rendering of plan -->
+              <div v-html="record?.plan" class="prose max-w-none bg-gray-50 p-4 rounded-md border"></div>
             </td>
           </tr>
           <tr>
@@ -67,23 +67,23 @@ onMounted(() => {
           </tr>
 
           <tr class="mb-4">
-            <td class="px-2 py-2 text-left font-semibold w-36">Images</td>
-            <td>:</td>
+            <td class="px-2 py-2 text-left font-semibold w-36 align-top">Images</td>
+            <td class="align-top">:</td>
             <td v-if="record?.images && record?.images.length">
               <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-4">
                 <img v-for="(img, index) in record?.images" :key="img.id || index" :src="img.image_url"
-                  alt="History Image" class="max-w-full rounded-lg" />
+                  alt="Plan Image" class="max-w-full rounded-lg" />
               </div>
             </td>
           </tr>
 
           <tr class="mb-4">
-            <td class="px-2 py-2 text-left font-semibold w-36">Documents</td>
-            <td>:</td>
+            <td class="px-2 py-2 text-left font-semibold w-36 align-top">Documents</td>
+            <td class="align-top">:</td>
             <td v-if="record?.documents && record?.documents.length">
               <ul class="mt-2 list-disc list-inside text-blue-600">
                 <li v-for="(doc, index) in record?.documents" :key="doc.id || index">
-                  <a :href="doc.document_url" target="_blank" class="hover:text-blue-800">
+                  <a :href="doc.document_url" target="_blank" class="hover:text-blue-800 underline">
                     {{ doc.file_name || 'Download Document' }}
                   </a>
                 </li>
@@ -98,6 +98,7 @@ onMounted(() => {
         </tbody>
       </table>
     </div>
+
     <div v-if="!record" class="text-center py-6">
       <p class="text-red-500">Failed to load the record.</p>
     </div>

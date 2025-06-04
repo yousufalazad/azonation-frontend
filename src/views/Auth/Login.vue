@@ -102,6 +102,7 @@ const remember_token = ref(false)
     <div class="max-w-screen-xl mx-auto px-4 py-2 flex justify-center space-x-6">
       <router-link to="/contact" class="hover:underline">Contact us</router-link>
       <router-link to="/privacy" class="hover:underline">Privacy</router-link>
+      <router-link to="/cookies" class="hover:underline">Cookies</router-link>
       <router-link to="/legal" class="hover:underline">Legal</router-link>
       <router-link to="/terms" class="hover:underline">Terms</router-link>
     </div>

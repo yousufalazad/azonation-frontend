@@ -23,6 +23,9 @@ const end_time = ref('');
 const status = ref(0);
 const conduct_type = ref(1);
 
+const images = ref([{ id: Date.now(), file: null }]);
+const documents = ref([{ id: Date.now(), file: null }]);
+
 // Quill editor references
 let requirementsEditor, noteEditor, descriptionEditor, shortDescriptionEditor;
 
@@ -80,7 +83,38 @@ const resetForm = () => {
     noteEditor.setText('');
     descriptionEditor.setText('');
     shortDescriptionEditor.setText('');
+
+    images.value = [{ id: Date.now(), file: null }];
+    documents.value = [{ id: Date.now(), file: null }];
 };
+
+// Handle File Attachments
+const handleDocument = (event) => {
+  file_attachments.value = event.target.files[0];
+};
+
+const handleFileChange = (event, fileList, index) => {
+  const file = event.target.files[0];
+  if (file) {
+    fileList[index].file = {
+      file,
+      preview: URL.createObjectURL(file),
+      name: file.name
+    };
+  }
+};
+
+const addMoreFiles = (fileList) => {
+  fileList.push({ id: Date.now(), file: null });
+};
+
+const removeFile = (fileList, index) => {
+  if (fileList[index].file && fileList[index].file.preview) {
+    URL.revokeObjectURL(fileList[index].file.preview); // Release memory
+  }
+  fileList.splice(index, 1);
+};
+
 
 // Submit form (create event)
 const submitForm = async () => {
@@ -89,22 +123,37 @@ const submitForm = async () => {
         return;
     }
 
-    const payload = {
-        user_id: userId,
-        title: title.value,
-        venue_name: venue_name.value,
-        venue_address: venue_address.value,
-        start_date: start_date.value,
-        end_date: end_date.value,
-        start_time: start_time.value,
-        end_time: end_time.value,
-        status: status.value,
-        conduct_type: conduct_type.value,
-        requirements: requirements.value,
-        note: note.value,
-        description: description.value,
-        short_description: short_description.value,
-    };
+    const formData = new FormData();
+
+    // Basic fields
+    formData.append('user_id', userId);
+    formData.append('title', title.value);
+    formData.append('venue_name', venue_name.value);
+    formData.append('venue_address', venue_address.value ?? '');
+    formData.append('start_date', start_date.value ?? '');
+    formData.append('end_date', end_date.value ?? '');
+    formData.append('start_time', start_time.value ?? '');
+    formData.append('end_time', end_time.value ?? '');
+    formData.append('status', status.value ?? '');
+    formData.append('conduct_type', conduct_type.value ?? '');
+    formData.append('requirements', requirements.value ?? '');
+    formData.append('note', note.value ?? '');
+    formData.append('description', description.value ?? '');
+    formData.append('short_description', short_description.value ?? '');
+
+   // Images
+  images.value.forEach((fileData, index) => {
+    if (fileData.file) {
+      formData.append(`images[${index}]`, fileData.file.file);
+    }
+  });
+
+  // Documents
+  documents.value.forEach((fileData, index) => {
+    if (fileData.file) {
+      formData.append(`documents[${index}]`, fileData.file.file);
+    }
+  });
 
     try {
         const result = await Swal.fire({
@@ -117,12 +166,16 @@ const submitForm = async () => {
         });
 
         if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi('/api/projects', payload, 'POST');
+            const response = await auth.uploadProtectedApi('/api/projects', formData, 'POST', {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
 
             if (response.status) {
                 Swal.fire('Success!', 'Project added successfully.', 'success').then(() => {
-                    resetForm(); // Reset the form after successful submission
-                    router.push({ name: 'index-project' }); // Redirect to the project list
+                    resetForm();
+                    router.push({ name: 'index-project' });
                 });
             } else {
                 Swal.fire('Failed!', 'Failed to add the project.', 'error');
@@ -237,6 +290,47 @@ const submitForm = async () => {
                         <option value="2">Online</option>
                     </select>
                 </div>
+            </div>
+            <!-- Images Upload -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
+                <div class="space-y-3">
+                <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
+                    <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept="image/*"
+                    @change="event => handleFileChange(event, images, index)" />
+
+                    <div v-if="file.file && file.file.preview" class="w-16 h-16 border rounded-md overflow-hidden">
+                    <img :src="file.file.preview" alt="Preview" class="w-full h-full object-cover" />
+                    </div>
+
+                    <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
+                    @click="removeFile(images, index)">X</button>
+                </div>
+                </div>
+                <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+                @click="() => addMoreFiles(images)">
+                Add more image
+                </button>
+            </div>
+
+            <!-- Documents Upload -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">Upload Documents</label>
+                <div class="space-y-3">
+                <div v-for="(file, index) in documents" :key="file.id" class="flex items-center gap-4">
+                    <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept=".pdf,.doc,.docx"
+                    @change="event => handleFileChange(event, documents, index)" />
+
+                    <span v-if="file.file" class="truncate w-32">{{ file.file.name }}</span>
+
+                    <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
+                    @click="removeFile(documents, index)">X</button>
+                </div>
+                </div>
+                <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+                @click="() => addMoreFiles(documents)">
+                Add more document
+                </button>
             </div>
             <!-- Actions -->
             <div class="flex justify-end gap-4">

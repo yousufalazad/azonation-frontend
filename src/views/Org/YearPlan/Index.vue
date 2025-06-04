@@ -57,7 +57,7 @@ onMounted(() => {
     <div>
         <div class="flex justify-between items-center mb-6">
             <h5 class="text-xl font-semibold">Year Plans</h5>
-            <button @click="router.push({ name: 'create-year-plan' })"
+            <button @click="$router.push({ name: 'create-year-plan' })"
                 class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700">
                 Add Year Plan
             </button>
@@ -84,10 +84,10 @@ onMounted(() => {
                         <td class="px-4 py-2 border text-center">{{ record.start_date }}</td>
                         <td class="px-4 py-2 border text-center">{{ record.end_date }}</td>
                         <td class="px-4 py-2 border flex justify-end">
-                            <button @click="router.push({ name: 'edit-year-plan', params: { id: record.id } })"
+                            <button @click="$router.push({ name: 'edit-year-plan', params: { id: record.id } })"
                                 class="bg-yellow-500 text-white px-4 py-1 mx-1 rounded hover:bg-yellow-600">Edit
                             </button>
-                            <button @click="router.push({ name: 'view-year-plan', params: { id: record.id } })"
+                            <button @click="$router.push({ name: 'view-year-plan', params: { id: record.id } })"
                                 class="bg-green-500 text-white px-4 py-1 mx-1 rounded hover:bg-green-600">View </button>
 
                             <button @click="deleteRecord(record.id)"

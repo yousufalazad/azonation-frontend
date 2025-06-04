@@ -31,7 +31,7 @@ onMounted(fetchProjectDetails);
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
       <h2 class="text-2xl font-bold text-gray-800">View Project</h2>
-     <div>
+      <div>
         <button @click="$router.push({ name: 'edit-project', params: { id: projectId } })"
           class="bg-green-500 hover:bg-green-600 text-white p-2 m-2 rounded">Project Edit </button>
 
@@ -110,18 +110,51 @@ onMounted(fetchProjectDetails);
           <td>:</td>
           <td class="py-2 px-4 border-b" v-html="project.short_description || 'N/A'"></td>
         </tr>
+        <tr>
+          <td class="px-2 py-2 text-left font-semibold w-36">Images</td>
+          <td>:</td>
+          <td class="px-2 py-2 text-left">
+            <div v-if="project.images && project.images.length">
+              <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-4">
+                <img v-for="(img, index) in project.images" :key="img.id || index" :src="img.image_url"
+                  alt="History Image" class="max-w-full rounded-lg" />
+              </div>
+            </div>
+            <div v-else>
+              <p class="text-gray-700">No images available</p>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="px-2 py-2 text-left font-semibold w-36">Documents</td>
+          <td>:</td>
+          <td class="px-2 py-2 text-left">
+            <div v-if="project.documents && project.documents.length">
+              <ul class="mt-2 list-disc list-inside text-blue-600">
+                <li v-for="(doc, index) in project.documents" :key="doc.id || index">
+                  <a :href="doc.document_url" target="_blank" class="hover:text-blue-800">
+                    {{ doc.file_name || 'Download Document' }}
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
 </template>
 <style>
-  td:first-child {
-    width: 200px;
-  }
-  td:nth-child(2) {
-    width: 10px;
-  }
-  td:nth-child(3) {
-    width: auto;
-  }
+td:first-child {
+  width: 200px;
+}
+
+td:nth-child(2) {
+  width: 10px;
+}
+
+td:nth-child(3) {
+  width: auto;
+}
 </style>

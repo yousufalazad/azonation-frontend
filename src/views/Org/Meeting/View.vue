@@ -77,7 +77,7 @@ onMounted(() => {
             <td>:</td>
             <td class="px-2 py-2 text-left">{{ record.meeting_type }}</td>
           </tr>
-          
+
           <tr>
             <td class="px-2 py-2 text-left font-semibold w-36">Meeting Mode</td>
             <td>:</td>
@@ -139,7 +139,7 @@ onMounted(() => {
             <td>:</td>
             <td class="px-2 py-2 text-left">{{ record.max_participants }}</td>
           </tr> -->
-          
+
           <tr>
             <td class="px-2 py-2 text-left font-semibold w-36">Address</td>
             <td>:</td>
@@ -155,7 +155,7 @@ onMounted(() => {
             <td>:</td>
             <td class="px-2 py-2 text-left">{{ record.agenda }}</td>
           </tr>
-          
+
           <tr>
             <td class="px-2 py-2 text-left font-semibold w-36">Reminder Time</td>
             <td>:</td>
@@ -180,6 +180,38 @@ onMounted(() => {
             <td class="px-2 py-2 text-left font-semibold w-36">Tags</td>
             <td>:</td>
             <td class="px-2 py-2 text-left">{{ record.tags }}</td>
+          </tr>
+
+          <tr>
+            <td class="px-2 py-2 text-left font-semibold w-36">Images</td>
+            <td>:</td>
+            <td class="px-2 py-2 text-left">
+              <div v-if="record.images && record.images.length">
+                <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <img v-for="(img, index) in record.images" :key="img.id || index" :src="img.image_url"
+                    alt="History Image" class="max-w-full rounded-lg" />
+                </div>
+              </div>
+              <div v-else>
+                <p class="text-gray-700">No images available</p>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="px-2 py-2 text-left font-semibold w-36">Documents</td>
+            <td>:</td>
+            <td class="px-2 py-2 text-left">
+              <div v-if="record.documents && record.documents.length">
+                <ul class="mt-2 list-disc list-inside text-blue-600">
+                  <li v-for="(doc, index) in record.documents" :key="doc.id || index">
+                    <a :href="doc.document_url" target="_blank" class="hover:text-blue-800">
+                      {{ doc.file_name || 'Download Document' }}
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
