@@ -4,7 +4,9 @@ import { UserCircleIcon, BuildingOffice2Icon, CheckIcon } from '@heroicons/vue/2
 import { authStore } from '../../store/authStore'
 const auth = authStore
 
-const name = ref('')
+const first_name = ref('')
+const last_name = ref('')
+const org_name = ref('')
 const type = ref('')
 const email = ref('')
 const password = ref('')
@@ -27,9 +29,15 @@ const fetchCountries = async () => {
 
 const passwordsMatch = computed(() => password.value === confirmPassword.value)
 
+// Form Validation
 const canSignUp = computed(() => {
+  const hasName =
+    type.value === 'individual'
+      ? first_name.value.trim() !== '' && last_name.value.trim() !== ''
+      : org_name.value.trim() !== ''
+
   return (
-    name.value.trim() !== '' &&
+    hasName &&
     type.value !== '' &&
     email.value.trim() !== '' &&
     country_id.value !== '' &&
@@ -53,36 +61,6 @@ function toggleMenu(menuType) {
 function closeAllMenus() {
   showIndividualMenu.value = false
   showOrganisationMenu.value = false
-}
-
-// function register(name, type, email, country_id, password) {
-//     auth.fetchPublicApi(
-//       "/api/register",
-//       { name, type, email, country_id, password },
-//       "POST"
-//     ).then((res) => {
-//       if (res.status) {
-//         this.errors = null;
-//         router.push({ name: "login" });
-//         Swal.fire({
-//           icon: "success",
-//           title: "Registration successful",
-//           text: "You have successfully registered.",
-//           // timer: 15000,
-//           showConfirmButton: true,
-//         });
-//       } else {
-//         this.errors = res.errors;
-//       }
-//     });
-//   },
-
-function submitForm() {
-  if (type.value === 'individual') {
-    auth.register(first_name.value, last_name.value, type.value, email.value, country_id.value, password.value)
-  } else {
-    auth.register(org_name.value, type.value, email.value, country_id.value, password.value)
-  }
 }
 
 onMounted(() => {
@@ -215,10 +193,10 @@ onMounted(() => {
   </header>
 
   <div class="flex flex-col items-center mt-28 px-3 mb-20">
-    <h1 class="text-xl font-bold text-center text-gray-700">Sign Up</h1>
+    <h1 class="text-xl font-bold text-center text-gray-500">Sign Up</h1>
 
     <div class="mb-10 text-center">
-      <h2 class="text-sm text-gray-700 my-5">Select your account type</h2>
+      <h2 class="text-sm text-gray-500 my-5">Select your account type</h2>
 
       <div class="flex flex-col md:flex-row gap-6 justify-center">
 
@@ -279,12 +257,30 @@ onMounted(() => {
     </div>
 
     <div class="w-full max-w-md bg-white rounded-lg border border-gray-300 px-6 py-6">
-      <div class="mb-4">
-        <label for="name" class="block text-sm font-medium text-gray-700">Organization name</label>
-        <input v-model="name" type="text" id="name"
+      <!-- Dynamic Name Inputs -->
+      <div v-if="type === 'individual'" class="flex gap-4 mb-4">
+        <div class="w-1/2">
+          <label for="first_name" class="block text-sm font-medium text-gray-700">First Name</label>
+          <input v-model="first_name" type="text" id="first_name"
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            placeholder="First name" />
+          <p v-if="auth.errors?.first_name" class="text-red-500 text-sm mt-2">{{ auth.errors?.first_name[0] }}</p>
+        </div>
+        <div class="w-1/2">
+          <label for="last_name" class="block text-sm font-medium text-gray-700">Last Name</label>
+          <input v-model="last_name" type="text" id="last_name"
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            placeholder="Last name" />
+          <p v-if="auth.errors?.last_name" class="text-red-500 text-sm mt-2">{{ auth.errors?.last_name[0] }}</p>
+        </div>
+      </div>
+
+      <div v-else class="mb-4">
+        <label for="org_name" class="block text-sm font-medium text-gray-700">Organisation Name</label>
+        <input v-model="org_name" type="text" id="org_name"
           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          placeholder="Organization name" />
-        <p v-if="auth.errors?.name" class="text-red-500 text-sm mt-2">{{ auth.errors?.name[0] }}</p>
+          placeholder="Organisation name" />
+        <p v-if="auth.errors?.org_name" class="text-red-500 text-sm mt-2">{{ auth.errors?.org_name[0] }}</p>
       </div>
 
       <div class="mb-4">
@@ -320,6 +316,16 @@ onMounted(() => {
         <p v-if="!passwordsMatch" class="text-red-500 text-sm mt-2">Passwords do not match</p>
       </div>
 
+      <!-- <div class="text-right pb-4">
+        <button @click="type === 'individual'
+          ? auth.register(first_name, last_name, type, email, country_id, password)
+          : auth.register(org_name, type, email, country_id, password)" :disabled="!canSignUp"
+          class="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          :class="{ 'opacity-50 cursor-not-allowed': !canSignUp }">
+          Sign Up
+        </button>
+      </div> -->
+
       <div class="text-right pb-4">
         <button @click="submitForm" :disabled="!canSignUp"
           class="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -327,6 +333,7 @@ onMounted(() => {
           Sign Up
         </button>
       </div>
+
     </div>
   </div>
 

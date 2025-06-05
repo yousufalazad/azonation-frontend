@@ -1,6 +1,5 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { UserCircleIcon, BuildingOffice2Icon, CheckIcon } from '@heroicons/vue/24/outline'
 import { authStore } from '../../store/authStore'
 const auth = authStore
 
@@ -53,36 +52,6 @@ function toggleMenu(menuType) {
 function closeAllMenus() {
   showIndividualMenu.value = false
   showOrganisationMenu.value = false
-}
-
-// function register(name, type, email, country_id, password) {
-//     auth.fetchPublicApi(
-//       "/api/register",
-//       { name, type, email, country_id, password },
-//       "POST"
-//     ).then((res) => {
-//       if (res.status) {
-//         this.errors = null;
-//         router.push({ name: "login" });
-//         Swal.fire({
-//           icon: "success",
-//           title: "Registration successful",
-//           text: "You have successfully registered.",
-//           // timer: 15000,
-//           showConfirmButton: true,
-//         });
-//       } else {
-//         this.errors = res.errors;
-//       }
-//     });
-//   },
-
-function submitForm() {
-  if (type.value === 'individual') {
-    auth.register(first_name.value, last_name.value, type.value, email.value, country_id.value, password.value)
-  } else {
-    auth.register(org_name.value, type.value, email.value, country_id.value, password.value)
-  }
 }
 
 onMounted(() => {
@@ -215,66 +184,57 @@ onMounted(() => {
   </header>
 
   <div class="flex flex-col items-center mt-28 px-3 mb-20">
-    <h1 class="text-xl font-bold text-center text-gray-700">Sign Up</h1>
+    <h1 class="text-xl font-bold text-center text-gray-500">Sign Up</h1>
 
-    <div class="mb-10 text-center">
-      <h2 class="text-sm text-gray-700 my-5">Select your account type</h2>
-
+    <div class="mb-9 text-center">
+      <h2 class="text-sm text-gray-500 my-5">Select account type</h2>
       <div class="flex flex-col md:flex-row gap-6 justify-center">
 
-        <!-- Individual Account -->
+        <!-- Individual Card -->
         <label @click="type = 'individual'"
-          class="flex items-start w-full md:w-96 border rounded-xl p-5 cursor-pointer transition hover:shadow-md"
+          class="flex items-start w-full md:w-96 border rounded-lg p-5 cursor-pointer transition hover:shadow-md"
           :class="type === 'individual' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'">
 
-          <!-- Checkbox -->
-          <div class="mt-1">
-            <div class="w-5 h-5 border rounded-sm flex items-center justify-center"
-              :class="type === 'individual' ? 'bg-blue-600 border-blue-600' : 'border-gray-400 bg-white'">
-              <CheckIcon v-if="type === 'individual'" class="w-4 h-4 text-white" />
-            </div>
-          </div>
+          <input type="radio" name="account_type" value="individual" v-model="type" class="mt-1 accent-blue-600" />
 
-          <!-- Info -->
           <div class="ml-4 flex-1 text-left">
             <div class="flex items-center gap-2 mb-2">
-              <!-- <UserCircleIcon class="w-5 h-5 text-blue-600" /> -->
+              <!-- Icon: single user -->
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M5.121 17.804A9.005 9.005 0 0112 15c1.847 0 3.553.563 4.879 1.516M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
               <span class="font-semibold text-gray-800">Individual Account</span>
             </div>
             <p class="text-sm text-gray-600">
-              A personal profile used to join in organisations.
+              A personal profile used to join organisations.
             </p>
           </div>
         </label>
 
-        <!-- Organisation Account -->
+        <!-- Organisation Card -->
         <label @click="type = 'organisation'"
-          class="flex items-start w-full md:w-96 border rounded-xl p-5 cursor-pointer transition hover:shadow-md"
+          class="flex items-start w-full md:w-96 border rounded-lg p-5 cursor-pointer transition hover:shadow-md"
           :class="type === 'organisation' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'">
 
-          <!-- Checkbox -->
-          <div class="mt-1">
-            <div class="w-5 h-5 border rounded-sm flex items-center justify-center"
-              :class="type === 'organisation' ? 'bg-blue-600 border-blue-600' : 'border-gray-400 bg-white'">
-              <CheckIcon v-if="type === 'organisation'" class="w-4 h-4 text-white" />
-            </div>
-          </div>
+          <input type="radio" name="account_type" value="organisation" v-model="type" class="mt-1 accent-blue-600" />
 
-          <!-- Info -->
           <div class="ml-4 flex-1 text-left">
             <div class="flex items-center gap-2 mb-2">
-              <!-- <BuildingOffice2Icon class="w-5 h-5 text-blue-600" /> -->
+              <!-- Icon: multiple users -->
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M17 20h5v-2a4 4 0 00-5-3.87M9 20H4v-2a4 4 0 015-3.87m4 0a4 4 0 014 4v2h-4v-2a4 4 0 00-4-4zm0 0a4 4 0 00-4-4 4 4 0 014-4 4 4 0 014 4 4 4 0 01-4 4z" />
+              </svg>
               <span class="font-semibold text-gray-800">Organisation Account</span>
             </div>
             <p class="text-sm text-gray-600">
-              Used to register and manage an organisation. Admin can invite or assign individual account as member of
-              the organisation.
+              Used to register and manage an organisation. Org admin will add individual/personal account as an org member.
             </p>
           </div>
         </label>
 
       </div>
-
       <p v-if="auth.errors?.type" class="text-red-500 text-sm mt-4">{{ auth.errors?.type[0] }}</p>
     </div>
 
@@ -321,7 +281,7 @@ onMounted(() => {
       </div>
 
       <div class="text-right pb-4">
-        <button @click="submitForm" :disabled="!canSignUp"
+        <button @click="auth.register(name, type, email, country_id, password)" :disabled="!canSignUp"
           class="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           :class="{ 'opacity-50 cursor-not-allowed': !canSignUp }">
           Sign Up
