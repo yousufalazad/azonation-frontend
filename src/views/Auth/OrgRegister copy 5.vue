@@ -357,7 +357,7 @@ onMounted(() => {
 
           <div v-if="type === 'organisation'" class="mb-4">
             <label class="block text-sm font-medium text-gray-700">Organisation Name</label>
-            <input v-model="org_name" type="text" placeholder="Xyz Association"
+            <input v-model="org_name" type="text" placeholder="Company Ltd"
               class="mt-1 w-full border px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" />
             <p v-if="auth.errors?.org_name" class="text-red-500 text-sm mt-1">{{ auth.errors?.org_name[0] }}</p>
           </div>
