@@ -81,27 +81,30 @@ const authStore = reactive({
     }
   },
 
-  register(name, type, email, country_id, password) {
-    this.fetchPublicApi(
-      "/api/register",
-      { name, type, email, country_id, password },
-      "POST"
-    ).then((res) => {
-      if (res.status) {
-        this.errors = null;
-        router.push({ name: "login" });
-        Swal.fire({
-          icon: "success",
-          title: "Registration successful",
-          text: "You have successfully registered.",
-          // timer: 15000,
-          showConfirmButton: true,
-        });
-      } else {
-        this.errors = res.errors;
-      }
-    });
-  },
+  async register(payload) {
+  try {
+    const res = await this.fetchPublicApi("/api/register", payload, "POST");
+
+    if (res.status) {
+      this.errors = null;
+      Swal.fire({
+        icon: "success",
+        title: "Registration successful",
+        text: "You have successfully registered.",
+        showConfirmButton: true,
+      });
+      router.push({ name: "login" });
+    } else {
+      this.errors = res.errors;
+    }
+
+  } catch (error) {
+    console.error("Registration error:", error);
+    this.errors = error.response?.data?.errors || {
+      general: ["Something went wrong. Please try again."],
+    };
+  }
+},
 
   async authenticate(username, password, remember_token) {
     try {

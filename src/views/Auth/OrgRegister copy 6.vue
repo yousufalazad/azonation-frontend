@@ -4,14 +4,14 @@ import { authStore } from "../../store/authStore";
 
 const auth = authStore;
 
-const first_name = ref('')
-const last_name = ref('')
-const org_name = ref('')
-const type = ref('');
-const email = ref('')
-const password = ref('')
-const confirmPassword = ref('')
-const country_id = ref('')
+const first_name = ref("");
+const last_name = ref("");
+const org_name = ref("");
+const type = ref("");
+const email = ref("");
+const password = ref("");
+const confirmPassword = ref("");
+const country_id = ref("");
 const countryNames = ref([]);
 
 // Mega menu state
@@ -67,17 +67,24 @@ function closeAllMenus() {
 
 // Handle form submission
 function submitForm() {
-  const payload = {
-    first_name: type.value === "individual" ? first_name.value : null,
-    last_name: type.value === "individual" ? last_name.value : null,
-    org_name: type.value === "organisation" ? org_name.value : null,
-    type: type.value,
-    email: email.value,
-    country_id: Number(country_id.value),
-    password: password.value,
-  };
-
-  auth.register(payload);
+  if (type.value === "individual") {
+    auth.register(
+      first_name.value,
+      last_name.value,
+      type.value,
+      email.value,
+      country_id.value,
+      password.value
+    );
+  } else {
+    auth.register(
+      org_name.value,
+      type.value,
+      email.value,
+      country_id.value,
+      password.value
+    );
+  }
 }
 
 // Initialisation
@@ -101,11 +108,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-white/80">
+  <div class="min-h-screen flex flex-col overflow-hidden bg-gray-50">
     <!-- Fixed Header -->
-    <header class="fixed top-0 left-0 w-full z-50 backdrop-blur-sm bg-white/80">
+    <header class="fixed top-0 left-0 w-full bg-white border-b z-50">
       <div class="w-full flex justify-between items-center px-6 py-4">
-        <!-- Logo + Navigation -->
         <!-- Left Navigation -->
         <div class="flex items-center space-x-4">
           <img src="../../assets/Logo/Azonation.png" alt="Azonation" class="w-36 sm:w-44" />
@@ -285,16 +291,14 @@ onMounted(() => {
       </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="pt-[80px] pb-16 px-4 flex-grow">
+    <!-- Scrollable Content -->
+    <main class="flex-1 mt-[72px] mb-[48px] overflow-y-auto px-4">
       <div class="max-w-2xl mx-auto py-12">
         <h1 class="text-2xl font-bold text-center text-gray-800">Create Your Account</h1>
         <p class="text-sm text-center text-gray-500 mt-2 mb-6">Select your account type to get started</p>
 
         <!-- Account Type Selection -->
         <div class="flex flex-col md:flex-row gap-6 mb-8">
-
-          <!-- Individual type -->
           <label @click="type = 'individual'"
             class="flex-1 cursor-pointer border rounded-lg p-5 hover:shadow transition"
             :class="type === 'individual' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'">
@@ -313,7 +317,6 @@ onMounted(() => {
             </div>
           </label>
 
-          <!-- Organisation type -->
           <label @click="type = 'organisation'"
             class="flex-1 cursor-pointer border rounded-lg p-5 hover:shadow transition"
             :class="type === 'organisation' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'">
@@ -344,7 +347,7 @@ onMounted(() => {
                 class="mt-1 w-full border px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" />
               <p v-if="auth.errors?.first_name" class="text-red-500 text-sm mt-1">{{ auth.errors?.first_name[0] }}</p>
             </div>
-            <div>
+            <div class="mb-4">
               <label class="block text-sm font-medium text-gray-700">Last Name</label>
               <input v-model="last_name" type="text" placeholder="Doe"
                 class="mt-1 w-full border px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" />
@@ -371,9 +374,7 @@ onMounted(() => {
             <select v-model="country_id"
               class="mt-1 w-full border px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
               <option value="" disabled>Select country</option>
-              <option v-for="country in countryNames" :key="country.id" :value="country.id">
-                {{ country.name }}
-              </option>
+              <option v-for="country in countryNames" :key="country.id" :value="country.id">{{ country.name }}</option>
             </select>
           </div>
 
@@ -401,10 +402,10 @@ onMounted(() => {
       </div>
     </main>
 
-    <!-- Footer (not fixed) -->
-    <footer class="w-full bg-gray-100 text-gray-600 text-xs border-t">
+    <!-- Fixed Footer -->
+    <footer class="fixed bottom-0 left-0 w-full bg-gray-100 text-gray-600 text-xs z-40 border-t">
       <div class="max-w-screen-xl mx-auto px-4 py-2 flex justify-center space-x-4">
-        <router-link to="/contact" class="hover:underline">Contact</router-link>
+        <router-link to="/contact" class="hover:underline">Contact Us</router-link>
         <router-link to="/privacy" class="hover:underline">Privacy</router-link>
         <router-link to="/cookies" class="hover:underline">Cookies</router-link>
         <router-link to="/legal" class="hover:underline">Legal</router-link>
