@@ -8,19 +8,11 @@ import functions from "@/global/cookie";
 import Home from "../views/Home.vue";
 
 //Auth
+import Signup from "@/views/Auth/Signup.vue";
 import Login from "../views/Auth/Login.vue";
 import ForgotPassword from '../views/Auth/ForgotPassword.vue';
 import VerifyCode from '../views/Auth/VerifyCode.vue';
 import ResetPassword from '../views/Auth/ResetPassword.vue';
-
-//Individual
-import IndividualRegister from "../views/Auth/IndividualRegister.vue";
-
-// Org
-import OrgRegister from "../views/Auth/OrgRegister.vue";
-
-//SuperAdmin
-import SuperadminRegister from "../views/Auth/SuperadminRegister.vue";
 
 // Mock authentication function
 function isAuthenticated() {
@@ -34,9 +26,14 @@ const baseRoutes = [
     component: Home,
   },
   {
-    path: "/forgot-password",
-    name: "forgot-password",
-    component: ForgotPassword,
+    path: "/signup",
+    name: "signup",
+    component: Signup,
+  },
+  {
+    path: "/login",
+    name: "login",
+    component: Login,
   },
   {
     path: "/verify-code",
@@ -44,30 +41,14 @@ const baseRoutes = [
     component: VerifyCode,
   },
   {
-    path: "/reset-password",
+    path: "/forgot-password", // before login
+    name: "forgot-password",
+    component: ForgotPassword,
+  },
+  {
+    path: "/reset-password", // after login for new password
     name: "reset-password",
     component: ResetPassword,
-  },
-  {
-    path: "/login",
-    name: "login",
-    component: Login,
-  },
-  
-  {
-    path: "/individual-register",
-    name: "individual-register",
-    component: IndividualRegister,
-  },
-  {
-    path: "/org-register",
-    name: "org-register",
-    component: OrgRegister,
-  },
-  {
-    path: "/superadmin-register",
-    name: "superadmin-register",
-    component: SuperadminRegister,
   },
 ];
 

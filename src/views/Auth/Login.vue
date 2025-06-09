@@ -79,7 +79,7 @@ const remember_token = ref(false)
             </button>
           </div> -->
 
-            <router-link :to="{ name: 'home' }" class="text-center">
+            <router-link :to="{ name: 'signup' }" class="text-center">
               <p
                 class="w-full py-2 my-4 px-4 bg-white text-center text-sm text-gray-500 border border-gray-300 rounded-lg hover:bg-blue-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                 Sign Up
