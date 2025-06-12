@@ -111,7 +111,7 @@ const superadminRoutes = [
         children: [
             {
                 path: "index",
-                name: "superadmin-index",
+                name: "superadmin-dashboard-index",
                 component: SuperadminDashboardIndex,
                 meta: { requiresAuth: true },
             },

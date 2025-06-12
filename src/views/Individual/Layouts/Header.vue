@@ -5,7 +5,8 @@ import { authStore } from '../../../store/authStore';
 const auth = authStore;
 const userId = auth.user.id;
 const baseURL = auth.apiBase;;
-const name = computed(() => auth.user?.name);
+const individual_first_name = computed(() => auth.user?.first_name);
+const individual_last_name = computed(() => auth.user?.last_name);
 const userType = computed(() => auth.user?.type);
 const userEmail = computed(() => auth.user?.email);
 const username = computed(() => auth.user?.username);
@@ -52,17 +53,17 @@ const notificationHandleClickOutside = (event) => {
     }
 };
 
-onMounted(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('mousedown', notificationHandleClickOutside);
-    getNotifications();
-    fetchLogo();
-});
+// onMounted(() => {
+//     document.addEventListener('mousedown', handleClickOutside);
+//     document.addEventListener('mousedown', notificationHandleClickOutside);
+//     getNotifications();
+//     fetchLogo();
+// });
 
-onBeforeUnmount(() => {
-    document.removeEventListener('mousedown', handleClickOutside);
-    document.removeEventListener('mousedown', notificationHandleClickOutside);
-});
+// onBeforeUnmount(() => {
+//     document.removeEventListener('mousedown', handleClickOutside);
+//     document.removeEventListener('mousedown', notificationHandleClickOutside);
+// });
 
 const dropdownMenu = ref(null);
 const profileButton = ref(null);
@@ -129,8 +130,8 @@ const fetchLogo = async () => {
         v-if="auth.isAuthenticated && userType == 'individual'">
         <div>
             <!-- Individual Name -->
-            <a href="/individual-dashboard/dashboard-initial-content" class="text-xl font-semibold text-gray-600">
-                {{ name }}
+            <a href="/individual-dashboard/index" class="text-xl font-semibold text-gray-600">
+                {{ individual_first_name }} {{ individual_last_name }}
             </a>
         </div>
 

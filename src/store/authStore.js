@@ -8,7 +8,17 @@ const authStore = reactive({
   // apiBase: "https://my.azonation.com",
   apiBase: "http://localhost:8000", //for local
   isAuthenticated: functions.getCookie("auth") == 1,
-  user: functions.getCookie("user") === "undefined" ? {} : JSON.parse(functions.getCookie("user")),
+  // user: functions.getCookie("user") === "undefined" ? {} : JSON.parse(functions.getCookie("user")),
+  user: (() => {
+    const cookie = functions.getCookie("user");
+    try {
+      return cookie && cookie !== "undefined" ? JSON.parse(cookie) : {};
+    } catch (e) {
+      console.error("Failed to parse user cookie:", e);
+      return {};
+    }
+  })(),
+
   errors: null,
 
   async fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
@@ -20,7 +30,9 @@ const authStore = reactive({
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        data: ["POST", "PUT"].includes(requestType.toUpperCase()) ? params : null,
+        data: ["POST", "PUT"].includes(requestType.toUpperCase())
+          ? params
+          : null,
         params: requestType.toUpperCase() === "GET" ? params : null,
       });
       return response.data;
@@ -28,7 +40,8 @@ const authStore = reactive({
       console.error("Public API error:", error);
       return {
         status: false,
-        errors: error.response?.data?.errors || error.response?.data || error.message,
+        errors:
+          error.response?.data?.errors || error.response?.data || error.message,
       };
     }
   },
@@ -45,7 +58,9 @@ const authStore = reactive({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        data: ["POST", "PUT"].includes(requestType.toUpperCase()) ? params : null,
+        data: ["POST", "PUT"].includes(requestType.toUpperCase())
+          ? params
+          : null,
         params: requestType.toUpperCase() === "GET" ? params : null,
       });
       return response.data;
@@ -53,7 +68,8 @@ const authStore = reactive({
       console.error("Protected API error:", error);
       return {
         status: false,
-        errors: error.response?.data?.errors || error.response?.data || error.message,
+        errors:
+          error.response?.data?.errors || error.response?.data || error.message,
       };
     }
   },
@@ -76,35 +92,35 @@ const authStore = reactive({
       console.error("Upload error:", error);
       return {
         status: false,
-        errors: error.response?.data?.errors || error.response?.data || error.message,
+        errors:
+          error.response?.data?.errors || error.response?.data || error.message,
       };
     }
   },
 
   async register(payload) {
-  try {
-    const res = await this.fetchPublicApi("/api/register", payload, "POST");
+    try {
+      const res = await this.fetchPublicApi("/api/register", payload, "POST");
 
-    if (res.status) {
-      this.errors = null;
-      Swal.fire({
-        icon: "success",
-        title: "Registration successful",
-        text: "You have successfully registered.",
-        showConfirmButton: true,
-      });
-      router.push({ name: "login" });
-    } else {
-      this.errors = res.errors;
+      if (res.status) {
+        this.errors = null;
+        Swal.fire({
+          icon: "success",
+          title: "Registration successful",
+          text: "You have successfully registered.",
+          showConfirmButton: true,
+        });
+        router.push({ name: "login" });
+      } else {
+        this.errors = res.errors;
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      this.errors = error.response?.data?.errors || {
+        general: ["Something went wrong. Please try again."],
+      };
     }
-
-  } catch (error) {
-    console.error("Registration error:", error);
-    this.errors = error.response?.data?.errors || {
-      general: ["Something went wrong. Please try again."],
-    };
-  }
-},
+  },
 
   async authenticate(username, password, remember_token) {
     try {
@@ -119,16 +135,19 @@ const authStore = reactive({
         this.user = response.data;
         functions.setCookie("auth", 1);
         functions.setCookie("user", JSON.stringify(response.data));
+        // functions.saveUserToCookie(response.data);
 
         switch (response.data.type) {
           case "individual":
-            router.push({ name: "individual-index" });
+            // router.push({ name: "individual-dashboard-index" });
+            router.push({ name: "individual-dashboard-index" }).then(() => location.reload());
             break;
           case "organisation":
-            router.push({ name: "org-index" });
+            // router.push({ name: "org-dashboard-index" });
+            router.push({ name: "org-dashboard-index" }).then(() => location.reload());
             break;
           case "superadmin":
-            router.push({ name: "superadmin-index" });
+            router.push({ name: "superadmin-dashboard-index" }).then(() => location.reload());
             break;
           default:
             router.push({ name: "login" });

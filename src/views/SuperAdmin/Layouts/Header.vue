@@ -5,7 +5,8 @@
   const auth = authStore;
   const userId = auth.user.id;
   const baseURL = auth.apiBase;
-  const name = computed(() => auth.user?.name);
+  const superadmin_first_name = computed(() => auth.user?.first_name);
+  const superadmin_last_name = computed(() => auth.user?.last_name);
   const userType = computed(() => auth.user?.type);
   const userEmail = computed(() => auth.user?.email);
   const username = computed(() => auth.user?.username);
@@ -130,7 +131,7 @@
       <div>
         <!-- Organization/Brand Name -->
         <a href="/superadmin-dashboard/initial-content" class="text-xl font-semibold text-gray-600">
-          {{ name }}
+         {{ superadmin_first_name }} {{ superadmin_last_name }} 
         </a>
       </div>
   

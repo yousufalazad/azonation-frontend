@@ -3,10 +3,11 @@ import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { authStore } from "../../../store/authStore";
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
 import Notification from './Notification.vue';
+// import functions from "@/global/cookie";
 
 const emit = defineEmits(['toggle-mobile-sidebar', 'toggle-sidebar']);
 const auth = authStore;
-const name = computed(() => auth.user?.name || 'Azonation');
+const org_name = computed(() => auth.user?.org_name || 'Your Org Name');
 const baseURL = auth.apiBase;
 
 const logoPath = ref('');
@@ -15,6 +16,7 @@ const userId = auth.user.id;
 const isProfileDropdownOpen = ref(false);
 const profileButton = ref(null);
 const profileMenu = ref(null);
+
 
 const fetchLogo = async () => {
   try {
@@ -65,7 +67,7 @@ onBeforeUnmount(() => {
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M3 6h18M3 18h18" />
         </svg>
       </button>
-      <span class="text-xl font-semibold text-gray-600">{{ name }}</span>
+      <a href="/org-dashboard/index"><span class="text-xl font-semibold text-gray-600">{{ org_name }}</span></a>
     </div>
 
     <div class="flex items-center space-x-4">

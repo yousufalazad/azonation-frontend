@@ -141,7 +141,7 @@ const orgRoutes = [
     children: [
       {
         path: "index",
-        name: "org-index",
+        name: "org-dashboard-index",
         component: OrgDashboardIndex,
         meta: { requiresAuth: true },
       },

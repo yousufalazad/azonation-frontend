@@ -9,7 +9,7 @@
         <nav class="flex-1 px-2 py-4 space-y-2">
 
           <!-- Static Links -->
-          <router-link :to="{ name: 'individual-index' }"
+          <router-link :to="{ name: 'individual-dashboard-index' }"
             class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             <span v-if="isSidebarExpanded">Dashboard</span>
             <span v-else class="hidden">Dashboard</span>

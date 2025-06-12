@@ -18,7 +18,8 @@ const selectedMember = ref({})
 // Form data
 const form = ref({
   id: null,
-  name: '',
+  first_name: '',
+  last_name: '',
   email: '',
   mobile: '',
   address: '',
@@ -45,7 +46,8 @@ const openModal = (member = null) => {
   form.value = member
     ? {
       id: member.id,
-      name: member.name,
+      first_name: member.first_name,
+      last_name: member.last_name,
       email: member.email,
       mobile: member.mobile,
       address: member.address,
@@ -55,7 +57,8 @@ const openModal = (member = null) => {
     }
     : {
       id: null,
-      name: '',
+      first_name: '',
+      last_name: '',
       email: '',
       mobile: '',
       address: '',
@@ -73,7 +76,8 @@ const closeModal = () => {
   isModalOpen.value = false
   form.value = {
     id: null,
-    name: '',
+    first_name: '',
+    last_name: '',
     email: '',
     mobile: '',
     address: '',
@@ -96,7 +100,8 @@ const handleImage = (e) => {
 // Save or update member
 const saveMember = async () => {
   const formData = new FormData()
-  formData.append('name', form.value.name)
+  formData.append('first_name', form.value.first_name)
+  formData.append('last_name', form.value.last_name)
   formData.append('email', form.value.email)
   formData.append('mobile', form.value.mobile)
   formData.append('address', form.value.address)
@@ -224,7 +229,7 @@ const closeViewModal = () => {
 
           <!-- Name Cell -->
           <td class="py-4 text-sm text-gray-700 align-middle">
-            {{ member.name }}
+            {{ member.first_name }} {{ member.last_name }}
           </td>
 
           <!-- Email -->
@@ -266,10 +271,16 @@ const closeViewModal = () => {
           {{ isEditMode ? 'Edit' : 'Add' }} Member
         </h2>
 
-        <!-- Name -->
+        <!-- First Name -->
         <div class="mb-4">
           <label class="block mb-1">Name</label>
-          <input v-model="form.name" type="text" class="w-full border rounded p-2" />
+          <input v-model="form.first_name" type="text" class="w-full border rounded p-2" />
+        </div>
+
+        <!-- Last Name -->
+        <div class="mb-4">
+          <label class="block mb-1">Name</label>
+          <input v-model="form.last_name" type="text" class="w-full border rounded p-2" />
         </div>
 
         <!-- Email -->
@@ -330,7 +341,8 @@ const closeViewModal = () => {
       <div class="bg-white p-6 rounded-lg w-full max-w-xl max-h-[90vh] overflow-y-auto">
         <h2 class="text-xl font-bold mb-4">Member Details</h2>
         <div class="grid grid-cols-2 gap-4">
-          <div><strong>Name:</strong> {{ selectedMember.name }}</div>
+          <div><strong>Name:</strong> {{ selectedMember.first_name }}</div>
+          <div><strong>Name:</strong> {{ selectedMember.last_name }}</div>
           <div><strong>Email:</strong> {{ selectedMember.email }}</div>
           <div><strong>Mobile:</strong> {{ selectedMember.mobile }}</div>
           <div><strong>Address:</strong> {{ selectedMember.address }}</div>

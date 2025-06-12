@@ -15,7 +15,7 @@ const individualRoutes = [
     children: [
       {
         path: "index",
-        name: "individual-index",
+        name: "individual-dashboard-index",
         component: IndividualDashboardIndex,
         meta: { requiresAuth: true },
       },

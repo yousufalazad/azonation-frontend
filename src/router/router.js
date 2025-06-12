@@ -4,9 +4,6 @@ import individualRoutes from './individualRouter';
 import orgRoutes from './orgRouter';
 import functions from "@/global/cookie";
 
-//Home
-import Home from "../views/Home.vue";
-
 //Auth
 import Signup from "@/views/Auth/Signup.vue";
 import Login from "../views/Auth/Login.vue";
@@ -23,17 +20,17 @@ const baseRoutes = [
   {
     path: "/",
     name: "home",
-    component: Home,
-  },
-  {
-    path: "/signup",
-    name: "signup",
-    component: Signup,
+    component: Signup, // Assuming this is the landing page
   },
   {
     path: "/login",
     name: "login",
     component: Login,
+  },
+  {
+    path: "/signup",
+    name: "signup",
+    component: Signup,
   },
   {
     path: "/verify-code",
