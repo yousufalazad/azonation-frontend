@@ -78,10 +78,10 @@ onMounted(() => {
       </div>
 
       <div v-if="recordList.length" class="overflow-x-auto rounded-lg bg-white shadow-md">
-        <table class="min-w-full divide-y divide-gray-200">
+        <table class="project-table min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">ID</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">#</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">Title</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">Start Date</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">End Date</th>
@@ -90,8 +90,8 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
-            <tr v-for="project in recordList" :key="project.id" class="hover:bg-gray-50 transition duration-200">
-              <td class="px-6 py-3 text-sm font-medium text-gray-800">{{ project.id }}</td>
+            <tr v-for="(project, index) in recordList" :key="project.id" class="hover:bg-gray-50 transition duration-200">
+              <td class="px-6 py-3 text-sm font-medium text-gray-800">{{ index + 1 }}</td>
               <td class="px-6 py-3 text-sm font-medium text-gray-800">{{ project.title }}</td>
               <td class="px-6 py-3 text-sm text-gray-600">{{ project.start_date }}</td>
               <td class="px-6 py-3 text-sm text-gray-600">{{ project.end_date }}</td>
@@ -123,10 +123,7 @@ onMounted(() => {
                   <button @click="$router.push({ name: 'project-guest-attendance', params: { id: project.id } })"
                     class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Guest
                     Attendances </button>
-                  <button @click="$router.push({ name: 'edit-project', params: { id: project.id } })"
-                    class="bg-yellow-600 text-white hover:bg-yellow-700 px-3 py-1 rounded">
-                    Edit
-                  </button>
+                  
                   <button @click="$router.push({ name: 'view-project', params: { id: project.id } })"
                     class="bg-green-600 text-white hover:bg-green-700 px-3 py-1 rounded">
                     View

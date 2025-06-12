@@ -153,7 +153,7 @@ onMounted(() => {
     </table>
   </div>
 </template>
-<style>
+<!-- <style>
 td:first-child {
   width: 250px;
 }
@@ -165,4 +165,4 @@ td:nth-child(2) {
 td:nth-child(3) {
   width: auto;
 }
-</style>
+</style> -->

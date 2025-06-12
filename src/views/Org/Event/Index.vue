@@ -93,7 +93,7 @@ onMounted(() => {
           </thead>
           <tbody class="text-gray-800 text-sm divide-y divide-gray-100">
             <tr v-for="(record, index) in recordList" :key="index" class="hover:bg-gray-50">
-              <td class="px-4 py-2">{{ record.user_id }}</td>
+              <td class="px-4 py-2">{{ index + 1 }}</td>
               <td class="px-4 py-2">{{ record.title }}</td>
               <td class="px-4 py-2">{{ record.name }}</td>
               <td class="px-4 py-2">{{ record.date }}</td>

@@ -4,7 +4,6 @@ import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
 
-
 const auth = authStore
 
 // State
@@ -241,7 +240,7 @@ const closeViewModal = () => {
           <!-- Actions -->
           <td class="px-4 py-4 text-sm">
             <button @click="openViewModal(member)"
-              class="text-gray-800 hover:underline hover:text-blue-800 transition font-medium">
+              class="text-blue-600 hover:underline hover:text-blue-800 transition font-medium">
               Details
             </button>
           </td>
@@ -273,13 +272,13 @@ const closeViewModal = () => {
 
         <!-- First Name -->
         <div class="mb-4">
-          <label class="block mb-1">Name</label>
+          <label class="block mb-1">First Name</label>
           <input v-model="form.first_name" type="text" class="w-full border rounded p-2" />
         </div>
 
         <!-- Last Name -->
         <div class="mb-4">
-          <label class="block mb-1">Name</label>
+          <label class="block mb-1">Last Name</label>
           <input v-model="form.last_name" type="text" class="w-full border rounded p-2" />
         </div>
 

@@ -110,7 +110,7 @@ onMounted(fetchProjectDetails);
     </table>
   </div>
 </template>
-<style>
+<!-- <style>
   td:first-child {
     width: 200px;
   }
@@ -120,4 +120,4 @@ onMounted(fetchProjectDetails);
   td:nth-child(3) {
     width: auto;
   }
-</style>
+</style> -->

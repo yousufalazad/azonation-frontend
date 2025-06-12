@@ -84,3 +84,12 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+/* BAD: affects every table in the app */
+td:first-child {
+  width: 3px;
+}
+
+/* GOOD: scoped to a specific class/table */
+.project-table td:first-child {
+  width: 3px;
+}

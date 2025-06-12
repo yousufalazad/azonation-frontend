@@ -181,20 +181,20 @@ onMounted(fetchCommitteeList);
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="pl-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">#</th>
-              <th class="pl-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Committee Name</th>
-              <th class="pl-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Start Date</th>
-              <th class="pl-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">End Date</th>
+              <th class="pl-2 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">#</th>
+              <th class="pl-2 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Committee Name</th>
+              <th class="pl-2 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Start Date</th>
+              <th class="pl-2 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">End Date</th>
               <th class="pr-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             <tr v-for="(committee, index) in committeeList" :key="committee.id"
               class="hover:bg-gray-50 transition">
-              <td class="px-6 py-4 text-sm text-gray-700">{{ index + 1 }}</td>
-              <td class="px-6 py-4 text-sm text-gray-700">{{ committee.name }}</td>
-              <td class="px-6 py-4 text-sm text-gray-700">{{ committee.start_date }}</td>
-              <td class="px-6 py-4 text-sm text-gray-700">{{ committee.end_date }}</td>
+              <td class="px-2 py-4 text-sm text-gray-700">{{ index + 1 }}</td>
+              <td class="px-2 py-4 text-sm text-gray-700">{{ committee.name }}</td>
+              <td class="px-2 py-4 text-sm text-gray-700">{{ committee.start_date }}</td>
+              <td class="px-2 py-4 text-sm text-gray-700">{{ committee.end_date }}</td>
               <td class="px-4 py-3 text-right space-x-2">
                 <button
                   @click="$router.push({ name: 'index-committee-member', params: { committeeId: committee.id, committeeName: committee.name } })"
