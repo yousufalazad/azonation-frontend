@@ -331,7 +331,7 @@ onMounted(getFounders);
                         <img :src="`${baseURL}/storage/${individualUser.image}`" alt="Profile picture"
                             class="w-20 h-20 rounded-full object-cover mr-4" />
                         <div class="flex-1">
-                            <p class="font-medium text-lg text-gray-700">{{ individualUser.name }}</p>
+                            <p class="font-medium text-lg text-gray-700">{{ individualUser.first_name }} {{ individualUser.last_name }}</p>
                             <p class="text-sm text-gray-500">{{ individualUser.city }}, {{ individualUser.country_name
                                 }}</p>
                             <p class="text-sm text-gray-500">Username: {{ individualUser.username }}</p>
@@ -460,6 +460,7 @@ onMounted(getFounders);
             <table class="min-w-full table-auto text-sm text-gray-700">
                 <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
+                        <th class="px-4 py-3 text-left font-medium">#</th>
                         <th class="px-4 py-3 text-left font-medium">Image</th>
                         <th class="px-4 py-3 text-left font-medium">Name</th>
                         <th class="px-4 py-3 text-left font-medium">Designation</th>
@@ -468,7 +469,10 @@ onMounted(getFounders);
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="founder in founderList" :key="founder.id" class="hover:bg-gray-50 transition">
+                    <tr v-for="(founder, index) in founderList" :key="founder.id" class="hover:bg-gray-50 transition">
+                        <td class="px-4 py-3">
+                            {{ index + 1 }}
+                        </td>
                         <!-- Image -->
                         <td class="px-4 py-3">
                             <img v-if="founder.image_url" :src="founder.image_url" alt="Founder Image"
@@ -478,7 +482,7 @@ onMounted(getFounders);
 
                         <!-- Name -->
                         <td class="px-4 py-3">
-                            {{ founder.founders?.name || founder.name }}
+                            {{ founder.founders?.first_name || founder.name }}
                         </td>
 
                         <!-- Designation -->
@@ -556,5 +560,3 @@ onMounted(getFounders);
 
     </section>
 </template>
-
-<style scoped></style>

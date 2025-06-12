@@ -245,6 +245,7 @@ onMounted(() => {
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-200">
             <tr>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-20">#</th>
               <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-20">Image</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 w-1/4">Name</th>
               <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-1/5">Membership ID</th>
@@ -255,7 +256,8 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-100">
-            <tr v-for="member in memberList" :key="member.id" class="hover:bg-gray-50 transition">
+            <tr v-for="(member, index) in memberList" :key="member.id" class="hover:bg-gray-50 transition">
+              <td class="px-4 py-4 text-sm text-gray-800">{{ index + 1 }}</td>
               <td class="px-4 py-4">
                 <img :src="member.image_url ? member.image_url : placeholderImage" alt="Member Image"
                   class="h-12 w-12 rounded-full object-cover" />

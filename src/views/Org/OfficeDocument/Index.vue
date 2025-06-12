@@ -105,6 +105,7 @@ onMounted(() => {
         <table class="min-w-full text-sm text-gray-700 border border-gray-200">
           <thead class="bg-gray-200 text-left text-xs font-semibold">
             <tr>
+              <th class="pl-2 py-3 border-b border-gray-300">#</th>
               <th class="px-4 py-3 border-b border-gray-300">Title</th>
               <th class="px-4 py-3 border-b border-gray-300">Description</th>
               <th class="px-4 py-3 border-b border-gray-300">Privacy</th>
@@ -114,10 +115,11 @@ onMounted(() => {
           </thead>
           <tbody>
             <tr
-              v-for="document in documentList"
+              v-for="(document, index) in documentList"
               :key="document.id"
               class="hover:bg-gray-50 border-b border-gray-100"
             >
+              <td class="pl-2 py-3">{{ index + 1 }}</td>
               <td class="px-4 py-3">{{ document.title }}</td>
 
               <td class="px-4 py-3" v-html="sanitize(document.description)"></td>

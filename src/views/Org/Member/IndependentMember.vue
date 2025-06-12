@@ -210,16 +210,21 @@ const closeViewModal = () => {
     <table class="min-w-full divide-y divide-gray-200">
       <thead class="bg-gray-50">
         <tr>
+          <th class="pl-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">#</th>
           <th class="pl-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Image</th>
           <th class="py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Name</th>
           <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Email</th>
           <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Mobile</th>
-          <th class="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Details</th>
+          <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Details</th>
         </tr>
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
-        <tr v-for="member in members" :key="member.id" class="hover:bg-gray-50 transition">
+        <tr v-for="(member, index) in members" :key="member.id" class="hover:bg-gray-50 transition">
 
+          <!-- Serial Number -->
+          <td class="pl-6 py-4 text-sm text-gray-700">
+            {{ index + 1 }}
+          </td>
           <!-- Image Cell -->
           <td class="pl-6 py-4">
             <img :src="member.image_url || placeholderImage" alt="Member Image"
@@ -238,7 +243,7 @@ const closeViewModal = () => {
           <td class="px-6 py-4 text-sm text-gray-700">{{ member.mobile }}</td>
 
           <!-- Actions -->
-          <td class="px-4 py-4 text-sm">
+          <td class="px-6 py-4 text-sm">
             <button @click="openViewModal(member)"
               class="text-blue-600 hover:underline hover:text-blue-800 transition font-medium">
               Details

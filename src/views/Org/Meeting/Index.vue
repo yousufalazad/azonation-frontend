@@ -97,6 +97,7 @@ onMounted(() => {
         <table class="min-w-full text-sm text-left text-gray-700">
           <thead class="bg-gray-200 uppercase text-xs font-semibold text-gray-600">
             <tr>
+              <th class="px-4 py-3">#</th>
               <th class="px-4 py-3">Name</th>
               <th class="px-4 py-3">Short Name</th>
               <th class="px-4 py-3">Subject</th>
@@ -109,6 +110,7 @@ onMounted(() => {
           </thead>
           <tbody class="divide-y divide-gray-200">
             <tr v-for="(meeting, index) in meetingList" :key="index" class="hover:bg-gray-50 transition-colors">
+              <td class="px-4 py-3">{{ index + 1 }}</td>
               <td class="px-4 py-3">{{ meeting.name }}</td>
               <td class="px-4 py-3">{{ meeting.short_name }}</td>
               <td class="px-4 py-3">{{ meeting.subject }}</td>
