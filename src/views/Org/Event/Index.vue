@@ -5,7 +5,6 @@ import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
 
 const auth = authStore;
-const userId = auth.user.id;
 const recordList = ref([]);
 
 const getRecords = async () => {
@@ -86,8 +85,6 @@ onMounted(() => {
               <th class="px-4 py-3">Name</th>
               <th class="px-4 py-3">Date</th>
               <th class="px-4 py-3">Time</th>
-              <th class="px-4 py-3">Venue</th>
-              <th class="px-4 py-3">Status</th>
               <th class="px-4 py-3">Actions</th>
             </tr>
           </thead>
@@ -98,12 +95,11 @@ onMounted(() => {
               <td class="px-4 py-2">{{ record.name }}</td>
               <td class="px-4 py-2">{{ record.date }}</td>
               <td class="px-4 py-2">{{ record.time }}</td>
-              <td class="px-4 py-2">{{ record.venue_name }}</td>
-              <td class="px-4 py-2">
+              <!-- <td class="px-4 py-2">
                 <span :class="record.status === 0 ? 'text-green-600 font-medium' : 'text-red-500 font-medium'">
                   {{ record.status === 0 ? 'Active' : 'Disabled' }}
                 </span>
-              </td>
+              </td> -->
               <td class="px-4 py-2">
                 <div class="flex flex-wrap gap-2">
                   <div v-if="eventSummary.find(s => s.org_event_id === record.id)">

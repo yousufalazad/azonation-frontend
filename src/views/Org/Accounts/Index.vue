@@ -302,7 +302,7 @@ onMounted(() => {
     <thead class="bg-gray-50">
       <tr>
         <th class="w-10 px-3 py-2 text-left font-medium text-gray-700">#</th>
-        <th class="w-52 px-3 py-2 text-left font-medium text-gray-700">Transaction ID</th>
+        <!-- <th class="w-52 px-3 py-2 text-left font-medium text-gray-700">Transaction ID</th> -->
         <th class="w-32 px-3 py-2 text-left font-medium text-gray-700">Date</th>
         <th class="w-40 px-3 py-2 text-left font-medium text-gray-700">Title</th>
         <th class="w-40 px-3 py-2 text-left font-medium text-gray-700">Fund</th>
@@ -314,9 +314,9 @@ onMounted(() => {
     <tbody class="bg-white divide-y divide-gray-100">
       <tr v-for="(transaction, index) in transactionList" :key="transaction.id">
         <td class="w-10 px-3 py-2">{{ index + 1 }}</td>
-        <td class="w-52 px-3 py-2 truncate" :title="transaction.transaction_code">
+        <!-- <td class="w-52 px-3 py-2 truncate" :title="transaction.transaction_code">
           {{ transaction.transaction_code }}
-        </td>
+        </td> -->
         <td class="w-32 px-3 py-2">{{ transaction.date }}</td>
         <td class="w-40 px-3 py-2">{{ transaction.transaction_title }}</td>
         <td class="w-40 px-3 py-2">{{ transaction.funds.name }}</td>

@@ -83,9 +83,8 @@ onMounted(() => {
             <tr>
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">#</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">Title</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">Location</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">Start Date</th>
-              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">End Date</th>
-              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">Status</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
@@ -93,13 +92,13 @@ onMounted(() => {
             <tr v-for="(project, index) in recordList" :key="project.id" class="hover:bg-gray-50 transition duration-200">
               <td class="px-6 py-3 text-sm font-medium text-gray-800">{{ index + 1 }}</td>
               <td class="px-6 py-3 text-sm font-medium text-gray-800">{{ project.title }}</td>
+              <td class="px-6 py-3 text-sm text-gray-600">{{ project.venue_name }}</td>
               <td class="px-6 py-3 text-sm text-gray-600">{{ project.start_date }}</td>
-              <td class="px-6 py-3 text-sm text-gray-600">{{ project.end_date }}</td>
-              <td class="px-6 py-3 text-sm">
+              <!-- <td class="px-6 py-3 text-sm">
                 <span :class="project.status === 1 ? 'text-green-500' : 'text-yellow-500'">
                   {{ project.status === 1 ? 'Active' : 'Disabled' }}
                 </span>
-              </td>
+              </td> -->
               <td class="px-6 py-3 space-x-2">
 
                 <div class="flex flex-wrap gap-2">

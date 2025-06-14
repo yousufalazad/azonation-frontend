@@ -98,30 +98,25 @@ onMounted(() => {
           <thead class="bg-gray-200 uppercase text-xs font-semibold text-gray-600">
             <tr>
               <th class="px-4 py-3">#</th>
-              <th class="px-4 py-3">Name</th>
               <th class="px-4 py-3">Short Name</th>
-              <th class="px-4 py-3">Subject</th>
+              <th class="px-4 py-3">Name</th>
               <th class="px-4 py-3">Date</th>
               <th class="px-4 py-3">Time</th>
-              <th class="px-4 py-3">Status</th>
-              <th class="px-4 py-3">Conduct Type</th>
               <th class="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
             <tr v-for="(meeting, index) in meetingList" :key="index" class="hover:bg-gray-50 transition-colors">
               <td class="px-4 py-3">{{ index + 1 }}</td>
-              <td class="px-4 py-3">{{ meeting.name }}</td>
               <td class="px-4 py-3">{{ meeting.short_name }}</td>
-              <td class="px-4 py-3">{{ meeting.subject }}</td>
+              <td class="px-4 py-3">{{ meeting.name }}</td>
               <td class="px-4 py-3">{{ meeting.date }}</td>
               <td class="px-4 py-3">{{ meeting.time }}</td>
-              <td class="px-4 py-3">
+              <!-- <td class="px-4 py-3">
                 <span :class="meeting.status === 0 ? 'text-green-600' : 'text-red-500'">
                   {{ meeting.status === 0 ? 'Active' : 'Disabled' }}
                 </span>
-              </td>
-              <td class="px-4 py-3">{{ meeting.conduct_type_name }}</td>
+              </td> -->
               <td class="px-4 py-3 space-y-1">
                 <div class="flex flex-wrap gap-2">
 
