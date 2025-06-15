@@ -285,7 +285,7 @@ onMounted(() => {
                 </button>
                 <button @click="funds"
                     class="px-4 py-2 text-sm font-medium text-white bg-yellow-500 rounded-md hover:bg-yellow-600">
-                    Fund Types
+                    Fund Type
                 </button>
             </div>
         </div>
@@ -298,46 +298,44 @@ onMounted(() => {
         </div>
 
         <div class="overflow-x-auto">
-  <table class="min-w-full table-fixed border border-gray-200 text-sm">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="w-10 px-3 py-2 text-left font-medium text-gray-700">#</th>
-        <!-- <th class="w-52 px-3 py-2 text-left font-medium text-gray-700">Transaction ID</th> -->
-        <th class="w-32 px-3 py-2 text-left font-medium text-gray-700">Date</th>
-        <th class="w-40 px-3 py-2 text-left font-medium text-gray-700">Title</th>
-        <th class="w-40 px-3 py-2 text-left font-medium text-gray-700">Fund</th>
-        <th class="w-24 px-3 py-2 text-left font-medium text-gray-700">Income</th>
-        <th class="w-24 px-3 py-2 text-left font-medium text-gray-700">Expense</th>
-        <th class="w-40 px-3 py-2 text-left font-medium text-gray-700">Actions</th>
-      </tr>
-    </thead>
-    <tbody class="bg-white divide-y divide-gray-100">
-      <tr v-for="(transaction, index) in transactionList" :key="transaction.id">
-        <td class="w-10 px-3 py-2">{{ index + 1 }}</td>
-        <!-- <td class="w-52 px-3 py-2 truncate" :title="transaction.transaction_code">
-          {{ transaction.transaction_code }}
-        </td> -->
-        <td class="w-32 px-3 py-2">{{ transaction.date }}</td>
-        <td class="w-40 px-3 py-2">{{ transaction.transaction_title }}</td>
-        <td class="w-40 px-3 py-2">{{ transaction.funds.name }}</td>
-        <td class="w-24 px-3 py-2 text-green-600 font-medium" v-if="transaction.type === 'income'">
-          {{ transaction.amount }}
-        </td>
-        <td class="w-24 px-3 py-2" v-else></td>
-        <td class="w-24 px-3 py-2 text-red-600 font-medium" v-if="transaction.type === 'expense'">
-          {{ transaction.amount }}
-        </td>
-        <td class="w-24 px-3 py-2" v-else></td>
-        <td class="w-40 px-3 py-2">
-          <div class="flex gap-2">
-            <button @click="openModal(transaction)" class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600">Edit</button>
-            <button @click="openViewModal(transaction)" class="px-2 py-1 text-xs text-white bg-gray-500 rounded hover:bg-gray-600">View</button>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+            <table class="min-w-full table-fixed border border-gray-200 text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-3 py-2 text-left font-medium text-gray-700 w-[1%]">#</th>
+                        <th class="px-3 py-2 text-left font-medium text-gray-700 w-[10%]">Date</th>
+                        <th class="px-3 py-2 text-left font-medium text-gray-700 w-[43%]">Title</th>
+                        <th class="px-3 py-2 text-left font-medium text-gray-700 w-[21%]">Fund</th>
+                        <th class="px-3 py-2 text-left font-medium text-gray-700 w-[7%]">Income</th>
+                        <th class="px-3 py-2 text-left font-medium text-gray-700 w-[13%]">Expense</th>
+                        <th class="px-3 py-2 text-left font-medium text-gray-700 w-[5%]">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    <tr v-for="(transaction, index) in transactionList" :key="transaction.id">
+                        <td class="px-3 py-2">{{ index + 1 }}</td>
+                        <td class="px-3 py-2">{{ transaction.date }}</td>
+                        <td class="px-3 py-2">{{ transaction.transaction_title }}</td>
+                        <td class="px-3 py-2">{{ transaction.funds.name }}</td>
+
+                        <td class="px-3 py-2 text-green-600 font-medium">
+                            <span v-if="transaction.type === 'income'">{{ transaction.amount }}</span>
+                        </td>
+                        <td class="px-3 py-2 text-red-600 font-medium">
+                            <span v-if="transaction.type === 'expense'">{{ transaction.amount }}</span>
+                        </td>
+
+                        <td class="px-3 py-2">
+                            <div class="flex gap-2">
+                                <button @click="openModal(transaction)"
+                                    class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600">Edit</button>
+                                <button @click="openViewModal(transaction)"
+                                    class="px-2 py-1 text-xs text-white bg-gray-500 rounded hover:bg-gray-600">View</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </section>
 
     <!-- Add/Edit transaction Modal -->

@@ -72,7 +72,7 @@ onMounted(() => {
         <div class="space-x-3">
           <button @click="$router.push({ name: 'create-project' })"
             class="bg-blue-600 text-white font-medium py-2 px-4 rounded hover:bg-blue-700 transition">
-            Add Project
+            + Add New Project
           </button>
         </div>
       </div>
@@ -81,11 +81,11 @@ onMounted(() => {
         <table class="project-table min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">#</th>
-              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">Title</th>
-              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">Location</th>
-              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">Start Date</th>
-              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase">Actions</th>
+              <th class="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase">#</th>
+              <th class="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase">Title</th>
+              <th class="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase">Location</th>
+              <th class="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase">Start Date</th>
+              <th class="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
@@ -103,11 +103,11 @@ onMounted(() => {
 
                 <div class="flex flex-wrap gap-2">
                   <div v-if="projectSummary.find(s => s.org_project_id === project.id)">
-                    <button
+                    <buttonv
                       @click="$router.push({ name: 'view-project-summary', params: { summaryId: projectSummary.find(s => s.org_project_id === project.id).id } })"
-                      class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded">
+                      class="bg-sky-500 hover:bg-sky-600 text-sm font-mediumv text-white px-3 py-1 rounded">
                       Summary View
-                    </button>
+                    </buttonv>
                   </div>
                   <div v-else>
                     <button @click="$router.push({ name: 'create-project-summary', params: { projectId: project.id } })"

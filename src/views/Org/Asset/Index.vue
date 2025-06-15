@@ -66,9 +66,9 @@ onMounted(() => getRecords());
                 <th class="px-3 py-2 text-left font-medium text-gray-700">#</th>
                 <th class="px-3 py-2 text-left font-medium text-gray-700">Name</th>
                 <th class="px-3 py-2 text-left font-medium text-gray-700">Quantity</th>
-                <th class="px-3 py-2 text-left font-medium text-gray-700">Responsible User</th>
-                <th class="px-3 py-2 text-left font-medium text-gray-700">Status</th>
-                <th class="px-3 py-2 font-medium text-gray-700 text-center">Actions</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">Responsible Member</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">Lifecycle Status</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">Actions</th>
                 </tr>   
             </thead>
           <tbody class="divide-y divide-gray-100">
@@ -79,10 +79,10 @@ onMounted(() => getRecords());
               <td class="px-4 py-2">{{ index + 1 }}</td>
               <td class="px-4 py-2">{{ record.name }}</td>
               <td class="px-4 py-2">{{ record.quantity }}</td>
-              <td class="px-4 py-2">{{ record.responsible_user_name }}</td>
-              <td class="px-4 py-2">{{ record.asset_lifecycle_statuses_name }}</td>
-              <td class="px-2 py-2 text-center">
-                <div class="flex justify-center gap-2">
+              <td class="px-4 py-2">{{ record.responsible_user_first_name }} {{ record.responsible_user_last_name }}</td>
+             <td class="px-4 py-2">{{ record.asset_lifecycle_statuses_name }}</td>  <!-- //required field -->
+              <td class="px-2 py-2 text-left">
+                <div class="flex justify-left gap-2">
                   <button
                     @click="$router.push({ name: 'edit-asset', params: { id: record.id } })"
                     class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded text-xs transition">

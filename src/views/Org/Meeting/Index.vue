@@ -84,18 +84,18 @@ onMounted(() => {
   <div>
     <section class="mb-6">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between bg-gray-100 py-3 mb-4">
-        <h2 class="text-lg font-semibold text-gray-700">Meeting List</h2>
+        <h2 class="text-lg font-semibold text-gray-700">Meetings</h2>
         <div class="flex flex-wrap gap-2 mt-2 md:mt-0">
           <button @click="goToCreateMeeting"
             class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-md">
-            Create Meeting
+            + Create New Meeting
           </button>
         </div>
       </div>
 
       <div class="overflow-x-auto bg-white">
         <table class="min-w-full text-sm text-left text-gray-700">
-          <thead class="bg-gray-200 uppercase text-xs font-semibold text-gray-600">
+          <thead class="bg-gray-200 uppercase text-sm font-semibold text-gray-600">
             <tr>
               <th class="px-4 py-3">#</th>
               <th class="px-4 py-3">Short Name</th>
@@ -122,35 +122,35 @@ onMounted(() => {
 
                   <div v-if="meetingMinuteList.find(s => s.meeting_id === meeting.id)">
                     <button @click="$router.push({ name: 'view-meeting-minutes', params: { id: meetingMinuteList.find(s => s.meeting_id === meeting.id).id }})"
-                      class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs">
+                      class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-2 rounded text-sm">
                       Minutes view
                     </button>
                   </div>
                   <div v-else>
                     <button
                       @click="$router.push({ name: 'create-meeting-minutes',  params: { meetingId: meeting.id } })"
-                      class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs">
+                      class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-2 rounded text-sm">
                       Minutes add
                     </button>
                   </div>
                   <button @click="$router.push({ name: 'meeting-guest-attendance', params: { id: meeting.id } })"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm">
                     Guest
                   </button>
                   <button @click="$router.push({ name: 'meeting-attendances', params: { id: meeting.id } })"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs">
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
                     Attendees
                   </button>
                   <button @click="editMeeting(meeting.id)"
-                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs">
+                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded text-sm">
                     Edit
                   </button>
                   <button @click="viewMeeting(meeting.id)"
-                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs">
+                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm">
                     View
                   </button>
                   <button @click="deleteMeeting(meeting.id)"
-                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">
+                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded text-sm">
                     Delete
                   </button>
                 </div>

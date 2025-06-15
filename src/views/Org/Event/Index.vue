@@ -105,7 +105,7 @@ onMounted(() => {
                   <div v-if="eventSummary.find(s => s.org_event_id === record.id)">
                     <button
                       @click="$router.push({ name: 'view-event-summary', params: { id: eventSummary.find(s => s.org_event_id === record.id).id } })"
-                      class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs">
+                      class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-sm">
                       Summary View
                     </button>
                   </div>

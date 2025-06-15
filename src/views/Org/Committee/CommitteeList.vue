@@ -181,11 +181,11 @@ onMounted(fetchCommitteeList);
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="pl-2 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">#</th>
-              <th class="pl-2 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Committee Name</th>
-              <th class="pl-2 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Start Date</th>
-              <th class="pl-2 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">End Date</th>
-              <th class="pr-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
+              <th class="pl-2 py-3 text-left text-sm font-bold text-gray-600 uppercase">#</th>
+              <th class="pl-2 py-3 text-left text-sm font-bold text-gray-600 uppercase">Committee Name</th>
+              <th class="pl-2 py-3 text-left text-sm font-bold text-gray-600 uppercase">Start Date</th>
+              <th class="pl-2 py-3 text-left text-sm font-bold text-gray-600 uppercase">End Date</th>
+              <th class="pl-2 py-3 text-left text-sm font-bold text-gray-600 uppercase">Action</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
@@ -195,22 +195,22 @@ onMounted(fetchCommitteeList);
               <td class="px-2 py-4 text-sm text-gray-700">{{ committee.name }}</td>
               <td class="px-2 py-4 text-sm text-gray-700">{{ committee.start_date }}</td>
               <td class="px-2 py-4 text-sm text-gray-700">{{ committee.end_date }}</td>
-              <td class="px-4 py-3 text-right space-x-2">
+              <td class="px-2 py-4 text-left space-x-2">
                 <button
                   @click="$router.push({ name: 'index-committee-member', params: { committeeId: committee.id, committeeName: committee.name } })"
-                  class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded-lg text-xs">
+                  class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-2 rounded-lg text-sm">
                   Members
                 </button>
                 <button @click="openViewModal(committee)"
-                  class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-xs">
+                  class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm">
                   View
                 </button>
                 <button @click="openModal(committee)"
-                  class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded-lg text-xs">
+                  class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-2 rounded-lg text-sm">
                   Edit
                 </button>
                 <button @click="deleteCommittee(committee.id)"
-                  class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-xs">
+                  class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm">
                   Delete
                 </button>
               </td>

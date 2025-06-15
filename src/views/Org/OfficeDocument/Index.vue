@@ -105,12 +105,10 @@ onMounted(() => {
         <table class="min-w-full text-sm text-gray-700 border border-gray-200">
           <thead class="bg-gray-200 text-left text-xs font-semibold">
             <tr>
-              <th class="pl-2 py-3 border-b border-gray-300">#</th>
+              <th class="pl-4 py-3 border-b border-gray-300">#</th>
               <th class="px-4 py-3 border-b border-gray-300">Title</th>
               <th class="px-4 py-3 border-b border-gray-300">Description</th>
-              <th class="px-4 py-3 border-b border-gray-300">Privacy</th>
-              <th class="px-4 py-3 border-b border-gray-300">Is Active</th>
-              <th class="px-4 py-3 border-b border-gray-300 text-center">Actions</th>
+              <th class="px-4 py-3 border-b border-gray-300">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -119,16 +117,14 @@ onMounted(() => {
               :key="document.id"
               class="hover:bg-gray-50 border-b border-gray-100"
             >
-              <td class="pl-2 py-3">{{ index + 1 }}</td>
+              <td class="pl-4 py-3">{{ index + 1 }}</td>
               <td class="px-4 py-3">{{ document.title }}</td>
-
               <td class="px-4 py-3" v-html="sanitize(document.description)"></td>
-              <td class="px-4 py-3">{{ privacySetups.find(p => p.id === document.privacy_setup_id)?.name || 'Unknown' }}</td>
-              <td class="px-4 py-3">{{ document.is_active === 0 ? 'No' : 'Yes' }}</td>
+              <!-- <td class="px-4 py-3">{{ privacySetups.find(p => p.id === document.privacy_setup_id)?.name || 'Unknown' }}</td> -->
               
-              <td class="px-4 py-3 text-center space-x-2">
+              <td class="px-4 py-3 text-left space-x-2">
                 <button @click="$router.push({ name: 'view-document', params: { id: document.id } })"
-                  class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 m-2 rounded">View</button>
+                  class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded">View</button>
                 <button
                   @click="$router.push({ name: 'edit-document', params: { id: document.id } })"
                   class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md transition"
