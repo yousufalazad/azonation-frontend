@@ -341,13 +341,13 @@ onMounted(() => {
           <div v-if="type === 'individual'" class="grid grid-cols-1 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700">First Name</label>
-              <input v-model="first_name" type="text" placeholder="John"
+              <input v-model="first_name" type="text" placeholder=""
                 class="mt-1 w-full border px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" />
               <p v-if="auth.errors?.first_name" class="text-red-500 text-sm mt-1">{{ auth.errors?.first_name[0] }}</p>
             </div>
-            <div>
+            <div class="mb-4">
               <label class="block text-sm font-medium text-gray-700">Last Name</label>
-              <input v-model="last_name" type="text" placeholder="Doe"
+              <input v-model="last_name" type="text" placeholder=""
                 class="mt-1 w-full border px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" />
               <p v-if="auth.errors?.last_name" class="text-red-500 text-sm mt-1">{{ auth.errors?.last_name[0] }}</p>
             </div>
@@ -362,7 +362,7 @@ onMounted(() => {
 
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700">Email</label>
-            <input v-model="email" type="email" placeholder="you@example.com"
+            <input v-model="email" type="email" placeholder=""
               class="mt-1 w-full border px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" />
             <p v-if="auth.errors?.email" class="text-red-500 text-sm mt-1">{{ auth.errors?.email[0] }}</p>
           </div>
