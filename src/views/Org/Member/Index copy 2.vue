@@ -33,23 +33,21 @@ const sponsored_user_id = ref("")
 
 const columnVisibility = ref({
   image_url: true,
-  full_name: true,
+  'individual.first_name': true,
+  'individual.last_name': true,
   existing_membership_id: true,
   membership_start_date: true,
   actions: true
 })
 
 // ✅ Fetch member list
-// ✅ Fetch member list
 const fetchMemberList = async () => {
   loading.value = true
   try {
     const response = await auth.fetchProtectedApi('/api/org-members/', {}, 'GET')
-    memberList.value = response.status ? response.data.map(m => ({
-      ...m,
-      full_name: `${m.individual.first_name || ''} ${m.individual.last_name || ''}`.trim()
-    })) : []
-  } catch {
+    memberList.value = response.status ? response.data : []
+  } catch (error) {
+    console.error("Error fetching member list:", error)
     memberList.value = []
   } finally {
     loading.value = false
@@ -78,6 +76,27 @@ const calculateMembershipAge = (startDate) => {
 }
 
 // ✅ Data filter
+// const filteredMembers = computed(() => {
+//   let list = [...memberList.value]
+
+//   if (search.value.trim()) {
+//     list = list.filter(m =>
+//       m.individual.name?.toLowerCase().includes(search.value.toLowerCase())
+//     )
+//   }
+
+//   if (dateFrom.value && dateTo.value) {
+//     const from = dayjs(dateFrom.value)
+//     const to = dayjs(dateTo.value)
+//     list = list.filter(m => {
+//       const d = dayjs(m.membership_start_date)
+//       return d.isAfter(from.subtract(1, 'day')) && d.isBefore(to.add(1, 'day'))
+//     })
+//   }
+
+//   return list
+// })
+
 const filteredMembers = computed(() => {
   const keyword = search.value.trim().toLowerCase()
 
@@ -85,9 +104,8 @@ const filteredMembers = computed(() => {
 
   if (keyword) {
     list = list.filter(m => {
-      // const firstName = m.individual.first_name?.toLowerCase() || ''
-      // const lastName = m.individual.last_name?.toLowerCase() || ''
-      const fullName = m.full_name?.toLowerCase() || ''
+      const firstName = m.individual.first_name?.toLowerCase() || ''
+      const lastName = m.individual.last_name?.toLowerCase() || ''
       const membershipId = m.existing_membership_id?.toString().toLowerCase() || ''
       const membershipType = m.membership_type?.name?.toLowerCase() || ''
       const membershipStart = m.membership_start_date
@@ -96,7 +114,8 @@ const filteredMembers = computed(() => {
       const membershipAge = calculateMembershipAge(m.membership_start_date)?.toLowerCase() || ''
 
       return (
-        fullName.includes(keyword) ||
+        firstName.includes(keyword) ||
+        lastName.includes(keyword) ||
         membershipId.includes(keyword) ||
         membershipType.includes(keyword) ||
         membershipStart.includes(keyword) ||
@@ -122,8 +141,7 @@ const filteredMembers = computed(() => {
 const headers = computed(() => [
   columnVisibility.value.image_url && { text: 'Image', value: 'image_url' },
   //columnVisibility.value['individual.first_name', 'individual.last_name'] && { text: 'Name', value: ['individual.first_name', 'individual.last_name'], sortable: true },
-   columnVisibility.value.full_name && { text: 'Name', value: 'full_name', sortable: true },
-
+  columnVisibility.value['individual.first_name'] && { text: 'Name', value: 'individual.first_name', sortable: true },
   columnVisibility.value.existing_membership_id && { text: 'Membership ID', value: 'existing_membership_id', sortable: true },
   columnVisibility.value.membership_start_date && { text: 'Membership Age', value: 'membership_start_date' },
   columnVisibility.value.actions && { text: 'Actions', value: 'actions' },

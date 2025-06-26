@@ -20,6 +20,8 @@ const is_tangible = ref(''); //true/false
 const responsible_user_id = ref('');
 const assignment_start_date = ref('');
 const assignment_end_date = ref('');
+const start_date = ref('');
+const end_date = ref('');
 const note = ref('');
 const asset_lifecycle_statuses_id = ref('');
 const privacy_setup_id = ref('');
@@ -53,6 +55,8 @@ const resetForm = () => {
     inkind_value.value = '';
     is_tangible.value = '';
     responsible_user_id.value = null;
+    start_date.value = '';
+    end_date.value = '';
     assignment_start_date.value = '';
     assignment_end_date.value = '';
     note.value = '';
@@ -108,6 +112,8 @@ const submitForm = async () => {
     formData.append('value_amount', value_amount.value);
     formData.append('inkind_value', inkind_value.value);
     formData.append('responsible_user_id', responsible_user_id.value);
+    formData.append('start_date', start_date.value);
+    formData.append('end_date', end_date.value);
     formData.append('assignment_start_date', assignment_start_date.value);
     formData.append('assignment_end_date', assignment_end_date.value);
     formData.append('note', note.value);
@@ -195,7 +201,19 @@ onMounted(() => {
                 <input v-model="description" type="text" id="description"
                     class="w-full  border border-gray-300 rounded-md py-2 px-4" />
             </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="start_date" class="block text-gray-700 font-semibold mb-2">Start Date</label>
+                    <input v-model="start_date" type="date" id="start_date"
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4"  />
+                </div>
 
+                <div>
+                    <label for="end_date" class="block text-gray-700 font-semibold mb-2">End Date</label>
+                    <input v-model="end_date" type="date" id="end_date"
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4"  />
+                </div>
+            </div>
             <div class="grid grid-cols-3 gap-4 mb-4">
                 <div>
                     <label for="quantity" class="block text-gray-700 font-semibold mb-2">Quantity</label>
@@ -242,7 +260,7 @@ onMounted(() => {
                     <option value="" disabled>Select Responsible Person</option>
                     
                     <option v-for=" orgMember in getOrgAllMemberName" :key="orgMember.individual.id" :value="orgMember.individual.id">
-                        {{ orgMember.individual.name }}</option>
+                        {{ orgMember.individual.first_name }} {{ orgMember.individual.last_name }}</option>
                 </select>
             </div>
 
