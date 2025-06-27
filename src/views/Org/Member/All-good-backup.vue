@@ -1,6 +1,7 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { authStore } from '../../../store/authStore'
+import router from "../../../router/router"
 import Swal from 'sweetalert2'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
@@ -11,8 +12,6 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
-import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType } from "docx";
-import { saveAs } from "file-saver";
 
 dayjs.extend(duration)
 dayjs.extend(relativeTime)
@@ -31,90 +30,6 @@ const viewModal = ref(false)
 const editModal = ref(false)
 const membership_type_id = ref("")
 const sponsored_user_id = ref("")
-
-
-const exportToWord = async () => {
-  const tableRows = [
-    new TableRow({
-      children: [
-        'Name',
-        'Membership Type',
-        'Membership ID',
-        'Joining Date',
-        'Membership Age'
-      ].map(header => new TableCell({
-        width: { size: 20, type: WidthType.PERCENTAGE },
-        children: [new Paragraph({ text: header, bold: true })]
-      }))
-    }),
-    ...filteredMembers.value.map(m => new TableRow({
-      children: [
-        m.full_name || '--',
-        m.membership_type?.name || '--',
-        m.existing_membership_id || '--',
-        m.membership_start_date ? dayjs(m.membership_start_date).format('YYYY-MM-DD') : '--',
-        calculateMembershipAge(m.membership_start_date)
-      ].map(text => new TableCell({
-        width: { size: 20, type: WidthType.PERCENTAGE },
-        children: [new Paragraph(text)]
-      }))
-    }))
-  ];
-
-  const doc = new Document({
-    sections: [{
-      properties: {},
-      children: [
-        new Paragraph({
-          text: "Members",
-          heading: "Heading1",
-        }),
-        new Table({
-          rows: tableRows
-        })
-      ],
-    }],
-  });
-
-  const blob = await Packer.toBlob(doc);
-  saveAs(blob, "OrgMembers.docx");
-};
-
-
-// ✅ Column Profile Logic
-const columnProfiles = {
-  minimal: ['full_name', 'membership_type.name', 'existing_membership_id'],
-
-  detailed: ['image_url', 'full_name', 'existing_membership_id', 'membership_type.name', 'membership_start_date', 'membership_age', 'actions']
-}
-
-const selectedProfile = ref(localStorage.getItem('selected_member_profile') || 'detailed')
-const visibleColumns = ref(JSON.parse(localStorage.getItem('visible_member_columns')) || columnProfiles[selectedProfile.value])
-
-watch([visibleColumns, selectedProfile], () => {
-  localStorage.setItem('visible_member_columns', JSON.stringify(visibleColumns.value))
-  localStorage.setItem('selected_member_profile', selectedProfile.value)
-}, { deep: true })
-
-const applyProfile = () => {
-  visibleColumns.value = [...columnProfiles[selectedProfile.value]]
-}
-
-// ✅ Table Headers
-const allHeaders = [
-  { text: 'Image', value: 'image_url' },
-  { text: 'Name', value: 'full_name', sortable: true },
-  { text: 'Membership ID', value: 'existing_membership_id', sortable: true },
-  { text: 'Membership Type', value: 'membership_type.name', sortable: true },
-  { text: 'Joining Date', value: 'membership_start_date', sortable: true },
-  { text: 'Membership Age', value: 'membership_age' },
-  { text: 'Actions', value: 'actions' }
-]
-
-const headers = computed(() =>
-  allHeaders.filter(h => visibleColumns.value.includes(h.value))
-)
-
 
 const columnVisibility = ref({
   image_url: true,
@@ -169,6 +84,7 @@ const filteredMembers = computed(() => {
   const keyword = search.value.trim().toLowerCase()
   let list = [...memberList.value]
 
+  // ✅ Keyword based filtering
   if (keyword) {
     list = list.filter(m => {
       const fullName = m.full_name?.toLowerCase() || ''
@@ -189,10 +105,12 @@ const filteredMembers = computed(() => {
     })
   }
 
+  // ✅ Membership Type Filter from Dropdown
   if (membership_type_id.value) {
     list = list.filter(m => m.membership_type_id === membership_type_id.value)
   }
 
+  // ✅ Date Range Filter
   if (dateFrom.value && dateTo.value) {
     const from = dayjs(dateFrom.value)
     const to = dayjs(dateTo.value)
@@ -204,6 +122,19 @@ const filteredMembers = computed(() => {
 
   return list
 })
+
+
+
+// ✅ Table headers
+const headers = computed(() => [
+  columnVisibility.value.image_url && { text: 'Image', value: 'image_url' },
+  columnVisibility.value.full_name && { text: 'Name', value: 'full_name', sortable: true },
+  columnVisibility.value.existing_membership_id && { text: 'Membership ID', value: 'existing_membership_id', sortable: true },
+  columnVisibility.value.membership_type && { text: 'Membership Type', value: 'membership_type.name', sortable: true },
+  columnVisibility.value.membership_start_date && { text: 'Joining Date', value: 'membership_start_date', sortable: true },
+  columnVisibility.value.membership_start_date && { text: 'Membership Age', value: 'membership_age', sortable: true },
+  columnVisibility.value.actions && { text: 'Actions', value: 'actions' },
+].filter(Boolean))
 
 
 // ✅ Export functions
@@ -357,25 +288,14 @@ onMounted(() => {
       <h2 class="text-lg font-semibold text-gray-700">Members</h2>
       <div class="flex gap-2">
         <button @click="exportToCSV"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
-          <FileText class="w-4 h-4" /> CSV
-        </button>
+          class="border border-gray-300 bg-white px-3 py-1.5 text-sm rounded hover:bg-gray-100">CSV</button>
         <button @click="exportToExcel"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
-          <FileSpreadsheet class="w-4 h-4" /> Excel
-        </button>
+          class="border border-gray-300 bg-white px-3 py-1.5 text-sm rounded hover:bg-gray-100">Excel</button>
         <button @click="exportToPDF"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
-          <FileDown class="w-4 h-4" /> PDF
-        </button>
-        <button @click="exportToWord"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
-          <FileText class="w-4 h-4" /> Word
-        </button>
+          class="border border-gray-300 bg-white px-3 py-1.5 text-sm rounded hover:bg-gray-100">PDF</button>
         <button @click="$router.push({ name: 'create-member' })"
           class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm">+ Add Member</button>
       </div>
-
     </div>
 
     <!-- Filters -->
@@ -401,26 +321,24 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Column View -->
-    <div class="bg-gray-50 border rounded p-4 flex flex-wrap gap-8 items-start">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Column View:</label>
-        <select v-model="selectedProfile" @change="applyProfile" class="border rounded px-3 py-1.5 text-sm w-48">
-          <option value="minimal">Minimal</option>
-          <option value="detailed">Detailed</option>
-        </select>
-      </div>
-      <div>
-        <label class="text-sm font-medium text-gray-700 mb-1 block">Visible Columns</label>
-        <div class="flex flex-wrap gap-4">
-          <div v-for="header in allHeaders" :key="header.value" class="flex items-center gap-2 text-sm">
-            <input type="checkbox" v-model="visibleColumns" :value="header.value" :id="header.value"
-              class="accent-blue-600" />
-            <label :for="header.value" class="text-gray-700">{{ header.text }}</label>
-          </div>
-        </div>
-      </div>
+    <!-- Column Visibility -->
+    <div class="flex flex-wrap gap-4">
+      <label v-for="(visible, key) in columnVisibility" :key="key"
+        class="text-sm text-gray-600 flex gap-2 items-center">
+        <input type="checkbox" v-model="columnVisibility[key]" class="accent-blue-600" />
+        {{ key.
+          replace('.', ' ')
+          .replace(/_/g, ' ')
+          .replace('image url', 'Image')
+          .replace('full name', 'Name')
+          .replace('membership type', 'Membership Type')
+          .replace('joining date', 'Joining Date')
+          .replace('membership start date', 'Membership Age')
+          .replace('existing membership id', 'Membership ID')
+          .replace('actions', 'Actions') }}
+      </label>
     </div>
+
 
     <!-- Member Table -->
     <EasyDataTable :headers="headers" :items="filteredMembers" :search-value="search" :loading="loading" show-index
@@ -461,7 +379,7 @@ onMounted(() => {
 
       <!-- Membership Age -->
       <template #item-membership_age="{ membership_start_date }">
-        <span class="inline-block text-gray-700 px-2 py-0.5 rounded-full text-xs">
+        <span class="inline-block bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
           {{ calculateMembershipAge(membership_start_date) }}
         </span>
       </template>
