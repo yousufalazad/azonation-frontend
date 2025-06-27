@@ -1,20 +1,41 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
+import { exportToCSV, exportToExcel, exportToPDF } from '../../../global/exportUtils';
 
-const auth = authStore
+
+const auth = authStore;
 
 // State
-const members = ref([])
-const isModalOpen = ref(false)
-const isEditMode = ref(false)
-const previewImage = ref(null)
-const viewModalOpen = ref(false)
-const selectedMember = ref({})
+const members = ref([]);
+const isModalOpen = ref(false);
+const isEditMode = ref(false);
+const previewImage = ref(null);
+const viewModalOpen = ref(false);
+const selectedMember = ref({});
 
-// Form data
+// Search
+const search = ref('');
+
+// Column View Mode
+const columnView = ref('detailed');
+
+// Column Visibility
+const visibleColumns = ref({
+  image: true,
+  name: true,
+  email: true,
+  mobile: true,
+  address: true,
+  note: true,
+  is_active: true,
+  action: true,
+});
+
+
+// Form
 const form = ref({
   id: null,
   first_name: '',
@@ -25,23 +46,33 @@ const form = ref({
   note: '',
   is_active: true,
   image_file: null,
-})
+});
 
 // Fetch members
 const fetchMembers = async () => {
   try {
-    const res = await auth.uploadProtectedApi('/api/independent-members', {}, 'GET')
-    members.value = res.status ? res.data : []
+    const res = await auth.uploadProtectedApi('/api/independent-members', {}, 'GET');
+    members.value = res.status ? res.data : [];
   } catch (err) {
-    console.error(err)
+    console.error(err);
   }
-}
+};
 
-onMounted(fetchMembers)
+onMounted(fetchMembers);
 
-// Open Add/Edit modal
+// Filtered Members
+const filteredMembers = computed(() => {
+  if (!search.value) return members.value;
+  const keyword = search.value.toLowerCase();
+  return members.value.filter((m) =>
+    [m.first_name, m.last_name, m.email, m.mobile]
+      .some((field) => field?.toLowerCase().includes(keyword))
+  );
+});
+
+// Modal functions
 const openModal = (member = null) => {
-  isEditMode.value = !!member
+  isEditMode.value = !!member;
   form.value = member
     ? {
       id: member.id,
@@ -64,15 +95,14 @@ const openModal = (member = null) => {
       note: '',
       is_active: true,
       image_file: null,
-    }
+    };
 
-  previewImage.value = member?.image_url ?? null
-  isModalOpen.value = true
-}
+  previewImage.value = member?.image_url ?? null;
+  isModalOpen.value = true;
+};
 
-// Close Add/Edit modal
 const closeModal = () => {
-  isModalOpen.value = false
+  isModalOpen.value = false;
   form.value = {
     id: null,
     first_name: '',
@@ -83,57 +113,53 @@ const closeModal = () => {
     note: '',
     is_active: true,
     image_file: null,
-  }
-  previewImage.value = null
-}
+  };
+  previewImage.value = null;
+};
 
-// Handle image selection
 const handleImage = (e) => {
-  const file = e.target.files[0]
+  const file = e.target.files[0];
   if (file) {
-    form.value.image_file = file
-    previewImage.value = URL.createObjectURL(file)
+    form.value.image_file = file;
+    previewImage.value = URL.createObjectURL(file);
   }
-}
+};
 
-// Save or update member
 const saveMember = async () => {
-  const formData = new FormData()
-  formData.append('first_name', form.value.first_name)
-  formData.append('last_name', form.value.last_name)
-  formData.append('email', form.value.email)
-  formData.append('mobile', form.value.mobile)
-  formData.append('address', form.value.address)
-  formData.append('note', form.value.note)
-  formData.append('is_active', form.value.is_active ? '1' : '0')
-
+  const formData = new FormData();
+  formData.append('first_name', form.value.first_name);
+  formData.append('last_name', form.value.last_name);
+  formData.append('email', form.value.email);
+  formData.append('mobile', form.value.mobile);
+  formData.append('address', form.value.address);
+  formData.append('note', form.value.note);
+  formData.append('is_active', form.value.is_active ? '1' : '0');
   if (form.value.image_file) {
-    formData.append('image_path', form.value.image_file)
+    formData.append('image_path', form.value.image_file);
   }
 
   try {
     const endpoint = isEditMode.value
       ? `/api/independent-members/${form.value.id}`
-      : '/api/independent-members'
-    const method = isEditMode.value ? 'POST' : 'POST'
+      : '/api/independent-members';
+    const method = isEditMode.value ? 'POST' : 'POST';
 
-    if (isEditMode.value) formData.append('_method', 'PUT')
+    if (isEditMode.value) formData.append('_method', 'PUT');
 
-    const res = await auth.uploadProtectedApi(endpoint, formData, method)
+    const res = await auth.uploadProtectedApi(endpoint, formData, method);
     if (res.status) {
-      Swal.fire('Success', `Member ${isEditMode.value ? 'updated' : 'created'} successfully.`, 'success')
-      fetchMembers()
-      closeModal()
+      Swal.fire('Success', `Member ${isEditMode.value ? 'updated' : 'created'} successfully.`, 'success');
+      fetchMembers();
+      closeModal();
     } else {
-      Swal.fire('Error', 'Could not save member.', 'error')
+      Swal.fire('Error', 'Could not save member.', 'error');
     }
   } catch (err) {
-    console.error(err)
-    Swal.fire('Error', 'An error occurred. Please try again.', 'error')
+    console.error(err);
+    Swal.fire('Error', 'An error occurred. Please try again.', 'error');
   }
-}
+};
 
-// Delete member
 const deleteMember = async (id) => {
   const result = await Swal.fire({
     title: 'Are you sure?',
@@ -143,130 +169,132 @@ const deleteMember = async (id) => {
     confirmButtonColor: '#d33',
     cancelButtonColor: '#3085d6',
     confirmButtonText: 'Yes, delete it!',
-  })
+  });
   if (result.isConfirmed) {
     try {
-      const res = await auth.uploadProtectedApi(`/api/independent-members/${id}`, {}, 'DELETE')
+      const res = await auth.uploadProtectedApi(`/api/independent-members/${id}`, {}, 'DELETE');
       if (res.status) {
-        Swal.fire('Deleted', 'Member deleted.', 'success')
-        fetchMembers()
+        Swal.fire('Deleted', 'Member deleted.', 'success');
+        fetchMembers();
       } else {
-        Swal.fire('Error', 'Could not delete member.', 'error')
+        Swal.fire('Error', 'Could not delete member.', 'error');
       }
     } catch {
-      Swal.fire('Error', 'An error occurred. Please try again.', 'error')
+      Swal.fire('Error', 'An error occurred. Please try again.', 'error');
     }
   }
-}
+};
 
-// Open View modal
 const openViewModal = (member) => {
-  selectedMember.value = member
-  viewModalOpen.value = true
-}
+  selectedMember.value = member;
+  viewModalOpen.value = true;
+};
 
-// Close View modal
 const closeViewModal = () => {
-  viewModalOpen.value = false
-  selectedMember.value = {}
-}
+  viewModalOpen.value = false;
+  selectedMember.value = {};
+};
+
+// Export Functions
+const exportCSV = () => {
+  exportToCSV(filteredMembers.value, 'independent_members');
+};
+const exportExcel = () => {
+  exportToExcel(filteredMembers.value, 'independent_members');
+};
+const exportPDF = () => {
+  exportToPDF(filteredMembers.value, 'independent_members');
+};
 </script>
 
 <template>
   <div>
-    <!-- Header Section -->
-    <div class="flex justify-between items-center py-4 border-gray-200">
-      <!-- Section Title -->
-      <h2 class="text-lg font-semibold text-gray-600">Independent members</h2>
+    <!-- Header -->
+    <div class="flex flex-wrap justify-between items-center py-4 gap-2 border-b">
+      <h2 class="text-lg font-semibold text-gray-600">Independent Members (Unlinked)</h2>
+      <div class="flex gap-2">
+        <input v-model="search" type="text" placeholder="Search..."
+          class="px-3 py-1.5 border border-gray-300 rounded text-sm" />
 
-      <!-- Action Buttons -->
-      <div class="flex flex-wrap gap-2">
-
-        <router-link :to="{ name: 'index-member' }">
-          <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
-            Full List
-          </button>
-        </router-link>
-
-        <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
-          Print
-        </button>
-
-        <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
-          PDF
-        </button>
-
-        <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
-          Excel
-        </button>
-
-        <button @click="openModal()" class="px-4 py-1.5 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
-          + Add independent member
-        </button>
+        <button @click="exportCSV"
+          class="px-3 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-100">CSV</button>
+        <button @click="exportExcel"
+          class="px-3 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-100">Excel</button>
+        <button @click="exportPDF"
+          class="px-3 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-100">PDF</button>
+        <button @click="openModal()" class="px-4 py-1.5 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">+
+          Add</button>
       </div>
     </div>
 
-    <!-- Independent Members Table -->
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="pl-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">#</th>
-          <th class="pl-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Image</th>
-          <th class="py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Name</th>
-          <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Email</th>
-          <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Mobile</th>
-          <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Details</th>
-        </tr>
-      </thead>
-      <tbody class="bg-white divide-y divide-gray-200">
-        <tr v-for="(member, index) in members" :key="member.id" class="hover:bg-gray-50 transition">
+    <div class="border rounded bg-gray-50 p-4 flex flex-wrap gap-6 items-center mb-5">
+      <!-- Column View Dropdown -->
+      <div class="flex items-center gap-2">
+        <span class="text-sm font-medium text-gray-700">Column View:</span>
+        <select v-model="columnView" class="px-2 py-1 border rounded text-sm bg-white">
+          <option value="minimal">Minimal</option>
+          <option value="detailed">Detailed</option>
+        </select>
+      </div>
 
-          <!-- Serial Number -->
-          <td class="pl-6 py-4 text-sm text-gray-700">
-            {{ index + 1 }}
-          </td>
-          <!-- Image Cell -->
-          <td class="pl-6 py-4">
-            <img :src="member.image_url || placeholderImage" alt="Member Image"
-              class="h-12 w-12 rounded-full object-cover" />
-          </td>
+      <!-- Visible Columns -->
+      <div class="flex items-center flex-wrap gap-3">
+        <span class="text-sm font-medium text-gray-700">Visible Columns</span>
+        <label v-for="(value, key) in visibleColumns" :key="key" class="flex items-center gap-1 text-sm">
+          <input type="checkbox" v-model="visibleColumns[key]" class="rounded" />
+          {{ key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ') }}
+        </label>
+      </div>
+    </div>
 
-          <!-- Name Cell -->
-          <td class="py-4 text-sm text-gray-700 align-middle">
-            {{ member.first_name }} {{ member.last_name }}
-          </td>
 
-          <!-- Email -->
-          <td class="px-6 py-4 text-sm text-gray-700">{{ member.email }}</td>
 
-          <!-- Mobile -->
-          <td class="px-6 py-4 text-sm text-gray-700">{{ member.mobile }}</td>
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th v-if="visibleColumns.image" class="py-3 text-left text-xs font-bold text-gray-600">Image</th>
+            <th v-if="visibleColumns.name" class="py-3 text-left text-xs font-bold text-gray-600">Name</th>
+            <th v-if="visibleColumns.email && columnView === 'detailed'" class="py-3 text-left text-xs font-bold">Email
+            </th>
+            <th v-if="visibleColumns.mobile" class="py-3 text-left text-xs font-bold">Mobile</th>
+            <th v-if="visibleColumns.address && columnView === 'detailed'" class="py-3 text-left text-xs font-bold">
+              Address</th>
+            <th v-if="visibleColumns.note && columnView === 'detailed'" class="py-3 text-left text-xs font-bold">Note
+            </th>
+            <th v-if="visibleColumns.is_active" class="py-3 text-left text-xs font-bold">Active</th>
+            <th v-if="visibleColumns.action" class="py-3 text-left text-xs font-bold text-gray-600">Actions</th>
 
-          <!-- Actions -->
-          <td class="px-6 py-4 text-sm">
-            <button @click="openViewModal(member)"
-              class="text-blue-600 hover:underline hover:text-blue-800 transition font-medium">
-              Details
-            </button>
-          </td>
-          <!-- <td class="px-6 py-4 text-center">
-            <button @click="openViewModal(member)"
-              class="bg-blue-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-blue-600 transition">
-              View
-            </button>
-            <button @click="openModal(member)"
-              class="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-yellow-600 transition">
-              Edit
-            </button>
-            <button @click="deleteMember(member.id)"
-              class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition">
-              Delete
-            </button>
-          </td> -->
-        </tr>
-      </tbody>
-    </table>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr v-for="(member, index) in filteredMembers" :key="member.id" class="hover:bg-gray-50 transition">
+            <td v-if="visibleColumns.image" class="py-4">
+              <img :src="member.image_url || placeholderImage" class="h-10 w-10 rounded-full object-cover" />
+            </td>
+            <td v-if="visibleColumns.name" class="py-4 text-sm text-gray-700">
+              {{ member.first_name }} {{ member.last_name }}
+            </td>
+            <td v-if="visibleColumns.email && columnView === 'detailed'" class="py-4 text-sm text-gray-700">{{
+              member.email }}</td>
+            <td v-if="visibleColumns.mobile" class="py-4 text-sm text-gray-700">{{ member.mobile }}</td>
+            <td v-if="visibleColumns.address && columnView === 'detailed'" class="py-4 text-sm text-gray-700">{{
+              member.address }}</td>
+            <td v-if="visibleColumns.note && columnView === 'detailed'" class="py-4 text-sm text-gray-700">{{
+              member.note }}</td>
+            <td v-if="visibleColumns.is_active" class="py-4 text-sm text-gray-700">
+              {{ member.is_active === 1 || member.is_active === true ? 'Yes' : 'No' }}
+            </td>
+            <td v-if="visibleColumns.action" class="py-4 text-sm">
+              <button @click="openViewModal(member)"
+                class="text-blue-600 hover:underline hover:text-blue-800">Details</button>
+            </td>
 
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- Add/Edit Modal -->
     <div v-if="isModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -274,65 +302,45 @@ const closeViewModal = () => {
         <h2 class="text-xl font-bold mb-4">
           {{ isEditMode ? 'Edit' : 'Add' }} Member
         </h2>
-
-        <!-- First Name -->
-        <div class="mb-4">
-          <label class="block mb-1">First Name</label>
-          <input v-model="form.first_name" type="text" class="w-full border rounded p-2" />
-        </div>
-
-        <!-- Last Name -->
-        <div class="mb-4">
-          <label class="block mb-1">Last Name</label>
-          <input v-model="form.last_name" type="text" class="w-full border rounded p-2" />
-        </div>
-
-        <!-- Email -->
-        <div class="mb-4">
-          <label class="block mb-1">Email</label>
-          <input v-model="form.email" type="email" class="w-full border rounded p-2" />
-        </div>
-
-        <!-- Mobile -->
-        <div class="mb-4">
-          <label class="block mb-1">Mobile</label>
-          <input v-model="form.mobile" type="text" class="w-full border rounded p-2" />
-        </div>
-
-        <!-- Address -->
-        <div class="mb-4">
-          <label class="block mb-1">Address</label>
-          <textarea v-model="form.address" class="w-full border rounded p-2"></textarea>
-        </div>
-
-        <!-- Note -->
-        <div class="mb-4">
-          <label class="block mb-1">Note</label>
-          <textarea v-model="form.note" class="w-full border rounded p-2"></textarea>
-        </div>
-
-        <!-- is_active -->
-        <div class="mb-4">
-          <label class="inline-flex items-center">
-            <input type="checkbox" v-model="form.is_active" class="mr-2" />
-            Active
-          </label>
-        </div>
-
-        <!-- Image Upload -->
-        <div class="mb-4">
-          <label class="block mb-1">Image Upload</label>
-          <input type="file" @change="handleImage" accept="image/*" />
-          <div v-if="previewImage" class="mt-2">
-            <img :src="previewImage" class="h-24 border rounded" />
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block mb-1">First Name</label>
+            <input v-model="form.first_name" type="text" class="w-full border rounded p-2" />
+          </div>
+          <div>
+            <label class="block mb-1">Last Name</label>
+            <input v-model="form.last_name" type="text" class="w-full border rounded p-2" />
+          </div>
+          <div>
+            <label class="block mb-1">Email</label>
+            <input v-model="form.email" type="email" class="w-full border rounded p-2" />
+          </div>
+          <div>
+            <label class="block mb-1">Mobile</label>
+            <input v-model="form.mobile" type="text" class="w-full border rounded p-2" />
+          </div>
+          <div class="col-span-2">
+            <label class="block mb-1">Address</label>
+            <textarea v-model="form.address" class="w-full border rounded p-2"></textarea>
+          </div>
+          <div class="col-span-2">
+            <label class="block mb-1">Note</label>
+            <textarea v-model="form.note" class="w-full border rounded p-2"></textarea>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="checkbox" v-model="form.is_active" />
+            <label>Active</label>
+          </div>
+          <div>
+            <label class="block mb-1">Image Upload</label>
+            <input type="file" @change="handleImage" accept="image/*" />
+            <div v-if="previewImage" class="mt-2">
+              <img :src="previewImage" class="h-24 border rounded" />
+            </div>
           </div>
         </div>
-
-        <!-- Modal Actions -->
-        <div class="flex justify-end space-x-2">
-          <button @click="closeModal" class="px-4 py-2 bg-gray-300 rounded">
-            Cancel
-          </button>
+        <div class="flex justify-end gap-2 mt-4">
+          <button @click="closeModal" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
           <button @click="saveMember" class="px-4 py-2 bg-blue-600 text-white rounded">
             {{ isEditMode ? 'Update' : 'Save' }}
           </button>
@@ -345,8 +353,7 @@ const closeViewModal = () => {
       <div class="bg-white p-6 rounded-lg w-full max-w-xl max-h-[90vh] overflow-y-auto">
         <h2 class="text-xl font-bold mb-4">Member Details</h2>
         <div class="grid grid-cols-2 gap-4">
-          <div><strong>Name:</strong> {{ selectedMember.first_name }}</div>
-          <div><strong>Name:</strong> {{ selectedMember.last_name }}</div>
+          <div><strong>Name:</strong> {{ selectedMember.first_name }} {{ selectedMember.last_name }}</div>
           <div><strong>Email:</strong> {{ selectedMember.email }}</div>
           <div><strong>Mobile:</strong> {{ selectedMember.mobile }}</div>
           <div><strong>Address:</strong> {{ selectedMember.address }}</div>
@@ -356,24 +363,13 @@ const closeViewModal = () => {
             <img :src="selectedMember.image_url" class="h-32 border rounded" />
           </div>
         </div>
-        <div class="mt-4 text-right">
+        <div class="mt-4 flex justify-end gap-2">
+          <button @click="openModal(selectedMember)"
+            class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Edit</button>
+          <button @click="deleteMember(selectedMember.id)"
+            class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
           <button @click="closeViewModal" class="px-4 py-2 bg-blue-600 text-white rounded">Close</button>
         </div>
-
-        <div class="mt-4 text-right">
-          <button @click="openModal(selectedMember)"
-            class="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-yellow-600 transition">
-            Edit
-          </button>
-        </div>
-
-        <div class="mt-4 text-right">
-          <button @click="deleteMember(selectedMember.id)"
-            class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition">
-            Delete
-          </button>
-        </div>
-
       </div>
     </div>
   </div>
