@@ -57,17 +57,19 @@ onBeforeUnmount(() => {
 <template>
   <header class="sticky top-0 z-50 flex items-center justify-between bg-white shadow py-3 px-4 sm:px-6 lg:px-4">
     <div class="flex items-center space-x-4">
-      <button @click="emit('toggle-mobile-sidebar')" class="lg:hidden text-gray-600">
+      <button @click="emit('toggle-mobile-sidebar')" class="lg:hidden text-gray-600 mt-1">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
-      <button @click="emit('toggle-sidebar')" class="hidden lg:inline text-gray-600">
+      <button @click="emit('toggle-sidebar')" class="hidden lg:inline text-gray-600 mt-1">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M3 6h18M3 18h18" />
         </svg>
       </button>
+      
       <a href="/org-dashboard/index"><span class="text-xl font-semibold text-gray-600">{{ org_name }}</span></a>
+
     </div>
 
     <div class="flex items-center space-x-4">
