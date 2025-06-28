@@ -132,12 +132,12 @@ const handleImage = (e) => {
 
 const saveMember = async () => {
   const formData = new FormData();
-  formData.append('first_name', form.value.first_name);
-  formData.append('last_name', form.value.last_name);
-  formData.append('email', form.value.email);
-  formData.append('mobile', form.value.mobile);
-  formData.append('address', form.value.address);
-  formData.append('note', form.value.note);
+  formData.append('first_name', form.value.first_name ?? '');
+  formData.append('last_name', form.value.last_name ?? '');
+  formData.append('email', form.value.email ?? '');
+  formData.append('mobile', form.value.mobile ?? '');
+  formData.append('address', form.value.address ?? '');
+  formData.append('note', form.value.note ?? '');
   formData.append('is_active', form.value.is_active ? '1' : '0');
   if (form.value.image_file) {
     formData.append('image_path', form.value.image_file);
@@ -166,6 +166,7 @@ const saveMember = async () => {
 };
 
 const deleteMember = async (id) => {
+  closeViewModal();
   const result = await Swal.fire({
     title: 'Are you sure?',
     text: 'This will permanently delete the member.',
@@ -222,6 +223,14 @@ const totalPages = computed(() => {
   return Math.max(1, Math.ceil(filteredMembers.value.length / itemsPerPage.value));
 });
 
+// ✅ Item Summary
+const itemSummary = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage.value + 1;
+    const end = Math.min(currentPage.value * itemsPerPage.value, filteredMembers.value.length);
+    const total = filteredMembers.value.length;
+    return `Items ${start}-${end} of ${total}`;
+});
+
 // Pagination Methods
 watch([search, itemsPerPage], () => {
   currentPage.value = 1;
@@ -233,7 +242,7 @@ watch([search, itemsPerPage], () => {
 <template>
   <div>
     <!-- Header -->
-    <div class="flex flex-wrap justify-between items-center py-4 gap-2 border-b">
+    <div class="flex flex-wrap justify-between items-center py-4 gap-2">
       <h2 class="text-lg font-semibold text-gray-600">Independent Members (Unlinked)</h2>
       <div class="flex gap-2">
         <input v-model="search" type="text" placeholder="Search..."
@@ -250,6 +259,7 @@ watch([search, itemsPerPage], () => {
       </div>
     </div>
 
+    <!-- Column View and Visibility Options -->
     <div class="border rounded bg-gray-50 p-4 flex flex-wrap gap-6 items-center mb-5">
       <!-- Column View Dropdown -->
       <div class="flex items-center gap-2">
@@ -269,8 +279,6 @@ watch([search, itemsPerPage], () => {
         </label>
       </div>
     </div>
-
-
 
     <!-- Table -->
     <div class="overflow-x-auto">
@@ -294,24 +302,24 @@ watch([search, itemsPerPage], () => {
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <tr v-for="(member, index) in paginatedMembers" :key="member.id" class="hover:bg-gray-50 transition">
-            <td class="py-4 px-4 text-sm text-gray-700">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
-            <td v-if="visibleColumns.image" class="py-4">
+            <td class="py-3 px-4 text-sm text-gray-700">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
+            <td v-if="visibleColumns.image" class="py-3">
               <img :src="member.image_url || placeholderImage" class="h-10 w-10 rounded-full object-cover" />
             </td>
-            <td v-if="visibleColumns.name" class="py-4 text-sm text-gray-700">
+            <td v-if="visibleColumns.name" class="py-3 text-sm text-gray-700">
               {{ member.first_name }} {{ member.last_name }}
             </td>
-            <td v-if="visibleColumns.email && columnView === 'detailed'" class="py-4 text-sm text-gray-700">{{
+            <td v-if="visibleColumns.email && columnView === 'detailed'" class="py-3 text-sm text-gray-700">{{
               member.email }}</td>
-            <td v-if="visibleColumns.mobile" class="py-4 text-sm text-gray-700">{{ member.mobile }}</td>
-            <td v-if="visibleColumns.address && columnView === 'detailed'" class="py-4 text-sm text-gray-700">{{
+            <td v-if="visibleColumns.mobile" class="py-3 text-sm text-gray-700">{{ member.mobile }}</td>
+            <td v-if="visibleColumns.address && columnView === 'detailed'" class="py-3 text-sm text-gray-700">{{
               member.address }}</td>
-            <td v-if="visibleColumns.note && columnView === 'detailed'" class="py-4 text-sm text-gray-700">{{
+            <td v-if="visibleColumns.note && columnView === 'detailed'" class="py-3 text-sm text-gray-700">{{
               member.note }}</td>
-            <td v-if="visibleColumns.is_active" class="py-4 text-sm text-gray-700">
+            <td v-if="visibleColumns.is_active" class="py-3 text-sm text-gray-700">
               {{ member.is_active === 1 || member.is_active === true ? 'Yes' : 'No' }}
             </td>
-            <td v-if="visibleColumns.action" class="py-4 text-sm">
+            <td v-if="visibleColumns.action" class="py-3 text-sm">
               <button @click="openViewModal(member)"
                 class="text-blue-600 hover:underline hover:text-blue-800">Details</button>
             </td>
@@ -324,7 +332,7 @@ watch([search, itemsPerPage], () => {
     <!-- ✅ Pagination -->
     <div v-if="filteredMembers.length > 0" class="flex justify-between items-center mt-4">
       <div class="text-sm text-gray-600">
-        Page {{ currentPage }} of {{ totalPages }}
+       {{ itemSummary }} | Page {{ currentPage }} of {{ totalPages }}
       </div>
       <div class="flex items-center gap-4">
         <div class="flex items-center gap-2">

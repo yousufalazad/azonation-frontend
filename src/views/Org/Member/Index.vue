@@ -80,7 +80,6 @@ const exportToWord = async () => {
   saveAs(blob, "OrgMembers.docx");
 };
 
-
 // ✅ Column Profile Logic
 const columnProfiles = {
   minimal: ['full_name', 'membership_type.name', 'existing_membership_id'],
@@ -111,11 +110,12 @@ const allHeaders = [
   { text: 'Actions', value: 'actions' }
 ]
 
+// Visibility filter
 const headers = computed(() =>
   allHeaders.filter(h => visibleColumns.value.includes(h.value))
 )
 
-
+// Visibility
 const columnVisibility = ref({
   image_url: true,
   full_name: true,
@@ -125,7 +125,6 @@ const columnVisibility = ref({
   membership_age: true, // ✅ Add this
   actions: true
 })
-
 
 // ✅ Fetch member list
 const fetchMemberList = async () => {
@@ -205,7 +204,6 @@ const filteredMembers = computed(() => {
   return list
 })
 
-
 // ✅ Export functions
 const exportToExcel = () => {
   const data = filteredMembers.value.map(m => ({
@@ -220,7 +218,6 @@ const exportToExcel = () => {
   utils.book_append_sheet(wb, ws, "Members")
   writeFileXLSX(wb, "OrgMembers.xlsx")
 }
-
 
 const exportToCSV = () => {
   const data = filteredMembers.value.map(m => [
@@ -433,9 +430,12 @@ onMounted(() => {
 
       <!-- Full Name -->
       <template #item-full_name="{ full_name }">
-        <span class="text-gray-700">
-          {{ full_name || '--' }}
-        </span>
+        <div class="py-5">
+          <span class="text-gray-700">
+            {{ full_name || '--' }}
+          </span>
+        </div>
+
       </template>
 
       <!-- Membership ID -->
@@ -455,7 +455,7 @@ onMounted(() => {
       <!-- Joining Date -->
       <template #item-membership_start_date="{ membership_start_date }">
         <span>
-          {{ membership_start_date ? dayjs(membership_start_date).format('YYYY-MM-DD') : '--' }}
+          {{ membership_start_date ? dayjs(membership_start_date).format('DD-MM-YYYY') : '--' }}
         </span>
       </template>
 
@@ -476,8 +476,6 @@ onMounted(() => {
       </template>
 
     </EasyDataTable>
-
-
 
     <!-- ✅ View Member Modal -->
     <div v-if="viewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -551,7 +549,6 @@ onMounted(() => {
       </div>
     </div>
 
-
     <!-- ✅ Edit Member Modal -->
     <div v-if="editModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 relative">
@@ -618,5 +615,34 @@ onMounted(() => {
         </form>
       </div>
     </div>
+
   </div>
 </template>
+
+<!-- <style scoped>
+.easy-data-table__body tr {
+  height: 180px; /* Adjust height as needed */
+}
+
+.easy-data-table__body td {
+  padding-top: 200px;
+  padding-bottom: 200px;
+}
+.easy-data-table__body td img {
+  height: 80px; /* Adjust image height */
+  width: 80px; /* Adjust image width */
+  object-fit: cover; /* Maintain aspect ratio */
+}
+.easy-data-table__body td .text-gray-700 {
+  font-size: 14px; /* Adjust text size */
+}
+.easy-data-table__body td .text-xs {
+  font-size: 12px; /* Adjust text size for smaller text */
+}
+.easy-data-table__body td .text-sm {
+  font-size: 14px; /* Adjust text size for small text */
+}
+.easy-data-table__body td .text-right {
+  text-align: left; /* Align text to the right */
+}
+</style> -->

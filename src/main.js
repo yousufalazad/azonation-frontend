@@ -2,6 +2,7 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router/router";
 import "./assets/css/tailwind.css";
+import "./assets/style.css";
 
 import 'vue3-easy-data-table/dist/style.css'
 import EasyDataTable from 'vue3-easy-data-table'
