@@ -11,6 +11,11 @@ import autoTable from 'jspdf-autotable'
 const auth = authStore
 const router = useRouter()
 
+// ✅ Pagination
+const currentPage = ref(1);
+const itemsPerPage = ref(10);
+
+
 // ✅ State
 const transactionList = ref([])
 const fundList = ref([])
@@ -111,6 +116,25 @@ const filteredTransactions = computed(() => {
 
     return list
 })
+
+// ✅ Paginated Transactions
+const paginatedTransactions = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage.value;
+    const end = start + itemsPerPage.value;
+    return filteredTransactions.value.slice(start, end);
+});
+
+const totalPages = computed(() => {
+    return Math.max(1, Math.ceil(filteredTransactions.value.length / itemsPerPage.value));
+});
+
+
+// ✅ Reset Pagination on Filter Change
+watch([search, fund_id, dateFrom, dateTo, itemsPerPage], () => {
+    currentPage.value = 1;
+});
+
+
 
 // ✅ Balance Calculation
 const balance = computed(() => {
@@ -364,11 +388,12 @@ onMounted(() => {
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
-                    <tr v-for="(transaction, index) in filteredTransactions" :key="transaction.id">
-                        <td class="px-3 py-2">{{ index + 1 }}</td>
+                    <!-- <tr v-for="(transaction, index) in filteredTransactions" :key="transaction.id"> -->
+                    <tr v-for="(transaction, index) in paginatedTransactions" :key="transaction.id">
+                        <td class="px-3 py-2">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
                         <td v-if="visibleColumns.includes('date')" class="px-3 py-2">{{ transaction.date }}</td>
                         <td v-if="visibleColumns.includes('title')" class="px-3 py-2">{{ transaction.transaction_title
-                        }}</td>
+                            }}</td>
                         <td v-if="visibleColumns.includes('fund')" class="px-3 py-2">{{ transaction.funds?.name }}</td>
                         <td v-if="visibleColumns.includes('income')" class="px-3 py-2 text-green-600 font-medium">
                             <span v-if="transaction.type === 'income'">{{ transaction.amount }}</span>
@@ -391,6 +416,48 @@ onMounted(() => {
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <!-- ✅ Pagination -->
+        <div v-if="filteredTransactions.length > 0" class="flex justify-between items-center mt-4">
+            <div class="text-sm text-gray-600">
+                Page {{ currentPage }} of {{ totalPages }}
+            </div>
+
+            <div class="flex items-center gap-2">
+                <label class="text-sm">Items per page:</label>
+                <select v-model="itemsPerPage" class="border rounded px-2 py-1 text-sm">
+                    <option :value="5">5</option>
+                    <option :value="10">10</option>
+                    <option :value="20">20</option>
+                    <option :value="50">50</option>
+                    <option :value="100">100</option>
+                    <option :value="250">250</option>
+                    <option :value="500">500</option>
+                    <option :value="1000">1000</option>
+                </select>
+            </div>
+
+            <div class="flex gap-2">
+                <button @click="currentPage = 1" :disabled="currentPage === 1" class="px-3 py-1 border rounded text-sm"
+                    :class="currentPage === 1 ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-100'">
+                    First
+                </button>
+                <button @click="currentPage--" :disabled="currentPage === 1" class="px-3 py-1 border rounded text-sm"
+                    :class="currentPage === 1 ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-100'">
+                    Prev
+                </button>
+                <button @click="currentPage++" :disabled="currentPage === totalPages"
+                    class="px-3 py-1 border rounded text-sm"
+                    :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-100'">
+                    Next
+                </button>
+                <button @click="currentPage = totalPages" :disabled="currentPage === totalPages"
+                    class="px-3 py-1 border rounded text-sm"
+                    :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-100'">
+                    Last
+                </button>
+            </div>
         </div>
 
         <div v-if="!filteredTransactions.length" class="text-center text-gray-500 text-sm mt-4">

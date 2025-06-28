@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
@@ -21,10 +21,6 @@ const search = ref('');
 
 // Column View Mode
 const columnView = ref('detailed');
-
-// ✅ Pagination
-const currentPage = ref(1);
-const itemsPerPage = ref(10);
 
 // Column Visibility
 const visibleColumns = ref({
@@ -76,7 +72,6 @@ const filteredMembers = computed(() => {
 
 // Modal functions
 const openModal = (member = null) => {
-  closeViewModal();
   isEditMode.value = !!member;
   form.value = member
     ? {
@@ -210,24 +205,6 @@ const exportExcel = () => {
 const exportPDF = () => {
   exportToPDF(filteredMembers.value, 'independent_members');
 };
-
-// Pagination Computed Properties
-const paginatedMembers = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value;
-  const end = start + itemsPerPage.value;
-  return filteredMembers.value.slice(start, end);
-});
-
-const totalPages = computed(() => {
-  return Math.max(1, Math.ceil(filteredMembers.value.length / itemsPerPage.value));
-});
-
-// Pagination Methods
-watch([search, itemsPerPage], () => {
-  currentPage.value = 1;
-});
-
-
 </script>
 
 <template>
@@ -277,7 +254,6 @@ watch([search, itemsPerPage], () => {
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th class="py-3 px-4 text-left text-xs font-bold text-gray-600">#</th>
             <th v-if="visibleColumns.image" class="py-3 text-left text-xs font-bold text-gray-600">Image</th>
             <th v-if="visibleColumns.name" class="py-3 text-left text-xs font-bold text-gray-600">Name</th>
             <th v-if="visibleColumns.email && columnView === 'detailed'" class="py-3 text-left text-xs font-bold">Email
@@ -293,8 +269,7 @@ watch([search, itemsPerPage], () => {
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="(member, index) in paginatedMembers" :key="member.id" class="hover:bg-gray-50 transition">
-            <td class="py-4 px-4 text-sm text-gray-700">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
+          <tr v-for="(member, index) in filteredMembers" :key="member.id" class="hover:bg-gray-50 transition">
             <td v-if="visibleColumns.image" class="py-4">
               <img :src="member.image_url || placeholderImage" class="h-10 w-10 rounded-full object-cover" />
             </td>
@@ -320,48 +295,6 @@ watch([search, itemsPerPage], () => {
         </tbody>
       </table>
     </div>
-
-    <!-- ✅ Pagination -->
-    <div v-if="filteredMembers.length > 0" class="flex justify-between items-center mt-4">
-      <div class="text-sm text-gray-600">
-        Page {{ currentPage }} of {{ totalPages }}
-      </div>
-      <div class="flex items-center gap-4">
-        <div class="flex items-center gap-2">
-          <label class="text-sm">Items per page:</label>
-          <select v-model="itemsPerPage" class="border rounded px-2 py-1 text-sm">
-            <option :value="5">5</option>
-            <option :value="10">10</option>
-            <option :value="20">20</option>
-            <option :value="50">50</option>
-            <option :value="100">100</option>
-            <option :value="250">250</option>
-            <option :value="500">500</option>
-            <option :value="1000">1000</option>
-          </select>
-        </div>
-        <div class="flex gap-2">
-          <button @click="currentPage = 1" :disabled="currentPage === 1" class="px-3 py-1 border rounded text-sm"
-            :class="currentPage === 1 ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-100'">
-            First
-          </button>
-          <button @click="currentPage--" :disabled="currentPage === 1" class="px-3 py-1 border rounded text-sm"
-            :class="currentPage === 1 ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-100'">
-            Prev
-          </button>
-          <button @click="currentPage++" :disabled="currentPage === totalPages" class="px-3 py-1 border rounded text-sm"
-            :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-100'">
-            Next
-          </button>
-          <button @click="currentPage = totalPages" :disabled="currentPage === totalPages"
-            class="px-3 py-1 border rounded text-sm"
-            :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-100'">
-            Last
-          </button>
-        </div>
-      </div>
-    </div>
-
 
     <!-- Add/Edit Modal -->
     <div v-if="isModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
