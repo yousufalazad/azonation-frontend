@@ -26,6 +26,20 @@ const columnView = ref('detailed');
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
 
+// Sorting
+const sortBy = ref('');
+const sortDirection = ref('asc');
+
+// Handle sorting
+const sort = (column) => {
+  if (sortBy.value === column) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortBy.value = column;
+    sortDirection.value = 'asc';
+  }
+};
+
 // Column Visibility
 const visibleColumns = ref({
   image: true,
@@ -64,7 +78,7 @@ const fetchMembers = async () => {
 
 onMounted(fetchMembers);
 
-// Filtered Members
+// ✅ Filtered Members
 const filteredMembers = computed(() => {
   if (!search.value) return members.value;
   const keyword = search.value.toLowerCase();
@@ -72,6 +86,25 @@ const filteredMembers = computed(() => {
     [m.first_name, m.last_name, m.email, m.mobile]
       .some((field) => field?.toLowerCase().includes(keyword))
   );
+});
+
+// ✅ Sorted Members
+const sortedMembers = computed(() => {
+  if (!sortBy.value) return filteredMembers.value;
+
+  return [...filteredMembers.value].sort((a, b) => {
+    const aValue = sortBy.value === 'first_name'
+      ? (a.first_name + ' ' + (a.last_name ?? '')).toLowerCase()
+      : (a[sortBy.value] ?? '').toString().toLowerCase();
+
+    const bValue = sortBy.value === 'first_name'
+      ? (b.first_name + ' ' + (b.last_name ?? '')).toLowerCase()
+      : (b[sortBy.value] ?? '').toString().toLowerCase();
+
+    if (aValue < bValue) return sortDirection.value === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection.value === 'asc' ? 1 : -1;
+    return 0;
+  });
 });
 
 // Modal functions
@@ -216,8 +249,9 @@ const exportPDF = () => {
 const paginatedMembers = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value;
   const end = start + itemsPerPage.value;
-  return filteredMembers.value.slice(start, end);
+  return sortedMembers.value.slice(start, end);
 });
+
 
 const totalPages = computed(() => {
   return Math.max(1, Math.ceil(filteredMembers.value.length / itemsPerPage.value));
@@ -225,10 +259,10 @@ const totalPages = computed(() => {
 
 // ✅ Item Summary
 const itemSummary = computed(() => {
-    const start = (currentPage.value - 1) * itemsPerPage.value + 1;
-    const end = Math.min(currentPage.value * itemsPerPage.value, filteredMembers.value.length);
-    const total = filteredMembers.value.length;
-    return `Items ${start}-${end} of ${total}`;
+  const start = (currentPage.value - 1) * itemsPerPage.value + 1;
+  const end = Math.min(currentPage.value * itemsPerPage.value, filteredMembers.value.length);
+  const total = filteredMembers.value.length;
+  return `Items ${start}-${end} of ${total}`;
 });
 
 // Pagination Methods
@@ -281,58 +315,115 @@ watch([search, itemsPerPage], () => {
     </div>
 
     <!-- Table -->
+    <!-- ✅ Table Component -->
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
+      <table class="min-w-full divide-y divide-gray-200 border">
         <thead class="bg-gray-50">
           <tr>
             <th class="py-3 px-4 text-left text-xs font-bold text-gray-600">#</th>
-            <th v-if="visibleColumns.image" class="py-3 text-left text-xs font-bold text-gray-600">Image</th>
-            <th v-if="visibleColumns.name" class="py-3 text-left text-xs font-bold text-gray-600">Name</th>
-            <th v-if="visibleColumns.email && columnView === 'detailed'" class="py-3 text-left text-xs font-bold">Email
+
+            <!-- Image -->
+            <th v-if="visibleColumns.image" class="py-3 text-left text-xs font-bold text-gray-600">
+              Image
             </th>
-            <th v-if="visibleColumns.mobile" class="py-3 text-left text-xs font-bold">Mobile</th>
-            <th v-if="visibleColumns.address && columnView === 'detailed'" class="py-3 text-left text-xs font-bold">
-              Address</th>
+
+            <!-- Name with Sorting -->
+            <th v-if="visibleColumns.name" @click="sort('first_name')"
+              class="cursor-pointer py-3 text-left text-xs font-bold text-gray-600 hover:text-blue-600">
+              Name
+              <span v-if="sortBy === 'first_name'">
+                {{ sortDirection === 'asc' ? '▲' : '▼' }}
+              </span>
+            </th>
+
+            <!-- Email with Sorting -->
+            <th v-if="visibleColumns.email && columnView === 'detailed'" @click="sort('email')"
+              class="cursor-pointer py-3 text-left text-xs font-bold hover:text-blue-600">
+              Email
+              <span v-if="sortBy === 'email'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+
+            <!-- Mobile with Sorting -->
+            <th v-if="visibleColumns.mobile" @click="sort('mobile')"
+              class="cursor-pointer py-3 text-left text-xs font-bold hover:text-blue-600">
+              Mobile
+              <span v-if="sortBy === 'mobile'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+
+            <!-- Address -->
+            <th v-if="visibleColumns.address && columnView === 'detailed'" @click="sort('address')"
+              class="cursor-pointer py-3 text-left text-xs font-bold hover:text-blue-600">
+              Address
+              <span v-if="sortBy === 'address'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+
+            <!-- Note -->
             <th v-if="visibleColumns.note && columnView === 'detailed'" class="py-3 text-left text-xs font-bold">Note
             </th>
-            <th v-if="visibleColumns.is_active" class="py-3 text-left text-xs font-bold">Active</th>
-            <th v-if="visibleColumns.action" class="py-3 text-left text-xs font-bold text-gray-600">Actions</th>
 
+            <!-- Active -->
+            <th v-if="visibleColumns.is_active" @click="sort('is_active')"
+              class="cursor-pointer py-3 text-left text-xs font-bold hover:text-blue-600">
+              Active
+              <span v-if="sortBy === 'is_active'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+
+            <!-- Actions -->
+            <th v-if="visibleColumns.action" class="py-3 text-left text-xs font-bold text-gray-600">
+              Actions
+            </th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
+
+        <tbody class="bg-white divide-y divide-gray-100">
           <tr v-for="(member, index) in paginatedMembers" :key="member.id" class="hover:bg-gray-50 transition">
-            <td class="py-3 px-4 text-sm text-gray-700">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
+            <td class="px-4 py-3 text-sm text-gray-700">
+              {{ (currentPage - 1) * itemsPerPage + index + 1 }}
+            </td>
+
             <td v-if="visibleColumns.image" class="py-3">
               <img :src="member.image_url || placeholderImage" class="h-10 w-10 rounded-full object-cover" />
             </td>
+
             <td v-if="visibleColumns.name" class="py-3 text-sm text-gray-700">
               {{ member.first_name }} {{ member.last_name }}
             </td>
-            <td v-if="visibleColumns.email && columnView === 'detailed'" class="py-3 text-sm text-gray-700">{{
-              member.email }}</td>
-            <td v-if="visibleColumns.mobile" class="py-3 text-sm text-gray-700">{{ member.mobile }}</td>
-            <td v-if="visibleColumns.address && columnView === 'detailed'" class="py-3 text-sm text-gray-700">{{
-              member.address }}</td>
-            <td v-if="visibleColumns.note && columnView === 'detailed'" class="py-3 text-sm text-gray-700">{{
-              member.note }}</td>
+
+            <td v-if="visibleColumns.email && columnView === 'detailed'" class="py-3 text-sm text-gray-700">
+              {{ member.email }}
+            </td>
+
+            <td v-if="visibleColumns.mobile" class="py-3 text-sm text-gray-700">
+              {{ member.mobile }}
+            </td>
+
+            <td v-if="visibleColumns.address && columnView === 'detailed'" class="py-3 text-sm text-gray-700">
+              {{ member.address }}
+            </td>
+
+            <td v-if="visibleColumns.note && columnView === 'detailed'" class="py-3 text-sm text-gray-700">
+              {{ member.note }}
+            </td>
+
             <td v-if="visibleColumns.is_active" class="py-3 text-sm text-gray-700">
               {{ member.is_active === 1 || member.is_active === true ? 'Yes' : 'No' }}
             </td>
-            <td v-if="visibleColumns.action" class="py-3 text-sm">
-              <button @click="openViewModal(member)"
-                class="text-blue-600 hover:underline hover:text-blue-800">Details</button>
-            </td>
 
+            <td v-if="visibleColumns.action" class="py-3 text-sm">
+              <button @click="openViewModal(member)" class="text-blue-600 hover:underline hover:text-blue-800">
+                Details
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
 
+
     <!-- ✅ Pagination -->
     <div v-if="filteredMembers.length > 0" class="flex justify-between items-center mt-4">
       <div class="text-sm text-gray-600">
-       {{ itemSummary }} | Page {{ currentPage }} of {{ totalPages }}
+        {{ itemSummary }} | Page {{ currentPage }} of {{ totalPages }}
       </div>
       <div class="flex items-center gap-4">
         <div class="flex items-center gap-2">

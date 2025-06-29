@@ -1,42 +1,46 @@
 <template>
   <div>
-    <h2>Income Report (Past 12 Months)</h2>
-    <div style="width: 600px; height: 400px;">
-      <line-chart v-if="chartData" :chart-data="chartData" />
+    <h2 class="text-lg font-semibold mb-4">Income Report (Past 12 Months)</h2>
+    <div class="border p-4 rounded" style="width: 600px; height: 400px;">
+      <LineChart v-if="chartData" :chart-data="chartData" ref="lineChart" />
+    </div>
+
+    <!-- Download Buttons -->
+    <div class="mt-4 flex gap-4">
+      <button @click="downloadImage('png')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+        Download PNG
+      </button>
+      <button @click="downloadImage('jpeg')" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+        Download JPEG
+      </button>
+      <button @click="downloadPDF" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+        Download PDF
+      </button>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { Line } from 'vue-chartjs';
-import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale } from 'chart.js';
-import Swal from 'sweetalert2';
+import LineChart from './LineChart.vue';
 import { authStore } from '../../../store/authStore';
-import moment from 'moment'; // Make sure you have moment.js installed
-
-// Register Chart.js components
-ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale);
+import moment from 'moment';
+import Swal from 'sweetalert2';
+import jsPDF from 'jspdf';
 
 const auth = authStore;
 const chartData = ref(null);
+const lineChart = ref(null);
 
-// Fetch report data for the past 12 months
-const fetchReportData = async () => {
+const fetchIncomeReportData = async () => {
   try {
-    // Clear existing chart data
-    chartData.value = null;
-
-    const response = await auth.fetchProtectedApi('/api/reports', {}, 'GET'); // Adjust the API endpoint if necessary
-    console.log(response);
+    const response = await auth.fetchProtectedApi('/api/reports', {}, 'GET');
     if (response.status) {
-      // Prepare array for all months in the last 12 months
       const allMonths = Array.from({ length: 12 }, (_, i) => {
         const month = moment().subtract(i, 'months').format('YYYY-MM');
         return { month, total_income: 0 };
       });
 
-      // Populate with actual income data
       response.data.forEach(item => {
         const index = allMonths.findIndex(m => m.month === `${item.year}-${String(item.month).padStart(2, '0')}`);
         if (index !== -1) {
@@ -44,12 +48,9 @@ const fetchReportData = async () => {
         }
       });
 
-      // Set the labels and income data in ascending order
-      const labels = allMonths.map(item => item.month).reverse(); // Reverse the labels
-      const income = allMonths.map(item => item.total_income).reverse(); // Reverse the income data
+      const labels = allMonths.map(item => item.month).reverse();
+      const income = allMonths.map(item => item.total_income).reverse();
 
-
-      // Set chart data
       chartData.value = {
         labels,
         datasets: [
@@ -58,7 +59,7 @@ const fetchReportData = async () => {
             backgroundColor: '#4CAF58',
             borderColor: '#4CAF50',
             data: income,
-            fill: false,
+            fill: false
           }
         ]
       };
@@ -71,54 +72,40 @@ const fetchReportData = async () => {
   }
 };
 
-// Fetch data on mount
 onMounted(() => {
-  fetchReportData();
+  fetchIncomeReportData();
 });
 
-// Line chart component
-const LineChart = {
-  props: {
-    chartData: {
-      type: Object,
-      required: true
-    }
-  },
-  components: {
-    Line
-  },
-  setup(props) {
-    const chartOptions = {
-      responsive: true,
-      maintainAspectRatio: true, // Maintain aspect ratio
-      scales: {
-        y: {
-          beginAtZero: true, // Ensure the y-axis starts at 0
-          ticks: {
-            stepSize: 1000, // Adjust based on your income range
-            max: Math.max(...props.chartData.datasets[0].data) + 1000 // Adjusting max to make space
-          }
-        },
-        x: {
-          title: {
-            display: true,
-            text: 'Months'
-          }
-        }
-      }
-    };
+// 📥 Download as Image
+const downloadImage = (type) => {
+  const chartInstance = lineChart.value?.chart?.chart;
+  if (chartInstance) {
+    const link = document.createElement('a');
+    link.href = chartInstance.toBase64Image(`image/${type}`);
+    link.download = `income-report.${type}`;
+    link.click();
+  } else {
+    Swal.fire('Error', 'Chart not loaded yet', 'error');
+  }
+};
 
-    return { chartOptions };
-  },
-  template: `
-    <Line
-      :data="chartData"
-      :options="chartOptions"
-    />
-  `
+// 📥 Download as PDF
+const downloadPDF = () => {
+  const chartInstance = lineChart.value?.chart?.chart;
+  if (chartInstance) {
+    const canvas = chartInstance.canvas;
+    const imgData = canvas.toDataURL('image/png');
+
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'pt',
+      format: [canvas.width, canvas.height]
+    });
+
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+    pdf.save('income-report.pdf');
+  } else {
+    Swal.fire('Error', 'Chart not loaded yet', 'error');
+  }
 };
 </script>
-
-<style scoped>
-/* You can adjust the styling if needed */
-</style>

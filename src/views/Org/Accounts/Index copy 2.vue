@@ -117,47 +117,11 @@ const filteredTransactions = computed(() => {
     return list
 })
 
-// ✅ Sorting
-const sortBy = ref('')
-const sortDirection = ref('asc')
-
-const sort = (column) => {
-    if (sortBy.value === column) {
-        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-    } else {
-        sortBy.value = column
-        sortDirection.value = 'asc'
-    }
-}
-
-const sortedTransactions = computed(() => {
-    if (!sortBy.value) return filteredTransactions.value
-
-    return [...filteredTransactions.value].sort((a, b) => {
-        let aValue = a[sortBy.value]
-        let bValue = b[sortBy.value]
-
-        if (sortBy.value === 'fund') {
-            aValue = a.funds?.name || ''
-            bValue = b.funds?.name || ''
-        }
-
-        aValue = (aValue ?? '').toString().toLowerCase()
-        bValue = (bValue ?? '').toString().toLowerCase()
-
-        if (aValue < bValue) return sortDirection.value === 'asc' ? -1 : 1
-        if (aValue > bValue) return sortDirection.value === 'asc' ? 1 : -1
-        return 0
-    })
-})
-
-
-
 // ✅ Paginated Transactions
 const paginatedTransactions = computed(() => {
     const start = (currentPage.value - 1) * itemsPerPage.value;
     const end = start + itemsPerPage.value;
-    return sortedTransactions.value.slice(start, end);
+    return filteredTransactions.value.slice(start, end);
 });
 
 const totalPages = computed(() => {
@@ -423,37 +387,13 @@ onMounted(() => {
             <table class="min-w-full border border-gray-200 text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-3 py-2 text-left font-bold text-gray-700">#</th>
-                        <th v-if="visibleColumns.includes('date')" @click="sort('date')"
-                            class="cursor-pointer px-3 py-2 text-left font-bold text-gray-700 hover:text-blue-600">
-                            Date
-                            <span v-if="sortBy === 'date'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                        </th>
-
-                        <th v-if="visibleColumns.includes('title')" @click="sort('transaction_title')"
-                            class="cursor-pointer px-3 py-2 text-left font-bold text-gray-700 hover:text-blue-600">
-                            Title
-                            <span v-if="sortBy === 'transaction_title'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                        </th>
-
-                        <th v-if="visibleColumns.includes('fund')" @click="sort('fund')"
-                            class="cursor-pointer px-3 py-2 text-left font-bold text-gray-700 hover:text-blue-600">
-                            Fund
-                            <span v-if="sortBy === 'fund'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                        </th>
-
-                        <th v-if="visibleColumns.includes('income')" @click="sort('amount')"
-                            class="cursor-pointer px-3 py-2 text-left font-bold text-gray-700 hover:text-blue-600">
-                            Income
-                            <span v-if="sortBy === 'amount'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                        </th>
-
-                        <th v-if="visibleColumns.includes('expense')" @click="sort('amount')"
-                            class="cursor-pointer px-3 py-2 text-left font-bold text-gray-700 hover:text-blue-600">
-                            Expense
-                            <span v-if="sortBy === 'amount'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                        </th>
-                        <th v-if="visibleColumns.includes('actions')" class="px-3 py-2 text-left">Action</th>
+                        <th class="px-3 py-2 text-left font-medium text-gray-700">#</th>
+                        <th v-if="visibleColumns.includes('date')" class="px-3 py-2 text-left">Date</th>
+                        <th v-if="visibleColumns.includes('title')" class="px-3 py-2 text-left">Title</th>
+                        <th v-if="visibleColumns.includes('fund')" class="px-3 py-2 text-left">Fund</th>
+                        <th v-if="visibleColumns.includes('income')" class="px-3 py-2 text-left">Income</th>
+                        <th v-if="visibleColumns.includes('expense')" class="px-3 py-2 text-left">Expense</th>
+                        <th v-if="visibleColumns.includes('actions')" class="px-3 py-2 text-left">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
@@ -462,7 +402,7 @@ onMounted(() => {
                         <td class="px-3 py-2">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
                         <td v-if="visibleColumns.includes('date')" class="px-3 py-2">{{ transaction.date }}</td>
                         <td v-if="visibleColumns.includes('title')" class="px-3 py-2">{{ transaction.transaction_title
-                            }}</td>
+                        }}</td>
                         <td v-if="visibleColumns.includes('fund')" class="px-3 py-2">{{ transaction.funds?.name }}</td>
                         <td v-if="visibleColumns.includes('income')" class="px-3 py-2 text-green-600 font-medium">
                             <span v-if="transaction.type === 'income'">{{ transaction.amount }}</span>

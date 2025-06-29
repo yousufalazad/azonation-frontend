@@ -17,18 +17,44 @@ const loading = ref(false)
 const search = ref('')
 const quickFilter = ref('')
 const selectedProfile = ref(localStorage.getItem('asset_profile') || 'detailed')
-const visibleColumns = ref(JSON.parse(localStorage.getItem('asset_columns')) || ['name', 'quantity', 'responsible_user_name', 'status', 'is_active', 'actions'])
+const visibleColumns = ref(JSON.parse(localStorage.getItem('asset_columns')) || ['name', 'quantity', 'responsible_user_first_name', 'status', 'is_active', 'actions'])
+
+//get records from API
+const getRecords = async () => {
+  loading.value = true
+  try {
+    const res = await auth.fetchProtectedApi('/api/assets', {}, 'GET')
+    if (res.status) {
+      recordList.value = res.data.map(r => ({
+        id: r.id,
+        name: r.name,
+        quantity: r.quantity,
+        responsible_user_first_name: r.responsible_user_first_name,
+        responsible_user_last_name: r.responsible_user_last_name,
+        responsible_user_full_name: `${r.responsible_user_first_name ?? ''} ${r.responsible_user_last_name ?? ''}`.trim(), // ✅ Combine first and last names
+        status: r.asset_lifecycle_statuses_name,
+        is_active: r.is_active === 1 ? 'Yes' : 'No'
+      }))
+    } else {
+      recordList.value = []
+    }
+  } catch (err) {
+    console.error('Error fetching assets:', err)
+  } finally {
+    loading.value = false
+  }
+}
 
 const columnProfiles = {
   minimal: ['name', 'status', 'actions'],
-  detailed: ['name', 'quantity', 'responsible_user_name', 'status', 'is_active', 'actions']
+  detailed: ['name', 'quantity', 'responsible_user_full_name', 'status', 'is_active', 'actions']
 }
 
 const headers = [
   { text: 'Name', value: 'name', sortable: true },
   { text: 'Quantity', value: 'quantity', sortable: true },
-  { text: 'Responsible User', value: 'responsible_user_name', sortable: true },
   { text: 'Lifecycle Status', value: 'status', sortable: true },
+  { text: 'Responsible User', value: 'responsible_user_full_name', sortable: true },
   { text: 'Is Active', value: 'is_active', sortable: true },
   { text: 'Actions', value: 'actions' }
 ]
@@ -54,29 +80,7 @@ const filteredAssets = computed(() => {
   })
 })
 
-const getRecords = async () => {
-  loading.value = true
-  try {
-    const res = await auth.fetchProtectedApi('/api/assets', {}, 'GET')
-    if (res.status) {
-      recordList.value = res.data.map(r => ({
-        id: r.id,
-        name: r.name,
-        quantity: r.quantity,
-        responsible_user_name: r.responsible_user_name,
-        status: r.asset_lifecycle_statuses_name,
-        is_active: r.is_active === 1 ? 'Yes' : 'No'
-      }))
-    } else {
-      recordList.value = []
-    }
-  } catch (err) {
-    console.error('Error fetching assets:', err)
-  } finally {
-    loading.value = false
-  }
-}
-
+// Delete record function
 const deleteRecord = async (id) => {
   const result = await Swal.fire({
     title: 'Are you sure?',
