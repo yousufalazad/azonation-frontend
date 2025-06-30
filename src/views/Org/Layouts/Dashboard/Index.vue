@@ -644,7 +644,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-screen overflow-y-auto py-2">
+  <div class="py-2">
     <div v-if="auth.isAuthenticated && userType === 'organisation'">
       <!-- Dashboard Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -704,7 +704,7 @@ onMounted(() => {
             </button>
           </router-link>
 
-          <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
+          <!-- <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
             Print
           </button>
 
@@ -714,11 +714,11 @@ onMounted(() => {
 
           <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
             Excel
-          </button>
+          </button> -->
 
           <a href="/org-dashboard/past-members">
             <button class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
-              Past Members
+              Former Members
             </button>
           </a>
 
@@ -971,13 +971,46 @@ onMounted(() => {
     </div>
     <!-- Membership Growth Chart -->
     <div class="mt-8">
-      <h2 class="text-lg font-semibold text-gray-600 mb-4">Membership Growth (Last 12 Months)</h2>
+      <h2 class="text-lg font-semibold text-gray-600 mb-4">Membership Growth Reports (Last 12 Months)</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-white shadow-md rounded-2xl p-6">
+          <h3 class="text-base font-medium text-gray-600 mb-2">Total Member</h3>
           <line-chart-membership v-if="chartDataMembership" :chart-data-membership="chartDataMembership" />
           <p v-else class="text-gray-500 text-sm">Loading chart...</p>
         </div>
       </div>
+    </div>
+
+    <!-- Program Chart -->
+    <div class="mt-8">
+      <h2 class="text-lg font-semibold text-gray-600 mb-4">Program Reports (Last 12 Months)</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <!-- Meeting Chart -->
+        <div class="bg-white shadow-md rounded-2xl p-6">
+          <h3 class="text-base font-medium text-gray-600 mb-2">Meeting</h3>
+          <line-chart-membership v-if="chartDataMembership" :chart-data-membership="chartDataMembership" />
+          <p v-else class="text-gray-500 text-sm">Loading chart...</p>
+        </div>
+
+        <!-- Event Chart -->
+        <div class="bg-white shadow-md rounded-2xl p-6">
+          <h3 class="text-base font-medium text-gray-600 mb-2">Event</h3>
+          <line-chart-membership v-if="chartDataMembership" :chart-data-membership="chartDataMembership" />
+          <p v-else class="text-gray-500 text-sm">Loading chart...</p>
+        </div>
+
+        <!-- Project Chart -->
+        <div class="bg-white shadow-md rounded-2xl p-6">
+          <h3 class="text-base font-medium text-gray-600 mb-2">Project</h3>
+          <line-chart-membership v-if="chartDataMembership" :chart-data-membership="chartDataMembership" />
+          <p v-else class="text-gray-500 text-sm">Loading chart...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-5 py-5 mb-5 pb-5 mt-8">
+      <p></p>
     </div>
   </div>
 </template>

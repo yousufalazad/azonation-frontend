@@ -24,8 +24,8 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
     <!-- Sidebar -->
     <aside
       :class="[
-        'bg-white shadow-md transition-all duration-300 ease-in-out z-40',
-        props.isMobileMenuOpen ? 'fixed top-0 left-0 h-full w-64 overflow-y-auto' : 'hidden',
+        'h-screen bg-white shadow-md overflow-y-auto transition-all duration-300 ease-in-out z-40',
+        props.isMobileMenuOpen ? 'fixed top-0 left-0 w-64' : 'hidden',
         'lg:block', props.isSidebarExpanded ? 'lg:w-64' : 'lg:w-20'
       ]"
     >
@@ -33,8 +33,8 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
     </aside>
 
     <!-- Main content -->
-    <main class="flex-1 flex flex-col">
-      <div class="flex-1 py-6 px-4 sm:px-6 lg:px-8 pb-28">
+    <main class="flex-1 flex flex-col overflow-y-auto h-screen">
+      <div class="flex-1 overflow-y-auto py-6 px-4 sm:px-6 lg:px-8 pb-28">
         <router-view />
       </div>
     </main>
@@ -53,5 +53,3 @@ aside::-webkit-scrollbar-track {
   background: lightgray;
 }
 </style>
-
-
