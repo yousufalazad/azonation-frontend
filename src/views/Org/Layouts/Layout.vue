@@ -8,8 +8,10 @@ const isSidebarExpanded = ref(true);
 </script>
 
 <template>
-  <div>
-    <Header @toggle-mobile-sidebar="isMobileMenuOpen = !isMobileMenuOpen" @toggle-sidebar="isSidebarExpanded = !isSidebarExpanded" />
-    <MainContent :isMobileMenuOpen="isMobileMenuOpen" :isSidebarExpanded="isSidebarExpanded" @close-mobile-menu="isMobileMenuOpen = false" />
+  <div class="min-h-screen">
+    <Header @toggle-mobile-sidebar="isMobileMenuOpen = !isMobileMenuOpen"
+      @toggle-sidebar="isSidebarExpanded = !isSidebarExpanded" />
+    <MainContent :isMobileMenuOpen="isMobileMenuOpen" :isSidebarExpanded="isSidebarExpanded"
+      @close-mobile-menu="isMobileMenuOpen = false" />
   </div>
 </template>

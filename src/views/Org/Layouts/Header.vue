@@ -3,20 +3,19 @@ import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { authStore } from "../../../store/authStore";
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
 import Notification from './Notification.vue';
-// import functions from "@/global/cookie";
 
 const emit = defineEmits(['toggle-mobile-sidebar', 'toggle-sidebar']);
 const auth = authStore;
-const org_name = computed(() => auth.user?.org_name || 'Your Org Name');
+
+const orgName = computed(() => auth.user?.org_name || 'Your Org Name');
 const baseURL = auth.apiBase;
+const userId = auth.user.id;
 
 const logoPath = ref('');
-const userId = auth.user.id;
 
 const isProfileDropdownOpen = ref(false);
 const profileButton = ref(null);
 const profileMenu = ref(null);
-
 
 const fetchLogo = async () => {
   try {
@@ -25,7 +24,7 @@ const fetchLogo = async () => {
       logoPath.value = response.data.image;
     }
   } catch (error) {
-    console.error("Error fetching logo:", error);
+    console.error('Error fetching logo:', error);
   }
 };
 
@@ -48,70 +47,103 @@ onMounted(() => {
   fetchLogo();
   document.addEventListener('mousedown', handleClickOutsideProfile);
 });
-
 onBeforeUnmount(() => {
   document.removeEventListener('mousedown', handleClickOutsideProfile);
 });
 </script>
 
 <template>
-  <header class="sticky top-0 z-50 flex items-center justify-between bg-white shadow py-3 px-4 sm:px-6 lg:px-4">
-    <div class="flex items-center space-x-4">
-      <button @click="emit('toggle-mobile-sidebar')" class="lg:hidden text-gray-600 mt-1">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+  <header class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-white shadow px-4 py-3">
+    <!-- Left Section: Logo & Sidebar Buttons -->
+    <div class="flex items-center gap-4">
+      <!-- Mobile Sidebar Toggle -->
+      <button @click="emit('toggle-mobile-sidebar')" class="lg:hidden text-gray-600">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
-      <button @click="emit('toggle-sidebar')" class="hidden lg:inline text-gray-600 mt-1">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M3 6h18M3 18h18" />
-        </svg>
-      </button>
-      
-      <a href="/org-dashboard/index"><span class="text-xl font-semibold text-gray-600">{{ org_name }}</span></a>
 
+      <!-- Desktop Sidebar Toggle -->
+      <button @click="emit('toggle-sidebar')" class="hidden lg:block text-gray-600">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 6h18M3 12h18M3 18h18" />
+        </svg>
+      </button>
+
+      <!-- Org Name -->
+      <a href="/org-dashboard/index" class="text-lg font-semibold text-gray-700 hover:text-blue-700">
+        {{ orgName }}
+      </a>
     </div>
 
-    <div class="flex items-center space-x-4">
+    <!-- Right Section: Notification & Profile -->
+    <div class="flex items-center gap-4">
       <Notification />
 
+      <!-- Profile Dropdown -->
       <div class="relative">
-        <button @click="toggleProfileDropdown" ref="profileButton" class="flex items-center">
+        <button ref="profileButton" @click="toggleProfileDropdown" class="flex items-center focus:outline-none">
           <img :src="logoPath ? `${baseURL}${logoPath}` : placeholderImage" alt="Profile"
-            class="w-10 h-10 rounded-full object-cover" />
+            class="w-10 h-10 rounded-full object-cover border border-gray-300" />
         </button>
 
-        <div v-if="isProfileDropdownOpen" ref="profileMenu"
-          class="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg z-50">
+        <!-- Dropdown Menu -->
+        <transition name="fade">
+          <div v-if="isProfileDropdownOpen" ref="profileMenu"
+            class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-50">
 
-          <div class="flex items-left space-x-2 p-4 border-b">
-            <img :src="logoPath ? `${baseURL}${logoPath}` : placeholderImage" alt="Logo"
-              class="rounded-lg max-h-[90px] max-w-[200px] w-auto h-auto" />
-          </div>
-
-          <div class="p-4 border-b">
-            <div class="text-sm">
-              <p class="py-1 font-semibold text-gray-700">{{ auth.user.email }}</p>
-              <p class="py-1 text-gray-500 text-xs">Username: {{ auth.user.username }}</p>
-              <p class="py-1 text-gray-500 text-xs">Azon ID: {{ auth.user.azon_id }}</p>
+            <!-- Logo -->
+            <div class="flex justify-center p-4 border-b">
+              <img :src="logoPath ? `${baseURL}${logoPath}` : placeholderImage" alt="Org Logo"
+                class="rounded-lg max-h-[90px] max-w-[200px] w-auto h-auto" />
             </div>
+
+            <!-- User Info -->
+            <div class="p-4 border-b">
+              <p class="font-semibold text-gray-800">{{ auth.user.email }}</p>
+              <p class="text-xs text-gray-500 mt-1">Username: {{ auth.user.username }}</p>
+              <p class="text-xs text-gray-500">Azon ID: {{ auth.user.azon_id }}</p>
+            </div>
+
+            <!-- Links -->
+            <ul class="py-2 text-sm text-gray-700">
+              <li>
+                <a href="/org-dashboard/my-account/profile"
+                  class="block px-4 py-2 hover:bg-gray-100">My Account</a>
+              </li>
+              <li>
+                <a href="/org-dashboard/my-account/org-security"
+                  class="block px-4 py-2 hover:bg-gray-100">Security</a>
+              </li>
+              <li>
+                <a href="/org-dashboard/my-account/invoice-list"
+                  class="block px-4 py-2 hover:bg-gray-100">Billing</a>
+              </li>
+              <li class="border-t mt-2">
+                <button @click="auth.logout()"
+                  class="w-full text-left px-4 py-2 text-blue-600 hover:bg-gray-100 font-semibold">
+                  Logout
+                </button>
+              </li>
+            </ul>
           </div>
-          <ul class="py-2 text-sm">
-            <li><a href="/org-dashboard/my-account/profile" class="block px-4 py-2 hover:bg-gray-100">My Account</a>
-            </li>
-            <li><a href="/org-dashboard/my-account/org-security" class="block px-4 py-2 hover:bg-gray-100">Security</a>
-            </li>
-            <li><a href="/org-dashboard/my-account/invoice-list" class="block px-4 py-2 hover:bg-gray-100">Billing</a>
-            </li>
-            <li class="border-t mt-2">
-              <button @click="auth.logout()"
-                class="w-full text-left px-4 py-2 text-blue-600 hover:bg-gray-100 font-semibold">
-                Logout
-              </button>
-            </li>
-          </ul>
-        </div>
+        </transition>
       </div>
     </div>
   </header>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

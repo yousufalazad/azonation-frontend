@@ -981,33 +981,34 @@ onMounted(() => {
       </div>
     </div>
 
+    
     <!-- Program Chart -->
-    <div class="mt-8">
+    <!-- <div class="mt-8">
       <h2 class="text-lg font-semibold text-gray-600 mb-4">Program Reports (Last 12 Months)</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> -->
 
         <!-- Meeting Chart -->
-        <div class="bg-white shadow-md rounded-2xl p-6">
+        <!-- <div class="bg-white shadow-md rounded-2xl p-6">
           <h3 class="text-base font-medium text-gray-600 mb-2">Meeting</h3>
           <line-chart-membership v-if="chartDataMembership" :chart-data-membership="chartDataMembership" />
           <p v-else class="text-gray-500 text-sm">Loading chart...</p>
-        </div>
+        </div> -->
 
         <!-- Event Chart -->
-        <div class="bg-white shadow-md rounded-2xl p-6">
+        <!-- <div class="bg-white shadow-md rounded-2xl p-6">
           <h3 class="text-base font-medium text-gray-600 mb-2">Event</h3>
           <line-chart-membership v-if="chartDataMembership" :chart-data-membership="chartDataMembership" />
           <p v-else class="text-gray-500 text-sm">Loading chart...</p>
-        </div>
+        </div> -->
 
         <!-- Project Chart -->
-        <div class="bg-white shadow-md rounded-2xl p-6">
+        <!-- <div class="bg-white shadow-md rounded-2xl p-6">
           <h3 class="text-base font-medium text-gray-600 mb-2">Project</h3>
           <line-chart-membership v-if="chartDataMembership" :chart-data-membership="chartDataMembership" />
           <p v-else class="text-gray-500 text-sm">Loading chart...</p>
         </div>
-      </div>
-    </div>
+      </div> 
+    </div>-->
 
     <div class="space-y-5 py-5 mb-5 pb-5 mt-8">
       <p></p>

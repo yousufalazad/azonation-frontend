@@ -276,20 +276,31 @@ watch([search, itemsPerPage], () => {
 <template>
   <div>
     <!-- Header -->
-    <div class="flex flex-wrap justify-between items-center py-4 gap-2">
-      <h2 class="text-lg font-semibold text-gray-600">Independent Members (Unlinked)</h2>
-      <div class="flex gap-2">
+    <div class="flex flex-wrap justify-between items-start gap-4 py-4">
+      <div class="flex flex-col gap-1">
+        <h2 class="text-lg font-semibold text-gray-700">Unlinked Members <span class="text-red-500">(Not
+            Recommended)</span></h2>
+        <p class="text-xs text-gray-500 max-w-2xl">
+          It is recommended to add members using the <span class="font-medium text-gray-600">Search</span> option.
+          If the member does not have an Azonation account, you can add them manually.
+          Please note that <span class="font-semibold text-red-500">unlinked members</span> will not receive updates,
+          and no actions can be performed for them within Azonation. This list is for record purposes only.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
         <input v-model="search" type="text" placeholder="Search..."
-          class="px-3 py-1.5 border border-gray-300 rounded text-sm" />
+          class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
 
         <button @click="exportCSV"
-          class="px-3 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-100">CSV</button>
+          class="px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-100">CSV</button>
         <button @click="exportExcel"
-          class="px-3 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-100">Excel</button>
+          class="px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-100">Excel</button>
         <button @click="exportPDF"
-          class="px-3 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-100">PDF</button>
-        <button @click="openModal()" class="px-4 py-1.5 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">+
-          Add</button>
+          class="px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-100">PDF</button>
+        <button @click="openModal()" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">
+          + Add
+        </button>
       </div>
     </div>
 
