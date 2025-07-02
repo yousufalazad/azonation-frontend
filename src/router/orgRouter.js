@@ -6,7 +6,7 @@ import fundamentalInfo from "../views/Org/Profile/FundamentalInfo.vue";
 //Org Member
 import IndependentMember from "../views/Org/Member/IndependentMember.vue";
 import CreateMember from "../views/Org/Member/Create.vue";
-import IndexMember from "../views/Org/Member/Index.vue";
+import IndexMember from "../views/Org/Member/Index-masum.vue";
 import FamilyMember from "../views/Org/Member/FamilyMember.vue";
 
 //Founder
