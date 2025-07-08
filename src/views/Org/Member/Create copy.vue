@@ -1,3 +1,4 @@
+<!-- AddMember.vue -->
 <script setup>
 import { ref } from 'vue';
 import router from "../../../router/router";
@@ -5,11 +6,14 @@ import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
 
+
 const auth = authStore;
 const searchQuery = ref('');
 const searchResults = ref([]);
 const selectedIndividual = ref(null);
-const orgTypeUserId = auth.user.id;
+const orgTypeUserId = auth.user.id; // Assuming the org ID is stored in the logged-in user
+// const baseURL = 'http://localhost:8000';
+
 
 const searchIndividuals = async () => {
   const currentQuery = searchQuery.value.trim();
@@ -22,42 +26,38 @@ const searchIndividuals = async () => {
   try {
     const response = await auth.fetchProtectedApi('/api/org-members/search', { query: currentQuery }, 'POST');
 
+    // Only update if the query hasn't changed while waiting for response
     if (searchQuery.value.trim() === currentQuery && response.status) {
-      const individuals = response.data;
-
-      // Check each individual if already added
-      const updatedResults = await Promise.all(
-        individuals.map(async (individual) => {
-          const checkRes = await auth.fetchProtectedApi(
-            '/api/org-members/check',
-            {
-              org_type_user_id: orgTypeUserId,
-              individual_type_user_id: individual.id,
-            },
-            'POST'
-          );
-
-          return {
-            ...individual,
-            already_added: checkRes.status && checkRes.data.exists,
-          };
-        })
-      );
-
-      searchResults.value = updatedResults;
+      searchResults.value = response.data;
     } else if (searchQuery.value.trim() === currentQuery) {
       searchResults.value = [];
     }
   } catch (error) {
     console.error("Error searching individuals:", error);
+
     if (searchQuery.value.trim() === currentQuery) {
       searchResults.value = [];
     }
   }
 };
 
+
 const addMember = async (individualTypeUserId) => {
   try {
+
+    // Check if the individual is already in the org_members list
+    const responseCheck = await auth.fetchProtectedApi('/api/org-members/check', { org_type_user_id: orgTypeUserId, individual_type_user_id: individualTypeUserId }, 'POST');
+
+    if (responseCheck.status && responseCheck.data.exists) {
+      // If the individual is already a member, show a message
+      await Swal.fire(
+        'Already a Member!',
+        'This individual is already a member of your organization.',
+        'info'
+      );
+      return; // Exit the function without adding the member
+    }
+
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: "Do you want to add this member?",
@@ -68,15 +68,7 @@ const addMember = async (individualTypeUserId) => {
     });
 
     if (result.isConfirmed) {
-      const response = await auth.fetchProtectedApi(
-        '/api/org-members/create',
-        {
-          org_type_user_id: orgTypeUserId,
-          individual_type_user_id: individualTypeUserId
-        },
-        'POST'
-      );
-
+      const response = await auth.fetchProtectedApi('/api/org-members/create', { org_type_user_id: orgTypeUserId, individual_type_user_id: individualTypeUserId }, 'POST');
       if (response.status) {
         await Swal.fire(
           'Added!',
@@ -103,6 +95,7 @@ const addMember = async (individualTypeUserId) => {
       'error'
     );
   }
+
 };
 </script>
 
@@ -112,17 +105,13 @@ const addMember = async (individualTypeUserId) => {
 
     <!-- Search Input -->
     <div class="flex justify-center mb-6">
-      <input
-        type="text"
+      <input type="text"
         class="form-input flex-1 max-w-lg px-4 py-2 rounded-l-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        v-model="searchQuery"
-        placeholder="Search by name, email, mobile, username or Azon Id"
-        @input="searchIndividuals"
-      />
-      <button
-        class="bg-blue-500 text-white px-6 py-2 rounded-r-md hover:bg-blue-600 transition-all focus:outline-none"
-        @click="searchIndividuals"
-      >
+        v-model="searchQuery" placeholder="Search by name, email, mobile, username or Azon Id"
+        @input="searchIndividuals" />
+
+      <button class="bg-blue-500 text-white px-6 py-2 rounded-r-md hover:bg-blue-600 transition-all focus:outline-none"
+        @click="searchIndividuals">
         Search
       </button>
     </div>
@@ -130,23 +119,27 @@ const addMember = async (individualTypeUserId) => {
     <!-- Search Results -->
     <div v-if="searchResults.length" class="bg-white shadow-lg rounded-lg p-6">
       <ul class="divide-y divide-gray-200">
-        <li
-          v-for="individualUser in searchResults"
-          :key="individualUser.id"
-          class="flex items-center py-4"
-        >
+        <li v-for="individualUser in searchResults" :key="individualUser.id" class="flex items-center py-4">
+
           <!-- Profile Image -->
-          <img
-            :src="individualUser.image_url ? individualUser.image_url : placeholderImage"
-            alt="Profile picture"
-            class="w-20 h-20 rounded-full object-cover mr-4"
-          />
+          <!-- <img :src="`${baseURL}/storage/${individualUser.image}` || placeholderImage" alt="Profile picture"
+            class="w-20 h-20 rounded-full object-cover mr-4" /> -->
+
+          <!-- <img :src="individualUser.image ? `${baseURL}/storage/${individualUser.image}` : placeholderImage"
+            alt="Profile picture" class="w-20 h-20 rounded-full object-cover mr-4" /> -->
+          <img :src="individualUser.image_url ? individualUser.image_url : placeholderImage"
+            alt="Profile picture" class="w-20 h-20 rounded-full object-cover mr-4" />
 
           <!-- User Details -->
           <div class="flex-1">
-            <p class="font-medium text-lg text-gray-700">
-              {{ individualUser.first_name }} {{ individualUser.last_name }}
+            <p class="font-medium text-lg text-gray-700">{{ individualUser.first_name }} {{ individualUser.last_name }}</p>
+            <p class="text-sm text-gray-500">
+              <!-- {{ individualUser.city }}, {{ individualUser.country_name }} -->
             </p>
+            <!-- <p class="text-sm text-gray-500">
+              {{ individualUser.email }} | {{ individualUser.dialing_code }}{{
+                individualUser.phone_number }}
+            </p> -->
             <p class="text-sm text-gray-500">
               Username: {{ individualUser.username }}
             </p>
@@ -155,22 +148,11 @@ const addMember = async (individualTypeUserId) => {
             </p>
           </div>
 
-          <!-- Add Button or Already Added Label -->
-          <div class="ml-4">
-            <button
-              v-if="!individualUser.already_added"
-              class="bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 px-4 rounded focus:outline-none"
-              @click="addMember(individualUser.id)"
-            >
-              Add
-            </button>
-            <span
-              v-else
-              class="text-sm text-gray-500 font-medium"
-            >
-              Already member
-            </span>
-          </div>
+          <!-- Add Button -->
+          <button class="ml-4 bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 px-4 rounded focus:outline-none"
+            @click="addMember(individualUser.id)">
+            Add
+          </button>
         </li>
       </ul>
     </div>
