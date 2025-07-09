@@ -55,32 +55,14 @@ const filteredEvents = computed(() => {
   return eventList.value.filter(event => {
     if (startDate.value && event.date < startDate.value) return false
     if (endDate.value && event.date > endDate.value) return false
-    if (search.value && !event.title.toLowerCase().includes(search.value.toLowerCase())) return false
     return true
   })
 })
 
-const rowsPerPage = ref(10)
-const currentPage = ref(1)
-
-const totalItems = computed(() => filteredEvents.value.length)
-const totalPages = computed(() => Math.ceil(totalItems.value / rowsPerPage.value))
-
-const paginatedCommittees = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage.value
-  return [...filteredEvents.value]
-    .sort((a, b) => a.user_id - b.user_id)
-    .slice(start, start + rowsPerPage.value)
+const sortedEvents = computed(() => {
+  // Sort by user_id or date - here sorting by user_id ascending for example
+  return [...filteredEvents.value].sort((a, b) => a.user_id - b.user_id)
 })
-
-watch(rowsPerPage, () => {
-  currentPage.value = 1
-})
-
-const goToFirst = () => { currentPage.value = 1 }
-const goToPrev = () => { if (currentPage.value > 1) currentPage.value-- }
-const goToNext = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
-const goToLast = () => { currentPage.value = totalPages.value }
 
 const applyQuickDateFilter = () => {
   const today = new Date()
@@ -109,7 +91,7 @@ const applyQuickDateFilter = () => {
 
 const exportCSV = () => {
   const header = filteredHeaders.value.map(h => h.text)
-  const rows = paginatedCommittees.value.map(e => filteredHeaders.value.map(h => e[h.value] ?? ''))
+  const rows = sortedEvents.value.map(e => filteredHeaders.value.map(h => e[h.value] ?? ''))
   const ws = utils.aoa_to_sheet([header, ...rows])
   const wb = utils.book_new()
   utils.book_append_sheet(wb, ws, 'Events')
@@ -117,7 +99,7 @@ const exportCSV = () => {
 }
 
 const exportXLSX = () => {
-  const json = paginatedCommittees.value.map(e => {
+  const json = sortedEvents.value.map(e => {
     const obj = {}
     filteredHeaders.value.forEach(h => (obj[h.text] = e[h.value]))
     return obj
@@ -131,7 +113,7 @@ const exportXLSX = () => {
 const exportPDF = () => {
   const doc = new jsPDF()
   const hdr = filteredHeaders.value.map(h => h.text)
-  const body = paginatedCommittees.value.map(e => hdr.map(txt => e[allHeaders.find(c => c.text === txt)?.value] ?? ''))
+  const body = sortedEvents.value.map(e => hdr.map(txt => e[allHeaders.find(c => c.text === txt)?.value] ?? ''))
   autoTable(doc, { head: [hdr], body })
   doc.save('events.pdf')
 }
@@ -142,16 +124,16 @@ const getEvents = async () => {
     const response = await auth.fetchProtectedApi('/api/events', {}, 'GET')
     eventList.value = response.status
       ? response.data.map(item => ({
-        id: item.id,
-        user_id: item.user_id,
-        title: item.title ?? '',
-        name: item.name ?? '',
-        date: item.date ?? '',
-        time: item.time ?? '',
-        venue_name: item.venue_name ?? '',
-        status: item.status ?? 0,
-        status_display: item.status === 0 ? 'Active' : 'Disabled',
-      }))
+          id: item.id,
+          user_id: item.user_id,
+          title: item.title ?? '',
+          name: item.name ?? '',
+          date: item.date ?? '',
+          time: item.time ?? '',
+          venue_name: item.venue_name ?? '',
+          status: item.status ?? 0,
+          status_display: item.status === 0 ? 'Active' : 'Disabled',
+        }))
       : []
   } catch (e) {
     console.error('Error fetching events:', e)
@@ -217,7 +199,6 @@ onMounted(() => {
   getEventSummaries()
 })
 </script>
-
 
 <template>
   <div class="p-6 bg-white rounded-lg shadow space-y-6">
@@ -299,21 +280,24 @@ onMounted(() => {
     <!-- Data Table -->
     <EasyDataTable
       :headers="filteredHeaders"
-      :items="paginatedCommittees"
+      :items="sortedEvents"
+      :search-value="search"
       :loading="loading"
       show-index
-      hide-footer
-      table-class="min-w-full text-sm"
-      header-class="bg-gray-100"
-      body-row-class="text-sm"
+      buttons-pagination
       :theme-color="'#3b82f6'"
+      header-class="bg-gray-100 text-sm uppercase"
+      body-row-class="text-sm"
+      table-class="min-w-full rounded-lg shadow"
     >
       <!-- Status Badge Slot -->
       <template #item-status_display="{ status_display }">
-        <span :class="{
-          'text-green-600 font-medium': status_display === 'Active',
-          'text-red-500 font-medium': status_display !== 'Active'
-        }">
+        <span
+          :class="{
+            'text-green-600 font-medium': status_display === 'Active',
+            'text-red-500 font-medium': status_display !== 'Active'
+          }"
+        >
           {{ status_display }}
         </span>
       </template>
@@ -321,81 +305,52 @@ onMounted(() => {
       <!-- Actions Slot -->
       <template #item-actions="{ id }">
         <div class="flex flex-wrap gap-2 justify-end">
-          <button @click="viewSummary(eventList.find(e => e.id === id))"
+          <button
+            @click="viewSummary(eventList.find(e => e.id === id))"
             v-if="eventSummary.find(s => s.org_event_id === id)"
-            class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs">
+            class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs"
+          >
             Summary View
           </button>
-          <button @click="addSummary(eventList.find(e => e.id === id))" v-else
-            class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs">
+          <button
+            @click="addSummary(eventList.find(e => e.id === id))"
+            v-else
+            class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs"
+          >
             Summary Add
           </button>
-          <button @click="goToAttendances(id)"
-            class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">
+          <button
+            @click="goToAttendances(id)"
+            class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
+          >
             Attendances
           </button>
-          <button @click="goToGuestAttendance(id)"
-            class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">
+          <button
+            @click="goToGuestAttendance(id)"
+            class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
+          >
             Guests
           </button>
-          <button @click="goToEditEvent(id)"
-            class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs">
+          <button
+            @click="goToEditEvent(id)"
+            class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs"
+          >
             Edit
           </button>
-          <button @click="goToViewEvent(id)"
-            class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs">
+          <button
+            @click="goToViewEvent(id)"
+            class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs"
+          >
             View
           </button>
-          <button @click="deleteRecord(id)" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">
+          <button
+            @click="deleteRecord(id)"
+            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs"
+          >
             Delete
           </button>
         </div>
       </template>
     </EasyDataTable>
-
-    <!-- ✅ Bottom Pagination -->
-    <div class="flex justify-between items-center px-2 py-3 bg-gray-50 rounded border">
-      <!-- ✅ Left info -->
-      <div class="text-sm text-gray-600">
-        Items
-        {{ (currentPage - 1) * rowsPerPage + 1 }}-
-        {{ Math.min(currentPage * rowsPerPage, totalItems) }}
-        of {{ totalItems }} |
-        Page {{ currentPage }} of {{ totalPages }}
-      </div>
-
-      <!-- ✅ Right controls -->
-      <div class="flex items-center gap-4">
-        <!-- Page Size -->
-        <div class="flex items-center gap-1">
-          <span class="text-sm text-gray-600">Items per page:</span>
-          <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-sm">
-            <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">
-              {{ size }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Navigation Buttons -->
-        <div class="flex gap-1">
-          <button @click="goToFirst" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
-            First
-          </button>
-          <button @click="goToPrev" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
-            Prev
-          </button>
-          <button @click="goToNext" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
-            Next
-          </button>
-          <button @click="goToLast" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
-            Last
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>

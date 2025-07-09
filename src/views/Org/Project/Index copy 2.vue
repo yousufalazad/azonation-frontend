@@ -18,8 +18,6 @@ const startDate = ref('')
 const endDate = ref('')
 const quickDateFilter = ref('')
 const loading = ref(false)
-const currentPage = ref(1)
-const rowsPerPage = ref(10)
 
 const columnProfiles = {
   minimal: ['title', 'start_date', 'status_display', 'actions'],
@@ -53,24 +51,9 @@ const filteredProjects = computed(() =>
   recordList.value.filter(p => {
     if (startDate.value && p.start_date < startDate.value) return false
     if (endDate.value && p.end_date > endDate.value) return false
-    if (search.value && !p.title.toLowerCase().includes(search.value.toLowerCase())) return false
     return true
   })
 )
-
-const totalItems = computed(() => filteredProjects.value.length)
-const totalPages = computed(() => Math.ceil(totalItems.value / rowsPerPage.value))
-
-const paginatedProjects = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage.value
-  const end = start + rowsPerPage.value
-  return filteredProjects.value.slice(start, end)
-})
-
-const goToFirst = () => (currentPage.value = 1)
-const goToPrev = () => { if (currentPage.value > 1) currentPage.value-- }
-const goToNext = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
-const goToLast = () => (currentPage.value = totalPages.value)
 
 const applyQuickDateFilter = () => {
   const today = new Date()
@@ -237,6 +220,7 @@ onMounted(() => {
 
     <!-- Column Settings -->
     <div class="bg-gray-50 border rounded p-4 flex flex-wrap gap-8 items-start">
+      <!-- Column Profile Selector -->
       <div class="flex flex-col">
         <label class="block text-sm font-medium text-gray-700 mb-1">Column View:</label>
         <select v-model="selectedProfile" @change="applyProfile" class="border rounded px-3 py-1.5 text-sm w-48">
@@ -257,23 +241,14 @@ onMounted(() => {
     </div>
 
     <!-- Table -->
-    <EasyDataTable
-      :headers="filteredHeaders"
-      :items="paginatedProjects"
-      :loading="loading"
-      :search-value="search"
-      show-index
-      hide-footer
-      table-class="min-w-full text-sm"
-      header-class="bg-gray-100"
-      body-row-class="text-sm"
-      :theme-color="'#3b82f6'">
-
+    <EasyDataTable :headers="filteredHeaders" :items="filteredProjects" :search-value="search"
+      :loading="loading" show-index table-class="!rounded-none"
+      header-class="bg-gray-100 text-sm" body-row-class="text-sm" buttons-pagination :theme-color="'#3b82f6'">
       <template #item-status_display="{ status_display }">
         <span :class="{
-          'text-green-600 font-medium': status_display === 'Active',
-          'text-red-500 font-medium': status_display !== 'Active'
-        }">
+          'bg-green-100 text-green-800': status_display === 'Active',
+          'bg-yellow-100 text-yellow-800': status_display !== 'Active'
+        }" class="text-xs font-medium px-2 py-1 rounded">
           {{ status_display }}
         </span>
       </template>
@@ -305,51 +280,5 @@ onMounted(() => {
         </div>
       </template>
     </EasyDataTable>
-
-    <!-- Pagination Controls -->
-    <div class="flex justify-between items-center px-2 py-3 bg-gray-50 rounded border">
-      <!-- Info -->
-      <div class="text-sm text-gray-600">
-        Items
-        {{ (currentPage - 1) * rowsPerPage + 1 }} -
-        {{ Math.min(currentPage * rowsPerPage, totalItems) }}
-        of {{ totalItems }} |
-        Page {{ currentPage }} of {{ totalPages }}
-      </div>
-
-      <!-- Controls -->
-      <div class="flex items-center gap-4">
-        <div class="flex items-center gap-1">
-          <span class="text-sm text-gray-600">Items per page:</span>
-          <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-sm">
-            <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">
-              {{ size }}
-            </option>
-          </select>
-        </div>
-        <div class="flex gap-1">
-          <button @click="goToFirst" :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
-            First
-          </button>
-          <button @click="goToPrev" :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
-            Prev
-          </button>
-          <button @click="goToNext" :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
-            Next
-          </button>
-          <button @click="goToLast" :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
-            Last
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
