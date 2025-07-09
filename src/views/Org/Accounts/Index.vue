@@ -15,6 +15,10 @@ const router = useRouter()
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
 
+// ✅ Currency
+const currencies = ref([])
+const selectedCurrency = ref('')
+const selectedCurrencyId = ref(null) // ID from accounts_transaction_currencies table
 
 // ✅ State
 const transactionList = ref([])
@@ -42,6 +46,80 @@ const fundId = ref('')
 // ✅ File Upload (future ready, not used in API)
 const images = ref([{ id: Date.now(), file: null }])
 const documents = ref([{ id: Date.now(), file: null }])
+
+// ✅ fetch currencies
+const fetchCurrencies = async () => {
+    try {
+        const response = await auth.fetchProtectedApi('/api/currencies');
+        currencies.value = response.status ? response.data : [];
+    } catch (error) {
+        errorMessage.value = 'Error loading currencies. Please try again later.';
+    }
+};
+
+// ✅ Fetch Currencies
+const fetchCurrencyPreference = async () => {
+    try {
+        const res = await auth.fetchProtectedApi('/api/accounts-transaction-currencies', {}, 'GET')
+        if (res.status && res.data) {
+            selectedCurrency.value = res.data.currency_id
+            selectedCurrencyId.value = res.data.id
+        }
+    } catch (err) {
+        console.error('Failed to fetch user currency preference', err)
+    }
+}
+
+// ✅ Handle Currency Save or Change
+const saveOrUpdateCurrency = async () => {
+    if (!selectedCurrency.value) return
+
+    const payload = {
+        currency_id: selectedCurrency.value,
+        is_active: true
+    }
+
+    try {
+        let response
+
+        if (selectedCurrencyId.value) {
+            // Update
+            response = await auth.fetchProtectedApi(
+                `/api/accounts-transaction-currencies/${selectedCurrencyId.value}`,
+                payload,
+                'PUT'
+            )
+        } else {
+            // Create
+            response = await auth.fetchProtectedApi(
+                '/api/accounts-transaction-currencies',
+                payload,
+                'POST'
+            )
+        }
+
+        if (response.status) {
+            Swal.fire('Success', 'Currency saved successfully', 'success')
+            selectedCurrencyId.value = response.data.id
+        } else {
+            Swal.fire('Failed', response.message || 'Failed to save currency', 'error')
+        }
+    } catch (error) {
+        Swal.fire('Error', 'An error occurred while saving currency', 'error')
+    }
+}
+
+// ✅ handle currency change
+const handleCurrencyChange = () => {
+    saveOrUpdateCurrency()
+}
+
+
+const selectedCurrencyData = computed(() => {
+  return currencies.value.find(c => c.id === selectedCurrency.value) || null
+})
+
+
 
 // ✅ Column Profiles
 const columnProfiles = {
@@ -322,6 +400,8 @@ const submitForm = async () => {
 
 // ✅ Lifecycle
 onMounted(() => {
+    fetchCurrencies()
+    fetchCurrencyPreference()
     getFunds()
     getTransactions()
 })
@@ -335,6 +415,20 @@ onMounted(() => {
         <div class="flex justify-between items-center">
             <h2 class="text-lg font-semibold text-gray-700">Accounts Transactions</h2>
             <div class="flex gap-2">
+                <!-- Currency Dropdown or Selected Display -->
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-gray-600">Currency:</span>
+                        <select v-model="selectedCurrency" @change="handleCurrencyChange"
+                            class="px-3 py-2 gap-1 text-sm border border-gray-300 rounded text-gray-700 bg-white hover:border-gray-400">
+                            <option value="">Select</option>
+                            <option v-for="currency in currencies" :key="currency.id" :value="currency.id">
+                                {{ currency.currency_code }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
                 <button @click="exportToCSV"
                     class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
                     <i class="ri-file-text-line"></i> CSV
@@ -346,6 +440,10 @@ onMounted(() => {
                 <button @click="exportToPDF"
                     class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
                     <i class="ri-file-pdf-2-line"></i> PDF
+                </button>
+                <button @click="exportToPDF"
+                    class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
+                    <i class="ri-file-pdf-2-line"></i> Fund
                 </button>
                 <!-- <button @click="exportToWord"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
@@ -413,7 +511,10 @@ onMounted(() => {
         ]">
             Current Balance:
             <span class="font-semibold">
+                <!-- {{ selectedCurrencyData?.currency_symbol || '' }}  -->
+                {{ selectedCurrencyData?.currency_code || '' }}
                 {{ balance >= 0 ? '+' : '' }}{{ balance }}
+
             </span>
         </div>
 
@@ -444,13 +545,13 @@ onMounted(() => {
 
                         <th v-if="visibleColumns.includes('income')" @click="sort('amount')"
                             class="cursor-pointer px-3 py-2 text-left font-bold text-gray-700 hover:text-blue-600">
-                            Income
+                            Income ({{ selectedCurrencyData?.currency_symbol || '' }})
                             <span v-if="sortBy === 'amount'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
                         </th>
 
                         <th v-if="visibleColumns.includes('expense')" @click="sort('amount')"
                             class="cursor-pointer px-3 py-2 text-left font-bold text-gray-700 hover:text-blue-600">
-                            Expense
+                            Expense ({{ selectedCurrencyData?.currency_symbol || '' }})
                             <span v-if="sortBy === 'amount'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
                         </th>
                         <th v-if="visibleColumns.includes('actions')" class="px-3 py-2 text-left">Action</th>
@@ -462,7 +563,7 @@ onMounted(() => {
                         <td class="px-3 py-2">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
                         <td v-if="visibleColumns.includes('date')" class="px-3 py-2">{{ transaction.date }}</td>
                         <td v-if="visibleColumns.includes('title')" class="px-3 py-2">{{ transaction.transaction_title
-                            }}</td>
+                        }}</td>
                         <td v-if="visibleColumns.includes('fund')" class="px-3 py-2">{{ transaction.funds?.name }}</td>
                         <td v-if="visibleColumns.includes('income')" class="px-3 py-2 text-green-600 font-medium">
                             <span v-if="transaction.type === 'income'">{{ transaction.amount }}</span>

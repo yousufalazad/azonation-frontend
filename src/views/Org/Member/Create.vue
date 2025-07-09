@@ -104,6 +104,9 @@ const addMember = async (individualTypeUserId) => {
     );
   }
 };
+
+// function to get city and country from search result users
+
 </script>
 
 <template>
@@ -147,8 +150,14 @@ const addMember = async (individualTypeUserId) => {
             <p class="font-medium text-lg text-gray-700">
               {{ individualUser.first_name }} {{ individualUser.last_name }}
             </p>
-            <p class="text-sm text-gray-500">
+            <!-- <p class="text-sm text-gray-500">
               Username: {{ individualUser.username }}
+            </p> -->
+            <p class="text-sm text-gray-500">
+              City: {{ individualUser.username }}
+            </p>
+            <p class="text-sm text-gray-500">
+              Country: {{ individualUser.username }}
             </p>
             <p class="text-sm text-gray-500">
               Azon Id: {{ individualUser.azon_id }}
@@ -162,7 +171,7 @@ const addMember = async (individualTypeUserId) => {
               class="bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 px-4 rounded focus:outline-none"
               @click="addMember(individualUser.id)"
             >
-              Add
+              Add member
             </button>
             <span
               v-else
