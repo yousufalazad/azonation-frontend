@@ -80,11 +80,6 @@ const getDocuments = async () => {
   }
 }
 
-const rowsPerPage = ref(10)
-const currentPage = ref(1)
-const totalItems = computed(() => filteredDocuments.value.length)
-const totalPages = computed(() => Math.ceil(totalItems.value / rowsPerPage.value))
-
 const filteredDocuments = computed(() => {
   return documentList.value.filter(record => {
     const matchSearch = search.value === '' || record.title.toLowerCase().includes(search.value.toLowerCase())
@@ -92,20 +87,6 @@ const filteredDocuments = computed(() => {
     return matchSearch && matchQuick
   })
 })
-
-const paginatedDocuments = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage.value
-  const end = start + rowsPerPage.value
-  return filteredDocuments.value.slice(start, end)
-})
-
-const goToPage = (page) => {
-  if (page >= 1 && page <= totalPages.value) currentPage.value = page
-}
-const goToFirst = () => goToPage(1)
-const goToPrev = () => goToPage(currentPage.value - 1)
-const goToNext = () => goToPage(currentPage.value + 1)
-const goToLast = () => goToPage(totalPages.value)
 
 const deleteRecord = async (id) => {
   const result = await Swal.fire({
@@ -199,7 +180,6 @@ onMounted(async () => {
           <option value="No">No</option>
         </select>
       </div>
-
     </div>
 
     <!-- Column Settings -->
@@ -225,57 +205,27 @@ onMounted(async () => {
     </div>
 
     <!-- Table -->
-    <EasyDataTable :headers="filteredHeaders" :items="paginatedDocuments" :loading="loading" show-index hide-footer
-      :theme-color="'#2563eb'">
-        <!-- Actions -->
-        <template #item-actions="{ id }">
-          <div class="flex justify-end gap-2">
-            <button @click="$router.push({ name: 'view-document', params: { id } })"
-              class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs">View</button>
-            <button @click="$router.push({ name: 'edit-document', params: { id } })"
-              class="bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded text-xs">Edit</button>
-            <button @click="deleteRecord(id)"
-              class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs">Delete</button>
-          </div>
-        </template>
-
-        <!-- is_active Badge -->
-        <template #item-is_active="{ is_active }">
-          <span class="px-2 py-0.5 rounded-full text-xs font-medium"
-            :class="is_active === 'Yes' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
-            {{ is_active }}
-          </span>
-        </template>
-      </EasyDataTable>
-
-      <!-- Pagination Controls -->
-      <div class="flex justify-between items-center px-2 py-3 bg-gray-50 rounded border">
-        <div class="text-sm text-gray-600">
-          Items {{ (currentPage - 1) * rowsPerPage + 1 }} - {{ Math.min(currentPage * rowsPerPage, totalItems) }} of {{
-          totalItems }} |
-          Page {{ currentPage }} of {{ totalPages }}
+    <EasyDataTable :headers="filteredHeaders" :items="filteredDocuments" :search-value="search" :loading="loading"
+      show-index buttons-pagination :theme-color="'#2563eb'">
+      <!-- Actions -->
+      <template #item-actions="{ id }">
+        <div class="flex justify-end gap-2">
+          <button @click="$router.push({ name: 'view-document', params: { id } })"
+            class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs">View</button>
+          <button @click="$router.push({ name: 'edit-document', params: { id } })"
+            class="bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded text-xs">Edit</button>
+          <button @click="deleteRecord(id)"
+            class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs">Delete</button>
         </div>
-        <div class="flex items-center gap-4">
-          <div class="flex items-center gap-1">
-            <span class="text-sm text-gray-600">Items per page:</span>
-            <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-sm">
-              <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">
-                {{ size }}
-              </option>
-            </select>
-          </div>
-          <div class="flex gap-1">
-            <button @click="goToFirst" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
-              :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">First</button>
-            <button @click="goToPrev" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
-              :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">Prev</button>
-            <button @click="goToNext" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
-              :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">Next</button>
-            <button @click="goToLast" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
-              :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">Last</button>
-          </div>
-        </div>
-      </div>
+      </template>
 
+      <!-- is_active Badge -->
+      <template #item-is_active="{ is_active }">
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium"
+          :class="is_active === 'Yes' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+          {{ is_active }}
+        </span>
+      </template>
+    </EasyDataTable>
   </div>
 </template>

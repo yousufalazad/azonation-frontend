@@ -29,13 +29,11 @@ const endFilter = ref('')
 const quickDateFilter = ref('')
 const loading = ref(false)
 
-const rowsPerPage = ref(10)
-const currentPage = ref(1)
-
 const columnProfiles = {
   minimal: ['name', 'start_date', 'status_display', 'actions'],
   detailed: ['name', 'start_date', 'end_date', 'status_display', 'actions']
 }
+
 const selectedProfile = ref(localStorage.getItem('selected_committee_profile') || 'detailed')
 const visibleColumns = ref(JSON.parse(localStorage.getItem('visible_committee_columns')) || columnProfiles[selectedProfile.value])
 
@@ -60,30 +58,13 @@ const filteredHeaders = computed(() =>
   allHeaders.filter(h => visibleColumns.value.includes(h.value))
 )
 
-const filteredCommittees = computed(() => {
-  let list = [...committeeList.value]
-  if (startFilter.value) list = list.filter(c => c.start_date >= startFilter.value)
-  if (endFilter.value) list = list.filter(c => c.end_date <= endFilter.value)
-  if (search.value.trim()) {
-    const keyword = search.value.toLowerCase()
-    list = list.filter(c => String(c.name).toLowerCase().includes(keyword))
-  }
-  return list
-})
-
-const totalItems = computed(() => filteredCommittees.value.length)
-const totalPages = computed(() => Math.ceil(totalItems.value / rowsPerPage.value))
-const paginatedCommittees = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage.value
-  return filteredCommittees.value.slice(start, start + rowsPerPage.value)
-})
-
-watch(rowsPerPage, () => { currentPage.value = 1 })
-
-const goToFirst = () => (currentPage.value = 1)
-const goToPrev = () => (currentPage.value = Math.max(1, currentPage.value - 1))
-const goToNext = () => (currentPage.value = Math.min(totalPages.value, currentPage.value + 1))
-const goToLast = () => (currentPage.value = totalPages.value)
+const filteredCommittees = computed(() =>
+  committeeList.value.filter(c => {
+    if (startFilter.value && c.start_date < startFilter.value) return false
+    if (endFilter.value && c.end_date > endFilter.value) return false
+    return String(c.name).toLowerCase().includes(search.value.toLowerCase())
+  })
+)
 
 const applyQuickDateFilter = () => {
   const today = new Date()
@@ -190,12 +171,14 @@ const submitForm = async () => {
   fetchCommitteeList()
 }
 
-const openViewModal = c => { selectedCommittee.value = c; viewModalVisible.value = true }
+const openViewModal = c => {
+  selectedCommittee.value = c
+  viewModalVisible.value = true
+}
 const closeViewModal = () => viewModalVisible.value = false
 
 onMounted(fetchCommitteeList)
 </script>
-
 
 <template>
   <div class="p-6 bg-white shadow rounded-lg space-y-6">
@@ -203,17 +186,17 @@ onMounted(fetchCommitteeList)
     <div class="flex justify-between items-center">
       <h2 class="text-xl font-semibold">Committees</h2>
       <div class="flex gap-2">
-        <button @click="exportCSV"
+       <button @click="exportCSV"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
-          CSV
+          <FileText class="w-4 h-4" /> CSV
         </button>
         <button @click="exportXLSX"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
-          Excel
+          <FileSpreadsheet class="w-4 h-4" /> Excel
         </button>
         <button @click="exportPDF"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
-          PDF
+          <FileDown class="w-4 h-4" /> PDF
         </button>
         <button @click="openModal()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">+ Add Committee</button>
       </div>
@@ -221,31 +204,19 @@ onMounted(fetchCommitteeList)
 
     <!-- Filters -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div>
-        <label class="text-sm text-gray-600">Start Date</label>
-        <input type="date" v-model="startFilter" class="w-full border rounded px-3 py-1.5 text-sm" />
-      </div>
-      <div>
-        <label class="text-sm text-gray-600">End Date</label>
-        <input type="date" v-model="endFilter" class="w-full border rounded px-3 py-1.5 text-sm" />
-      </div>
-      <div>
-        <label class="text-sm text-gray-600">Quick Filter</label>
-        <select v-model="quickDateFilter" @change="applyQuickDateFilter" class="w-full border rounded px-3 py-1.5 text-sm">
-          <option value="">All</option>
-          <option value="last7">Last 7 Days</option>
-          <option value="thisMonth">This Month</option>
-        </select>
-      </div>
-      <div>
-        <label class="text-sm text-gray-600">Search</label>
-        <input v-model="search" type="text" placeholder="Search..." class="w-full border rounded px-3 py-1.5 text-sm" />
-      </div>
+      <input type="date" v-model="startFilter" class="border rounded px-3 py-1 text-sm"/>
+      <input type="date" v-model="endFilter" class="border rounded px-3 py-1 text-sm"/>
+      <select v-model="quickDateFilter" @change="applyQuickDateFilter" class="border rounded px-3 py-1 text-sm">
+        <option value="">All</option>
+        <option value="last7">Last 7 Days</option>
+        <option value="thisMonth">This Month</option>
+      </select>
+      <input v-model="search" placeholder="Search..." class="border rounded px-3 py-1 text-sm"/>
     </div>
-
-    <!-- Column Settings -->
+     <!-- Column Settings -->
     <div class="bg-gray-50 border rounded p-4 flex flex-wrap gap-8 items-start">
-      <div>
+      <!-- Column Profile Selector -->
+      <div class="flex flex-col">
         <label class="block text-sm font-medium text-gray-700 mb-1">Column View:</label>
         <select v-model="selectedProfile" @change="applyProfile" class="border rounded px-3 py-1.5 text-sm w-48">
           <option value="minimal">Minimal</option>
@@ -263,82 +234,33 @@ onMounted(fetchCommitteeList)
         </div>
       </div>
     </div>
+
     <!-- Table -->
-    <EasyDataTable :headers="filteredHeaders" :items="paginatedCommittees" :loading="loading" show-index hide-footer
-      table-class="min-w-full text-sm" header-class="bg-gray-100" body-row-class="text-sm" :theme-color="'#3b82f6'">
-
-
+    <EasyDataTable
+      :headers="filteredHeaders"
+      :items="filteredCommittees"
+      :search-value="search"
+      :loading="loading"
+      show-index
+      buttons-pagination
+      table-class="min-w-full text-sm"
+      header-class="bg-gray-100"
+      body-row-class="text-sm"
+      :theme-color="'#3b82f6'"
+    >
       <template #item-status_display="{ status_display }">
-        <span :class="status_display === 'Active' ? 'text-green-600' : 'text-red-600'">{{ status_display }}</span>
+        <span :class="status_display==='Active' ? 'text-green-600' : 'text-red-600'">{{ status_display }}</span>
       </template>
       <template #item-actions="{ id }">
         <div class="flex gap-2 justify-end">
-          <button @click="$router.push({ name: 'index-committee-member', params: { committeeId: id } })"
-            class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded-lg text-xs">
-            Members
-          </button>
-          <button @click="openViewModal(committeeList.find(c => c.id === id))"
-            class="bg-green-500 px-3 py-1 rounded text-xs">
-            View
-          </button>
-          <button @click="openModal(committeeList.find(c => c.id === id))"
-            class="bg-yellow-400 px-3 py-1 rounded text-xs">
-            Edit
-          </button>
-          <button @click="deleteCommittee(id)" class="bg-red-500 px-3 py-1 rounded text-xs">
-            Delete
-          </button>
+          <button @click="openViewModal(committeeList.find(c => c.id===id))" class="bg-green-500 px-3 py-1 rounded text-xs">View</button>
+          <button @click="openModal(committeeList.find(c => c.id===id))" class="bg-yellow-400 px-3 py-1 rounded text-xs">Edit</button>
+          <button @click="deleteCommittee(id)" class="bg-red-500 px-3 py-1 rounded text-xs">Delete</button>
         </div>
       </template>
     </EasyDataTable>
 
-    <!-- ✅ Custom Footer -->
-    <div class="flex justify-between items-center px-2 py-3 bg-gray-50 rounded border">
-      <!-- ✅ Left info -->
-      <div class="text-sm text-gray-600">
-        Items
-        {{ (currentPage - 1) * rowsPerPage + 1 }}-
-        {{
-          Math.min(currentPage * rowsPerPage, totalItems)
-        }}
-        of {{ totalItems }} |
-        Page {{ currentPage }} of {{ totalPages }}
-      </div>
-
-      <!-- ✅ Right controls -->
-      <div class="flex items-center gap-4">
-        <!-- Page Size -->
-        <div class="flex items-center gap-1">
-          <span class="text-sm text-gray-600">Items per page:</span>
-          <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-sm">
-            <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">
-              {{ size }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Navigation Buttons -->
-        <div class="flex gap-1">
-          <button @click="goToFirst" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
-            First
-          </button>
-          <button @click="goToPrev" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
-            Prev
-          </button>
-          <button @click="goToNext" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
-            Next
-          </button>
-          <button @click="goToLast" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
-            Last
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modals (View/Edit) go here... -->
+    <!-- Modals -->
+    <!-- Create/Edit and View modals are similar to before, omitted for brevity -->
   </div>
 </template>
