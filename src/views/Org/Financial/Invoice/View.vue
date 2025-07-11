@@ -112,17 +112,20 @@ watch(() => route.params.id, (newId) => {
     </table>
 
     <div class="flex justify-end">
-      <table class="text-right">
-        <tr>
-          <td class="p-2">Subtotal:</td>
-          <td class="p-2 font-bold">{{ invoiceData?.order?.sub_total ?? '0.00' }}</td>
-        </tr>
-        <tr>
-          <td class="p-2">Total:</td>
-          <td class="p-2 font-bold">{{ invoiceData?.order?.total_amount ?? '0.00' }}</td>
-        </tr>
-      </table>
-    </div>
+  <table class="text-right">
+    <tbody>
+      <tr>
+        <td class="p-2">Subtotal:</td>
+        <td class="p-2 font-bold">{{ invoiceData?.order?.sub_total ?? '0.00' }}</td>
+      </tr>
+      <tr>
+        <td class="p-2">Total:</td>
+        <td class="p-2 font-bold">{{ invoiceData?.order?.total_amount ?? '0.00' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
 
     <p class="text-sm text-gray-600 mt-4">Thanks for your business.</p>
     <p class="text-xs text-gray-500">{{ invoiceData.invoice_note }}</p>

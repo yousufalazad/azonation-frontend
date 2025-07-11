@@ -5,7 +5,10 @@ import Swal from 'sweetalert2'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
+// import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg'
+const placeholderImage = new URL('/src/assets/Placeholder/Azonation-profile-image.jpg', import.meta.url).href;
+
+
 import { utils, writeFileXLSX } from 'xlsx'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -133,8 +136,7 @@ const fetchMemberList = async () => {
     const response = await auth.fetchProtectedApi('/api/org-members/', {}, 'GET')
     memberList.value = response.status ? response.data.map(m => ({
       ...m,
-      full_name: `${m.individual.first_name || ''} ${m.individual.last_name || ''}`.trim(),
-      image_url: m.image_url ?? placeholderImage // Force fallback URL at data source
+      full_name: `${m.individual.first_name || ''} ${m.individual.last_name || ''}`.trim()
     })) : []
   } catch {
     memberList.value = []
@@ -167,10 +169,7 @@ const calculateMembershipAge = (startDate) => {
 // ✅ Data filter
 const filteredMembers = computed(() => {
   const keyword = search.value.trim().toLowerCase()
-  let list = [...memberList.value].map(member => ({
-    ...member,
-    image_url: member.image_url || placeholderImage
-  }));
+  let list = [...memberList.value]
 
   if (keyword) {
     list = list.filter(m => {
@@ -374,8 +373,7 @@ onMounted(() => {
           <FileText class="w-4 h-4" /> Word
         </button>
         <button @click="$router.push({ name: 'independent-member' })"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">Unlink
-          Member</button>
+          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">Unlink Member</button>
         <button @click="$router.push({ name: 'create-member' })"
           class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm">+ Add Member</button>
       </div>
@@ -432,7 +430,7 @@ onMounted(() => {
 
       <!-- Profile Image -->
       <template #item-image_url="{ image_url }">
-        <img :src="image_url" class="h-10 w-10 rounded-full object-cover bg-gray-100" />
+        <img :src="image_url || placeholderImage" class="h-10 w-10 rounded-full object-cover" />
       </template>
 
       <!-- Full Name -->
@@ -492,7 +490,7 @@ onMounted(() => {
           <!-- <button @click="closeViewModal"
             class="text-gray-500 hover:text-gray-700 absolute top-4 right-4">&times;</button> -->
 
-          <img :src="selectedMember?.image_url ?? placeholderImage" alt="Member Image"
+          <img :src="selectedMember?.image_url || placeholderImage" alt="Member Image"
             class="h-24 w-24 rounded-full object-cover mb-2" />
 
 
@@ -565,7 +563,7 @@ onMounted(() => {
         </div>
 
         <div class="mb-6">
-          <img :src="selectedMember?.image_url ?? placeholderImage" alt="Member Image"
+          <img :src="selectedMember?.image_url || placeholderImage" alt="Member Image"
             class="h-24 w-24 rounded-full object-cover mb-4">
 
           <h2 class="text-2xl font-semibold text-gray-800">{{ selectedMember?.individual?.first_name ?? '--' }} {{
@@ -627,9 +625,35 @@ onMounted(() => {
 </template>
 
 <style scoped>
+
 .easy-data-table__body td img {
   width: 40px !important;
   height: 40px !important;
   object-fit: cover !important;
+}
+.easy-data-table__body tr {
+  height: 180px; /* Adjust height as needed */
+}
+
+.easy-data-table__body td {
+  padding-top: 200px;
+  padding-bottom: 200px;
+}
+.easy-data-table__body td img {
+  height: 80px; /* Adjust image height */
+  width: 80px; /* Adjust image width */
+  object-fit: cover; /* Maintain aspect ratio */
+}
+.easy-data-table__body td .text-gray-700 {
+  font-size: 14px; /* Adjust text size */
+}
+.easy-data-table__body td .text-xs {
+  font-size: 12px; /* Adjust text size for smaller text */
+}
+.easy-data-table__body td .text-sm {
+  font-size: 14px; /* Adjust text size for small text */
+}
+.easy-data-table__body td .text-right {
+  text-align: left; /* Align text to the right */
 }
 </style>

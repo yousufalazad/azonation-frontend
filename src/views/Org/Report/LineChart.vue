@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { ref, watch, defineExpose } from 'vue';
+import { ref, watch } from 'vue';
 import { Line } from 'vue-chartjs';
 import {
   Chart as ChartJS,

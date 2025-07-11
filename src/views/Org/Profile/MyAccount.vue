@@ -16,6 +16,12 @@ import { RouterView } from 'vue-router';
           </router-link>
         </li>
         <li>
+          <router-link to="/org-dashboard/my-account/administrator"
+            class="block py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+            Administrator
+          </router-link>
+        </li>
+        <li>
           <router-link to="/org-dashboard/my-account/org-security"
             class="block py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             Security

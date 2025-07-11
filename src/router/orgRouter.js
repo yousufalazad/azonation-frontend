@@ -1,12 +1,21 @@
 import OrgDashboardLayout from "../views/Org/Layouts/Layout.vue";
 import OrgDashboardIndex from "@/views/Org/Layouts/Dashboard/Index.vue";
 
+
+// Org Profile
+import MyAccount from "../views/Org/Profile/MyAccount.vue";
+import Profile from "../views/Org/Profile/Profile.vue";
 import fundamentalInfo from "../views/Org/Profile/FundamentalInfo.vue";
+import OrgSecurity from "../views/Org/Profile/Security.vue";
+import OrgSettings from "../views/Org/Profile/Settings.vue";
+
+//Administrator
+import Administrator from "@/views/Org/Profile/Administrator.vue";
 
 //Org Member
 import IndependentMember from "../views/Org/Member/IndependentMember.vue";
 import CreateMember from "../views/Org/Member/Create.vue";
-import IndexMember from "../views/Org/Member/Index-masum.vue";
+import IndexMember from "../views/Org/Member/Index.vue";
 import FamilyMember from "../views/Org/Member/FamilyMember.vue";
 
 //Founder
@@ -109,13 +118,10 @@ import CreateYearPlan from "../views/Org/YearPlan/Create.vue"
 import EditYearPlan from "../views/Org/YearPlan/Edit.vue"
 import ViewYearPlan from "../views/Org/YearPlan/View.vue"
 
-import MyAccount from "../views/Org/Profile/MyAccount.vue";
-// Org Profile
-import Profile from "../views/Org/Profile/Profile.vue";
+
 //Invite Friend
 import InviteFriend from "../views/Org/InviteFriend/Index.vue";
-import OrgSecurity from "../views/Org/Profile/Security.vue";
-import OrgSettings from "../views/Org/Profile/Settings.vue";
+
 
 //Billing
 import Package from "../views/Org/Financial/Package.vue";
@@ -624,6 +630,12 @@ const orgRoutes = [
             path: "profile",
             name: "profile",
             component: Profile,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: "administrator",
+            name: "administrator",
+            component: Administrator,
             meta: { requiresAuth: true },
           },
           {

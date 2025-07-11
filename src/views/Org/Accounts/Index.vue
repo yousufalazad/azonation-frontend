@@ -116,7 +116,7 @@ const handleCurrencyChange = () => {
 
 
 const selectedCurrencyData = computed(() => {
-  return currencies.value.find(c => c.id === selectedCurrency.value) || null
+    return currencies.value.find(c => c.id === selectedCurrency.value) || null
 })
 
 
@@ -441,10 +441,11 @@ onMounted(() => {
                     class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
                     <i class="ri-file-pdf-2-line"></i> PDF
                 </button>
-                <button @click="exportToPDF"
-                    class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
+                <router-link :to="{ name: 'accounts-fund' }"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
                     <i class="ri-file-pdf-2-line"></i> Fund
-                </button>
+                </router-link>
+
                 <!-- <button @click="exportToWord"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           <i class="ri-file-word-2-line"></i> Word
@@ -563,7 +564,7 @@ onMounted(() => {
                         <td class="px-3 py-2">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
                         <td v-if="visibleColumns.includes('date')" class="px-3 py-2">{{ transaction.date }}</td>
                         <td v-if="visibleColumns.includes('title')" class="px-3 py-2">{{ transaction.transaction_title
-                        }}</td>
+                            }}</td>
                         <td v-if="visibleColumns.includes('fund')" class="px-3 py-2">{{ transaction.funds?.name }}</td>
                         <td v-if="visibleColumns.includes('income')" class="px-3 py-2 text-green-600 font-medium">
                             <span v-if="transaction.type === 'income'">{{ transaction.amount }}</span>
