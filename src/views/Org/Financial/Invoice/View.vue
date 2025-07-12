@@ -75,17 +75,33 @@ watch(() => route.params.id, (newId) => {
   <div class="mx-auto bg-white p-6 rounded-lg shadow-lg">
     <div class="flex justify-between items-center border-b pb-4 mb-4">
       <div>
-        <h1 class="text-xl font-bold">{{ invoiceData.user_name }}</h1>
-        <p class="text-sm text-gray-600">
-          Mirpur, Dhaka, Bangladesh<br>
-          {{ invoiceData?.order?.user?.email }}<br>
+        <h1 class="text-xl font-bold">{{ invoiceData?.invoice?.user_name }}</h1>
+        <p class="py-1 text-sm text-gray-600">
+          ATTN: {{ invoiceData?.org_administrator_full_name ?? '--' }}
+        </p>
+
+        <p class="py-1 text-sm text-gray-600">
+          Address: {{ invoiceData?.billing_address ?? '' }}
+        </p>
+
+        <p class="py-1 text-sm text-gray-600">
+          {{ invoiceData?.user_country ?? '--' }}
+        </p>
+
+        <p class="py-1 text-sm text-gray-600">
+          Phone: {{ invoiceData?.billing_phone }}
+        </p>
+
+        <p class="py-1 text-sm text-gray-600">
+          Email: {{ invoiceData?.billing_email ?? '--' }}
         </p>
       </div>
+
       <div class="text-right">
         <h2 class="text-2xl font-bold text-blue-600">INVOICE</h2>
-        <p class="text-sm text-gray-600">Invoice #: <strong>{{ invoiceData?.invoice_code }}</strong></p>
-        <p class="text-sm text-gray-600">Invoice Date: <strong>{{ invoiceData?.issue_date }}</strong></p>
-        <p class="text-sm text-gray-600">Due Date: <strong>{{ invoiceData?.due_date }}</strong></p>
+        <p class="text-sm text-gray-600">Invoice #: <strong>{{ invoiceData?.invoice?.invoice_code }}</strong></p>
+        <p class="text-sm text-gray-600">Invoice Date: <strong>{{ invoiceData?.invoice?.issue_date }}</strong></p>
+        <p class="text-sm text-gray-600">Due Date: <strong>{{ invoiceData?.invoice?.due_date }}</strong></p>
       </div>
     </div>
 
@@ -100,7 +116,7 @@ watch(() => route.params.id, (newId) => {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(item, index) in invoiceData?.order?.order_items ?? []" :key="item?.id ?? index"
+        <tr v-for="(item, index) in invoiceData?.invoice?.order?.order_items ?? []" :key="item?.id ?? index"
           class="border-b border-gray-300">
           <td class="p-2">{{ index + 1 }}</td>
           <td class="p-2">{{ item?.product_name ?? '--' }}</td>
@@ -112,23 +128,22 @@ watch(() => route.params.id, (newId) => {
     </table>
 
     <div class="flex justify-end">
-  <table class="text-right">
-    <tbody>
-      <tr>
-        <td class="p-2">Subtotal:</td>
-        <td class="p-2 font-bold">{{ invoiceData?.order?.sub_total ?? '0.00' }}</td>
-      </tr>
-      <tr>
-        <td class="p-2">Total:</td>
-        <td class="p-2 font-bold">{{ invoiceData?.order?.total_amount ?? '0.00' }}</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
+      <table class="text-right">
+        <tbody>
+          <tr>
+            <td class="p-2">Subtotal:</td>
+            <td class="p-2 font-bold">{{ invoiceData?.invoice?.order?.sub_total ?? '0.00' }}</td>
+          </tr>
+          <tr>
+            <td class="p-2">Total:</td>
+            <td class="p-2 font-bold">{{ invoiceData?.invoice?.order?.total_amount ?? '0.00' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <p class="text-sm text-gray-600 mt-4">Thanks for your business.</p>
-    <p class="text-xs text-gray-500">{{ invoiceData.invoice_note }}</p>
+    <p class="text-xs text-gray-500">{{ invoiceData?.invoice?.invoice_note }}</p>
   </div>
 
   <div>

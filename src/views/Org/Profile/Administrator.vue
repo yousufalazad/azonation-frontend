@@ -168,7 +168,7 @@ fetchAdministrators();
                 <!-- // Search Input -->
                 <div class="flex mb-4">
                     <input type="text" v-model="searchQuery"
-                        placeholder="Search by name, email, mobile, username or Azon Id"
+                        placeholder="Search by first name, last name, email, mobile, username or Azon Id"
                         class="w-full p-2 border rounded-l" />
                     <button @click="searchIndividuals"
                         class="px-4 py-2 bg-blue-500 text-white rounded-r hover:bg-blue-600">
@@ -198,7 +198,7 @@ fetchAdministrators();
                                 <button v-if="!individualUser.already_added"
                                     class="bg-blue-500 hover:bg-blue-600 text-white text-xs py-1 px-3 rounded"
                                     @click="addAdministrator(individualUser.id)">
-                                    Set as Primary Administrator
+                                    Set as Administrator
                                 </button>
                                 <span v-else class="text-xs text-gray-500 font-medium">
                                     Already Administrator
