@@ -351,50 +351,61 @@ const resetForm = () => {
     selectedTransactionId.value = null
 }
 
-// ✅ Submit Transaction
+// Add or update transaction
 const submitForm = async () => {
-    try {
-        const payload = {
-            date: date.value,
-            transaction_title: transaction_title.value,
-            amount: amount.value,
-            type: transaction_type.value,
-            accounts_fund_id: fundId.value,
-            description: description.value
+    const formData = new FormData();
+
+    formData.append('date', date.value);
+    formData.append('transaction_title', transaction_title.value);
+    formData.append('amount', amount.value);
+    formData.append('type', transaction_type.value);
+    formData.append('accounts_fund_id', fundId.value);
+    formData.append('description', description.value);
+
+    images.value.forEach((fileData, index) => {
+        if (fileData.file && fileData.file.file) {
+            formData.append(`images[${index}]`, fileData.file.file);
         }
+    });
 
-        let url = '/api/transactions'
-        let method = 'POST'
-
-        if (selectedTransactionId.value) {
-            url = `/api/transactions/${selectedTransactionId.value}`
-            method = 'PUT'
+    documents.value.forEach((fileData, index) => {
+        if (fileData.file && fileData.file.file) {
+            formData.append(`documents[${index}]`, fileData.file.file);
         }
+    });
 
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: `Do you want to ${selectedTransactionId.value ? 'update' : 'add'} this transaction?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes',
-            cancelButtonText: 'Cancel'
-        })
+    let url = '/api/transactions';
+    let method = 'POST';
 
-        if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(url, payload, method)
-
-            if (response.status) {
-                Swal.fire('Success', 'Transaction saved successfully', 'success')
-                getTransactions()
-                closeModal()
-            } else {
-                Swal.fire('Failed', response.message || 'Failed to save', 'error')
-            }
-        }
-    } catch (err) {
-        Swal.fire('Error', 'An unexpected error occurred', 'error')
+    if (selectedTransactionId.value) {
+        url = `/api/transactions/${selectedTransactionId.value}`;
+        formData.append('_method', 'PUT');
     }
-}
+
+    const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: `Do you want to ${selectedTransactionId.value ? 'update' : 'add'} this transaction?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+        const response = await auth.uploadProtectedApi(url, formData, method, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        if (response.status) {
+            Swal.fire('Success', 'Transaction saved successfully', 'success');
+            getTransactions();
+            closeModal();
+        } else {
+            Swal.fire('Failed', response.message || 'Failed to save transaction', 'error');
+        }
+    }
+};
+
 
 // ✅ Lifecycle
 onMounted(() => {
@@ -562,7 +573,7 @@ onMounted(() => {
                         <td class="px-3 py-2">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
                         <td v-if="visibleColumns.includes('date')" class="px-3 py-2">{{ transaction.date }}</td>
                         <td v-if="visibleColumns.includes('title')" class="px-3 py-2">{{ transaction.transaction_title
-                            }}</td>
+                        }}</td>
                         <td v-if="visibleColumns.includes('fund')" class="px-3 py-2">{{ transaction.funds?.name }}</td>
                         <td v-if="visibleColumns.includes('income')" class="px-3 py-2 text-green-600 font-medium">
                             <span v-if="transaction.type === 'income'">{{ transaction.amount }}</span>
