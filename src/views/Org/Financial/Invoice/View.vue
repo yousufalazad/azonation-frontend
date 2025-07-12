@@ -66,7 +66,7 @@ watch(() => route.params.id, (newId) => {
 <template>
   <div class="flex justify-between items-center mb-5">
     <h2 class="text-2xl font-bold text-gray-800">Invoice Details</h2>
-    <button @click="$router.push({ name: 'invoice-list' })"
+    <button @click="$router.push({ name: 'invoices' })"
       class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-lg shadow focus:ring-2 focus:ring-blue-300">
       Back to Invoice List
     </button>
@@ -75,39 +75,41 @@ watch(() => route.params.id, (newId) => {
   <div class="mx-auto bg-white p-6 rounded-lg shadow-lg">
     <div class="flex justify-between items-center border-b pb-4 mb-4">
       <div>
-        <h1 class="text-xl font-bold">{{ invoiceData?.invoice?.user_name }}</h1>
-        <p class="py-1 text-sm text-gray-600">
+        <h1 class="text-xl font-bold">{{ invoiceData?.invoice?.org_name }}</h1>
+        <p class="text-sm text-gray-600">
           ATTN: {{ invoiceData?.org_administrator_full_name ?? '--' }}
         </p>
 
-        <p class="py-1 text-sm text-gray-600">
+        <p class="text-sm text-gray-600">
           Address: {{ invoiceData?.billing_address ?? '' }}
         </p>
 
-        <p class="py-1 text-sm text-gray-600">
+        <p class="text-sm text-gray-600">
           {{ invoiceData?.user_country ?? '--' }}
         </p>
 
-        <p class="py-1 text-sm text-gray-600">
+        <p class="text-sm text-gray-600">
           Phone: {{ invoiceData?.billing_phone }}
         </p>
 
-        <p class="py-1 text-sm text-gray-600">
+        <p class="text-sm text-gray-600">
           Email: {{ invoiceData?.billing_email ?? '--' }}
         </p>
       </div>
 
       <div class="text-right">
         <h2 class="text-2xl font-bold text-blue-600">INVOICE</h2>
-        <p class="text-sm text-gray-600">Invoice #: <strong>{{ invoiceData?.invoice?.invoice_code }}</strong></p>
-        <p class="text-sm text-gray-600">Invoice Date: <strong>{{ invoiceData?.invoice?.issue_date }}</strong></p>
-        <p class="text-sm text-gray-600">Due Date: <strong>{{ invoiceData?.invoice?.due_date }}</strong></p>
+        <p class="text-sm text-gray-600">Invoice # {{ invoiceData?.invoice?.invoice_code }}</p>
+        <p class="text-sm text-gray-600">Invoice Date: {{ invoiceData?.invoice?.issue_date }}</p>
+        <p class="text-sm text-gray-600">Due Date: {{ invoiceData?.invoice?.due_date }}</p>
+        <p class="text-sm text-gray-600">Status: {{ invoiceData?.invoice?.payment_status }}</p>
+        <p class="text-xs text-gray-500">{{ invoiceData?.invoice?.invoice_note }}</p>
       </div>
     </div>
 
     <table class="w-full border-collapse border border-gray-300 mb-4">
       <thead>
-        <tr class="bg-blue-600 text-white">
+        <tr class="border border-gray-300 text-gray-700">
           <th class="p-2 text-left">#</th>
           <th class="p-2 text-left">Item</th>
           <th class="p-2 text-right">Qty</th>
@@ -132,18 +134,34 @@ watch(() => route.params.id, (newId) => {
         <tbody>
           <tr>
             <td class="p-2">Subtotal:</td>
-            <td class="p-2 font-bold">{{ invoiceData?.invoice?.order?.sub_total ?? '0.00' }}</td>
+            <td class="p-2">{{ invoiceData?.invoice?.order?.sub_total ?? '0.00' }}</td>
           </tr>
           <tr>
-            <td class="p-2">Total:</td>
-            <td class="p-2 font-bold">{{ invoiceData?.invoice?.order?.total_amount ?? '0.00' }}</td>
+            <td class="p-2">Discount:</td>
+            <td class="p-2">{{ invoiceData?.invoice?.order?.discount_amount ?? '0.00' }}</td>
+          </tr>
+          <tr>
+            <td class="p-2">Tax:</td>
+            <td class="p-2">{{ invoiceData?.invoice?.order?.total_tax ?? '0.00' }}</td>
+          </tr>
+
+          <!-- <tr>
+            <td class="p-2 font-bold">Total:</td>
+            <td class="p-2 font-bold">{{ invoiceData?.invoice?.total_amount ?? '0.00' }}</td>
+          </tr> -->
+          <!-- <tr>
+            <td class="p-2">Paid amount:</td>
+            <td class="p-2 font-bold">{{ invoiceData?.invoice?.amount_paid ?? '0.00' }}</td>
+          </tr> -->
+
+          <tr>
+            <td class="p-2">Balance due:</td>
+            <td class="p-2 font-bold">{{ invoiceData?.invoice?.balance_due ?? '0.00' }}</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <p class="text-sm text-gray-600 mt-4">Thanks for your business.</p>
-    <p class="text-xs text-gray-500">{{ invoiceData?.invoice?.invoice_note }}</p>
   </div>
 
   <div>

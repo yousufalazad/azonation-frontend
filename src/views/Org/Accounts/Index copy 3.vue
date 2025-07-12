@@ -24,7 +24,7 @@ const selectedCurrencyId = ref(null) // ID from accounts_transaction_currencies 
 const transactionList = ref([])
 const fundList = ref([])
 const search = ref('')
-const accounts_fund_id = ref('')
+const fund_id = ref('')
 const dateFrom = ref('')
 const dateTo = ref('')
 const loading = ref(false)
@@ -172,15 +172,15 @@ const filteredTransactions = computed(() => {
         list = list.filter(t => {
             return (
                 t.transaction_title?.toLowerCase().includes(keyword) ||
-                (t.funds?.name || '').toLowerCase().includes(keyword) ||
+                t.funds?.name?.toLowerCase().includes(keyword) ||
                 t.amount.toString().includes(keyword) ||
                 (t.date ? dayjs(t.date).format('YYYY-MM-DD').includes(keyword) : false)
             )
         })
     }
 
-    if (accounts_fund_id.value) {
-        list = list.filter(t => t.accounts_fund_id === accounts_fund_id.value)
+    if (fund_id.value) {
+        list = list.filter(t => t.fund_id === fund_id.value)
     }
 
     if (dateFrom.value && dateTo.value) {
@@ -251,7 +251,7 @@ const itemSummary = computed(() => {
 
 
 // ✅ Reset Pagination on Filter Change
-watch([search, accounts_fund_id, dateFrom, dateTo, itemsPerPage], () => {
+watch([search, fund_id, dateFrom, dateTo, itemsPerPage], () => {
     currentPage.value = 1;
 });
 
@@ -321,7 +321,7 @@ const openModal = (transaction = null) => {
         transaction_title.value = transaction.transaction_title
         amount.value = transaction.amount
         transaction_type.value = transaction.type
-        fundId.value = transaction.accounts_fund_id
+        fundId.value = transaction.fund_id
         description.value = transaction.description
         selectedTransactionId.value = transaction.id
     } else {
@@ -359,7 +359,7 @@ const submitForm = async () => {
             transaction_title: transaction_title.value,
             amount: amount.value,
             type: transaction_type.value,
-            accounts_fund_id: fundId.value,
+            fund_id: fundId.value,
             description: description.value
         }
 
@@ -464,7 +464,7 @@ onMounted(() => {
             </div>
             <div>
                 <label class="text-sm text-gray-600">Fund</label>
-                <select v-model="accounts_fund_id" class="w-full border rounded px-3 py-1.5 text-sm">
+                <select v-model="fund_id" class="w-full border rounded px-3 py-1.5 text-sm">
                     <option value="">All Funds</option>
                     <option v-for="fund in fundList" :key="fund.id" :value="fund.id">{{ fund.name }}</option>
                 </select>
@@ -718,47 +718,6 @@ onMounted(() => {
                         <input type="number" v-model="amount" class="w-full border rounded px-3 py-1.5 text-sm"
                             required />
                     </div>
-
-                    <!-- Image Upload -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Upload Images</label>
-                        <div class="space-y-3">
-                            <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
-                                <input type="file" accept="image/*"
-                                    @change="event => handleFileChange(event, images, index)"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2" />
-                                <div v-if="file.file && file.file.preview" class="w-16 h-16 rounded overflow-hidden">
-                                    <img :src="file.file.preview" class="w-full h-full object-cover" />
-                                </div>
-                                <button type="button" @click="removeFile(images, index)"
-                                    class="text-red-600 hover:underline text-sm">Remove</button>
-                            </div>
-                            <button type="button" @click="() => addMoreFiles(images)"
-                                class="text-blue-600 hover:underline text-sm">
-                                + Add more image
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Document Upload -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Upload Documents</label>
-                        <div class="space-y-3">
-                            <div v-for="(file, index) in documents" :key="file.id" class="flex items-center gap-4">
-                                <input type="file" accept=".pdf,.doc,.docx"
-                                    @change="event => handleFileChange(event, documents, index)"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2" />
-                                <span v-if="file.file" class="text-sm truncate w-32">{{ file.file.name }}</span>
-                                <button type="button" @click="removeFile(documents, index)"
-                                    class="text-red-600 hover:underline text-sm">Remove</button>
-                            </div>
-                            <button type="button" @click="() => addMoreFiles(documents)"
-                                class="text-blue-600 hover:underline text-sm">
-                                + Add more document
-                            </button>
-                        </div>
-                    </div>
-
                     <div class="flex justify-end gap-3 mt-4">
                         <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
                             {{ selectedTransactionId ? 'Update' : 'Submit' }}

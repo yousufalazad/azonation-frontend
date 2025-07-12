@@ -130,7 +130,7 @@ import BillCalculation from "@/views/Org/Financial/BillCalculation.vue";
 import BillList from "../views/Org/Financial/ManagementAndStorageBilling/Index.vue";
 import ViewBilling from "../views/Org/Financial/ManagementAndStorageBilling/View.vue";
 
-import OrgInvoiceList from "../views/Org/Financial/Invoice/Index.vue";
+import Invoices from "../views/Org/Financial/Invoice/Index.vue";
 import ViewInvoice from "../views/Org/Financial/Invoice/View.vue";
 import OrgReceiptIndex from "../views/Org/Financial/Receipt/Index.vue";
 
@@ -687,9 +687,9 @@ const orgRoutes = [
             meta: { requiresAuth: true },
           },
           {
-            path: "invoice-list",
-            name: "invoice-list",
-            component: OrgInvoiceList,
+            path: "invoices",
+            name: "invoices",
+            component: Invoices,
             meta: { requiresAuth: true },
           },
           {

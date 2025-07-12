@@ -13,7 +13,7 @@ import AttendanceType from "../views/SuperAdmin/MasterSetting/AttendanceType.vue
 import ConductType from "../views/SuperAdmin/MasterSetting/ConductType.vue";
 import MembershipType from "../views/SuperAdmin/MasterSetting/MembershipType.vue";
 import Designation from "../views/SuperAdmin/MasterSetting/Designation.vue";
-import LanguageList from "../views/SuperAdmin/MasterSetting/LanguageList.vue";
+import Language from "../views/SuperAdmin/MasterSetting/Language.vue";
 import TimeZoneSetup from "../views/SuperAdmin/MasterSetting/TimeZoneSetup.vue";
 import PrivacySetup from "../views/SuperAdmin/MasterSetting/PrivacySetup.vue";
 import RegionalTaxRate from "../views/SuperAdmin/MasterSetting/RegionalTaxRate.vue";
@@ -182,9 +182,9 @@ const superadminRoutes = [
                 meta: { requiresAuth: true },
             },
             {
-                path: "language-list",
-                name: "language-list",
-                component: LanguageList,
+                path: "language",
+                name: "language",
+                component: Language,
                 meta: { requiresAuth: true },
             },
             {
