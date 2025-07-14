@@ -16,7 +16,7 @@ const errorMessage = ref('');
 const summaryId = ref(route.params.summaryId || null);
 
 // Form Data States
-const org_project_id = ref('');
+const project_id = ref('');
 const total_member_participation = ref('');
 const total_guest_participation = ref('');
 const total_participation = ref('');
@@ -78,7 +78,7 @@ const fetchProjectSummary = async () => {
         file: { preview: doc.document_url, name: doc.file_name },
       }));
 
-      org_project_id.value = data.org_project_id || '';
+      project_id.value = data.project_id || '';
       total_member_participation.value = data.total_member_participation || '';
       total_guest_participation.value = data.total_guest_participation || '';
       total_participation.value = data.total_participation || '';
@@ -142,7 +142,7 @@ const submitForm = async () => {
   if (!validateForm()) return;
 
   const formData = new FormData();
-  formData.append('org_project_id', org_project_id.value);
+  formData.append('project_id', project_id.value);
   formData.append('total_member_participation', total_member_participation.value);
   formData.append('total_guest_participation', total_guest_participation.value);
   formData.append('total_participation', total_participation.value);

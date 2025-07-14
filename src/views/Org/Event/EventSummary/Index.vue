@@ -85,7 +85,7 @@ onMounted(() => {
             <tr v-for="(record, index) in recordList" :key="index"
               class="border-b border-gray-200 hover:bg-gray-100 transition duration-200">
               <!-- <td class="border px-1 py-2">{{ record.user_id }}</td> -->
-              <td class="border px-1 py-2">{{ record.org_event_id }}</td>
+              <td class="border px-1 py-2">{{ record.event_id }}</td>
               <td class="border px-1 py-2">{{ record.total_member_attendance }}</td>
               <td class="border px-1 py-2">{{ record.total_guest_attendance }}</td>
               <td class="border px-1 py-2">{{ record.is_active === 0 ? 'No' : 'Yes' }}</td>

@@ -102,9 +102,9 @@ onMounted(() => {
               <td class="px-6 py-3 space-x-2">
 
                 <div class="flex flex-wrap gap-2">
-                  <div v-if="projectSummary.find(s => s.org_project_id === project.id)">
+                  <div v-if="projectSummary.find(s => s.project_id === project.id)">
                     <buttonv
-                      @click="$router.push({ name: 'view-project-summary', params: { summaryId: projectSummary.find(s => s.org_project_id === project.id).id } })"
+                      @click="$router.push({ name: 'view-project-summary', params: { summaryId: projectSummary.find(s => s.project_id === project.id).id } })"
                       class="bg-sky-500 hover:bg-sky-600 text-sm font-mediumv text-white px-3 py-1 rounded">
                       Summary View
                     </buttonv>

@@ -83,7 +83,7 @@ const resetForm = () => {
 // Add or update eventAttendance
 const submitForm = async () => {
     const payload = {
-        org_event_id: eventId.value,
+        event_id: eventId.value,
         user_id: user_id.value,
         attendance_type_id: attendance_type_id.value,
         // date: date.value,

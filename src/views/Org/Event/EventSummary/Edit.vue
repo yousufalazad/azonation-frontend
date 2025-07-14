@@ -15,7 +15,7 @@ const errorMessage = ref('');
 const id = ref(route.params.id || null);
 
 // Form Data States
-const org_event_id = ref('');
+const event_id = ref('');
 const total_member_attendance = ref('');
 const total_guest_attendance = ref('');
 const summary = ref('');
@@ -74,7 +74,7 @@ const fetchEventSummary = async () => {
       }));
 
 
-      org_event_id.value = data.org_event_id || '';
+      event_id.value = data.event_id || '';
       total_member_attendance.value = data.total_member_attendance || '';
       total_guest_attendance.value = data.total_guest_attendance || '';
       summary.value = data.summary || '';
@@ -121,7 +121,7 @@ const removeFile = (fileList, index) => {
 // Submit Form
 const submitForm = async () => {
   const formData = new FormData();
-  formData.append('org_event_id', org_event_id.value);
+  formData.append('event_id', event_id.value);
   formData.append('total_member_attendance', total_member_attendance.value);
   formData.append('total_guest_attendance', total_guest_attendance.value);
   formData.append('summary', summary.value);
@@ -188,7 +188,7 @@ onMounted(() => {
       <!-- Attendance Fields -->
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
-          <input v-model="org_event_id" type="hidden" class="w-full p-2 border border-gray-300 rounded-md" />
+          <input v-model="event_id" type="hidden" class="w-full p-2 border border-gray-300 rounded-md" />
           <label class="block text-sm font-medium text-gray-700">Total Member Attendance</label>
           <input v-model="total_member_attendance" type="number" class="w-full p-2 border border-gray-300 rounded-md" />
         </div>

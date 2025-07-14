@@ -198,7 +198,7 @@ const deleteRecord = async (eventId) => {
 }
 
 const viewSummary = (record) => {
-  const summary = eventSummary.value.find(s => s.org_event_id === record.id)
+  const summary = eventSummary.value.find(s => s.event_id === record.id)
   if (summary) {
     router.push({ name: 'view-event-summary', params: { id: summary.id } })
   }
@@ -322,7 +322,7 @@ onMounted(() => {
       <template #item-actions="{ id }">
         <div class="flex flex-wrap gap-2 justify-end">
           <button @click="viewSummary(eventList.find(e => e.id === id))"
-            v-if="eventSummary.find(s => s.org_event_id === id)"
+            v-if="eventSummary.find(s => s.event_id === id)"
             class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs">
             Summary View
           </button>

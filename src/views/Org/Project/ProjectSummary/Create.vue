@@ -113,7 +113,7 @@ const submitForm = async () => {
   if (!validateForm()) return;
 
   const formData = new FormData();
-  formData.append('org_project_id', projectId.value);
+  formData.append('project_id', projectId.value);
   formData.append('total_member_participation', total_member_participation.value);
   formData.append('total_guest_participation', total_guest_participation.value);
   formData.append('total_participation', total_participation.value);

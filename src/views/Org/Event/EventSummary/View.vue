@@ -50,7 +50,7 @@ onMounted(() => {
         <tr>
           <td class="py-2 px-4 border-b font-medium">Org Event ID</td>
           <td class="py-2 px-4 border-b">:</td>
-          <td class="py-2 px-4 border-b">{{ record.org_event_id }}</td>
+          <td class="py-2 px-4 border-b">{{ record.event_id }}</td>
         </tr>
         <tr>
           <td class="py-2 px-4 border-b font-medium">Total Member Attendance</td>

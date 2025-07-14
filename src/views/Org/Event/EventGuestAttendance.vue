@@ -71,7 +71,7 @@ const resetForm = () => {
 // Add or update eventGuestAttendance
 const submitForm = async () => {
     const payload = {
-        org_event_id: eventId.value,
+        event_id: eventId.value,
         guest_name: guest_name.value,
         about_guest: about_guest.value,
         attendance_type_id: attendance_type_id.value,

@@ -44,10 +44,8 @@ const description = ref('')
 const fundId = ref('')
 
 // ✅ File Upload (future ready, not used in API)
-
-const modalImages = ref([{ id: Date.now(), file: null }])
-const modalDocuments = ref([{ id: Date.now(), file: null }])
-
+const images = ref([{ id: Date.now(), file: null }])
+const documents = ref([{ id: Date.now(), file: null }])
 
 // ✅ fetch currencies
 const fetchCurrencies = async () => {
@@ -164,16 +162,55 @@ const getTransactions = async () => {
         const response = await auth.fetchProtectedApi('/api/transactions', {}, 'GET');
 
         if (response.status) {
-            transactionList.value = response.data;
+            //need for logic purposes
+            const transactions = response.data;
+
+            // Update the transaction list
+            transactionList.value = transactions;
+
+            // Process images and documents for each transaction
+            images.value = [];
+            documents.value = [];
+
+            transactions.forEach((transaction) => {
+                // Extract and process images
+                if (transaction.images && transaction.images.length) {
+                    images.value.push(
+                        ...transaction.images.map((image) => ({
+                            id: image.id,
+                            file: {
+                                preview: image.image_url || '', // Ensure `image_url` contains the correct URL
+                                name: image.file_name || '',
+                            },
+                        }))
+                    );
+                }
+
+                // Extract and process documents
+                if (transaction.documents && transaction.documents.length) {
+                    documents.value.push(
+                        ...transaction.documents.map((doc) => ({
+                            id: doc.id,
+                            file: {
+                                preview: doc.document_url || '', // Ensure `document_url` contains the correct URL
+                                name: doc.file_name || '',
+                            },
+                        }))
+                    );
+                }
+            });
         } else {
             transactionList.value = [];
+            images.value = [];
+            documents.value = [];
         }
     } catch (error) {
         console.error('Error fetching transactions:', error);
         transactionList.value = [];
+        images.value = [];
+        documents.value = [];
     }
 };
-
 
 // ✅ Filtered Transactions
 const filteredTransactions = computed(() => {
@@ -329,35 +366,18 @@ const exportToPDF = () => {
 // ✅ Modal Handlers
 const openModal = (transaction = null) => {
     if (transaction) {
-        date.value = transaction.date;
-        transaction_title.value = transaction.transaction_title;
-        amount.value = transaction.amount;
-        transaction_type.value = transaction.type;
-        fundId.value = transaction.accounts_fund_id;
-        description.value = transaction.description;
-        selectedTransactionId.value = transaction.id;
-
-        modalImages.value = transaction.images?.map(img => ({
-            id: img.id,
-            file: {
-                preview: img.image_url || '',
-                name: img.file_name || '',
-            },
-        })) || [{ id: Date.now(), file: null }];
-
-        modalDocuments.value = transaction.documents?.map(doc => ({
-            id: doc.id,
-            file: {
-                preview: doc.document_url || '',
-                name: doc.file_name || '',
-            },
-        })) || [{ id: Date.now(), file: null }];
+        date.value = transaction.date
+        transaction_title.value = transaction.transaction_title
+        amount.value = transaction.amount
+        transaction_type.value = transaction.type
+        fundId.value = transaction.accounts_fund_id
+        description.value = transaction.description
+        selectedTransactionId.value = transaction.id
     } else {
-        resetForm();
+        resetForm()
     }
-    transactionModal.value = true;
+    transactionModal.value = true
 }
-
 
 const closeModal = () => {
     transactionModal.value = false
@@ -378,8 +398,8 @@ const resetForm = () => {
     fundId.value = ''
     description.value = ''
     selectedTransactionId.value = null
-    modalImages.value = [{ id: Date.now(), file: null }];
-    modalDocuments.value = [{ id: Date.now(), file: null }];
+    images.value = [{ id: Date.now(), file: null }];
+    documents.value = [{ id: Date.now(), file: null }];
 }
 
 const handleFileChange = (event, fileList, index) => {
@@ -415,13 +435,13 @@ const submitForm = async () => {
     formData.append('accounts_fund_id', fundId.value);
     formData.append('description', description.value);
 
-    modalImages.value.forEach((fileData, index) => {
+    images.value.forEach((fileData, index) => {
         if (fileData.file && fileData.file.file) {
             formData.append(`images[${index}]`, fileData.file.file);
         }
     });
 
-    modalDocuments.value.forEach((fileData, index) => {
+    documents.value.forEach((fileData, index) => {
         if (fileData.file && fileData.file.file) {
             formData.append(`documents[${index}]`, fileData.file.file);
         }
@@ -704,10 +724,10 @@ onMounted(() => {
         <!-- ✅ View Modal -->
         <div v-if="viewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
             <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-3xl relative overflow-y-auto max-h-[90vh]">
-                <button @click="viewModal = false"
-                    class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">✕</button>
+                <button @click="viewModal = false" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+                    ✕
+                </button>
                 <h2 class="text-2xl font-semibold text-gray-800 mb-6">Transaction Details</h2>
-
                 <div class="space-y-4 text-base text-gray-700">
                     <div class="flex justify-between">
                         <span class="text-gray-500 font-medium">Date:</span>
@@ -735,31 +755,9 @@ onMounted(() => {
                             {{ selectedTransaction.description }}
                         </p>
                     </div>
-
-                    <!-- ✅ Attached Images -->
-                    <div v-if="selectedTransaction.images?.length" class="border-t mt-6 pt-4">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-2">Attached Images</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <img v-for="img in selectedTransaction.images" :key="img.id" :src="img.image_url"
-                                class="h-20 w-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
-                        </div>
-                    </div>
-
-                    <!-- ✅ Attached Documents -->
-                    <div v-if="selectedTransaction.documents?.length" class="border-t mt-6 pt-4">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-2">Attached Documents</h3>
-                        <ul class="list-disc list-inside space-y-1 text-blue-600 text-base">
-                            <li v-for="doc in selectedTransaction.documents" :key="doc.id">
-                                <a :href="doc.document_url" target="_blank" class="hover:underline">{{ doc.file_name
-                                    }}</a>
-                            </li>
-                        </ul>
-                    </div>
-
                 </div>
             </div>
         </div>
-
 
         <!-- ✅ Add/Edit Modal -->
         <div v-if="transactionModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
@@ -809,17 +807,17 @@ onMounted(() => {
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Upload Images</label>
                         <div class="space-y-3">
-                            <div v-for="(file, index) in modalImages" :key="file.id" class="flex items-center gap-4">
+                            <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
                                 <input type="file" accept="image/*"
-                                    @change="event => handleFileChange(event, modalImages, index)"
+                                    @change="event => handleFileChange(event, images, index)"
                                     class="w-full border border-gray-300 rounded-md px-3 py-2" />
                                 <div v-if="file.file && file.file.preview" class="w-16 h-16 rounded overflow-hidden">
                                     <img :src="file.file.preview" class="w-full h-full object-cover" />
                                 </div>
-                                <button type="button" @click="removeFile(modalImages, index)"
+                                <button type="button" @click="removeFile(images, index)"
                                     class="text-red-600 hover:underline text-sm">Remove</button>
                             </div>
-                            <button type="button" @click="() => addMoreFiles(modalImages)"
+                            <button type="button" @click="() => addMoreFiles(images)"
                                 class="text-blue-600 hover:underline text-sm">
                                 + Add more image
                             </button>
@@ -830,15 +828,15 @@ onMounted(() => {
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Upload Documents</label>
                         <div class="space-y-3">
-                            <div v-for="(file, index) in modalDocuments" :key="file.id" class="flex items-center gap-4">
+                            <div v-for="(file, index) in documents" :key="file.id" class="flex items-center gap-4">
                                 <input type="file" accept=".pdf,.doc,.docx"
-                                    @change="event => handleFileChange(event, modalDocuments, index)"
+                                    @change="event => handleFileChange(event, documents, index)"
                                     class="w-full border border-gray-300 rounded-md px-3 py-2" />
                                 <span v-if="file.file" class="text-sm truncate w-32">{{ file.file.name }}</span>
-                                <button type="button" @click="removeFile(modalDocuments, index)"
+                                <button type="button" @click="removeFile(documents, index)"
                                     class="text-red-600 hover:underline text-sm">Remove</button>
                             </div>
-                            <button type="button" @click="() => addMoreFiles(modalDocuments)"
+                            <button type="button" @click="() => addMoreFiles(documents)"
                                 class="text-blue-600 hover:underline text-sm">
                                 + Add more document
                             </button>

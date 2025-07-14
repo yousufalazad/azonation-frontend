@@ -83,7 +83,7 @@ const resetForm = () => {
 // Add or update projectAttendance
 const submitForm = async () => {
     const payload = {
-        org_project_id: projectId.value,
+        project_id: projectId.value,
         user_id: user_id.value,
         attendance_type_id: attendance_type_id.value,
         // date: date.value,

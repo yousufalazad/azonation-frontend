@@ -19,7 +19,7 @@ const quickFilter = ref('')
 const startDate = ref('')
 const endDate = ref('')
 const selectedProfile = ref(localStorage.getItem('asset_profile') || 'detailed')
-const visibleColumns = ref(JSON.parse(localStorage.getItem('asset_columns')) || ['name', 'quantity', 'responsible_user_first_name', 'status', 'is_active', 'actions'])
+const visibleColumns = ref(JSON.parse(localStorage.getItem('asset_columns')) || ['name', 'quantity', 'asset_lifecycle_status', 'start_date', 'end_date', 'responsible_user_full_name', 'actions'])
 
 const currentPage = ref(1)
 const rowsPerPage = ref(10)
@@ -46,7 +46,7 @@ const getRecords = async () => {
         responsible_user_first_name: r.responsible_user_first_name,
         responsible_user_last_name: r.responsible_user_last_name,
         responsible_user_full_name: `${r.responsible_user_first_name ?? ''} ${r.responsible_user_last_name ?? ''}`.trim(),
-        status: r.asset_lifecycle_statuses_name,
+        asset_lifecycle_status: r.asset_lifecycle_statuses_name,
         is_active: r.is_active === 1 ? 'Yes' : 'No'
       }))
     } else {
@@ -60,8 +60,8 @@ const getRecords = async () => {
 }
 
 const columnProfiles = {
-  minimal: ['name', 'status', 'actions'],
-  detailed: ['name', 'quantity', 'responsible_user_full_name', 'status', 'is_active', 'actions']
+  minimal: ['name', 'quantity', 'asset_lifecycle_status', 'actions'],
+  detailed: ['name', 'quantity', 'asset_lifecycle_status', 'start_date', 'end_date', 'responsible_user_full_name', 'actions']
 }
 
 const headers = [
@@ -69,10 +69,9 @@ const headers = [
   { text: 'Quantity', value: 'quantity', sortable: true },
   { text: 'Start Date', value: 'start_date', sortable: true },
   { text: 'End Date', value: 'end_date', sortable: true },
-  { text: 'Lifecycle Status', value: 'status', sortable: true },
+  { text: 'Lifecycle Status', value: 'asset_lifecycle_status', sortable: true },
   { text: 'Responsible User', value: 'responsible_user_full_name', sortable: true },
-  { text: 'Is Active', value: 'is_active', sortable: true },
-  { text: 'Actions', value: 'actions' }
+  { text: 'Actions', value: 'actions', sortable: false }
 ]
 
 const filteredHeaders = computed(() =>

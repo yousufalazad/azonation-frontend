@@ -281,8 +281,8 @@ onMounted(() => {
       <template #item-actions="{ id }">
         <div class="flex justify-end flex-wrap gap-2">
           <button
-            v-if="projectSummary.find(s => s.org_project_id === id)"
-            @click="$router.push({ name: 'view-project-summary', params: { summaryId: projectSummary.find(s => s.org_project_id === id).id } })"
+            v-if="projectSummary.find(s => s.project_id === id)"
+            @click="$router.push({ name: 'view-project-summary', params: { summaryId: projectSummary.find(s => s.project_id === id).id } })"
             class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs">
             Summary
           </button>
