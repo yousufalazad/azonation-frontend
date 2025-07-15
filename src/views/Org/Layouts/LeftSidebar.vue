@@ -45,9 +45,10 @@ const isActive = (path) => route.path === path;
       { name: 'Meetings', path: '/org-dashboard/meetings', icon: CalendarIcon },
       { name: 'Events', path: '/org-dashboard/events', icon: ClipboardListIcon },
       { name: 'Projects', path: '/org-dashboard/projects', icon: FolderIcon },
-      { name: 'Accounts', path: '/org-dashboard/accounts', icon: DollarSignIcon },
       { name: 'Assets', path: '/org-dashboard/asset-management', icon: FileTextIcon },
       { name: 'Documents', path: '/org-dashboard/office-document', icon: FileTextIcon },
+      { name: 'Accounts', path: '/org-dashboard/accounts', icon: DollarSignIcon },
+
     ]" :key="link.path">
       <router-link
         :to="link.path"

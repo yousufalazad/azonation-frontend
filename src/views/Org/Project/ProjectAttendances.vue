@@ -17,6 +17,8 @@ const isEditMode = ref(false);
 const selectedProjectAttendanceId = ref(null);
 // Selected EventID
 const projectId = ref(route.params.id);
+const projectAttendanceList = ref([]);
+
 
 
 const userList = ref([]);
@@ -43,7 +45,6 @@ const getAttendanceTypeList = async () => {
     }
 };
 
-const projectAttendanceList = ref([]);
 // Fetch getProjectAttendanceList
 const getProjectAttendanceList = async () => {
     try {
@@ -186,16 +187,16 @@ onMounted(() => {
             <form @submit.prevent="submitForm">
                 <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> -->
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <!-- Country Country Name -->
+                    <!-- members -->
                     <div class="col-span-4 mb-4">
-                        <label for="user_id" class="block text-gray-700 font-semibold mb-2">User Name</label>
+                        <label for="user_id" class="block text-gray-700 font-semibold mb-2">Members</label>
                         <select v-model="user_id" id="user_id" class="w-full border border-gray-300 rounded-md p-2"
                             required>
                             <option value="">Select User</option>
-                            <option v-for="user in userList" :key="user.id" :value="user.id">{{ user.name }}</option>
+                            <option v-for="user in userList" :key="user.id" :value="user.id">{{ user.first_name }} {{ user.last_name }}</option>
                         </select>
                     </div>
-                    <!-- Country Country Name -->
+                    <!--   Attendance Type -->
                     <div class="col-span-4 mb-4">
                         <label for="attendance_type_id" class="block text-gray-700 font-semibold mb-2">Type Name</label>
                         <select v-model="attendance_type_id" id="attendance_type_id"
@@ -246,7 +247,7 @@ onMounted(() => {
                 </div>
             </form>
         </section>
-        <!-- country list -->
+        <!-- Attendance list -->
         <section>
             <div class="flex justify-between left-color-shade py-2 my-3">
                 <h5 class="text-md font-semibold mt-2">Project Attendance List</h5>
@@ -255,7 +256,7 @@ onMounted(() => {
                 <thead class="bg-gray-100">
                     <tr>
                         <th class="border px-4 py-2">SL</th>
-                        <th class="py-2 px-4 border border-gray-300">User</th>
+                        <th class="py-2 px-4 border border-gray-300">Members</th>
                         <th class="py-2 px-4 border border-gray-300">Attendance Type</th>
                         <th class="py-2 px-4 border border-gray-300">Attendance Time</th>
                         <th class="py-2 px-4 border border-gray-300">Active</th>
@@ -265,7 +266,7 @@ onMounted(() => {
                 <tbody>
                     <tr v-for="(projectAttendance, index) in projectAttendanceList" :key="projectAttendance.id">
                         <td class="py-2 px-4 border">{{ index + 1 }}</td>
-                        <td class="py-2 px-4 border">{{ projectAttendance.user_name }}</td>
+                        <td class="py-2 px-4 border">{{ projectAttendance.user_first_name }} {{ projectAttendance.user_last_name }}</td>
                         <td class="py-2 px-4 border">{{ projectAttendance.attendance_types_name }}</td>
                         <td class="py-2 px-4 border">{{ projectAttendance.time }}</td>
                         <td class="py-2 px-4 border">

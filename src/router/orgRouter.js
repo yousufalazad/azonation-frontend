@@ -63,10 +63,10 @@ import CreateMeeting from "../views/Org/Meeting/Create.vue";
 import EditMeeting from "../views/Org/Meeting/Edit.vue";
 import ViewMeeting from "../views/Org/Meeting/View.vue";
 
-import IndexMeetingMinutes from "../views/Org/MeetingMinutes/Index.vue";
-import CreateMeetingMinutes from "../views/Org/MeetingMinutes/Create.vue";
-import EditMeetingMinutes from "../views/Org/MeetingMinutes/Edit.vue";
-import ViewMeetingMinutes from "../views/Org/MeetingMinutes/View.vue";
+import IndexMeetingMinutes from "../views/Org/Meeting/MeetingMinutes/Index.vue";
+import CreateMeetingMinutes from "../views/Org/Meeting/MeetingMinutes/Create.vue";
+import EditMeetingMinutes from "../views/Org/Meeting/MeetingMinutes/Edit.vue";
+import ViewMeetingMinutes from "../views/Org/Meeting/MeetingMinutes/View.vue";
 import MeetingAttendances from "../views/Org/Meeting/MeetingAttendances.vue";
 import MeetingGuestAttendance from "@/views/Org/Meeting/MeetingGuestAttendances.vue";
 

@@ -189,11 +189,11 @@ onMounted(() => {
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <!-- Country Country Name -->
                     <div class="col-span-4 mb-4">
-                        <label for="user_id" class="block text-gray-700 font-semibold mb-2">User Name</label>
+                        <label for="user_id" class="block text-gray-700 font-semibold mb-2">Member Name</label>
                         <select v-model="user_id" id="user_id" class="w-full border border-gray-300 rounded-md p-2"
                             required>
-                            <option value="">Select User</option>
-                            <option v-for="user in userList" :key="user.id" :value="user.id">{{ user.name }}</option>
+                            <option value="">Select member</option>
+                            <option v-for="user in userList" :key="user.id" :value="user.id">{{ user.first_name }} {{ user.last_name }}</option>
                         </select>
                     </div>
                     <!-- Country Country Name -->
@@ -255,7 +255,7 @@ onMounted(() => {
                 <thead class="bg-gray-100">
                     <tr>
                         <th class="border px-4 py-2">SL</th>
-                        <th class="py-2 px-4 border border-gray-300">User</th>
+                        <th class="py-2 px-4 border border-gray-300">Members</th>
                         <th class="py-2 px-4 border border-gray-300">Attendance Type</th>
                         <th class="py-2 px-4 border border-gray-300">Attendance Time</th>
                         <th class="py-2 px-4 border border-gray-300">Active</th>
@@ -265,7 +265,7 @@ onMounted(() => {
                 <tbody>
                     <tr v-for="(meetingAttendance, index) in meetingAttendanceList" :key="meetingAttendance.id">
                         <td class="py-2 px-4 border">{{ index + 1 }}</td>
-                        <td class="py-2 px-4 border">{{ meetingAttendance.user_name }}</td>
+                        <td class="py-2 px-4 border">{{ meetingAttendance.user_first_name }} {{ meetingAttendance.user_last_name }}</td>
                         <td class="py-2 px-4 border">{{ meetingAttendance.attendance_types_name }}</td>
                         <td class="py-2 px-4 border">{{ meetingAttendance.time }}</td>
                         <td class="py-2 px-4 border">

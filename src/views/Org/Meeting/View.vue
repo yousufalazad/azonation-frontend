@@ -43,9 +43,9 @@ onMounted(() => {
       <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
         <tbody class="text-gray-600 text-md font-medium">
           <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">ID</td>
+            <td class="px-2 py-2 text-left font-semibold w-36">Sl</td>
             <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.user_id }}</td>
+            <td class="px-2 py-2 text-left">{{ record.id }}</td>
           </tr>
           <tr>
             <td class="px-2 py-2 text-left font-semibold w-36">Name</td>
