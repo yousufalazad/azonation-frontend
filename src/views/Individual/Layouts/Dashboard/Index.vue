@@ -46,7 +46,7 @@ onMounted(fetchMemberList);
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       <div class="bg-white shadow rounded-lg p-4">
         <h5 class="font-semibold text-lg">Connected organisations</h5>
-        <p class="text-sm font-medium"><strong>{{ connectedOrganisation }}</strong></p>
+        <p class="text-sm font-medium"><strong>{{ totalConnectedOrganisations }}</strong></p>
         <a href="#" class="mt-3 inline-block text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded">See all</a>
       </div>
       <div class="bg-white shadow rounded-lg p-4">
@@ -75,26 +75,6 @@ onMounted(fetchMemberList);
           <!-- <img src="#" alt="Meeting Image" class="w-full h-48 object-cover"> -->
           <div class="p-4">
             <h4 class="font-semibold text-lg">Meeting title 1</h4>
-            <p class="text-sm text-gray-600">Meeting at <strong>Venue Name</strong></p>
-            <p class="text-sm text-gray-600">Held on <strong>{{ meetingDate }}</strong></p>
-            <a href="#" class="text-blue-500 hover:underline mt-2 inline-block">View details</a>
-          </div>
-        </div>
-        <!-- Add more activity cards as needed -->
-        <div class="bg-white shadow-md rounded-lg overflow-hidden">
-          <!-- <img src="#" alt="Meeting Image" class="w-full h-48 object-cover"> -->
-          <div class="p-4">
-            <h4 class="font-semibold text-lg">Meeting title 2</h4>
-            <p class="text-sm text-gray-600">Meeting at <strong>Venue Name</strong></p>
-            <p class="text-sm text-gray-600">Held on <strong>{{ meetingDate }}</strong></p>
-            <a href="#" class="text-blue-500 hover:underline mt-2 inline-block">View details</a>
-          </div>
-        </div>
-
-        <div class="bg-white shadow-md rounded-lg overflow-hidden">
-          <!-- <img src="#" alt="Meeting Image" class="w-full h-48 object-cover"> -->
-          <div class="p-4">
-            <h4 class="font-semibold text-lg">Meeting title 3</h4>
             <p class="text-sm text-gray-600">Meeting at <strong>Venue Name</strong></p>
             <p class="text-sm text-gray-600">Held on <strong>{{ meetingDate }}</strong></p>
             <a href="#" class="text-blue-500 hover:underline mt-2 inline-block">View details</a>
