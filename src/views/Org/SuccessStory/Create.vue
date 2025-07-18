@@ -13,7 +13,7 @@ const story = ref('');
 // File Management
 const images = ref([{ id: Date.now(), file: null }]);
 const documents = ref([{ id: Date.now(), file: null }]);
-const status = ref(1);
+const is_active = ref(1);
 
 // Handle File Change
 const handleFileChange = (event, fileList, index) => {
@@ -44,7 +44,7 @@ const submitForm = async () => {
     const formData = new FormData();
     formData.append('title', title.value);
     formData.append('story', story.value);
-    formData.append('status', status.value);
+    formData.append('is_active', is_active.value);
     images.value.forEach((fileData, index) => {
         if (fileData.file) {
             formData.append(`images[${index}]`, fileData.file.file);
@@ -100,8 +100,8 @@ const submitForm = async () => {
                 <textarea v-model="story" class="w-full border rounded-md p-2" rows="4"></textarea>
             </div>
             <div class="mb-4">
-                <label for="status" class="block font-medium mb-2">Status</label>
-                <select v-model="status" id="status" class="w-full border rounded-md p-2">
+                <label for="is_active" class="block font-medium mb-2">Status</label>
+                <select v-model="is_active" id="is_active" class="w-full border rounded-md p-2">
                     <option value="1">Active</option>
                     <option value="0">Disabled</option>
                 </select>

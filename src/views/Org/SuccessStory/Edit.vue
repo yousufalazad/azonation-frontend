@@ -14,7 +14,7 @@ const id = route.params.id;
 // Form fields
 const title = ref('');
 const story = ref('');
-const status = ref(1);
+const is_active = ref(1);
 const images = ref([{ id: Date.now(), file: null }]);
 const documents = ref([{ id: Date.now(), file: null }]);
 
@@ -41,7 +41,7 @@ const fetchRecord = async () => {
 
             title.value = data.title || '';
             story.value = data.story || '';
-            status.value = data.status || 1;
+            is_active.value = data.is_active || 1;
         } else {
             Swal.fire('Error', 'Failed to fetch record details.', 'error');
         }
@@ -77,7 +77,7 @@ const submitForm = async () => {
     const formData = new FormData();
     formData.append('title', title.value);
     formData.append('story', story.value);
-    formData.append('status', status.value);
+    formData.append('is_active', is_active.value);
 
     images.value.forEach((fileData, index) => {
         if (fileData.file) {
@@ -152,8 +152,8 @@ onMounted(() => {
                     placeholder="Write your story here..." rows="4"></textarea>
             </div>
             <div class="mb-4">
-                <label for="status" class="block font-semibold mb-2">Status</label>
-                <select v-model="status" id="status" class="w-full p-2 border rounded">
+                <label for="is_active" class="block font-semibold mb-2">Status</label>
+                <select v-model="is_active" id="is_active" class="w-full p-2 border rounded">
                     <option value="1">Active</option>
                     <option value="0">Disabled</option>
                 </select>

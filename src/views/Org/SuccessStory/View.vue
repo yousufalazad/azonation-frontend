@@ -83,8 +83,8 @@ onMounted(() => {
 
             <div>
                 <p class="text-gray-700 font-semibold mb-1">Status:</p>
-                <span :class="successStory.status == 1 ? 'text-green-600' : 'text-red-600'">
-                    {{ successStory.status == 1 ? 'Active' : 'Disabled' }}
+                <span :class="successStory.is_active == 1 ? 'text-green-600' : 'text-red-600'">
+                    {{ successStory.is_active == 1 ? 'Active' : 'Disabled' }}
                 </span>
             </div>
         </section>

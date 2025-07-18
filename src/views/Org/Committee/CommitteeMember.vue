@@ -19,15 +19,15 @@ const designation_id = ref('');
 const start_date = ref('');
 const end_date = ref('');
 const note = ref('');
-const status = ref('1');
+const is_active = ref(1);
 
 const viewData = ref({});
 const userList = ref([]);
 const designationList = ref([]);
 const committeeMemberList = ref([]);
 
-console.log('Committee ID:', committeeId.value);
-console.log('Committee Name:', committeeName.value);
+// console.log('Committee ID:', committeeId.value);
+// console.log('Committee Name:', committeeName.value);
 
 const getOrgUserList = async () => {
     const res = await auth.fetchProtectedApi('/api/project-attendances/org-user-list', {}, 'GET');
@@ -50,7 +50,7 @@ const resetForm = () => {
     start_date.value = '';
     end_date.value = '';
     note.value = '';
-    status.value = '1';
+    is_active.value = 1;
     selectedCommitteeMemberId.value = null;
     isEditMode.value = false;
     isModalOpen.value = false;
@@ -67,7 +67,7 @@ const openModalForEdit = (member) => {
     start_date.value = member.start_date;
     end_date.value = member.end_date;
     note.value = member.note;
-    status.value = member.status;
+    is_active.value = member.is_active;
     selectedCommitteeMemberId.value = member.id;
     isEditMode.value = true;
     isModalOpen.value = true;
@@ -86,7 +86,7 @@ const submitForm = async () => {
         start_date: start_date.value,
         end_date: end_date.value,
         note: note.value,
-        status: status.value
+        is_active: is_active.value
     };
 
     const method = isEditMode.value ? 'PUT' : 'POST';
@@ -126,8 +126,8 @@ const deleteMember = async (id) => {
     if (confirm.isConfirmed) {
         const res = await auth.fetchProtectedApi(`/api/committee-members/${id}`, {}, 'DELETE');
         if (res.status) {
-            Swal.fire('Deleted!', 'Member deleted.', 'success');
             getCommitteeMemberList();
+            Swal.fire('Deleted!', 'Member deleted.', 'success');
         } else {
             Swal.fire('Error!', 'Failed to delete.', 'error');
         }
@@ -176,14 +176,14 @@ onMounted(() => {
                         <tr v-for="(item, index) in committeeMemberList" :key="item.id"
                             class="hover:bg-gray-50 transition">
                             <td class="px-4 py-3">{{ index + 1 }}</td>
-                            <td class="px-4 py-3">{{ item.user_name }}</td>
+                            <td class="px-4 py-3">{{ item.first_name }} {{ item.last_name }}</td>
                             <td class="px-4 py-3">{{ item.designation_name }}</td>
                             <td class="px-4 py-3">{{ item.start_date }}</td>
                             <td class="px-4 py-3">{{ item.end_date }}</td>
                             <td class="px-4 py-3">
                                 <span
-                                    :class="item.status == 1 ? 'text-green-600 font-medium' : 'text-red-500 font-medium'">
-                                    {{ item.status == 1 ? 'Active' : 'Disabled' }}
+                                    :class="item.is_active == 1 ? 'text-green-600 font-medium' : 'text-red-500 font-medium'">
+                                    {{ item.is_active == 1 ? 'Active' : 'Disabled' }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 space-x-2">
@@ -214,7 +214,7 @@ onMounted(() => {
                 <div class="space-y-4 text-sm text-gray-700">
                     <div class="flex justify-between pb-2">
                         <span class="font-medium text-gray-600 w-40">Name:</span>
-                        <span class="text-gray-800">{{ viewData.user_name }}</span>
+                        <span class="text-gray-800">{{ viewData.first_name }} {{ viewData.last_name }}</span>
                     </div>
 
                     <div class="flex justify-between pb-2">
@@ -239,8 +239,8 @@ onMounted(() => {
 
                     <div class="flex justify-between">
                         <span class="font-medium text-gray-600 w-40">Status:</span>
-                        <span :class="viewData.status == 1 ? 'text-green-600' : 'text-red-600'">
-                            {{ viewData.status == 1 ? 'Active' : 'Disabled' }}
+                        <span :class="viewData.is_active == 1 ? 'text-green-600' : 'text-red-600'">
+                            {{ viewData.is_active == 1 ? 'Active' : 'Disabled' }}
                         </span>
                     </div>
                 </div>
@@ -268,7 +268,7 @@ onMounted(() => {
                         <select v-model="user_id" required
                             class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none">
                             <option value="">Select User</option>
-                            <option v-for="user in userList" :key="user.id" :value="user.id">{{ user.name }}</option>
+                            <option v-for="user in userList" :key="user.id" :value="user.id">{{ user.first_name }} {{ user.last_name }}</option>
                         </select>
                     </div>
 
@@ -306,7 +306,7 @@ onMounted(() => {
                     <!-- Status -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                        <select v-model="status"
+                        <select v-model="is_active"
                             class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none">
                             <option value="1">Active</option>
                             <option value="0">Disabled</option>

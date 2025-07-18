@@ -139,7 +139,7 @@ const submitForm = async () => {
             formData.append(`documents[${index}]`, fileData.file.file);
         }
     });
-    
+
     try {
         // API call using FormData
         const response = await auth.uploadProtectedApi(`/api/recognitions/${id}`, formData, 'POST', {
@@ -158,11 +158,21 @@ const submitForm = async () => {
     }
 };
 
-
+const privacySetupList = ref([]);
+const getPrivacySetups = async () => {
+    try {
+        const response = await auth.fetchProtectedApi('/api/privacy-setups', {}, 'GET');
+        privacySetupList.value = response.status ? response.data : [];
+    } catch (error) {
+        console.error('Error fetching privacy setups:', error);
+        privacySetupList.value = [];
+    }
+};
 // Initialize component on mount
 onMounted(() => {
     initializeQuill();
     fetchRecord();
+    getPrivacySetups();
 });
 </script>
 
@@ -200,9 +210,9 @@ onMounted(() => {
             <div>
                 <label for="privacy_setup_id" class="block text-sm font-medium mb-1">Privacy</label>
                 <select v-model="privacy_setup_id" id="privacy_setup_id" class="w-full border px-4 py-2 rounded-md">
-                    <option value="1">Only Me</option>
-                    <option value="2">Organization</option>
-                    <option value="3">Public</option>
+                    <option v-for="privacy in privacySetupList" :key="privacy.id" :value="privacy.id">
+                        {{ privacy.name }}
+                    </option>
                 </select>
             </div>
 

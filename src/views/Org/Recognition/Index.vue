@@ -93,11 +93,7 @@ onMounted(() => {
                         <!-- <td class="border px-4 py-2" v-html="sanitize(record.description)"></td> -->
                         <td class="border px-4 py-2">{{ record.recognition_date }}</td>
                         <td class="border px-4 py-2">
-                            {{
-                                record.privacy_setup_id === 1 ? 'Only Me' :
-                                    record.privacy_setup_id === 2 ? 'Organization' :
-                                        'Public'
-                            }}
+                            {{ record.privacy_name}}
                         </td>
                         <td class="border px-4 py-2">{{ record.is_active === 1 ? 'Active' : 'Disabled' }}</td>
                         <td class="border px-4 py-2 space-x-2 flex justify-end">

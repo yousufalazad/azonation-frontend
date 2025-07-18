@@ -14,7 +14,7 @@ const title = ref('');
 const plan = ref('');
 const start_date = ref('');
 const end_date = ref('');
-const status = ref(1);
+const is_active = ref(1);
 const quillInstance = ref(null);
 const images = ref([{ id: Date.now(), file: null }]);
 const documents = ref([{ id: Date.now(), file: null }]);
@@ -46,7 +46,7 @@ const fetchRecord = async () => {
             plan.value = data.plan;
             start_date.value = data.start_date;
             end_date.value = data.end_date;
-            status.value = data.status;
+            is_active.value = data.is_active;
 
             // Set Quill content
             quillInstance.value.root.innerHTML = plan.value;
@@ -104,7 +104,7 @@ const submitForm = async () => {
     formData.append('plan', plan.value);
     formData.append('start_date', start_date.value);
     formData.append('end_date', end_date.value);
-    formData.append('status', status.value);
+    formData.append('is_active', is_active.value);
 
     images.value.forEach((fileData, index) => {
         if (fileData.file) {
@@ -166,8 +166,8 @@ onMounted(() => {
                 <input v-model="end_date" type="date" id="end_date" class="w-full p-2 border rounded" />
             </div>
             <div class="mb-4">
-                <label for="status" class="block font-semibold mb-2">Status</label>
-                <select v-model="status" id="status" class="w-full p-2 border rounded">
+                <label for="is_active" class="block font-semibold mb-2">Status</label>
+                <select v-model="is_active" id="is_active" class="w-full p-2 border rounded">
                     <option value="1">Active</option>
                     <option value="0">Disabled</option>
                 </select>

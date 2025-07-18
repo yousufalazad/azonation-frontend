@@ -14,7 +14,7 @@ const title = ref('');
 const plan = ref('');
 const start_date = ref('');
 const end_date = ref('');
-const status = ref(1);
+const is_active = ref(1);
 
 // Quill instance
 let quill = null;
@@ -81,7 +81,7 @@ const submitForm = async () => {
   formData.append('plan', plan.value);
   formData.append('start_date', start_date.value);
   formData.append('end_date', end_date.value);
-  formData.append('status', status.value);
+  formData.append('is_active', is_active.value);
 
   images.value.forEach((fileData, index) => {
     if (fileData.file) {
@@ -147,7 +147,7 @@ const submitForm = async () => {
 
       <div>
         <label class="block font-medium mb-1">Status</label>
-        <select v-model="status" class="w-full border rounded px-3 py-2">
+        <select v-model="is_active" class="w-full border rounded px-3 py-2">
           <option value="1">Active</option>
           <option value="0">Disabled</option>
         </select>

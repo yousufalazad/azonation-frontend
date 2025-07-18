@@ -238,7 +238,8 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "index-committee-member/:committeeId/:committeeName",
+        // path: "index-committee-member/:committeeId/:committeeName",
+        path: "index-committee-member/:committeeId",
         name: "index-committee-member",
         component: CommitteeMember,
         meta: { requiresAuth: true },

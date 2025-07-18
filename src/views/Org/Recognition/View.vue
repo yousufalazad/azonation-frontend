@@ -64,11 +64,7 @@ onMounted(() => {
             </div>
             <div>
                 <strong>Privacy:</strong>
-                {{ record.privacy_setup_id === 1
-                    ? 'Only Me'
-                    : record.privacy_setup_id === 2
-                        ? 'Organization'
-                        : 'Public' }}
+                {{ record.privacy_name}}
             </div>
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700">Images</label>

@@ -34,9 +34,14 @@ onMounted(() => {
   <div class="container mx-auto max-w-7xl w-10/12 p-6 bg-white rounded-lg shadow-md mt-10">
     <div class="flex justify-between items-center mb-6">
       <h5 class="text-xl font-semibold">Meeting Details</h5>
-      <button @click="router.push({ name: 'index-meeting' })" class="btn-primary">
-        Back to Meeting List
-      </button>
+      <div>
+        <button @click="router.push({ name: 'edit-meeting', params: { selectedRecordId } })" class="btn-primary mr-2">
+          Meeting Edit
+        </button>
+        <button @click="router.push({ name: 'index-meeting' })" class="btn-primary">
+          Back to Meeting List
+        </button>
+      </div>
     </div>
 
     <div class="overflow-x-auto">

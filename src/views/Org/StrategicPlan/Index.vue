@@ -76,7 +76,6 @@ onMounted(() => {
                 <thead class="bg-gray-100">
                     <tr>
                         <th class="border px-4 py-2">SL</th>
-                        <th class="px-4 py-2 border">User</th>
                         <th class="px-4 py-2 border">Title</th>
                         <th class="px-4 py-2 border">Plan</th>
                         <th class="px-4 py-2 border">Start Date</th>
@@ -88,13 +87,12 @@ onMounted(() => {
                 <tbody>
                     <tr v-for="(record, index) in recordList" :key="record.id">
                         <td class="border px-4 py-2">{{ index + 1 }}</td>
-                        <td class="border px-4 py-2">{{ record.user.name }}</td>
                         <td class="border px-4 py-2">{{ record.title }}</td>
                         <td class="border px-4 py-2" v-html="sanitize(record.plan)"></td>
                         <td class="border px-4 py-2">{{ record.start_date }}</td>
                         <td class="border px-4 py-2">{{ record.end_date }}</td>
                         <td class="border px-4 py-2">
-                            {{ record.status === 1 ? 'Active' : 'Disabled' }}
+                            {{ record.is_active === 1 ? 'Active' : 'Disabled' }}
                         </td>
                         <td class="border px-4 py-2 flex space-x-2 justify-end">
                             <button @click="$router.push({ name: 'edit-strategic-plan', params: { id: record.id } })"

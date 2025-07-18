@@ -93,7 +93,7 @@ onMounted(() => {
           <tr>
             <td class="px-2 py-2 text-left font-semibold w-36">Status</td>
             <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record?.status === 1 ? 'Active' : 'Disabled' }}</td>
+            <td class="px-2 py-2 text-left">{{ record?.is_active === 1 ? 'Active' : 'Disabled' }}</td>
           </tr>
         </tbody>
       </table>

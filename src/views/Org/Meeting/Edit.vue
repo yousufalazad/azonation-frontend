@@ -338,17 +338,22 @@ onMounted(() => {
   <div class="container mx-auto max-w-5xl p-6 bg-white shadow-md rounded-lg mt-10">
     <div class="flex justify-between items-center mb-6">
       <h5 class="text-xl font-semibold">Edit Meeting</h5>
-      <button @click="router.push({ name: 'index-meeting' })" class="btn-primary">
-        Back to Meeting List
-      </button>
+      <div>
+        <button @click="router.push({ name: 'view-meeting', params: { selectedRecordId } })" class="btn-primary mr-2">
+          Meeting View
+        </button>
+        <button @click="router.push({ name: 'index-meeting' })" class="btn-primary">
+          Back to Meeting List
+        </button>
+      </div>
     </div>
 
     <form @submit.prevent="updateMeeting">
       <!-- Row 1: Name and Short Name -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label class="block text-sm font-medium text-gray-600">Name</label>
-          <input v-model="name" type="text" class="input" placeholder="Enter meeting name"  />
+          <label class="block text-sm font-medium text-gray-600">Name <span class="text-red-500">*</span></label>
+          <input v-model="name" type="text" class="input" placeholder="Enter meeting name" required />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-600">Short Name</label>
@@ -360,15 +365,15 @@ onMounted(() => {
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
           <label class="block text-sm font-medium text-gray-600">Date</label>
-          <input v-model="date" type="date" class="input"  />
+          <input v-model="date" type="date" class="input" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-600">Start Time</label>
-          <input v-model="start_time" type="time" class="input"  />
+          <input v-model="start_time" type="time" class="input" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-600">End Time</label>
-          <input v-model="end_time" type="time" class="input"  />
+          <input v-model="end_time" type="time" class="input" />
         </div>
       </div>
 
@@ -455,8 +460,9 @@ onMounted(() => {
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-600">Privacy Setup</label>
-          <select v-model="privacy_setup_id" class="input">
+          <label class="block text-sm font-medium text-gray-600">Privacy Setup <span
+              class="text-red-500">*</span></label>
+          <select v-model="privacy_setup_id" class="input" required>
             <option value="" disabled>Select Privacy Setup</option>
             <option v-for="privacy in privacySetupList" :key="privacy.id" :value="privacy.id">
               {{ privacy.name }}
@@ -536,7 +542,7 @@ onMounted(() => {
           Add more document
         </button>
       </div>
-      
+
       <!-- Submit Button -->
       <div class="flex justify-end">
         <button type="submit" class="btn-primary">Update Meeting</button>
