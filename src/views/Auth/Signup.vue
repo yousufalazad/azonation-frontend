@@ -130,26 +130,26 @@ onMounted(() => {
                   <div style="width: 250px;">
                     <h4 class="text-sm font-semibold text-gray-800 mb-3">Getting Started</h4>
                     <ul class="space-y-2 text-sm text-gray-700">
-                      <li><router-link to="#">What is an Individual Account?</router-link></li>
-                      <li><router-link to="#">How does it work?</router-link></li>
-                      <li><router-link to="#">Why do I need one?</router-link></li>
-                      <li><router-link to="#">What if I don’t have one?</router-link></li>
+                      <li><router-link to="/individual">What is an Individual Account?</router-link></li>
+                      <li><router-link to="/individual">How does it work?</router-link></li>
+                      <li><router-link to="/individual">Why do I need one?</router-link></li>
+                      <li><router-link to="/individual">What if I don’t have one?</router-link></li>
                     </ul>
                   </div>
                   <div style="width: 250px;">
                     <h4 class="text-sm font-semibold text-gray-800 mb-3">Usage & Membership</h4>
                     <ul class="space-y-2 text-sm text-gray-700">
-                      <li><router-link to="#">Join Multiple Organisations?</router-link></li>
-                      <li><router-link to="#">What can I do?</router-link></li>
-                      <li><router-link to="#">Profile Tips</router-link></li>
+                      <li><router-link to="/individual">Join Multiple Organisations?</router-link></li>
+                      <li><router-link to="/individual">What can I do?</router-link></li>
+                      <li><router-link to="/individual">Profile Tips</router-link></li>
                     </ul>
                   </div>
                   <div class="flex flex-col gap-3">
-                    <router-link to="#"
+                    <router-link to="/signup"
                       class="bg-black text-white px-4 py-3 rounded-full flex justify-between items-center w-52 hover:bg-gray-800">
                       Join Now <span>→</span>
                     </router-link>
-                    <router-link to="#"
+                    <router-link to="/help"
                       class="bg-black text-white px-4 py-3 rounded-full flex justify-between items-center w-52 hover:bg-gray-800">
                       Help Center <span>→</span>
                     </router-link>
@@ -162,18 +162,18 @@ onMounted(() => {
                   <div style="width: 250px;">
                     <h4 class="text-sm font-semibold text-gray-800 mb-3">Getting Started</h4>
                     <ul class="space-y-2 text-sm text-gray-700">
-                      <li><router-link to="#">What is an Individual Account?</router-link></li>
-                      <li><router-link to="#">How does it work?</router-link></li>
-                      <li><router-link to="#">Why do I need one?</router-link></li>
-                      <li><router-link to="#">What if I don’t have one?</router-link></li>
+                      <li><router-link to="/individual">What is an Individual Account?</router-link></li>
+                      <li><router-link to="/individual">How does it work?</router-link></li>
+                      <li><router-link to="/individual">Why do I need one?</router-link></li>
+                      <li><router-link to="/individual">What if I don’t have one?</router-link></li>
                     </ul>
                   </div>
                   <div style="width: 250px;">
                     <h4 class="text-sm font-semibold text-gray-800 mb-3">Usage & Membership</h4>
                     <ul class="space-y-2 text-sm text-gray-700">
-                      <li><router-link to="#">Join Multiple Organisations?</router-link></li>
-                      <li><router-link to="#">What can I do?</router-link></li>
-                      <li><router-link to="#">Profile Tips</router-link></li>
+                      <li><router-link to="/individual">Join Multiple Organisations?</router-link></li>
+                      <li><router-link to="/individual">What can I do?</router-link></li>
+                      <li><router-link to="/individual">Profile Tips</router-link></li>
                     </ul>
                   </div>
                   <div class="flex flex-col gap-3">
@@ -207,25 +207,25 @@ onMounted(() => {
                   <div style="width: 250px;">
                     <h4 class="text-sm font-semibold text-gray-800 mb-3">Organisation Basics</h4>
                     <ul class="space-y-2 text-sm text-gray-700">
-                      <li><router-link to="#">What is an Organisation Account?</router-link></li>
-                      <li><router-link to="#">Who Can Register?</router-link></li>
-                      <li><router-link to="#">Benefits Overview</router-link></li>
+                      <li><router-link to="/organisation">What is an Organisation Account?</router-link></li>
+                      <li><router-link to="/organisation">Who Can Register?</router-link></li>
+                      <li><router-link to="/organisation">Benefits Overview</router-link></li>
                     </ul>
                   </div>
                   <div style="width: 250px;">
                     <h4 class="text-sm font-semibold text-gray-800 mb-3">Features & Management</h4>
                     <ul class="space-y-2 text-sm text-gray-700">
-                      <li><router-link to="#">Manage Members</router-link></li>
-                      <li><router-link to="#">Events & Projects</router-link></li>
-                      <li><router-link to="#">Finance & Billing</router-link></li>
+                      <li><router-link to="/organisation">Manage Members</router-link></li>
+                      <li><router-link to="/organisation">Events & Projects</router-link></li>
+                      <li><router-link to="/organisation">Finance & Billing</router-link></li>
                     </ul>
                   </div>
                   <div class="flex flex-col gap-3">
-                    <router-link to="#"
+                    <router-link to="/signup"
                       class="bg-black text-white px-4 py-3 rounded-full flex justify-between items-center w-52 hover:bg-gray-800">
                       Register Now <span>→</span>
                     </router-link>
-                    <router-link to="#"
+                    <router-link to="/pricing"
                       class="bg-black text-white px-4 py-3 rounded-full flex justify-between items-center w-52 hover:bg-gray-800">
                       Pricing Plans <span>→</span>
                     </router-link>
@@ -238,25 +238,25 @@ onMounted(() => {
                   <div style="width: 250px;">
                     <h4 class="text-sm font-semibold text-gray-800 mb-3">Organisation Basics</h4>
                     <ul class="space-y-2 text-sm text-gray-700">
-                      <li><router-link to="#">What is an Organisation Account?</router-link></li>
-                      <li><router-link to="#">Who Can Register?</router-link></li>
-                      <li><router-link to="#">Benefits Overview</router-link></li>
+                      <li><router-link to="/organisation">What is an Organisation Account?</router-link></li>
+                      <li><router-link to="/organisation">Who Can Register?</router-link></li>
+                      <li><router-link to="/organisation">Benefits Overview</router-link></li>
                     </ul>
                   </div>
                   <div style="width: 250px;">
                     <h4 class="text-sm font-semibold text-gray-800 mb-3">Features & Management</h4>
                     <ul class="space-y-2 text-sm text-gray-700">
-                      <li><router-link to="#">Manage Members</router-link></li>
-                      <li><router-link to="#">Events & Projects</router-link></li>
-                      <li><router-link to="#">Finance & Billing</router-link></li>
+                      <li><router-link to="/organisation">Manage Members</router-link></li>
+                      <li><router-link to="/organisation">Events & Projects</router-link></li>
+                      <li><router-link to="/organisation">Finance & Billing</router-link></li>
                     </ul>
                   </div>
                   <div class="flex flex-col gap-3">
-                    <router-link to="#"
+                    <router-link to="/signup"
                       class="bg-black text-white px-4 py-3 rounded-full flex justify-between items-center w-52 hover:bg-gray-800">
                       Register Now <span>→</span>
                     </router-link>
-                    <router-link to="#"
+                    <router-link to="/pricing"
                       class="bg-black text-white px-4 py-3 rounded-full flex justify-between items-center w-52 hover:bg-gray-800">
                       Pricing Plans <span>→</span>
                     </router-link>
@@ -266,7 +266,7 @@ onMounted(() => {
             </div>
 
             <!-- Pricing Link -->
-            <router-link to="#"
+            <router-link to="/pricing"
               class="px-3 py-2 text-sm text-black hover:bg-black hover:text-white rounded-full transition">
               Pricing
             </router-link>

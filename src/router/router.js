@@ -10,6 +10,12 @@ import Login from "../views/Auth/Login.vue";
 import ForgotPassword from '../views/Auth/ForgotPassword.vue';
 import VerifyCode from '../views/Auth/VerifyCode.vue';
 import ResetPassword from '../views/Auth/ResetPassword.vue';
+import Individual from "@/views/Common/Individual.vue";
+import Organisation from "@/views/Common/Organisation.vue";
+import Pricing from "@/views/Common/Pricing.vue";
+import Help from "@/views/Common/Help.vue";
+import NotFound from "@/views/Common/NotFound.vue";
+import Cookies from "@/views/Common/Cookies.vue";
 
 // Mock authentication function
 function isAuthenticated() {
@@ -46,6 +52,44 @@ const baseRoutes = [
     path: "/reset-password", // after login for new password
     name: "reset-password",
     component: ResetPassword,
+  },
+  {
+    path: "/individual", // after login for new password
+    name: "individual",
+    component: Individual,
+  },
+  {
+    path: "/organisation", // after login for new password
+    name: "organisation",
+    component: Organisation,
+  },
+  {
+    path: "/pricing", // after login for new password
+    name: "pricing",
+    component: Pricing,
+  },
+  {
+    path: "/help", // after login for new password
+    name: "help",
+    component: Help,
+  },
+  {
+    path: "/:pathMatch(.*)*", // Catch-all route for 404
+    name: "not-found",
+    component: NotFound,
+    meta: { requiresAuth: false },
+  },
+  {
+    path: "/:catchAll(.*)", // Catch-all route for 404
+    name: "not-found",
+    component: NotFound,
+    meta: { requiresAuth: false },
+  },
+  {
+    path: "/cookies",
+    name: "cookies",
+    component: Cookies,
+    meta: { requiresAuth: false },
   },
 ];
 
