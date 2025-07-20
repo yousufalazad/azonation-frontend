@@ -71,7 +71,7 @@
         </p>
         <p>
           For more information, please read our
-          <router-link to="/privacy" class="text-blue-600 hover:underline">Privacy Policy</router-link>.
+          <router-link to="/privacy-policy" class="text-blue-600 hover:underline">Privacy Policy</router-link>.
         </p>
       </section>
     </div>

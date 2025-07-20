@@ -16,6 +16,10 @@ import Pricing from "@/views/Common/Pricing.vue";
 import Help from "@/views/Common/Help.vue";
 import NotFound from "@/views/Common/NotFound.vue";
 import Cookies from "@/views/Common/Cookies.vue";
+import PrivacyPolicy from "@/views/Common/PrivacyPolicy.vue";
+import TermsOfService from "@/views/Common/TermsOfService.vue";
+import AboutUs from "@/views/Common/AboutUs.vue";
+import ContactUs from "@/views/Common/ContactUs.vue";
 
 // Mock authentication function
 function isAuthenticated() {
@@ -91,6 +95,31 @@ const baseRoutes = [
     component: Cookies,
     meta: { requiresAuth: false },
   },
+  {
+    path: "/privacy-policy",
+    name: "privacy-policy",
+    component: PrivacyPolicy, // Assuming you have a PrivacyPolicy.vue component
+    meta: { requiresAuth: false },
+  },
+  {
+    path: "/terms-of-service",
+    name: "terms-of-service",
+    component: TermsOfService, // Assuming you have a TermsOfService.vue component
+    meta: { requiresAuth: false },
+  },
+  {
+    path: "/about-us",
+    name: "about-us",
+    component: AboutUs, // Assuming you have an AboutUs.vue component
+    meta: { requiresAuth: false },
+  },
+  {
+    path: "/contact-us",
+    name: "contact-us",
+    component: ContactUs,
+    meta: { requiresAuth: false },
+  },
+
 ];
 
 // Merge all route modules properly

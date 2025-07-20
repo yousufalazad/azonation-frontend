@@ -52,9 +52,9 @@
           </router-link>
         </div>
 
-        <!-- Business Plan -->
+        <!-- Professional Plan -->
         <div class="border rounded-lg p-6 shadow-sm">
-          <h2 class="text-lg font-semibold text-gray-800 mb-2">Business</h2>
+          <h2 class="text-lg font-semibold text-gray-800 mb-2">Professional</h2>
           <p class="text-sm text-gray-600 mb-4">For medium to large organisations</p>
           <p class="text-3xl font-bold text-gray-900 mb-1">£25<span class="text-sm font-normal text-gray-500">/mo</span></p>
           <ul class="mt-4 space-y-2 text-sm text-gray-700">
@@ -67,7 +67,7 @@
             to="/signup"
             class="block mt-6 text-center bg-gray-800 text-white py-2 rounded-md hover:bg-gray-700 text-sm"
           >
-            Start Business
+            Start Professional
           </router-link>
         </div>
 

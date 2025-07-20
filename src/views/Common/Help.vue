@@ -84,7 +84,7 @@
             If you didn’t find what you were looking for, feel free to contact our support team.
           </p>
           <router-link
-            to="/contact"
+            to="/contact-us"
             class="inline-block px-5 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-500"
           >
             Contact Support
