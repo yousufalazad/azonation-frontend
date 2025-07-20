@@ -1,4 +1,7 @@
 <script setup>
+import Header from './Header.vue'
+import Footer from './Footer.vue'
+
 // Static placeholder content – replace with real terms if needed
 const terms = [
   {
@@ -35,17 +38,28 @@ const terms = [
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 py-10 space-y-10">
-    <h1 class="text-3xl font-bold text-gray-800 text-center">Terms of Service</h1>
+  <div class="min-h-screen flex flex-col bg-white">
+    <!-- Header -->
+    <Header />
 
-    <div v-for="(section, index) in terms" :key="index" class="space-y-2">
-      <h2 class="text-xl font-semibold text-gray-800">{{ section.title }}</h2>
-      <p class="text-gray-700 leading-relaxed">{{ section.content }}</p>
-    </div>
+    <!-- Main Content -->
+    <main class="flex-grow pt-[100px] pb-20 px-4">
+      <div class="max-w-4xl mx-auto space-y-10">
+        <h1 class="text-3xl font-bold text-gray-800 text-center">Terms of Service</h1>
 
-    <p class="text-sm text-gray-500 mt-8 text-center">
-      Last updated: July 2025
-    </p>
+        <div v-for="(section, index) in terms" :key="index" class="space-y-2">
+          <h2 class="text-xl font-semibold text-gray-800">{{ section.title }}</h2>
+          <p class="text-gray-700 leading-relaxed">{{ section.content }}</p>
+        </div>
+
+        <p class="text-sm text-gray-500 mt-8 text-center">
+          Last updated: July 2025
+        </p>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <Footer />
   </div>
 </template>
 

@@ -36,8 +36,9 @@ const submitForgotPassword = async () => {
                 <img src="../../assets/Logo/Azonation.png" alt="Azonation" class="w-40">
             </div>
             <div class="hidden md:flex">
-                <router-link :to="{ name: 'login' }" class="text-gray-600 hover:text-blue-600 font-medium">
-                    Return to login
+                <router-link to="/login"
+                    class="text-sm border border-black px-4 py-2 rounded-full font-medium hover:bg-black hover:text-white">
+                    Log In
                 </router-link>
             </div>
         </div>
