@@ -22,20 +22,6 @@ const getHistories = async () => {
 };
 
 // Delete history
-const __deleteHistory = async (id) => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/histories/${id}`, {}, 'DELETE');
-        if (response.status) {
-            getHistories(); // Refresh the history list
-        } else {
-            alert('Failed to delete history.');
-        }
-    } catch (error) {
-        console.error('Error deleting history:', error);
-    }
-};
-
-// Delete history
 const deleteHistory = async (id) => {
     try {
         const result = await Swal.fire({
@@ -95,6 +81,7 @@ onMounted(() => {
             <th class="border px-4 py-2">SL</th>
             <th class="border px-4 py-2">Title</th>
             <th class="border px-4 py-2">History</th>
+            <th class="border px-4 py-2">Privacy</th>
             <th class="border px-4 py-2">Active</th>
             <th class="border px-4 py-2 text-right">Action</th>
         </tr>
@@ -104,6 +91,7 @@ onMounted(() => {
             <td class="border px-4 py-2">{{ index + 1 }}</td>
             <td class="border px-4 py-2">{{ history.title }}</td>
             <td class="border px-4 py-2" v-html="sanitize(history.history)"></td>
+            <td class="border px-4 py-2">{{ history.privacy_name }}</td>
             <td class="border px-4 py-2">
                 <span :class="history.is_active === 1 ? 'text-green-600' : 'text-red-600'">
                     {{ history.is_active === 1 ? 'Yes' : 'No' }}

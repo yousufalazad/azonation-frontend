@@ -32,8 +32,7 @@ import EditAsset from "../views/Org/Asset/Edit.vue";
 import ViewAsset from "../views/Org/Asset/View.vue";
 
 //Committee
-import CommitteeList from "../views/Org/Committee/CommitteeList.vue";
-import CreateCommittee from "../views/Org/Committee/CreateCommittee.vue";
+import CommitteeList from "../views/Org/Committee/Index.vue";
 import FormerCommitteeList from "../views/Org/Committee/FormerCommitteeList.vue";
 import CommitteeMember from "../views/Org/Committee/CommitteeMember.vue";
 
@@ -226,14 +225,8 @@ const orgRoutes = [
         props: true
       },
       {
-        path: "create-committee",
-        name: "create-committee",
-        component: CreateCommittee,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "committee-list",
-        name: "committee-list",
+        path: "committees",
+        name: "committees",
         component: CommitteeList,
         meta: { requiresAuth: true },
       },

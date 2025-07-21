@@ -50,61 +50,74 @@ onMounted(() => {
 
 
       <!-- history Display Section -->
-      <div class="bg-white shadow-sm rounded-lg p-6">
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700">Title</label>
-          <p class="mt-1 text-gray-700">{{ history.title }}</p>
-        </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+          <tbody class="text-gray-600 text-md font-medium">
+            <tr>
+              <td class="px-2 py-2 text-left font-semibold w-36">Title</td>
+              <td>:</td>
+              <td class="px-2 py-2 text-left">{{ history.title }}</td>
+            </tr>
 
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700">History</label>
-          <p class="mt-1 text-gray-700">{{ history.history }}</p>
-        </div>
+            <tr>
+              <td class="px-2 py-2 text-left font-semibold w-36 align-top">History</td>
+              <td class="align-top">:</td>
+              <td class="px-2 py-2 text-left whitespace-pre-line">{{ history.history }}</td>
+            </tr>
 
-        <!-- {{ history.images }} -->
+            <tr class="mb-4">
+              <td class="px-2 py-2 text-left font-semibold w-36 align-top">Images</td>
+              <td class="align-top">:</td>
+              <td class="px-2 py-2 text-left">
+                <div v-if="history.images && history.images.length">
+                  <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <img v-for="(img, index) in history.images" :key="img.id || index" :src="img.image_url"
+                      alt="History Image" class="max-w-full rounded-lg" />
+                  </div>
+                </div>
+                <div v-else>
+                  <p class="text-gray-700">No images available</p>
+                </div>
+              </td>
+            </tr>
 
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700">Images</label>
-          <div v-if="history.images && history.images.length">
-            <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-4">
-              <img v-for="(img, index) in history.images" :key="img.id || index" :src="img.image_url"
-                alt="History Image" class="max-w-full rounded-lg" />
-            </div>
-          </div>
-          <div v-else>
-            <p class="text-gray-700">No images available</p>
-          </div>
-        </div>
+            <tr class="mb-4">
+              <td class="px-2 py-2 text-left font-semibold w-36 align-top">Documents</td>
+              <td class="align-top">:</td>
+              <td class="px-2 py-2 text-left">
+                <div v-if="history.documents && history.documents.length">
+                  <ul class="mt-2 list-disc list-inside text-blue-600">
+                    <li v-for="(doc, index) in history.documents" :key="doc.id || index">
+                      <a :href="doc.document_url" target="_blank" class="hover:text-blue-800 underline">
+                        {{ doc.file_name || 'Download Document' }}
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+                <div v-else>
+                  <p class="text-gray-700">No documents available</p>
+                </div>
+              </td>
+            </tr>
 
+            <tr>
+              <td class="px-2 py-2 text-left font-semibold w-36">Privacy</td>
+              <td>:</td>
+              <td class="px-2 py-2 text-left">{{ history.privacy_name }}</td>
+            </tr>
 
-                <!-- {{ history }} -->
-
-
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700">Documents</label>
-          <div v-if="history.documents && history.documents.length">
-            <ul class="mt-2 list-disc list-inside text-blue-600">
-              <li v-for="(doc, index) in history.documents" :key="doc.id || index">
-                <a :href="doc.document_url" target="_blank" class="hover:text-blue-800">
-                  {{ doc.file_name || 'Download Document' }}
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div v-else>
-            <p class="text-gray-700">No documents available</p>
-          </div>
-        </div>
-
-
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700">Active</label>
-          <p class="mt-1 text-gray-700">
-            <span v-if="history.is_active === 1" class="text-green-500">Yes</span>
-            <span v-else class="text-red-500">No</span>
-          </p>
-        </div>
+            <tr>
+              <td class="px-2 py-2 text-left font-semibold w-36">Active</td>
+              <td>:</td>
+              <td class="px-2 py-2 text-left">
+                <span v-if="history.is_active === 1" class="text-green-500">Yes</span>
+                <span v-else class="text-red-500">No</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+
     </section>
   </div>
 </template>

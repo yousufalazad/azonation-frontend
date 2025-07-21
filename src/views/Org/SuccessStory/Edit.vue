@@ -13,8 +13,9 @@ const id = route.params.id;
 
 // Form fields
 const title = ref('');
+const privacy_setup_id = ref(1); // Default to 1 if not se
 const story = ref('');
-const is_active = ref(1);
+const status = ref(1);
 const images = ref([{ id: Date.now(), file: null }]);
 const documents = ref([{ id: Date.now(), file: null }]);
 
@@ -40,8 +41,9 @@ const fetchRecord = async () => {
             }));
 
             title.value = data.title || '';
+            privacy_setup_id.value = data.privacy_setup_id || 1; // Default to 1 if not set
             story.value = data.story || '';
-            is_active.value = data.is_active || 1;
+            status.value = data.status || 1;
         } else {
             Swal.fire('Error', 'Failed to fetch record details.', 'error');
         }
@@ -76,8 +78,9 @@ const removeFile = (fileList, index) => {
 const submitForm = async () => {
     const formData = new FormData();
     formData.append('title', title.value);
+    formData.append('privacy_setup_id', privacy_setup_id.value);
     formData.append('story', story.value);
-    formData.append('is_active', is_active.value);
+    formData.append('status', status.value);
 
     images.value.forEach((fileData, index) => {
         if (fileData.file) {
@@ -124,8 +127,20 @@ const submitForm = async () => {
   }
 };
 
+const privacySetupList = ref([]);
+const getPrivacySetups = async () => {
+    try {
+        const response = await auth.fetchProtectedApi('/api/privacy-setups', {}, 'GET');
+        privacySetupList.value = response.status ? response.data : [];
+    } catch (error) {
+        console.error('Error fetching privacy setups:', error);
+        privacySetupList.value = [];
+    }
+};
+
 // On component mount
 onMounted(() => {
+    getPrivacySetups();
     fetchRecord();
 });
 </script>
@@ -151,9 +166,18 @@ onMounted(() => {
                 <textarea v-model="story" id="story" class="w-full p-2 border rounded"
                     placeholder="Write your story here..." rows="4"></textarea>
             </div>
+            <!-- Privacy -->
+            <div>
+                <label for="privacy_setup_id" class="block text-sm font-medium mb-1">Privacy</label>
+                <select v-model="privacy_setup_id" id="privacy_setup_id" class="w-full border px-4 py-2 rounded-md">
+                    <option v-for="privacy in privacySetupList" :key="privacy.id" :value="privacy.id">
+                        {{ privacy.name }}
+                    </option>
+                </select>
+            </div>
             <div class="mb-4">
-                <label for="is_active" class="block font-semibold mb-2">Status</label>
-                <select v-model="is_active" id="is_active" class="w-full p-2 border rounded">
+                <label for="status" class="block font-semibold mb-2">Status</label>
+                <select v-model="status" id="status" class="w-full p-2 border rounded">
                     <option value="1">Active</option>
                     <option value="0">Disabled</option>
                 </select>

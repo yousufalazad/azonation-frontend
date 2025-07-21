@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
 import { useRoute, useRouter } from 'vue-router';
@@ -9,11 +9,12 @@ const router = useRouter();
 const auth = authStore;
 const title = ref('');
 const story = ref('');
+const privacy_setup_id = ref(1);
 // const image = ref(null);
 // File Management
 const images = ref([{ id: Date.now(), file: null }]);
 const documents = ref([{ id: Date.now(), file: null }]);
-const is_active = ref(1);
+const status = ref(1);
 
 // Handle File Change
 const handleFileChange = (event, fileList, index) => {
@@ -44,7 +45,8 @@ const submitForm = async () => {
     const formData = new FormData();
     formData.append('title', title.value);
     formData.append('story', story.value);
-    formData.append('is_active', is_active.value);
+    formData.append('privacy_setup_id', privacy_setup_id.value);
+    formData.append('status', status.value);
     images.value.forEach((fileData, index) => {
         if (fileData.file) {
             formData.append(`images[${index}]`, fileData.file.file);
@@ -78,6 +80,20 @@ const submitForm = async () => {
     }
 
 };
+
+const privacySetupList = ref([]);
+const getPrivacySetups = async () => {
+    try {
+        const response = await auth.fetchProtectedApi('/api/privacy-setups', {}, 'GET');
+        privacySetupList.value = response.status ? response.data : [];
+    } catch (error) {
+        console.error('Error fetching privacy setups:', error);
+        privacySetupList.value = [];
+    }
+};
+onMounted(() => {
+    getPrivacySetups();
+});
 </script>
 
 <template>
@@ -99,9 +115,20 @@ const submitForm = async () => {
                 <label for="story" class="block font-medium mb-2">Story</label>
                 <textarea v-model="story" class="w-full border rounded-md p-2" rows="4"></textarea>
             </div>
+            <!-- Privacy Field -->
+            <div class="mb-5">
+                <label for="privacy_setup_id" class="block text-sm font-medium mb-2">Privacy</label>
+                <select v-model="privacy_setup_id" id="privacy_setup_id" class="w-full border px-4 py-2 rounded-md">
+                    <option value="" disabled>Select Privacy Setup</option>
+                    <option v-for="privacy in privacySetupList" :key="privacy.id" :value="privacy.id">
+                        {{ privacy.name }}
+                    </option>
+                </select>
+            </div>
+
             <div class="mb-4">
-                <label for="is_active" class="block font-medium mb-2">Status</label>
-                <select v-model="is_active" id="is_active" class="w-full border rounded-md p-2">
+                <label for="status" class="block font-medium mb-2">Status</label>
+                <select v-model="status" id="status" class="w-full border rounded-md p-2">
                     <option value="1">Active</option>
                     <option value="0">Disabled</option>
                 </select>
@@ -146,7 +173,7 @@ const submitForm = async () => {
                 <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
                     @click="() => addMoreFiles(documents)">
                     Add more document
-                    </button>
+                </button>
             </div>
 
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md">Submit</button>

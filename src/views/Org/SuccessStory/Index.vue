@@ -74,7 +74,8 @@ onMounted(() => {
                     <th class="border px-4 py-2">SL</th>
                     <th class="border px-4 py-2">Title</th>
                     <th class="border px-4 py-2">Story</th>
-                    <!-- <th class="border px-4 py-2">Status</th> -->
+                    <th class="border px-4 py-2">Privacy</th>
+                    <th class="border px-4 py-2">Status</th>
                     <th class="border px-4 py-2 text-right">Action</th>
                 </tr>
             </thead>
@@ -84,12 +85,12 @@ onMounted(() => {
                     <td class="border px-4 py-2">{{ index + 1 }}</td>
                     <td class="border px-4 py-2">{{ record.title }}</td>
                     <td class="border px-4 py-2">{{ record.story }}</td>
-                    
-                    <!-- <td class="border px-4 py-2">
-                        <span :class="record.is_active == 1 ? 'text-green-600' : 'text-red-600'">
-                            {{ record.is_active == 1 ? 'Active' : 'Disabled' }}
+                    <td class="border px-4 py-2">{{ record.privacy_name }}</td>
+                    <td class="border px-4 py-2">
+                        <span :class="record.status == 1 ? 'text-green-600' : 'text-red-600'">
+                            {{ record.status == 1 ? 'Active' : 'Disabled' }}
                         </span>
-                    </td> -->
+                    </td>
                     <td class="border px-4 py-2 flex justify-end">                        
                         <button @click="router.push({ name: 'edit-success-story', params: { id: record.id } })"
                                 class="bg-yellow-500 text-white px-4 py-1 mx-1 rounded hover:bg-yellow-600">Edit </button>

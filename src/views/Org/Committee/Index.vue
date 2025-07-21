@@ -44,7 +44,7 @@ const allHeaders = [
   { text: 'Name', value: 'name', sortable: true },
   { text: 'Start Date', value: 'start_date', sortable: true },
   { text: 'End Date', value: 'end_date', sortable: true },
-  { text: 'Status', value: 'status_display', sortable: true },
+  { text: 'Is Active', value: 'status_display', sortable: true },
   { text: 'Actions', value: 'actions' }
 ]
 
@@ -138,7 +138,7 @@ const fetchCommitteeList = async () => {
     committeeList.value = res.status ? res.data.map(c => ({
       id: c.id, name: c.name, start_date: c.start_date,
       end_date: c.end_date, is_active: c.is_active,
-      status_display: c.is_active === 1 ? 'Active' : 'Disabled',
+      status_display: c.is_active === 1 ? 'Yes' : 'No',
       note: c.note, short_description: c.short_description
     })) : []
   } catch {
@@ -331,7 +331,7 @@ onMounted(fetchCommitteeList)
 
 
       <template #item-status_display="{ status_display }">
-        <span :class="status_display === 'is_active' ? 'text-green-600' : 'text-red-600'">{{ status_display }}</span>
+        <span :class="status_display === 'Active' ? 'text-green-600' : 'text-red-600'">{{ status_display }}</span>
       </template>
       <template #item-actions="{ id }">
         <div class="flex gap-2 justify-end">
@@ -408,7 +408,7 @@ onMounted(fetchCommitteeList)
     <!-- Modals (View/Edit) go here... -->
      <!-- Create/Edit Modal -->
   <div v-if="modalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-6 md:p-8">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl mx-auto p-6 md:p-8">
       <!-- Modal Header -->
       <h2 class="text-lg md:text-2xl font-semibold text-center text-gray-800 mb-6">
         {{ isEditMode ? 'Edit Committee' : 'Create Committee' }}
@@ -453,11 +453,11 @@ onMounted(fetchCommitteeList)
 
         <!-- is_active -->
         <div>
-          <label for="is_active" class="block text-sm font-medium text-gray-700 mb-1">is_active</label>
+          <label for="is_active" class="block text-sm font-medium text-gray-700 mb-1">Is Active</label>
           <select v-model="is_active" id="is_active"
             class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="1">Active</option>
-            <option value="0">Disable</option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
           </select>
         </div>
       </div>
@@ -495,7 +495,7 @@ onMounted(fetchCommitteeList)
               'Start Date': selectedCommittee.start_date,
               'End Date': selectedCommittee.end_date,
               'Note': selectedCommittee.note,
-              'Active': selectedCommittee.is_active == '1' ? 'Active' : 'Disabled'
+              'Is Active': selectedCommittee.is_active == '1' ? 'Yes' : 'No'
             }" :key="label">
               <td class="font-medium text-gray-600 w-40 align-top">{{ label }}</td>
               <td class="text-gray-500">:</td>

@@ -41,7 +41,7 @@ const isActive = (path) => route.path === path;
       { name: 'Home', path: '/org-dashboard/index', icon: HomeIcon },
       { name: 'Members', path: '/org-dashboard/index-member', icon: UsersIcon },
       { name: 'Unlink Member', path: '/org-dashboard/independent-member', icon: UserIcon },
-      { name: 'Committees', path: '/org-dashboard/committee-list', icon: BriefcaseIcon },
+      { name: 'Committees', path: '/org-dashboard/committees', icon: BriefcaseIcon },
       { name: 'Meetings', path: '/org-dashboard/meetings', icon: CalendarIcon },
       { name: 'Events', path: '/org-dashboard/events', icon: ClipboardListIcon },
       { name: 'Projects', path: '/org-dashboard/projects', icon: FolderIcon },

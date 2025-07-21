@@ -13,6 +13,8 @@ const history = ref('');
 // const image = ref(null);
 // const document = ref(null);
 const is_active = ref(1);
+const privacy_setup_id = ref(1); // Default to 1 if not set
+// File Management
 const images = ref([{ id: Date.now(), file: null }]);
 const documents = ref([{ id: Date.now(), file: null }]);
 
@@ -58,6 +60,7 @@ const submitForm = async () => {
   const formData = new FormData();
   formData.append('title', title.value);
   formData.append('history', history.value);
+  formData.append('privacy_setup_id', privacy_setup_id.value);
   formData.append('is_active', is_active.value);
 
   images.value.forEach((fileData, index) => {
@@ -88,6 +91,21 @@ const submitForm = async () => {
     Swal.fire('Error!', 'Failed to add History.', 'error');
   }
 };
+
+const privacySetupList = ref([]);
+const getPrivacySetups = async () => {
+  try {
+    const response = await auth.fetchProtectedApi('/api/privacy-setups', {}, 'GET');
+    privacySetupList.value = response.status ? response.data : [];
+  } catch (error) {
+    console.error('Error fetching privacy setups:', error);
+    privacySetupList.value = [];
+  }
+};
+onMounted(() => {
+  getPrivacySetups();
+});
+
 </script>
 
 <template>
@@ -117,6 +135,17 @@ const submitForm = async () => {
             <textarea v-model="history" id="history" rows="4" class="w-full p-2 border border-gray-300 rounded-md"
               required></textarea>
           </div>
+        </div>
+
+        <!-- Privacy Field -->
+        <div class="mb-5">
+          <label for="privacy_setup_id" class="block text-sm font-medium mb-2">Privacy</label>
+          <select v-model="privacy_setup_id" id="privacy_setup_id" class="w-full border px-4 py-2 rounded-md">
+            <option value="" disabled>Select Privacy Setup</option>
+            <option v-for="privacy in privacySetupList" :key="privacy.id" :value="privacy.id">
+              {{ privacy.name }}
+            </option>
+          </select>
         </div>
 
         <!-- Image Upload Field -->
