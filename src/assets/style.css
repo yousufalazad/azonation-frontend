@@ -42,3 +42,39 @@ html, body {
   overflow-y: auto;
   margin: 0;
 }
+
+
+.vue3-easy-data-table .header-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #555;
+  padding: 1rem 0;
+}
+
+.vue3-easy-data-table__body tr td:first-child,
+.vue3-easy-data-table__body tr,
+.vue3-easy-data-table__body tr span {
+  font-size: 15px !important;
+  color: #555;
+}
+
+.vue3-easy-data-table__body tr td:first-child{
+padding-left: 12px !important;
+}
+
+.vue3-easy-data-table__body tr td{
+  border-bottom: 0.1rem solid #f3f0f0 !important;
+}
+
+.vue3-easy-data-table__body tr button,
+.vue3-easy-data-table__body tr a{
+  color: #555 !important;
+  font-size: 15px !important;
+}
+
+.vue3-easy-data-table__body tr button:hover,
+.vue3-easy-data-table__body tr a:hover{
+  color: #2563EB !important;
+  text-decoration: underline !important;
+  font-weight: bold !important;
+}

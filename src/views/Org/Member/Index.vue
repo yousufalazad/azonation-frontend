@@ -627,9 +627,5 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.easy-data-table__body td img {
-  width: 40px !important;
-  height: 40px !important;
-  object-fit: cover !important;
-}
+
 </style>
