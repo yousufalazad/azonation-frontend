@@ -410,7 +410,7 @@ const submitForm = async () => {
 
     formData.append('date', date.value);
     formData.append('transaction_title', transaction_title.value);
-    formData.append('amount', amount.value);
+    formData.append('amount', parseFloat(amount.value).toFixed(2));
     formData.append('type', transaction_type.value);
     formData.append('accounts_fund_id', fundId.value);
     formData.append('description', description.value);
@@ -801,8 +801,8 @@ onMounted(() => {
                     </div>
                     <div>
                         <label class="block mb-1 text-sm">Amount</label>
-                        <input type="number" v-model="amount" class="w-full border rounded px-3 py-1.5 text-sm"
-                            required />
+                        <input type="number" v-model="amount" step="0.01" min="0"
+                            class="w-full border rounded px-3 py-1.5 text-sm" required />
                     </div>
 
                     <!-- Image Upload -->

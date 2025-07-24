@@ -119,6 +119,7 @@ const baseRoutes = [
     component: ContactUs,
     meta: { requiresAuth: false },
   },
+  
 
 ];
 
@@ -129,6 +130,7 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 });
+
 
 // Add route guard for authentication
 router.beforeEach(async (to, from, next) => {

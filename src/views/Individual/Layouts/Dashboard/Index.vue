@@ -1,125 +1,125 @@
-<!-- OrgDashboard.vue -->
-
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { authStore } from '../../../../store/authStore';
+import { ref, onMounted } from 'vue';
+import { authStore } from '@/store/authStore';
+import { useRouter } from 'vue-router';
 
 const auth = authStore;
-const userId = auth.user.id;
-const totalOrgMember = ref('');
-const memberList = ref([]);
-const userType = computed(() => auth.user?.type);
+const router = useRouter();
 
+const isLoading = ref(true);
+const hasConnection = ref(false);
 
-const totalOrgMemberCount = async () => {
+const connectedOrgs = ref([]);
+const nextMeeting = ref(null);
+const upcomingEvent = ref(null);
+const approvalRequests = ref([]);
+const summaryCounts = ref({
+  committees: 0,
+  meetings: 0,
+  events: 0,
+  projects: 0,
+  assets: 0,
+  founders: 0
+});
+
+const fetchDashboardData = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/total-org-member-count/${userId}`, {}, 'GET');
-    if (response.status && response.totalOrgMemberCount) {
-      totalOrgMember.value = response.totalOrgMemberCount;
-    }
-  } catch (error) {
-    console.error("Error fetching logo:", error);
-  }
-};
-
-const fetchMemberList = async () => {
-  try {
-    const response = await authStore.fetchProtectedApi(`/api/org-members/list/${userId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi('/api/individual/dashboard-summary', {}, 'GET');
     if (response.status) {
-      memberList.value = response.data;
-    } else {
-      memberList.value = [];
+      hasConnection.value = response.data.has_connection || [];
+      connectedOrgs.value = response.data.connected_organisations || [];
+      nextMeeting.value = response.data.next_meeting || null;
+      upcomingEvent.value = response.data.upcoming_event || null;
+      approvalRequests.value = response.data.approval_requests || [];
+      summaryCounts.value = response.data.summary_counts || {};
     }
   } catch (error) {
-    console.error("Error fetching member list:", error);
-    memberList.value = [];
+    console.error('Failed to load dashboard data:', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
-onMounted(totalOrgMemberCount)
-onMounted(fetchMemberList);
+onMounted(() => {
+  fetchDashboardData();
+});
 </script>
 
 <template>
-  <div v-if="auth.isAuthenticated && userType == 'individual'" class="space-y-8 mt-4">
-    <!-- Connected Organization Stats -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="bg-white shadow rounded-lg p-4">
-        <h5 class="font-semibold text-lg">Connected organisations</h5>
-        <p class="text-sm font-medium"><strong>{{ totalConnectedOrganisations }}</strong></p>
-        <a href="#" class="mt-3 inline-block text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded">See all</a>
-      </div>
-      <div class="bg-white shadow rounded-lg p-4">
-        <h5 class="font-semibold text-lg">Next meeting</h5>
-        <p class="text-sm font-medium"><strong>{{ nextMeetingDate }}</strong></p>
-        <a href="#" class="mt-3 inline-block text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded">See all</a>
-      </div>
-      <div class="bg-white shadow rounded-lg p-4">
-        <h5 class="font-semibold text-lg">Upcoming event</h5>
-        <p class="text-sm font-medium"><strong>{{ upcomingEventDate }}</strong></p>
-        <a href="#" class="mt-3 inline-block text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded">See all</a>
-      </div>
-      <div class="bg-white shadow rounded-lg p-4">
-        <h5 class="font-semibold text-lg">Approval request</h5>
-        <p class="text-sm font-medium"><strong>{{ approvalRequest }}</strong></p>
-        <a href="#" class="mt-3 inline-block text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded">See all</a>
-      </div>
+  <div class="space-y-8">
+    <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+
+    <div v-if="isLoading" class="text-gray-500">Loading...</div>
+
+    <div v-else-if="!hasConnection" class="p-6 bg-yellow-50 text-yellow-700 rounded shadow">
+      <p>You are not currently connected to any organisation.</p>
     </div>
 
-    <!-- Connected Organizations' Activities -->
-    <div>
-      <h3 class="flex justify-between mb-4 left-color-shade py-2">Recent meetings</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Example Activity -->
-        <div class="bg-white shadow-md rounded-lg overflow-hidden">
-          <!-- <img src="#" alt="Meeting Image" class="w-full h-48 object-cover"> -->
-          <div class="p-4">
-            <h4 class="font-semibold text-lg">Meeting title 1</h4>
-            <p class="text-sm text-gray-600">Meeting at <strong>Venue Name</strong></p>
-            <p class="text-sm text-gray-600">Held on <strong>{{ meetingDate }}</strong></p>
-            <a href="#" class="text-blue-500 hover:underline mt-2 inline-block">View details</a>
+    <!-- <div v-else class="space-y-8"> -->
+    <div class="space-y-8">
+      <!-- Connected Organisations -->
+      <div class="bg-white p-6 rounded shadow">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold text-gray-800">Connected Organisations</h2>
+          <router-link to="/individual-dashboard/connected-orgs" class="text-sm text-blue-600 hover:underline">See all</router-link>
+        </div>
+        <ul class="space-y-1">
+          <li v-for="org in connectedOrgs" :key="org.id" class="text-gray-700">
+            {{ org.org_name }}
+          </li>
+        </ul>
+      </div>
+
+      <!-- Next Meeting & Upcoming Event -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Next Meeting -->
+        <div class="bg-white p-6 rounded shadow">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-semibold text-gray-800">Next Meeting</h2>
+            <router-link to="/org-dashboard/meetings" class="text-sm text-blue-600 hover:underline">See all</router-link>
           </div>
+          <div v-if="nextMeeting" class="text-gray-700">
+            <p class="font-medium">{{ nextMeeting.title }}</p>
+            <p class="text-sm text-gray-500">{{ nextMeeting.date }} — {{ nextMeeting.time }}</p>
+          </div>
+          <div v-else class="text-gray-500 italic">No upcoming meetings.</div>
+        </div>
+
+        <!-- Upcoming Event -->
+        <div class="bg-white p-6 rounded shadow">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-semibold text-gray-800">Upcoming Event</h2>
+            <router-link to="/org-dashboard/events" class="text-sm text-blue-600 hover:underline">See all</router-link>
+          </div>
+          <div v-if="upcomingEvent" class="text-gray-700">
+            <p class="font-medium">{{ upcomingEvent.title }}</p>
+            <p class="text-sm text-gray-500">{{ upcomingEvent.date }} — {{ upcomingEvent.venue }}</p>
+          </div>
+          <div v-else class="text-gray-500 italic">No upcoming events.</div>
         </div>
       </div>
-    </div>
 
-    <!-- Completed Event Details -->
-    <div>
-      <h3 class="flex justify-between mb-4 left-color-shade py-2">Recent events</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Example Event -->
-        <div class="bg-white shadow-md rounded-lg overflow-hidden">
-          <!-- <img src="#" alt="Event Image" class="w-full h-48 object-cover"> -->
-          <div class="p-4">
-            <h4 class="font-semibold text-lg">Event title</h4>
-            <p class="text-sm text-gray-600">Purpose: <strong>Event Purpose</strong></p>
-            <p class="text-sm text-gray-600">Location: <strong>Venue Name</strong></p>
-            <p class="text-sm text-gray-600">Held on <strong>{{ eventDate }}</strong></p>
-            <a href="#" class="text-blue-500 hover:underline mt-2 inline-block">View details</a>
-          </div>
+      <!-- Approval Requests -->
+      <div class="bg-white p-6 rounded shadow">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold text-gray-800">Approval Requests</h2>
+          <router-link to="/individual-dashboard/approval-requests" class="text-sm text-blue-600 hover:underline">See all</router-link>
         </div>
-        <!-- Add more event cards as needed -->
+        <ul v-if="approvalRequests.length" class="space-y-1 text-gray-700">
+          <li v-for="req in approvalRequests" :key="req.id">
+            {{ req.message }}
+          </li>
+        </ul>
+        <div v-else class="text-gray-500 italic">No approval requests.</div>
       </div>
-    </div>
 
-    <!-- projects -->
-    <div>
-      <h3 class="flex justify-between mb-4 left-color-shade py-2">Recent projects</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Example Event -->
-        <div class="bg-white shadow-md rounded-lg overflow-hidden">
-          <!-- <img src="#" alt="Event Image" class="w-full h-48 object-cover"> -->
-          <div class="p-4">
-            <h4 class="font-semibold text-lg">Project title</h4>
-            <p class="text-sm text-gray-600">Purpose: <strong>Project Purpose</strong></p>
-            <p class="text-sm text-gray-600">Location: <strong>Project venue</strong></p>
-            <p class="text-sm text-gray-600">Held on <strong>{{ eventDate }}</strong></p>
-            <a href="#" class="text-blue-500 hover:underline mt-2 inline-block">View details</a>
-          </div>
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-for="(count, label) in summaryCounts" :key="label" class="bg-white p-5 rounded shadow text-center">
+          <p class="text-sm text-gray-500 uppercase tracking-wide">{{ label }}</p>
+          <p class="text-2xl font-bold text-blue-700 mt-1">{{ count }}</p>
         </div>
-        <!-- Add more event cards as needed -->
       </div>
     </div>
   </div>
 </template>
-
