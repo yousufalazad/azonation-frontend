@@ -10,8 +10,7 @@ const isLoading = ref(true);
 const hasConnection = ref(false);
 
 const connectedOrgs = ref([]);
-const nextMeeting = ref(null);
-const upcomingEvent = ref(null);
+const organisationsSummary = ref([]);
 const approvalRequests = ref([]);
 const summaryCounts = ref({
   committees: 0,
@@ -22,17 +21,65 @@ const summaryCounts = ref({
   founders: 0
 });
 
+// Flattened global meeting and event lists
+const allCommittees = ref([]);
+const allMeetings = ref([]);
+const allEvents = ref([]);
+const allProjects = ref([]);
+const allAssets = ref([]);
+
 const fetchDashboardData = async () => {
   try {
     const response = await auth.fetchProtectedApi('/api/individual/dashboard-summary', {}, 'GET');
     if (response.status) {
-      hasConnection.value = response.data.has_connection || [];
+      hasConnection.value = response.data.has_connection || false;
       connectedOrgs.value = response.data.connected_organisations || [];
-      nextMeeting.value = response.data.next_meeting || null;
-      upcomingEvent.value = response.data.upcoming_event || null;
+      organisationsSummary.value = response.data.organisations_summary || [];
       approvalRequests.value = response.data.approval_requests || [];
       summaryCounts.value = response.data.summary_counts || {};
+
+      // Flatten all committees
+      allCommittees.value = organisationsSummary.value.flatMap(org =>
+        (org.committees || []).map(committee => ({
+          ...committee,
+          org_name: org.org_name
+        }))
+      );
+
+      // Flatten all meetings and add org_name to each
+      allMeetings.value = organisationsSummary.value.flatMap(org =>
+        (org.next_meetings || []).map(meeting => ({
+          ...meeting,
+          org_name: org.org_name
+        }))
+      );
+
+      // Flatten all events and add org_name to each
+      allEvents.value = organisationsSummary.value.flatMap(org =>
+        (org.upcoming_events || []).map(event => ({
+          ...event,
+          org_name: org.org_name
+        }))
+      );
+
+      // Flatten all events and add org_name to each
+      allProjects.value = organisationsSummary.value.flatMap(org =>
+        (org.upcoming_projects || []).map(project => ({
+          ...project,
+          org_name: org.org_name
+        }))
+      );
+
+      // After fetching organisationsSummary
+      allAssets.value = organisationsSummary.value.flatMap(org =>
+        (org.responsible_assets || []).map(asset => ({
+          ...asset,
+          org_name: org.org_name
+        }))
+      );
+
     }
+
   } catch (error) {
     console.error('Failed to load dashboard data:', error);
   } finally {
@@ -45,6 +92,7 @@ onMounted(() => {
 });
 </script>
 
+
 <template>
   <div class="space-y-8">
     <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
@@ -55,62 +103,215 @@ onMounted(() => {
       <p>You are not currently connected to any organisation.</p>
     </div>
 
-    <!-- <div v-else class="space-y-8"> -->
-    <div class="space-y-8">
+    <div v-else class="space-y-8">
       <!-- Connected Organisations -->
       <div class="bg-white p-6 rounded shadow">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-lg font-semibold text-gray-800">Connected Organisations</h2>
-          <router-link to="/individual-dashboard/connected-orgs" class="text-sm text-blue-600 hover:underline">See all</router-link>
+          <router-link to="/individual-dashboard/connected-orgs" class="text-sm text-blue-600 hover:underline">See
+            all</router-link>
         </div>
-        <ul class="space-y-1">
-          <li v-for="org in connectedOrgs" :key="org.id" class="text-gray-700">
-            {{ org.org_name }}
-          </li>
-        </ul>
-      </div>
-
-      <!-- Next Meeting & Upcoming Event -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Next Meeting -->
-        <div class="bg-white p-6 rounded shadow">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-semibold text-gray-800">Next Meeting</h2>
-            <router-link to="/org-dashboard/meetings" class="text-sm text-blue-600 hover:underline">See all</router-link>
-          </div>
-          <div v-if="nextMeeting" class="text-gray-700">
-            <p class="font-medium">{{ nextMeeting.title }}</p>
-            <p class="text-sm text-gray-500">{{ nextMeeting.date }} — {{ nextMeeting.time }}</p>
-          </div>
-          <div v-else class="text-gray-500 italic">No upcoming meetings.</div>
-        </div>
-
-        <!-- Upcoming Event -->
-        <div class="bg-white p-6 rounded shadow">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-semibold text-gray-800">Upcoming Event</h2>
-            <router-link to="/org-dashboard/events" class="text-sm text-blue-600 hover:underline">See all</router-link>
-          </div>
-          <div v-if="upcomingEvent" class="text-gray-700">
-            <p class="font-medium">{{ upcomingEvent.title }}</p>
-            <p class="text-sm text-gray-500">{{ upcomingEvent.date }} — {{ upcomingEvent.venue }}</p>
-          </div>
-          <div v-else class="text-gray-500 italic">No upcoming events.</div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white shadow rounded-md">
+            <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
+              <tr>
+                <th class="px-4 py-3 text-left">#</th>
+                <th class="px-4 py-3 text-left">Organisation Name</th>
+                <th class="px-4 py-3 text-left">Membership ID</th>
+                <th class="px-4 py-3 text-left">Membership Type ID</th>
+                <th class="px-4 py-3 text-left">Start Date</th>
+                <th class="px-4 py-3 text-left">Sponsored By (User ID)</th>
+                <th class="px-4 py-3 text-left">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(org, index) in connectedOrgs" :key="org.id"
+                class="border-t text-sm text-gray-800 hover:bg-gray-50">
+                <td class="px-4 py-3">{{ index + 1 }}</td>
+                <td class="px-4 py-3">{{ org.org_name }}</td>
+                <td class="px-4 py-3">{{ org.existing_membership_id || '—' }}</td>
+                <td class="px-4 py-3">{{ org.membership_type_id || '—' }}</td>
+                <td class="px-4 py-3">{{ org.membership_start_date || '—' }}</td>
+                <td class="px-4 py-3">{{ org.sponsored_user_id || '—' }}</td>
+                <td class="px-4 py-3">
+                  <span :class="org.is_active ? 'text-green-600 font-medium' : 'text-red-500 font-medium'">
+                    {{ org.is_active ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <!-- Approval Requests -->
+
+
+      <!-- All Committees -->
       <div class="bg-white p-6 rounded shadow">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-semibold text-gray-800">Approval Requests</h2>
-          <router-link to="/individual-dashboard/approval-requests" class="text-sm text-blue-600 hover:underline">See all</router-link>
+          <h2 class="text-lg font-semibold text-gray-800">Your Committees</h2>
+          <button @click="router.push({ name: 'individual-committees' })" class="text-sm text-blue-600 hover:underline">
+            See all
+          </button>
         </div>
-        <ul v-if="approvalRequests.length" class="space-y-1 text-gray-700">
-          <li v-for="req in approvalRequests" :key="req.id">
-            {{ req.message }}
-          </li>
-        </ul>
-        <div v-else class="text-gray-500 italic">No approval requests.</div>
+        <div v-if="allCommittees.length" class="overflow-x-auto">
+          <table class="min-w-full bg-white shadow rounded-md">
+            <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
+              <tr>
+                <th class="px-4 py-3 text-left">#</th>
+                <th class="px-4 py-3 text-left">Organisation</th>
+                <th class="px-4 py-3 text-left">Committee Name</th>
+                <th class="px-4 py-3 text-left">Start Date</th>
+                <th class="px-4 py-3 text-left">End Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(committee, index) in allCommittees" :key="`${committee.org_name}-${committee.id}-${index}`"
+                class="border-t text-sm text-gray-800 hover:bg-gray-50">
+                <td class="px-4 py-3">{{ index + 1 }}</td>
+                <td class="px-4 py-3">{{ committee.org_name || '—' }}</td>
+                <td class="px-4 py-3">{{ committee.name || '—' }}</td>
+                <td class="px-4 py-3">{{ committee.start_date || '—' }}</td>
+                <td class="px-4 py-3">{{ committee.end_date || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-else class="text-gray-500 italic">You are not a member of any committee yet.</div>
+      </div>
+
+      <!-- All Upcoming Meetings -->
+      <div class="bg-white p-6 rounded shadow">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold text-gray-800">Upcoming Meetings</h2>
+          <button @click="router.push({ name: 'individual-meetings' })"
+            class="text-sm text-blue-600 hover:underline">See all</button>
+        </div>
+        <div v-if="allMeetings.length" class="overflow-x-auto">
+          <table class="min-w-full bg-white shadow rounded-md">
+            <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
+              <tr>
+                <th class="px-4 py-3 text-left">#</th>
+                <th class="px-4 py-3 text-left">Organisation</th>
+                <th class="px-4 py-3 text-left">Meeting Name</th>
+                <th class="px-4 py-3 text-left">Date</th>
+                <th class="px-4 py-3 text-left">Start Time</th>
+                <th class="px-4 py-3 text-left">End Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(meeting, index) in allMeetings" :key="meeting.id"
+                class="border-t text-sm text-gray-800 hover:bg-gray-50">
+                <td class="px-4 py-3">{{ index + 1 }}</td>
+                <td class="px-4 py-3">{{ meeting.org_name || '—' }}</td>
+                <td class="px-4 py-3">{{ meeting.name || '—' }}</td>
+                <td class="px-4 py-3">{{ meeting.date || '—' }}</td>
+                <td class="px-4 py-3">{{ meeting.start_time || '—' }}</td>
+                <td class="px-4 py-3">{{ meeting.end_time || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-else class="text-gray-500 italic">No upcoming meetings.</div>
+      </div>
+
+      <!-- All Upcoming Events -->
+      <div class="bg-white p-6 rounded shadow">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold text-gray-800">Upcoming Events</h2>
+          <button @click="router.push({ name: 'individual-events' })" class="text-sm text-blue-600 hover:underline">See
+            all</button>
+        </div>
+        <div v-if="allEvents.length" class="overflow-x-auto">
+          <table class="min-w-full bg-white shadow rounded-md">
+            <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
+              <tr>
+                <th class="px-4 py-3 text-left">#</th>
+                <th class="px-4 py-3 text-left">Organisation</th>
+                <th class="px-4 py-3 text-left">Event Name</th>
+                <th class="px-4 py-3 text-left">Event Date</th>
+                <th class="px-4 py-3 text-left">Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(event, index) in allEvents" :key="event.id"
+                class="border-t text-sm text-gray-800 hover:bg-gray-50">
+                <td class="px-4 py-3">{{ index + 1 }}</td>
+                <td class="px-4 py-3">{{ event.org_name || '—' }}</td>
+                <td class="px-4 py-3">{{ event.name || '—' }}</td>
+                <td class="px-4 py-3">{{ event.date || '—' }}</td>
+                <td class="px-4 py-3">{{ event.time || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-else class="text-gray-500 italic">No upcoming events.</div>
+      </div>
+      <!-- All Upcoming Projects -->
+      <div class="bg-white p-6 rounded shadow">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold text-gray-800">Upcoming Projects</h2>
+          <button @click="router.push({ name: 'individual-projects' })"
+            class="text-sm text-blue-600 hover:underline">See
+            all</button>
+        </div>
+        <div v-if="allProjects.length" class="overflow-x-auto">
+          <table class="min-w-full bg-white shadow rounded-md">
+            <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
+              <tr>
+                <th class="px-4 py-3 text-left">#</th>
+                <th class="px-4 py-3 text-left">Organisation</th>
+                <th class="px-4 py-3 text-left">Project Name</th>
+                <th class="px-4 py-3 text-left">Start Date</th>
+                <th class="px-4 py-3 text-left">End Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(project, index) in allProjects" :key="project.id"
+                class="border-t text-sm text-gray-800 hover:bg-gray-50">
+                <td class="px-4 py-3">{{ index + 1 }}</td>
+                <td class="px-4 py-3">{{ project.org_name || '—' }}</td>
+                <td class="px-4 py-3">{{ project.title || '—' }}</td>
+                <td class="px-4 py-3">{{ project.start_date || '—' }}</td>
+                <td class="px-4 py-3">{{ project.end_date || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-else class="text-gray-500 italic">No upcoming projects.</div>
+      </div>
+
+      <!-- Responsible Assets -->
+      <div class="bg-white p-6 rounded shadow">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold text-gray-800">Responsible Assets</h2>
+          <button @click="router.push({ name: 'individual-assets' })" class="text-sm text-blue-600 hover:underline">See
+            all</button>
+        </div>
+        <div v-if="allAssets.length" class="overflow-x-auto">
+          <table class="min-w-full bg-white shadow rounded-md">
+            <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
+              <tr>
+                <th class="px-4 py-3 text-left">#</th>
+                <th class="px-4 py-3 text-left">Organisation</th>
+                <th class="px-4 py-3 text-left">Asset Name</th>
+                <th class="px-4 py-3 text-left">Responsible From</th>
+                <th class="px-4 py-3 text-left">Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(asset, index) in allAssets" :key="asset.id"
+                class="border-t text-sm text-gray-800 hover:bg-gray-50">
+                <td class="px-4 py-3">{{ index + 1 }}</td>
+                <td class="px-4 py-3">{{ asset.org_name || '—' }}</td>
+                <td class="px-4 py-3">{{ asset.name || '—' }}</td>
+                <td class="px-4 py-3">{{ asset.start_date || '—' }}</td>
+                <td class="px-4 py-3">{{ asset.quantity || 0 }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-else class="text-gray-500 italic">No responsible assets found.</div>
       </div>
 
       <!-- Summary Cards -->
