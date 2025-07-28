@@ -7,10 +7,15 @@ import IndividualProfileUpdate from "../views/Individual/Profile/IndividualProfi
 import MyAccount from "../views/Org/Profile/MyAccount.vue";
 import Security from "../views/Individual/Profile/Security/Index.vue";
 import Meeting from "../views/Individual/Meeting/Index.vue";
+import PastMeeting from "../views/Individual/Meeting/PastMeeting.vue";
 import Committee from "../views/Individual/Committee/Index.vue";
+import PastCommittee from "../views/Individual/Committee/PastCommittee.vue";
 import Event from "../views/Individual/Event/Index.vue";
+import PastEvent from "../views/Individual/Event/PastEvent.vue";
 import Project from "../views/Individual/Project/Index.vue";
+import PastProject from "../views/Individual/Project/PastProject.vue";
 import Asset from "../views/Individual/Asset/Index.vue";
+import PastAsset from "../views/Individual/Asset/PastAsset.vue";
 import Attendance from "../views/Individual/Attendance/Index.vue";
 import Settings from "../views/Individual/Profile/Settings/Index.vue";
 
@@ -65,9 +70,21 @@ const individualRoutes = [
         meta: { requiresAuth: true },
       },
       {
+        path: "past-meetings",
+        name: "past-individual-meetings",
+        component: PastMeeting,
+        meta: { requiresAuth: true },
+      },
+      {
         path: "committees",
         name: "individual-committees",
         component: Committee,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "past-committees",
+        name: "past-individual-committees",
+        component: PastCommittee,
         meta: { requiresAuth: true },
       },
       {
@@ -77,15 +94,33 @@ const individualRoutes = [
         meta: { requiresAuth: true },
       },
       {
+        path: "past-events",
+        name: "past-individual-events",
+        component: PastEvent,
+        meta: { requiresAuth: true },
+      },
+      {
         path: "projects",
         name: "individual-projects",
         component: Project,
         meta: { requiresAuth: true },
       },
       {
+        path: "past-projects",
+        name: "past-individual-projects",
+        component: PastProject,
+        meta: { requiresAuth: true },
+      },
+      {
         path: "assets",
         name: "individual-assets",
         component: Asset,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "past-assets",
+        name: "past-individual-assets",
+        component: PastAsset,
         meta: { requiresAuth: true },
       },
       {

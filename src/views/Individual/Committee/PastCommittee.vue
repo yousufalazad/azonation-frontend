@@ -10,7 +10,7 @@ const allCommittees = ref([]);
 
 const fetchCommitteesData = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/individual/committees', {}, 'GET');
+    const response = await auth.fetchProtectedApi('/api/individual/past_committees', {}, 'GET');
     if (response.status) {
       const orgCommittees = response.data || [];
 
@@ -36,21 +36,22 @@ onMounted(() => {
 <template>
   <div class="space-y-8">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-gray-800">Present Committees</h1>
+      <h1 class="text-2xl font-bold text-gray-800">Past Committees</h1>
       <div>
-        <button @click="$router.push({ name: 'past-individual-committees' })"
+        <button @click="$router.push({ name: 'individual-committees' })"
           class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
-          Past Committees List
+          Present Committees List
         </button>
       </div>
     </div>
+
     <div v-if="isLoading" class="text-gray-500">Loading...</div>
 
     <div v-else-if="!allCommittees.length" class="text-gray-500 italic">No committees found.</div>
 
     <div v-else class="bg-white p-6 rounded shadow">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-lg font-semibold text-gray-800">All Present Committees</h2>
+        <h2 class="text-lg font-semibold text-gray-800">All Past Committees</h2>
       </div>
 
       <div class="overflow-x-auto">

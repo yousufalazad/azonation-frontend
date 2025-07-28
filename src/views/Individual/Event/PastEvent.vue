@@ -10,7 +10,7 @@ const allEvents = ref([]); // Flattened event list
 
 const fetchEventsData = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/individual/events', {}, 'GET');
+    const response = await auth.fetchProtectedApi('/api/individual/past_events', {}, 'GET');
     if (response.status) {
       const orgEvents = response.data || [];
 
@@ -36,21 +36,22 @@ onMounted(() => {
 <template>
   <div class="space-y-8">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-gray-800">Upcoming Events</h1>
+      <h1 class="text-2xl font-bold text-gray-800">Past Events</h1>
       <div>
-        <button @click="$router.push({ name: 'past-individual-events' })"
+        <button @click="$router.push({ name: 'individual-events' })"
           class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
-          Past Event List
+          Event List
         </button>
       </div>
     </div>
+
     <div v-if="isLoading" class="text-gray-500">Loading...</div>
 
-    <div v-else-if="!allEvents.length" class="text-gray-500 italic">No upcoming events found.</div>
+    <div v-else-if="!allEvents.length" class="text-gray-500 italic">No past events found.</div>
 
     <div v-else class="bg-white p-6 rounded shadow">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-lg font-semibold text-gray-800">All Upcoming Events</h2>
+        <h2 class="text-lg font-semibold text-gray-800">All Past Events</h2>
       </div>
 
       <div class="overflow-x-auto">

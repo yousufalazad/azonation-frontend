@@ -35,7 +35,15 @@ onMounted(() => {
 </script>
 <template>
   <div class="space-y-8">
-    <h1 class="text-2xl font-bold text-gray-800">Meetings</h1>
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">Upcoming Meetings</h1>
+      <div>
+        <button @click="$router.push({ name: 'past-individual-meetings' })"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
+          Past Event List
+        </button>
+      </div>
+    </div>
 
     <div v-if="isLoading" class="text-gray-500">Loading...</div>
 
