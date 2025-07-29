@@ -2,9 +2,9 @@ import IndividualDashboardLayout from "../views/Individual/Layouts/Layout.vue";
 import IndividualDashboardIndex from "../views/Individual/Layouts/Dashboard/Index.vue";
 import Notification from "../views/Individual/Layouts/Notification.vue";
 
-import Profile from "../views/Individual/Profile/Index.vue";
-import Security from "../views/Individual/Profile/Security/Index.vue";
-import Settings from "../views/Individual/Profile/Settings/Index.vue";
+import IndividualProfile from "../views/Individual/Profile/Index.vue";
+import IndividualSecurity from "../views/Individual/Profile/Security/Index.vue";
+import IndividualSettings from "../views/Individual/Profile/Settings/Index.vue";
 
 import Meeting from "../views/Individual/Meeting/Index.vue";
 import PastMeeting from "../views/Individual/Meeting/PastMeeting.vue";
@@ -39,21 +39,21 @@ const individualRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "profile",
-        name: "profile",
-        component: Profile,
+        path: "individual-profile",
+        name: "individual-profile",
+        component: IndividualProfile,
         meta: { requiresAuth: true },
       },
       {
-        path: "security",
-        name: "security",
-        component: Security,
+        path: "individual-security",
+        name: "individual-security",
+        component: IndividualSecurity,
         meta: { requiresAuth: true },
       },
       {
-        path: "settings",
-        name: "settings",
-        component: Settings,
+        path: "individual-settings",
+        name: "individual-settings",
+        component: IndividualSettings,
         meta: { requiresAuth: true },
       },
       {

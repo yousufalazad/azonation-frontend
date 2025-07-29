@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-5xl mx-auto py-10 px-4">
+  <div class="mx-auto py-10 px-4">
     <h1 class="text-2xl font-semibold mb-6">Settings</h1>
 
     <!-- Tab Navigation -->

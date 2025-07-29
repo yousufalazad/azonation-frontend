@@ -122,17 +122,17 @@ onBeforeUnmount(() => {
             <!-- Links -->
             <ul class="py-2 text-sm text-gray-700">
               <li>
-                <router-link :to="{ name: 'profile' }" class="block px-4 py-2 hover:bg-gray-100">
+                <router-link :to="{ name: 'individual-profile' }" class="block px-4 py-2 hover:bg-gray-100">
                   My Account
                 </router-link>
               </li>
-              <li>
-                <router-link :to="{ name: 'settings' }" class="block px-4 py-2 hover:bg-gray-100">
+              <!-- <li>
+                <router-link :to="{ name: 'individual-settings' }" class="block px-4 py-2 hover:bg-gray-100">
                   Settings
                 </router-link>
-              </li>
+              </li> -->
               <li>
-                <router-link :to="{ name: 'security' }" class="block px-4 py-2 hover:bg-gray-100">
+                <router-link :to="{ name: 'individual-security' }" class="block px-4 py-2 hover:bg-gray-100">
                   Security
                 </router-link>
               </li>
