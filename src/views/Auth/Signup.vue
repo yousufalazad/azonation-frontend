@@ -26,6 +26,11 @@ const isDesktop = ref(false);
 // Password validation
 const passwordsMatch = computed(() => password.value === confirmPassword.value);
 
+// Referral fields (optional)
+const referral = ref('');
+const referralSource = ref('');
+
+
 // Form validation
 const canSignUp = computed(() => {
   return (
@@ -79,12 +84,14 @@ function submitForm() {
     email: email.value,
     country_id: Number(country_id.value),
     password: password.value,
+    referral: referral.value || null,
+    referral_source: referralSource.value || null
   };
 
   auth.register(payload);
 }
 
-// Initialisation
+// Initialization
 onMounted(() => {
   const updateIsDesktop = () => {
     isDesktop.value = window.innerWidth >= 1024;
@@ -214,6 +221,30 @@ onMounted(() => {
               class="mt-1 w-full border px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" />
             <p v-if="!passwordsMatch" class="text-red-500 text-sm mt-1">Passwords do not match</p>
           </div>
+
+          <!-- How did you hear about us? -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700">How did you hear about us?</label>
+            <select v-model="referralSource"
+              class="mt-1 w-full border px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+              <option value="">Select one</option>
+              <option value="friend">Friend or Colleague</option>
+              <option value="social">Social Media</option>
+              <option value="search">Google/Search</option>
+              <option value="referral">I have a referral code</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <!-- Referral Code or Description -->
+          <div class="mb-4" v-if="referralSource === 'referral' || referralSource === 'other'">
+            <label class="block text-sm font-medium text-gray-700">Referral Code or Details <span
+                class="text-gray-400 text-xs">(optional)</span></label>
+            <input v-model="referral" type="text" placeholder="Code, Name or Description"
+              class="mt-1 w-full border px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" />
+          </div>
+
+
 
           <div class="pt-2">
             <button @click="submitForm" :disabled="!canSignUp"

@@ -117,9 +117,8 @@ import CreateYearPlan from "../views/Org/YearPlan/Create.vue"
 import EditYearPlan from "../views/Org/YearPlan/Edit.vue"
 import ViewYearPlan from "../views/Org/YearPlan/View.vue"
 
-
-//Invite Friend
-import InviteFriend from "../views/Org/InviteFriend/Index.vue";
+//Referral
+import Referral from "../views/Org/Referral/Referral.vue";
 
 
 //Billing
@@ -633,12 +632,6 @@ const orgRoutes = [
             meta: { requiresAuth: true },
           },
           {
-            path: "invite-friend",
-            name: "invite-friend",
-            component: InviteFriend,
-            meta: { requiresAuth: true },
-          },
-          {
             path: "org-security",
             name: "org-security",
             component: OrgSecurity,
@@ -697,7 +690,13 @@ const orgRoutes = [
             name: "org-receipt-index",
             component: OrgReceiptIndex,
             meta: { requiresAuth: true },
-          },          
+          },
+          {
+            path: "referral",
+            name: "referral",
+            component: Referral,
+            meta: { requiresAuth: false },
+          }      
         ],
       },
 

@@ -66,6 +66,12 @@ import { RouterView } from 'vue-router';
             Receipt
           </router-link>
         </li>
+        <li>
+          <router-link to="/org-dashboard/my-account/referral"
+            class="block py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+            Referral
+          </router-link>
+        </li>
       </ul>
     </div>
 

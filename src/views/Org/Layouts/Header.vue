@@ -123,6 +123,10 @@ onBeforeUnmount(() => {
                 <a href="/org-dashboard/my-account/invoice-list"
                   class="block px-4 py-2 hover:bg-gray-100">Billing</a>
               </li>
+              <li>
+                <router-link to="/org-dashboard/my-account/referral"
+                  class="block px-4 py-2 hover:bg-gray-100">Invite Friend</router-link>
+              </li>
               <li class="border-t mt-2">
                 <button @click="auth.logout()"
                   class="w-full text-left px-4 py-2 text-blue-600 hover:bg-gray-100 font-semibold">
