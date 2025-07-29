@@ -6,8 +6,8 @@ import OrgDashboardIndex from "@/views/Org/Layouts/Dashboard/Index.vue";
 import MyAccount from "../views/Org/Profile/MyAccount.vue";
 import Profile from "../views/Org/Profile/Profile.vue";
 import fundamentalInfo from "../views/Org/Profile/FundamentalInfo.vue";
-import OrgSecurity from "../views/Org/Profile/Security.vue";
-import OrgSettings from "../views/Org/Profile/Settings.vue";
+import Security from "../views/Org/Profile/Security.vue";
+import Settings from "../views/Org/Profile/Settings.vue";
 
 //Administrator
 import Administrator from "@/views/Org/Profile/Administrator.vue";
@@ -632,15 +632,15 @@ const orgRoutes = [
             meta: { requiresAuth: true },
           },
           {
-            path: "org-security",
-            name: "org-security",
-            component: OrgSecurity,
+            path: "security",
+            name: "security",
+            component: Security,
             meta: { requiresAuth: true },
           },
           {
-            path: "org-settings",
-            name: "org-settings",
-            component: OrgSettings,
+            path: "settings",
+            name: "settings",
+            component: Settings,
             meta: { requiresAuth: true },
           },
           {

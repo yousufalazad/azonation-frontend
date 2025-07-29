@@ -192,7 +192,7 @@ onMounted(() => {
                         <select v-model="user_id" id="user_id" class="w-full border border-gray-300 rounded-md p-2"
                             required>
                             <option value="">Select User</option>
-                            <option v-for="user in userList" :key="user.id" :value="user.id">{{ user.name }}</option>
+                            <option v-for="user in userList" :key="user.id" :value="user.id">{{ user.first_name }} {{ user.last_name }}</option>
                         </select>
                     </div>
                     <!-- Country Country Name -->

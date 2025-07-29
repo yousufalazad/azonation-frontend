@@ -1,11 +1,11 @@
 import IndividualDashboardLayout from "../views/Individual/Layouts/Layout.vue";
 import IndividualDashboardIndex from "../views/Individual/Layouts/Dashboard/Index.vue";
-
 import Notification from "../views/Individual/Layouts/Notification.vue";
-import IndividualProfileUpdate from "../views/Individual/Profile/IndividualProfileUpdate.vue";
 
-import MyAccount from "../views/Org/Profile/MyAccount.vue";
+import Profile from "../views/Individual/Profile/Index.vue";
 import Security from "../views/Individual/Profile/Security/Index.vue";
+import Settings from "../views/Individual/Profile/Settings/Index.vue";
+
 import Meeting from "../views/Individual/Meeting/Index.vue";
 import PastMeeting from "../views/Individual/Meeting/PastMeeting.vue";
 import Committee from "../views/Individual/Committee/Index.vue";
@@ -17,7 +17,6 @@ import PastProject from "../views/Individual/Project/PastProject.vue";
 import Asset from "../views/Individual/Asset/Index.vue";
 import PastAsset from "../views/Individual/Asset/PastAsset.vue";
 import Attendance from "../views/Individual/Attendance/Index.vue";
-import Settings from "../views/Individual/Profile/Settings/Index.vue";
 
 
 const individualRoutes = [
@@ -40,15 +39,9 @@ const individualRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "individual-profile-update",
-        name: "individual-profile-update",
-        component: IndividualProfileUpdate,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "my-account-individual",
-        name: "my-account-individual",
-        component: MyAccount,
+        path: "profile",
+        name: "profile",
+        component: Profile,
         meta: { requiresAuth: true },
       },
       {
@@ -59,7 +52,7 @@ const individualRoutes = [
       },
       {
         path: "settings",
-        name: "individual-settings",
+        name: "settings",
         component: Settings,
         meta: { requiresAuth: true },
       },

@@ -102,8 +102,8 @@ const getRecords = async () => {
           title: p.title ?? '',
           start_date: p.start_date ?? '',
           end_date: p.end_date ?? '',
-          status: p.status ?? 0,
-          status_display: p.status === 1 ? 'Active' : 'Disabled'
+          status: p.is_active ?? 0,
+          status_display: p.is_active === 1 ? 'Active' : 'Disabled'
         }))
       : []
   } catch (e) {

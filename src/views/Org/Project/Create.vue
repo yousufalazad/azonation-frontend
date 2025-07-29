@@ -20,7 +20,7 @@ const start_date = ref('');
 const end_date = ref('');
 const start_time = ref('');
 const end_time = ref('');
-const status = ref(0);
+const is_active = ref(0);
 const conduct_type = ref(1);
 
 const images = ref([{ id: Date.now(), file: null }]);
@@ -71,7 +71,7 @@ const resetForm = () => {
     end_date.value = '';
     start_time.value = '';
     end_time.value = '';
-    status.value = 0;
+    is_active.value = 0;
     conduct_type.value = 1;
 
     requirements.value = '';
@@ -134,7 +134,7 @@ const submitForm = async () => {
     formData.append('end_date', end_date.value ?? '');
     formData.append('start_time', start_time.value ?? '');
     formData.append('end_time', end_time.value ?? '');
-    formData.append('status', status.value ?? '');
+    formData.append('is_active', is_active.value ?? '');
     formData.append('conduct_type', conduct_type.value ?? '');
     formData.append('requirements', requirements.value ?? '');
     formData.append('note', note.value ?? '');
@@ -275,8 +275,8 @@ const submitForm = async () => {
             <!-- status and Conduct type -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-                    <select v-model="status" id="status"
+                    <label for="is_active" class="block text-sm font-medium text-gray-700">Status</label>
+                    <select v-model="is_active" id="is_active"
                         class="mt-2 w-full border border-gray-300 rounded-lg py-2 px-4 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                         <option value="0">Active</option>
                         <option value="1">Disabled</option>

@@ -58,19 +58,15 @@ onBeforeUnmount(() => {
     <div class="flex items-center gap-4">
       <!-- Mobile Sidebar Toggle -->
       <button @click="emit('toggle-mobile-sidebar')" class="lg:hidden text-gray-600">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" stroke="currentColor"
-          viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M4 6h16M4 12h16M4 18h16" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
 
       <!-- Desktop Sidebar Toggle -->
       <button @click="emit('toggle-sidebar')" class="hidden lg:block text-gray-600">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" stroke="currentColor"
-          viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M3 6h18M3 12h18M3 18h18" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6h18M3 12h18M3 18h18" />
         </svg>
       </button>
 
@@ -112,20 +108,24 @@ onBeforeUnmount(() => {
             <!-- Links -->
             <ul class="py-2 text-sm text-gray-700">
               <li>
-                <a href="/org-dashboard/my-account/profile"
-                  class="block px-4 py-2 hover:bg-gray-100">My Account</a>
+                <router-link :to="{ name: 'profile' }" class="block px-4 py-2 hover:bg-gray-100">
+                  My Account
+                </router-link>
               </li>
               <li>
-                <a href="/org-dashboard/my-account/org-security"
-                  class="block px-4 py-2 hover:bg-gray-100">Security</a>
+                <router-link :to="{ name: 'security' }" class="block px-4 py-2 hover:bg-gray-100">
+                  Security
+                </router-link>
               </li>
               <li>
-                <a href="/org-dashboard/my-account/invoice-list"
-                  class="block px-4 py-2 hover:bg-gray-100">Billing</a>
+                <router-link :to="{ name: 'invoices' }" class="block px-4 py-2 hover:bg-gray-100">
+                  Billing
+                </router-link>
               </li>
               <li>
-                <router-link to="/org-dashboard/my-account/referral"
-                  class="block px-4 py-2 hover:bg-gray-100">Invite Friend</router-link>
+                <router-link :to="{ name: 'referral' }" class="block px-4 py-2 hover:bg-gray-100">
+                  Invite Friend
+                </router-link>
               </li>
               <li class="border-t mt-2">
                 <button @click="auth.logout()"
@@ -134,6 +134,7 @@ onBeforeUnmount(() => {
                 </button>
               </li>
             </ul>
+
           </div>
         </transition>
       </div>
@@ -146,6 +147,7 @@ onBeforeUnmount(() => {
 .fade-leave-active {
   transition: opacity 0.2s ease;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;

@@ -47,7 +47,7 @@ const isActive = (path) => route.path === path;
       { name: 'Projects', routeName: 'individual-projects', icon: FolderIcon },
       { name: 'Assets', routeName: 'individual-assets', icon: FileTextIcon },
       { name: 'Attendances', routeName: 'individual-attendances', icon: CheckCircleIcon },
-      { name: 'Settings', routeName: 'individual-settings', icon: SettingsIcon }
+      { name: 'Settings', routeName: 'settings', icon: SettingsIcon }
     ]" :key="link.routeName">
       <router-link :to="{ name: link.routeName }" :class="[
         'flex items-center gap-3 px-4 py-2 rounded-md transition-all duration-200 whitespace-nowrap',
@@ -71,13 +71,20 @@ const isActive = (path) => route.path === path;
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
         </svg>
       </button>
+      
+      
       <transition name="fade-slide">
         <div v-if="isSectionOpen('profile') && props.isSidebarExpanded" class="ml-7 space-y-1">
-          <router-link to="/individual-dashboard/individual-profile-update"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">My Profile</router-link>
+          
+          <router-link to="/individual-dashboard/profile"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600"
+            >My Profile
+          </router-link>
+
           <router-link :to="{ name: 'security' }" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
             Security
           </router-link>
+
         </div>
       </transition>
     </div>
