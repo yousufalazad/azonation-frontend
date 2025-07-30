@@ -73,7 +73,7 @@ watch(() => route.params.id, (newId) => {
   </div>
 
   <div class="mx-auto bg-white p-6 rounded-lg shadow-lg">
-    <div class="flex justify-between items-center border-b pb-4 mb-4">
+    <div class="flex justify-between items-center pb-4 mb-4">
       <div>
         <h1 class="text-xl font-bold">{{ invoiceData?.invoice?.org_name }}</h1>
         <p class="text-sm text-gray-600">
