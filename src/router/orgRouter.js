@@ -13,7 +13,7 @@ import Settings from "../views/Org/Profile/Settings.vue";
 import Administrator from "@/views/Org/Profile/Administrator.vue";
 
 //Org Member
-import IndependentMember from "../views/Org/Member/IndependentMember.vue";
+import UnlinkMember from "../views/Org/Member/UnlinkMember.vue";
 import CreateMember from "../views/Org/Member/Create.vue";
 import IndexMember from "../views/Org/Member/Index.vue";
 import FamilyMember from "../views/Org/Member/FamilyMember.vue";
@@ -131,6 +131,7 @@ import ViewBilling from "../views/Org/Financial/ManagementAndStorageBilling/View
 import Invoices from "../views/Org/Financial/Invoice/Index.vue";
 import ViewInvoice from "../views/Org/Financial/Invoice/View.vue";
 import OrgReceiptIndex from "../views/Org/Financial/Receipt/Index.vue";
+// import UnlinkMember from "../views/Org/Member/UnlinkMember.vue";
 
 
 const orgRoutes = [
@@ -156,9 +157,9 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "independent-member",
-        name: "independent-member",
-        component: IndependentMember,
+        path: "unlink-member",
+        name: "unlink-member",
+        component: UnlinkMember,
         meta: { requiresAuth: true },
       },
       {

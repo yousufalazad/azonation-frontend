@@ -66,14 +66,3 @@ table tbody tr td{
   color: #555;
   border-bottom: 1px solid #e0e0e0 !important;
 }
-
-.vue3-easy-data-table__main {
-  min-height: unset !important;
-}
-/* .vue3-easy-data-table__table {
-  border: none !important;
-} */
-
-/* .vue3-easy-data-table__header th:last-child .header{
-	justify-content: flex-end !important;
-} */

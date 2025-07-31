@@ -342,6 +342,37 @@ const deleteMember = async (memberId) => {
   }
 }
 
+const currentPage = ref(1)
+const rowsPerPage = ref(10)
+
+const totalItems = computed(() => filteredMembers.value.length)
+
+const totalPages = computed(() => {
+  return Math.ceil(totalItems.value / rowsPerPage.value) || 1
+})
+
+const paginatedMembers = computed(() => {
+  if (!filteredMembers.value?.length) return [];
+  const start = (currentPage.value - 1) * rowsPerPage.value;
+  return filteredMembers.value.slice(start, start + rowsPerPage.value);
+});
+
+
+
+watch([search, rowsPerPage], () => {
+  currentPage.value = 1
+})
+const goToFirst = () => currentPage.value = 1
+const goToPrev = () => {
+  if (currentPage.value > 1) currentPage.value--
+}
+const goToNext = () => {
+  if (currentPage.value < totalPages.value) currentPage.value++
+}
+const goToLast = () => currentPage.value = totalPages.value
+
+
+
 // ✅ Lifecycle
 onMounted(() => {
   fetchMemberList()
@@ -427,7 +458,9 @@ onMounted(() => {
     </div>
 
     <!-- Member Table -->
-    <EasyDataTable :headers="headers" :items="filteredMembers" :search-value="search" :loading="loading" show-index
+    <!-- :items="filteredMembers" -->
+    <EasyDataTable :headers="headers"   :items="paginatedMembers" :search-value="search" :loading="loading" show-index
+      hide-footer table-class="min-w-full text-sm" header-class="bg-gray-100" body-row-class="text-sm"
       :theme-color="'#3b82f6'">
 
       <!-- Profile Image -->
@@ -468,7 +501,7 @@ onMounted(() => {
 
       <!-- Membership Age -->
       <template #item-membership_age="{ membership_start_date }">
-        <span class="inline-block text-gray-700 px-2 py-0.5 rounded-full text-xs">
+        <span>
           {{ calculateMembershipAge(membership_start_date) }}
         </span>
       </template>
@@ -483,6 +516,53 @@ onMounted(() => {
       </template>
 
     </EasyDataTable>
+
+    <!-- Bottom Pagination -->
+    <div class="flex justify-between items-center px-2 py-3 bg-gray-50 rounded border">
+      <!-- Left info -->
+      <div class="text-sm text-gray-600">
+        Items
+        {{ (currentPage - 1) * rowsPerPage + 1 }}-
+        {{
+          Math.min(currentPage * rowsPerPage, totalItems)
+        }}
+        of {{ totalItems }} |
+        Page {{ currentPage }} of {{ totalPages }}
+      </div>
+
+      <!-- ✅ Right controls -->
+      <div class="flex items-center gap-4">
+        <!-- Page Size -->
+        <div class="flex items-center gap-1">
+          <span class="text-sm text-gray-600">Items per page:</span>
+          <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-sm">
+            <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">
+              {{ size }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex gap-1">
+          <button @click="goToFirst" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
+            First
+          </button>
+          <button @click="goToPrev" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
+            Prev
+          </button>
+          <button @click="goToNext" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
+            Next
+          </button>
+          <button @click="goToLast" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
+            Last
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- ✅ View Member Modal -->
     <div v-if="viewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -626,6 +706,4 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

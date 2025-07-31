@@ -1,7 +1,6 @@
 <!-- Founder add and update -->
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
-
+import { ref, onMounted, computed } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
 import { utils, writeFileXLSX } from 'xlsx';
@@ -17,7 +16,7 @@ const searchResults = ref([]);
 const baseURL = auth.apiBase;
 const addedFounder = ref([]);
 const showAddFounderSection = ref(false);
-const isAddModalOpen = ref(false);
+const showForm = ref(false);
 const full_name = ref('');
 const designation = ref('');
 const email = ref('');
@@ -132,32 +131,20 @@ const updateFounder = async () => {
     }
 };
 
-// const searchIndividuals = async () => {
-//     try {
-//         const response = await auth.fetchProtectedApi('/api/org-members/search', { query: searchQuery.value }, 'POST');
-//         if (response.status) {
-//             searchResults.value = response.data;
-//             //console.log(response.data);
-//         } else {
-//             searchResults.value = [];
-//         }
-//     } catch (error) {
-//         console.error("Error searching individuals:", error);
-//         searchResults.value = [];
-//     }
-// };
 const searchIndividuals = async () => {
-    if (!searchQuery.value.trim()) return; // prevent empty call
-
     try {
         const response = await auth.fetchProtectedApi('/api/org-members/search', { query: searchQuery.value }, 'POST');
-        searchResults.value = response.status ? response.data : [];
+        if (response.status) {
+            searchResults.value = response.data;
+            //console.log(response.data);
+        } else {
+            searchResults.value = [];
+        }
     } catch (error) {
         console.error("Error searching individuals:", error);
         searchResults.value = [];
     }
 };
-
 
 const addFounder = async (individualTypeUserId) => {
     //console.log('Founder user id:', individualTypeUserId);
@@ -238,7 +225,6 @@ const addUnlinkFounder = async () => {
                 'success'
             );
             getFounders();
-            isAddModalOpen.value = false;
             // window.location.reload();
         } else {
             addedFounder.value = [];
@@ -278,15 +264,25 @@ const deleteFounderMember = async (id) => {
     }
 };
 
+// const exportToExcel = () => {
+//     const table = document.getElementById('founder-table');
+//     const tableHtml = table.outerHTML.replace(/ /g, '%20');
+//     const filename = 'founders.xls';
+//     const dataType = 'application/vnd.ms-excel';
+//     const downloadLink = document.createElement('a');
+//     downloadLink.href = 'data:' + dataType + ', ' + tableHtml;
+//     downloadLink.download = filename;
+//     downloadLink.click();
+// };
 const exportToExcel = () => {
-    const table = document.getElementById('founder-table');
-    if (!table) return;
+  const table = document.getElementById('founder-table');
+  if (!table) return;
 
-    const worksheet = utils.table_to_sheet(table);
-    const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, 'Founders');
+  const worksheet = utils.table_to_sheet(table);
+  const workbook = utils.book_new();
+  utils.book_append_sheet(workbook, worksheet, 'Founders');
 
-    writeFileXLSX(workbook, 'founders.xlsx');
+  writeFileXLSX(workbook, 'founders.xlsx');
 };
 
 const exportToPDF = async () => {
@@ -314,32 +310,7 @@ const exportToCSV = () => {
     document.body.removeChild(link);
 };
 
-const onSearchFocus = () => {
-    isSearchModalOpen.value = true;
-    searchResults.value = []; // ✅ Always clear the list when opening modal
-};
-
-const isSearchModalOpen = ref(false);
-
-watch(searchQuery, (val) => {
-    if (!val) {
-        searchResults.value = []; // clear list only, not modal
-    }
-});
-
-const closeSearchModal = () => {
-    isSearchModalOpen.value = false;
-    searchQuery.value = '';
-    searchResults.value = [];
-};
-
-onMounted(() => {
-    getFounders();
-    window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeSearchModal();
-    });
-});
-
+onMounted(getFounders);
 </script>
 
 <template>
@@ -350,88 +321,43 @@ onMounted(() => {
 
             <!-- Search Input -->
             <div class="flex justify-center my-6">
-                <input type="text" v-model="searchQuery" @focus="isSearchModalOpen = true" @input="searchIndividuals"
+                <input type="text" v-model="searchQuery" @input="searchIndividuals"
                     placeholder="Search by name, email, mobile, Azon ID"
                     class="form-input flex-1 max-w-lg px-4 py-2 rounded-l-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-
-
                 <button @click="searchIndividuals"
                     class="bg-blue-500 text-white px-6 py-2 rounded-r-md hover:bg-blue-600 transition-all focus:outline-none">
                     Search
                 </button>
             </div>
 
-            <!-- Full Search Modal -->
-            <div v-if="isSearchModalOpen"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                <div class="bg-white w-full max-w-4xl p-6 rounded shadow-lg max-h-[90vh] overflow-y-auto relative">
-                    <h2 class="text-xl font-semibold mb-4">Search Results</h2>
-
-                    <!-- ✅ Show Search Input Inside Modal -->
-                    <div class="flex mb-4">
-                        <input type="text" v-model="searchQuery" @input="searchIndividuals" @focus="onSearchFocus"
-                            placeholder="Search by name, email, mobile, Azon ID"
-                            class="form-input flex-1 px-4 py-2 rounded-l-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                        <button @click="searchIndividuals"
-                            class="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700">
-                            Search
+            <!-- Search Results -->
+            <div v-if="searchResults.length" class="bg-white shadow-lg rounded-lg p-6">
+                <ul class="divide-y divide-gray-200">
+                    <li v-for="individualUser in searchResults" :key="individualUser.id" class="flex items-center py-4">
+                        <img :src="`${baseURL}/storage/${individualUser.image}`" alt="Profile picture"
+                            class="w-20 h-20 rounded-full object-cover mr-4" />
+                        <div class="flex-1">
+                            <p class="font-medium text-lg text-gray-700">
+                                {{ individualUser.first_name }} {{ individualUser.last_name }}
+                            </p>
+                            <p class="text-sm text-gray-500">{{ individualUser.city }}, {{ individualUser.country_name
+                                }}</p>
+                            <p class="text-sm text-gray-500">Username: {{ individualUser.username }}</p>
+                            <p class="text-sm text-gray-500">Azon Id: {{ individualUser.azon_id }}</p>
+                        </div>
+                        <button @click="addFounder(individualUser.id)"
+                            class="ml-4 bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 px-4 rounded focus:outline-none">
+                            Add
                         </button>
-                    </div>
-
-                    <!-- Search Results -->
-                    <div v-if="searchResults.length">
-                        <ul class="divide-y divide-gray-200">
-                            <li v-for="individualUser in searchResults" :key="individualUser.id"
-                                class="flex items-center py-4">
-                                <img :src="`${baseURL}/storage/${individualUser.image}`" alt="Profile picture"
-                                    class="w-16 h-16 rounded-full object-cover mr-4" />
-                                <div class="flex-1">
-                                    <p class="font-medium text-lg text-gray-700">
-                                        {{ individualUser.first_name }} {{ individualUser.last_name }}
-                                    </p>
-                                    <p class="text-sm text-gray-500">{{ individualUser.city }}, {{
-                                        individualUser.country_name }}</p>
-                                    <p class="text-sm text-gray-500">Username: {{ individualUser.username }}</p>
-                                    <p class="text-sm text-gray-500">Azon ID: {{ individualUser.azon_id }}</p>
-                                </div>
-                                <!-- <button @click="addFounder(individualUser.id)"
-                                    class="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded">
-                                    Add
-                                </button> -->
-                                <!-- Inside Search Results v-for -->
-                                <div class="ml-4">
-                                    <template
-                                        v-if="founderList.some(f => f.founder_user_id === individualUser.id || f.founders?.id === individualUser.id)">
-                                        <span class="text-sm text-gray-500 italic">Already Added</span>
-                                    </template>
-                                    <template v-else>
-                                        <button @click="addFounder(individualUser.id)"
-                                            class="bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded">
-                                            Add
-                                        </button>
-                                    </template>
-                                </div>
-
-                            </li>
-                        </ul>
-                    </div>
-                    <!-- No Results -->
-                    <div v-else>
-                        <p class="text-gray-400">Start typing to search individuals...</p>
-                    </div>
-
-                    <!-- Close Button -->
-                    <div class="absolute top-4 right-4">
-                        <button @click="closeSearchModal" class="text-gray-600 hover:text-gray-900 text-xl">×</button>
-                    </div>
-                </div>
+                    </li>
+                </ul>
             </div>
 
             <!-- No Results -->
             <div v-else>
                 <p class="text-center text-gray-500">
                     Want to add founder manually, without link?
-                    <a href="#" @click.prevent="isAddModalOpen = true"
+                    <a href="#" @click.prevent="showForm = true"
                         class="text-blue-600 hover:text-blue-800 hover:underline">
                         click here
                     </a>
@@ -439,7 +365,7 @@ onMounted(() => {
             </div>
 
             <!-- Manual Founder Form Modal -->
-            <div v-if="isAddModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div v-if="showForm" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                 <div class="bg-white p-6 rounded shadow-lg w-1/3 max-h-[90vh] overflow-y-auto">
                     <h3 class="text-xl font-bold mb-4">Add Founder Manually</h3>
                     <div>
@@ -491,7 +417,7 @@ onMounted(() => {
 
                         <!-- Action Buttons -->
                         <div class="flex justify-end gap-2 mt-4">
-                            <button @click="isAddModalOpen = false" type="button"
+                            <button @click="showForm = false" type="button"
                                 class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
                                 Cancel
                             </button>
@@ -565,46 +491,6 @@ onMounted(() => {
                 </tbody>
             </table>
         </div>
-        <!-- Pagination Controls -->
-        <div v-if="paginatedFounders.length"
-            class="flex justify-between items-center px-4 py-3 bg-gray-50 border-t border-gray-200 rounded-b-md mt-2">
-            <div class="text-sm text-gray-600">
-                Items {{ (currentPage - 1) * pageSize + 1 }} -
-                {{ Math.min(currentPage * pageSize, filteredFounders.length) }}
-                of {{ filteredFounders.length }} |
-                Page {{ currentPage }} of {{ totalPages }}
-            </div>
-
-            <div class="flex items-center space-x-2 text-sm">
-                <label class="mr-1">Items per page:</label>
-                <select v-model="pageSize"
-                    class="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring focus:border-blue-500">
-                    <option :value="5">5</option>
-                    <option :value="10">10</option>
-                    <option :value="25">25</option>
-                    <option :value="50">50</option>
-                    <option :value="100">100</option>
-                </select>
-
-                <button @click="currentPage = 1" :disabled="currentPage === 1"
-                    class="px-2 py-1 border rounded text-gray-500 hover:text-gray-700 disabled:opacity-50">
-                    First
-                </button>
-                <button @click="currentPage--" :disabled="currentPage === 1"
-                    class="px-2 py-1 border rounded text-gray-500 hover:text-gray-700 disabled:opacity-50">
-                    Prev
-                </button>
-                <button @click="currentPage++" :disabled="currentPage === totalPages"
-                    class="px-2 py-1 border rounded text-gray-500 hover:text-gray-700 disabled:opacity-50">
-                    Next
-                </button>
-                <button @click="currentPage = totalPages" :disabled="currentPage === totalPages"
-                    class="px-2 py-1 border rounded text-gray-500 hover:text-gray-700 disabled:opacity-50">
-                    Last
-                </button>
-            </div>
-        </div>
-
 
         <!-- Edit Modal -->
         <div v-if="isEditModalOpen" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
@@ -681,56 +567,48 @@ onMounted(() => {
                 <table class="min-w-full table-auto text-sm text-gray-700">
                     <tbody>
                         <tr>
-                            <td class="font-semibold py-2 w-32">Name</td>
-                            <td class="w-4 text-center">:</td>
+                            <td class="font-semibold pr-2 py-2">Name:</td>
                             <td>{{ selectedFounder.full_name }}</td>
                         </tr>
                         <tr>
-                            <td class="font-semibold py-2">Designation</td>
-                            <td class="text-center">:</td>
+                            <td class="font-semibold pr-2 py-2">Designation:</td>
                             <td>{{ selectedFounder.designation }}</td>
                         </tr>
                         <tr>
-                            <td class="font-semibold py-2">Email</td>
-                            <td class="text-center">:</td>
+                            <td class="font-semibold pr-2 py-2">Email:</td>
                             <td>{{ selectedFounder.email }}</td>
                         </tr>
                         <tr>
-                            <td class="font-semibold py-2">Mobile</td>
-                            <td class="text-center">:</td>
+                            <td class="font-semibold pr-2 py-2">Mobile:</td>
                             <td>{{ selectedFounder.mobile }}</td>
                         </tr>
                         <tr>
-                            <td class="font-semibold py-2">Address</td>
-                            <td class="text-center">:</td>
+                            <td class="font-semibold pr-2 py-2">Address:</td>
                             <td>{{ selectedFounder.address }}</td>
                         </tr>
                         <tr>
-                            <td class="font-semibold py-2">Note</td>
-                            <td class="text-center">:</td>
+                            <td class="font-semibold pr-2 py-2">Note:</td>
                             <td>{{ selectedFounder.note }}</td>
                         </tr>
-                        <tr v-if="selectedFounder.image_url">
-                            <td class="font-semibold py-2 align-top">Image</td>
-                            <td class="text-center align-top">:</td>
+                        <tr>
+                            <td class="font-semibold pr-2 py-2">Image</td>
                             <td>
-                                <img :src="selectedFounder.image_url" alt="Founder Image"
-                                    class="h-24 w-24 object-cover rounded border border-gray-300">
+                                <img v-if="selectedFounder.image_url" :src="selectedFounder.image_url" alt="Founder Image"
+                                    class="h-30 w-30 object-cover">
                             </td>
                         </tr>
+
                     </tbody>
                 </table>
-
                 <div class="flex justify-end mt-4">
                     <button @click="closeViewModal"
                         class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Close</button>
                 </div>
             </div>
         </div>
-
-
     </div>
     <div v-if="!paginatedFounders.length" class="text-center text-gray-500 py-6">
         <p>No founders found.</p>
     </div>
+
 </template>

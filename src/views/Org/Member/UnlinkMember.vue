@@ -20,7 +20,7 @@ const selectedMember = ref({});
 const search = ref('');
 
 // Column View Mode
-const columnView = ref('detailed');
+const columnView = ref('minimal'); // 'minimal' or 'detailed'
 
 // ✅ Pagination
 const currentPage = ref(1);
@@ -43,7 +43,8 @@ const sort = (column) => {
 // Column Visibility
 const visibleColumns = ref({
   image: true,
-  name: true,
+  first_name: true,
+  last_name: true,
   email: true,
   mobile: true,
   address: true,
@@ -93,11 +94,11 @@ const sortedMembers = computed(() => {
   if (!sortBy.value) return filteredMembers.value;
 
   return [...filteredMembers.value].sort((a, b) => {
-    const aValue = sortBy.value === 'first_name'
+    const aValue = sortBy.value === 'full_name'
       ? (a.first_name + ' ' + (a.last_name ?? '')).toLowerCase()
       : (a[sortBy.value] ?? '').toString().toLowerCase();
 
-    const bValue = sortBy.value === 'first_name'
+    const bValue = sortBy.value === 'full_name'
       ? (b.first_name + ' ' + (b.last_name ?? '')).toLowerCase()
       : (b[sortBy.value] ?? '').toString().toLowerCase();
 
@@ -252,7 +253,6 @@ const paginatedMembers = computed(() => {
   return sortedMembers.value.slice(start, end);
 });
 
-
 const totalPages = computed(() => {
   return Math.max(1, Math.ceil(filteredMembers.value.length / itemsPerPage.value));
 });
@@ -265,16 +265,55 @@ const itemSummary = computed(() => {
   return `Items ${start}-${end} of ${total}`;
 });
 
+
+const minimalColumns = ['image', 'full_name', 'mobile', 'is_active', 'action'];
+const detailedColumns = ['image', 'full_name', 'email', 'mobile', 'address', 'note', 'is_active', 'action'];
+
+// Set initial visible columns based on column view
+onMounted(() => {
+  setVisibleColumns(columnView.value);
+});
+const setVisibleColumns = (view) => {
+  const selectedSet = view === 'minimal' ? minimalColumns : detailedColumns;
+  visibleColumns.value = {
+    image: selectedSet.includes('image'),
+    full_name: true, // ✅ New full name column
+    first_name: false, // Optional: hide individual names in table view
+    last_name: false,
+    email: selectedSet.includes('email'),
+    mobile: selectedSet.includes('mobile'),
+    address: selectedSet.includes('address'),
+    note: selectedSet.includes('note'),
+    is_active: selectedSet.includes('is_active'),
+    action: selectedSet.includes('action'),
+  };
+};
+
+// Initialize on setup
+setVisibleColumns(columnView.value);
+
 // Pagination Methods
 watch([search, itemsPerPage], () => {
   currentPage.value = 1;
 });
 
+watch(columnView, (newVal) => {
+  setVisibleColumns(newVal);
+});
+
+// watch(columnView, (newVal) => {
+//   const selectedSet = newVal === 'minimal' ? minimalColumns : detailedColumns;
+
+//   Object.keys(visibleColumns.value).forEach((key) => {
+//     visibleColumns.value[key] = selectedSet.includes(key);
+//   });
+// }, { immediate: true }); // Run once on setup
+
 
 </script>
 
 <template>
-  <div>
+  <div class="card p-6 bg-white rounded-lg shadow-md">
     <!-- Header -->
     <div class="flex flex-wrap justify-between items-start gap-4 py-4">
       <div class="flex flex-col gap-1">
@@ -339,10 +378,10 @@ watch([search, itemsPerPage], () => {
             </th>
 
             <!-- Name with Sorting -->
-            <th v-if="visibleColumns.name" @click="sort('first_name')"
+            <th v-if="visibleColumns.full_name" @click="sort('full_name')"
               class="cursor-pointer py-3 text-left text-xs font-bold text-gray-600 hover:text-blue-600">
-              Name
-              <span v-if="sortBy === 'first_name'">
+              Full Name
+              <span v-if="sortBy === 'full_name'">
                 {{ sortDirection === 'asc' ? '▲' : '▼' }}
               </span>
             </th>
@@ -396,7 +435,7 @@ watch([search, itemsPerPage], () => {
               <img :src="member.image_url || placeholderImage" class="h-10 w-10 rounded-full object-cover" />
             </td>
 
-            <td v-if="visibleColumns.name" class="py-3 text-sm text-gray-700">
+            <td v-if="visibleColumns.full_name" class="py-3 text-sm text-gray-700">
               {{ member.first_name }} {{ member.last_name }}
             </td>
 
@@ -432,7 +471,7 @@ watch([search, itemsPerPage], () => {
 
 
     <!-- ✅ Pagination -->
-    <div v-if="filteredMembers.length > 0" class="flex justify-between items-center mt-4">
+    <div v-if="filteredMembers.length > 0" class="border rounded bg-gray-50 p-4 flex justify-between items-center mt-4">
       <div class="text-sm text-gray-600">
         {{ itemSummary }} | Page {{ currentPage }} of {{ totalPages }}
       </div>
@@ -527,27 +566,84 @@ watch([search, itemsPerPage], () => {
 
     <!-- View Modal -->
     <div v-if="viewModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white p-6 rounded-lg w-full max-w-xl max-h-[90vh] overflow-y-auto">
-        <h2 class="text-xl font-bold mb-4">Member Details</h2>
-        <div class="grid grid-cols-2 gap-4">
-          <div><strong>Name:</strong> {{ selectedMember.first_name }} {{ selectedMember.last_name }}</div>
-          <div><strong>Email:</strong> {{ selectedMember.email }}</div>
-          <div><strong>Mobile:</strong> {{ selectedMember.mobile }}</div>
-          <div><strong>Address:</strong> {{ selectedMember.address }}</div>
-          <div><strong>Note:</strong> {{ selectedMember.note }}</div>
-          <div><strong>Active:</strong> {{ selectedMember.is_active ? 'Yes' : 'No' }}</div>
-          <div v-if="selectedMember.image_url" class="col-span-2">
-            <img :src="selectedMember.image_url" class="h-32 border rounded" />
-          </div>
+      <div class="bg-white p-6 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2">Member Details</h2>
+
+        <div class="space-y-4">
+          <table class="w-full text-sm text-left text-gray-700">
+            <tbody>
+              <tr>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-40">Image</th>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-3">:</th>
+                <td class="py-2">
+                  <img v-if="selectedMember.image_url" :src="selectedMember.image_url" alt="Member Image"
+                    class="h-32 w-auto rounded" />
+                  <span v-else class="text-gray-500">No image available</span>
+                </td>
+              </tr>
+              <tr>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-40">ID</th>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-3">:</th>
+                <td class="py-2 text-gray-800">{{ selectedMember.id }}</td>
+              </tr>
+              <tr>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-40">Name</th>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-3">:</th>
+                <td class="py-2 text-gray-800">{{ selectedMember.first_name }} {{ selectedMember.last_name }}</td>
+              </tr>
+              <tr v-if="selectedMember.username">
+                <th class="py-2 pr-2 font-medium text-gray-600 w-40">Username</th>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-3">:</th>
+                <td class="py-2 text-gray-800">{{ selectedMember.username }}</td>
+              </tr>
+              <tr>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-40">Email</th>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-3">:</th>
+                <td class="py-2 text-gray-800">{{ selectedMember.email }}</td>
+              </tr>
+              <tr>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-40">Mobile</th>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-3">:</th>
+                <td class="py-2 text-gray-800">{{ selectedMember.mobile }}</td>
+              </tr>
+              <tr>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-40">Address</th>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-3">:</th>
+                <td class="py-2 text-gray-800">{{ selectedMember.address }}</td>
+              </tr>
+              <tr>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-40">Note</th>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-3">:</th>
+                <td class="py-2 text-gray-800">{{ selectedMember.note }}</td>
+              </tr>
+              <tr>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-40">Active</th>
+                <th class="py-2 pr-2 font-medium text-gray-600 w-3">:</th>
+                <td class="py-2 text-gray-800">
+                  {{ selectedMember.is_active ? 'Yes' : 'No' }}
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
         </div>
-        <div class="mt-4 flex justify-end gap-2">
+
+        <div class="mt-6 flex justify-end gap-3">
           <button @click="openModal(selectedMember)"
-            class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Edit</button>
+            class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium px-4 py-2 rounded-lg transition">
+            <i class="fas fa-edit mr-1"></i> Edit
+          </button>
           <button @click="deleteMember(selectedMember.id)"
-            class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
-          <button @click="closeViewModal" class="px-4 py-2 bg-blue-600 text-white rounded">Close</button>
+            class="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg transition">
+            <i class="fas fa-trash mr-1"></i> Delete
+          </button>
+          <button @click="closeViewModal"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition">
+            <i class="fas fa-times mr-1"></i> Close
+          </button>
         </div>
       </div>
     </div>
+
   </div>
 </template>

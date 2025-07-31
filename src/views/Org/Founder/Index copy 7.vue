@@ -17,7 +17,7 @@ const searchResults = ref([]);
 const baseURL = auth.apiBase;
 const addedFounder = ref([]);
 const showAddFounderSection = ref(false);
-const isAddModalOpen = ref(false);
+const showForm = ref(false);
 const full_name = ref('');
 const designation = ref('');
 const email = ref('');
@@ -238,7 +238,7 @@ const addUnlinkFounder = async () => {
                 'success'
             );
             getFounders();
-            isAddModalOpen.value = false;
+            showForm.value = false; // Close the form modal
             // window.location.reload();
         } else {
             addedFounder.value = [];
@@ -431,7 +431,7 @@ onMounted(() => {
             <div v-else>
                 <p class="text-center text-gray-500">
                     Want to add founder manually, without link?
-                    <a href="#" @click.prevent="isAddModalOpen = true"
+                    <a href="#" @click.prevent="showForm = true"
                         class="text-blue-600 hover:text-blue-800 hover:underline">
                         click here
                     </a>
@@ -439,7 +439,7 @@ onMounted(() => {
             </div>
 
             <!-- Manual Founder Form Modal -->
-            <div v-if="isAddModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div v-if="showForm" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                 <div class="bg-white p-6 rounded shadow-lg w-1/3 max-h-[90vh] overflow-y-auto">
                     <h3 class="text-xl font-bold mb-4">Add Founder Manually</h3>
                     <div>
@@ -491,7 +491,7 @@ onMounted(() => {
 
                         <!-- Action Buttons -->
                         <div class="flex justify-end gap-2 mt-4">
-                            <button @click="isAddModalOpen = false" type="button"
+                            <button @click="showForm = false" type="button"
                                 class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
                                 Cancel
                             </button>
@@ -565,46 +565,6 @@ onMounted(() => {
                 </tbody>
             </table>
         </div>
-        <!-- Pagination Controls -->
-        <div v-if="paginatedFounders.length"
-            class="flex justify-between items-center px-4 py-3 bg-gray-50 border-t border-gray-200 rounded-b-md mt-2">
-            <div class="text-sm text-gray-600">
-                Items {{ (currentPage - 1) * pageSize + 1 }} -
-                {{ Math.min(currentPage * pageSize, filteredFounders.length) }}
-                of {{ filteredFounders.length }} |
-                Page {{ currentPage }} of {{ totalPages }}
-            </div>
-
-            <div class="flex items-center space-x-2 text-sm">
-                <label class="mr-1">Items per page:</label>
-                <select v-model="pageSize"
-                    class="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring focus:border-blue-500">
-                    <option :value="5">5</option>
-                    <option :value="10">10</option>
-                    <option :value="25">25</option>
-                    <option :value="50">50</option>
-                    <option :value="100">100</option>
-                </select>
-
-                <button @click="currentPage = 1" :disabled="currentPage === 1"
-                    class="px-2 py-1 border rounded text-gray-500 hover:text-gray-700 disabled:opacity-50">
-                    First
-                </button>
-                <button @click="currentPage--" :disabled="currentPage === 1"
-                    class="px-2 py-1 border rounded text-gray-500 hover:text-gray-700 disabled:opacity-50">
-                    Prev
-                </button>
-                <button @click="currentPage++" :disabled="currentPage === totalPages"
-                    class="px-2 py-1 border rounded text-gray-500 hover:text-gray-700 disabled:opacity-50">
-                    Next
-                </button>
-                <button @click="currentPage = totalPages" :disabled="currentPage === totalPages"
-                    class="px-2 py-1 border rounded text-gray-500 hover:text-gray-700 disabled:opacity-50">
-                    Last
-                </button>
-            </div>
-        </div>
-
 
         <!-- Edit Modal -->
         <div v-if="isEditModalOpen" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
@@ -681,56 +641,48 @@ onMounted(() => {
                 <table class="min-w-full table-auto text-sm text-gray-700">
                     <tbody>
                         <tr>
-                            <td class="font-semibold py-2 w-32">Name</td>
-                            <td class="w-4 text-center">:</td>
+                            <td class="font-semibold pr-2 py-2">Name:</td>
                             <td>{{ selectedFounder.full_name }}</td>
                         </tr>
                         <tr>
-                            <td class="font-semibold py-2">Designation</td>
-                            <td class="text-center">:</td>
+                            <td class="font-semibold pr-2 py-2">Designation:</td>
                             <td>{{ selectedFounder.designation }}</td>
                         </tr>
                         <tr>
-                            <td class="font-semibold py-2">Email</td>
-                            <td class="text-center">:</td>
+                            <td class="font-semibold pr-2 py-2">Email:</td>
                             <td>{{ selectedFounder.email }}</td>
                         </tr>
                         <tr>
-                            <td class="font-semibold py-2">Mobile</td>
-                            <td class="text-center">:</td>
+                            <td class="font-semibold pr-2 py-2">Mobile:</td>
                             <td>{{ selectedFounder.mobile }}</td>
                         </tr>
                         <tr>
-                            <td class="font-semibold py-2">Address</td>
-                            <td class="text-center">:</td>
+                            <td class="font-semibold pr-2 py-2">Address:</td>
                             <td>{{ selectedFounder.address }}</td>
                         </tr>
                         <tr>
-                            <td class="font-semibold py-2">Note</td>
-                            <td class="text-center">:</td>
+                            <td class="font-semibold pr-2 py-2">Note:</td>
                             <td>{{ selectedFounder.note }}</td>
                         </tr>
-                        <tr v-if="selectedFounder.image_url">
-                            <td class="font-semibold py-2 align-top">Image</td>
-                            <td class="text-center align-top">:</td>
+                        <tr>
+                            <td class="font-semibold pr-2 py-2">Image</td>
                             <td>
-                                <img :src="selectedFounder.image_url" alt="Founder Image"
-                                    class="h-24 w-24 object-cover rounded border border-gray-300">
+                                <img v-if="selectedFounder.image_url" :src="selectedFounder.image_url"
+                                    alt="Founder Image" class="h-30 w-30 object-cover">
                             </td>
                         </tr>
+
                     </tbody>
                 </table>
-
                 <div class="flex justify-end mt-4">
                     <button @click="closeViewModal"
                         class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Close</button>
                 </div>
             </div>
         </div>
-
-
     </div>
     <div v-if="!paginatedFounders.length" class="text-center text-gray-500 py-6">
         <p>No founders found.</p>
     </div>
+
 </template>

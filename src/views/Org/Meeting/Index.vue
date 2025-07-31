@@ -37,7 +37,7 @@ const allHeaders = [
   { text: 'Time', value: 'time', sortable: true },
   { text: 'Status', value: 'status_display', sortable: true },
   { text: 'Conduct Type', value: 'conduct_type_name', sortable: true },
-  { text: 'Actions', value: 'actions' },
+  { text: 'Action', value: 'actions' },
 ]
 
 watch([visibleColumns, selectedProfile], () => {

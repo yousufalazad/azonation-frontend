@@ -5,10 +5,10 @@
             <h2 class="text-sm font-semibold text-gray-700 mb-4 py-2">Logo</h2>
             <div class="mb-4 flex justify-between pb-9">
                 <div v-if="logoPath">
-                    <img :src="`${baseURL}${logoPath}`" alt="Logo" class="rounded-lg w-[250px] ml-5">
+                    <img :src="`${baseURL}${logoPath}`" alt="Logo" class="rounded-lg w-[150px] ml-5">
                 </div>
                 <div v-else>
-                    <img src="../../../assets/Logo/Your-logo-here.png" alt="Logo" class="rounded-lg w-[250px] ml-5">
+                    <img src="../../../assets/Logo/Your-logo-here.png" alt="Logo" class="rounded-lg w-[150px] ml-5">
                 </div>
                 <div>
                     <label for="logo" class="block text-sm font-medium text-gray-700 mb-4">Upload new logo</label>
@@ -19,10 +19,214 @@
                 </div>
             </div>
         </section>
+       
+        <!-- Address Section -->
+        <section>
+            <div class="space-y-2 mt-5">
+                <div class="flex items-start justify-between border-b pb-2">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700">Address</h3>
+                        <p class="text-gray-900 mt-1 leading-relaxed">
+                            <span>{{ address_line_one }}</span>,
+                            <span>{{ address_line_two }}</span>,
+                            <span>{{ city }}</span>,
+                            <span>{{ state_or_region }}</span>,
+                            <span>{{ postal_code }}</span>,
+                            <span>{{ userCountry }}</span>
+                        </p>
+                    </div>
+                    <button @click="openAddressModal()"
+                        class="text-sm text-primary hover:underline whitespace-nowrap ml-4">
+                        Edit
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal -->
+            <div v-if="modalVisibleAddress"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
+                    <h2 class="text-2xl font-bold mb-4 text-center">
+                        {{ isEditMode ? 'Create Address' : 'Edit Address' }}
+                    </h2>
+
+                    <div class="mb-4">
+                        <label for="address_line_one" class="block text-sm font-medium text-gray-700">Address Line
+                            One</label>
+                        <input v-model="address_line_one" type="text" id="address_line_one"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            required />
+                        <p v-if="auth.errors?.address_line_one" class="text-red-500 text-sm mt-1">{{
+                            auth.errors?.address_line_one[0] }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="address_line_two" class="block text-sm font-medium text-gray-700">Address Line
+                            Two</label>
+                        <input v-model="address_line_two" type="text" id="address_line_two"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                        <p v-if="auth.errors?.address_line_two" class="text-red-500 text-sm mt-1">{{
+                            auth.errors?.address_line_two[0] }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="city" class="block text-sm font-medium text-gray-700">city</label>
+                        <input v-model="city" type="text" id="city"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                        <p v-if="auth.errors?.city" class="text-red-500 text-sm mt-1">{{ auth.errors?.city[0] }}</p>
+                    </div>
 
 
-        <section class="mt-5 pb-5 mb-5">
+                    <div class="mb-4">
+                        <label for="state_or_region"
+                            class="block text-sm font-medium text-gray-700">state_or_region</label>
+                        <input v-model="state_or_region" type="text" id="state_or_region"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                        <p v-if="auth.errors?.state_or_region" class="text-red-500 text-sm mt-1">{{
+                            auth.errors?.state_or_region[0] }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="postal_code" class="block text-sm font-medium text-gray-700">postal_code</label>
+                        <textarea v-model="postal_code" id="postal_code"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
+                        <p v-if="auth.errors?.postal_code" class="text-red-500 text-sm mt-1">{{
+                            auth.errors?.postal_code[0]
+                            }}</p>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
+                            @click="closeAddressModal">
+                            Close
+                        </button>
+
+                        <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                            @click="isEditMode ? createAddress() : updateAddress()">
+                            {{ isEditMode ? 'Submit' : 'Update' }}
+
+                            <!-- only update is working for create and update -->
+                        </button>
+                    </div>
+                </div>
+            </div>
         </section>
+
+        <!-- Mobile number section -->
+        <section>
+            <div class="space-y-2 mt-5">
+                <div class="flex items-start justify-between border-b pb-2">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700">Mobile Number</h3>
+                        <p class="text-gray-900 mt-1 leading-relaxed">
+                            <span>{{ dialing_code }}{{ phone_number }}</span>
+                            <span class="ml-6">Type:
+                                {{ phone_type === 1 ? 'Mobile' : phone_type === 2 ? 'Work' : phone_type === 3 ? 'Home' :
+                                    'Others' }}
+                            </span>
+                            <span class="ml-6">Status:
+                                {{ statusPhone === 1 ? 'Private' : statusPhone === 2 ? 'Connected Organisation' :
+                                    statusPhone === 3 ? 'Public' : 'Others' }}
+                            </span>
+                        </p>
+                    </div>
+                    <button @click="openPhoneModal()"
+                        class="text-sm text-primary hover:underline ml-4 whitespace-nowrap">
+                        Edit
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- Mobile number Modal -->
+            <div v-if="modalVisiblePhone"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
+                    <h2 class="text-2xl font-bold mb-4 text-center">
+                        {{ isEditModePhone ? 'Edit mobile number' : 'Add Mobile Number' }}
+                    </h2>
+
+
+
+                    <div class="mb-4">
+                        <label for="dialing_code_id" class="block text-sm font-medium text-gray-700 required">Dialing
+                            Code</label>
+                        <select v-model="dialing_code_id" id="dialing_code_id"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            required>
+                            <option value="">Select</option>
+                            <option v-for="dialing_code in allDialingCodes" :key="dialing_code.id"
+                                :value="dialing_code.id">
+                                {{ dialing_code.dialing_code }} - ({{ dialing_code.country_name }})
+                            </option>
+                        </select>
+                        <p v-if="auth.errors?.dialing_code_id" class="text-red-500 text-sm mt-1">
+                            {{ auth.errors?.dialing_code_id[0] }}
+                        </p>
+                    </div>
+
+
+                    <div class="mb-4">
+                        <label for="phone_number" class="block text-sm font-medium text-gray-700">phone_number (number
+                            only)</label>
+
+                        <input v-model="phone_number" type="text" id="phone_number"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            @input="phone_number = phone_number.replace(/\D/g, '')" required />
+
+                        <p v-if="auth.errors?.phone_number" class="text-red-500 text-sm mt-1">{{
+                            auth.errors?.phone_number[0] }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="phone_type" class="block text-sm font-medium text-gray-700">phone_type
+                            (0/1/2/3)</label>
+
+                        <select v-model="phone_type" id="phone_type"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            required>
+                            <option disabled value="">Select</option>
+                            <option value="1">Mobile</option>
+                            <option value="2">Work</option>
+                            <option value="3">Home</option>
+                            <option value="4">Other</option>
+
+                        </select>
+
+
+                        <p v-if="auth.errors?.phone_type" class="text-red-500 text-sm mt-1">{{
+                            auth.errors?.phone_type[0] }}
+                        </p>
+                    </div>
+
+
+                    <div class="mb-4">
+                        <label for="statusPhone" class="block text-sm font-medium text-gray-700">statusPhone
+                            (boolean)</label>
+                        <input v-model="statusPhone" type="boolean" id="statusPhone"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                        <p v-if="auth.errors?.statusPhone" class="text-red-500 text-sm mt-1">{{
+                            auth.errors?.statusPhone[0] }}</p>
+                    </div>
+
+
+
+                    <div class="flex justify-end">
+                        <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
+                            @click="closePhoneModal">
+                            Close
+                        </button>
+
+                        <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                            @click="isEditModePhone ? updateOrgPhoneNumber() : updateOrgPhoneNumber()">
+                            {{ isEditModePhone ? 'Update' : 'Submit' }}
+                            <!-- only update is working for create and update -->
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </div>
 </template>
 
@@ -53,8 +257,6 @@ const city = ref('');
 const state_or_region = ref('');
 const postal_code = ref('');
 const userCountry = ref('');
-const country_id = ref('');
-const country_name = ref('');
 const modalVisibleAddress = ref(false);
 const isEditMode = ref('');
 
@@ -120,85 +322,6 @@ const profileImageUpdate = async () => {
     }
 };
 
-const updateName = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/update-name/${userId}`, {
-            name: newName.value,
-        }, 'PUT');
-        if (response.status) {
-            // Success handling
-            Swal.fire('Success', response.message || 'Name updated successfully', 'success');
-
-            // Close the modal after successful update
-            closeNameModal();
-
-            // Update the name in sessionStorage explicitly
-            let user = JSON.parse(functions.getCookie('user'));
-            if (user) {
-                user.name = newName.value;
-                functions.setCookie('user', JSON.stringify(user));
-            }
-
-            // Optionally, you can reload the page or update the UI without reloading
-            window.location.reload();
-        } else {
-            // Display error message from server response
-            Swal.fire('Error', response.message || 'Failed to update name, please try again.', 'error');
-        }
-
-    } catch (error) {
-        // Catch block for any other errors
-        console.error("Error updating name:", error);
-        Swal.fire('Error', error.response?.data?.message || 'An unexpected error occurred while updating the name', 'error');
-    }
-};
-
-//Update username
-const updateUsername = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/update-username/${userId}`, {
-            username: newUsername.value,
-        }, 'PUT');
-
-        if (response.status) {
-            // Success handling
-            Swal.fire('Success', response.message || 'Username updated successfully', 'success');
-
-            // Close the modal after successful update
-            closeUsernameModal();
-
-            // Update the name in sessionStorage explicitly
-            let user = JSON.parse(sessionStorage.getItem('user'));
-            if (user) {
-                user.username = newUsername.value;
-                sessionStorage.setItem('user', JSON.stringify(user));
-            }
-
-            // Optionally, you can reload the page or update the UI without reloading
-            window.location.reload();
-        } else {
-            // Handle other non-validation-related errors
-            Swal.fire('Error', response.message || 'Failed to update username, please try again.', 'error');
-        }
-
-    } catch (error) {
-        // Check for validation errors
-        if (error.response?.status === 422) {
-            const validationErrors = error.response.data.errors;
-            if (validationErrors?.username) {
-                // Display validation error specific to the username field
-                Swal.fire('Validation Error', validationErrors.username[0], 'error');
-            } else {
-                // General validation error message
-                Swal.fire('Validation Error', 'The provided data is invalid.', 'error');
-            }
-        } else {
-            // Handle any other errors
-            console.error("Error updating username:", error);
-            Swal.fire('Error', error.response?.data?.message || 'An unexpected error occurred while updating the username', 'error');
-        }
-    }
-};
 
 const fetchOrgAddress = async () => {
     try {
@@ -322,63 +445,6 @@ const fetchDialingCode = async () => {
     }
 };
 
-const updateUserEmail = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/update-email/${userId}`, {
-            email: newEmail.value,
-        }, 'PUT');
-        if (response.status) {
-            Swal.fire('Success', 'Email updated successfully', 'success');
-            // Close the modal after successful update
-            closeEmailModal();
-
-            // Update the name in sessionStorage explicitly
-            let user = JSON.parse(sessionStorage.getItem('user'));
-            if (user) {
-                user.email = newEmail.value;
-                sessionStorage.setItem('user', JSON.stringify(user));
-            }
-            // Now refresh the current page
-            window.location.reload();
-        } else {
-            Swal.fire('Error', 'Failed to update email', 'error');
-        }
-
-    } catch (error) {
-        console.error("Error updating email:", error);
-        Swal.fire('Error', 'Failed to update email', 'error');
-    }
-};
-
-// const updateCountry = async () => {
-//     try {
-//         const response = await auth.fetchProtectedApi("/api/update-country/", {
-//             country_name: newCountry.value,
-//         }, 'PUT');
-//         if (response.status) {
-//             Swal.fire('Success', 'Country updated successfully', 'success');
-//             // Close the modal after successful update
-//             closeCountryModal();
-
-//             // Update the name in sessionStorage explicitly
-//             let user = JSON.parse(sessionStorage.getItem('user'));
-//             if (user) {
-//                 user.country_name = newCountry.value;
-//                 sessionStorage.setItem('user', JSON.stringify(user));
-//             }
-//             // Now refresh the current page
-//             window.location.reload();
-//         } else {
-//             Swal.fire('Error', 'Failed to update country', 'error');
-//         }
-
-//     } catch (error) {
-//         console.error("Error updating country:", error);
-//         Swal.fire('Error', 'Failed to update country', 'error');
-//     }
-// };
-
-
 const fetchOrgCountry = async () => {
     try {
         const response = await auth.fetchProtectedApi("/api/user-countries/country-name/", {}, 'GET');
@@ -427,45 +493,6 @@ const openPhoneModal = () => {
 
 const closePhoneModal = () => {
     modalVisiblePhone.value = false;
-};
-
-const openNameModal = () => {
-    modalVisibleName.value = true;
-    newName.value = name;
-};
-
-const closeNameModal = () => {
-    modalVisibleName.value = false;
-    newName.value = {};
-};
-
-const openUsernameModal = () => {
-    modalVisibleUsername.value = true;
-    newUsername.value = username;
-};
-
-const closeUsernameModal = () => {
-    modalVisibleUsername.value = false;
-};
-
-//Email Address
-const openEmailModal = () => {
-    modalVisibleUserEmail.value = true;
-    newEmail.value = email;
-};
-
-const closeEmailModal = () => {
-    modalVisibleUserEmail.value = false;
-};
-
-//Country
-const openCountryModal = () => {
-    modalOpenCountry.value = true;
-    countryChangeRequest.value = userCountry.value;
-};
-
-const closeCountryModal = () => {
-    modalOpenCountry.value = false;
 };
 
 onMounted(() => {
