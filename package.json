@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
+    "@stripe/stripe-js": "^7.7.0",
     "@tailwindcss/typography": "^0.5.16",
     "@vueuse/core": "^11.1.0",
     "and": "^0.0.3",
