@@ -9,6 +9,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import 'vue3-easy-data-table/dist/style.css'
 import { FileText, FileSpreadsheet, FileDown } from 'lucide-vue-next'
+import dayjs from 'dayjs'
 
 const router = useRouter()
 const auth = authStore
@@ -36,22 +37,23 @@ const getRecords = async () => {
   loading.value = true
   try {
     const res = await auth.fetchProtectedApi('/api/assets', {}, 'GET')
-    if (res.status) {
-      recordList.value = res.data.map(r => ({
-        id: r.id,
-        name: r.name,
-        quantity: r.quantity,
-        start_date: r.start_date ?? '',
-        end_date: r.end_date ?? '',
-        responsible_user_first_name: r.responsible_user_first_name,
-        responsible_user_last_name: r.responsible_user_last_name,
-        responsible_user_full_name: `${r.responsible_user_first_name ?? ''} ${r.responsible_user_last_name ?? ''}`.trim(),
-        asset_lifecycle_status: r.asset_lifecycle_statuses_name,
-        is_active: r.is_active === 1 ? 'Yes' : 'No'
-      }))
-    } else {
-      recordList.value = []
-    }
+    // if (res.status) {
+    console.log('Asset response:', res.data)
+    recordList.value = res.data.map(r => ({
+      id: r.id,
+      name: r.name,
+      quantity: r.quantity,
+      start_date: r.start_date ? new Date(r.start_date).toLocaleDateString() : '',
+      end_date: r.end_date ? new Date(r.end_date).toLocaleDateString() : '',
+      responsible_user_first_name: r.responsible_user_first_name,
+      responsible_user_last_name: r.responsible_user_last_name,
+      responsible_user_full_name: `${r.responsible_user_first_name ?? ''} ${r.responsible_user_last_name ?? ''}`.trim(),
+      asset_lifecycle_status: r.asset_lifecycle_statuses_name,
+      is_active: r.is_active === 1 ? 'Yes' : 'No'
+    }))
+    // } else {
+    //   recordList.value = []
+    // }
   } catch (err) {
     console.error('Error fetching assets:', err)
   } finally {
@@ -60,7 +62,7 @@ const getRecords = async () => {
 }
 
 const columnProfiles = {
-  minimal: ['name', 'quantity', 'asset_lifecycle_status', 'actions'],
+  minimal: ['name', 'quantity', 'asset_lifecycle_status'],
   detailed: ['name', 'quantity', 'asset_lifecycle_status', 'start_date', 'end_date', 'responsible_user_full_name', 'actions']
 }
 
@@ -231,6 +233,12 @@ onMounted(() => getRecords())
     <!-- Table -->
     <EasyDataTable :headers="filteredHeaders" :items="paginatedAssets" :search-value="search" :loading="loading"
       show-index hide-footer :theme-color="'#2563eb'">
+      <!-- Header Alignment Fix -->
+      <template #header-actions>
+        <div class="text-right w-full pr-2">
+          Actions
+        </div>
+      </template>
       <!-- Actions Slot -->
       <template #item-actions="{ id }">
         <div class="flex justify-end gap-2">
@@ -256,7 +264,7 @@ onMounted(() => getRecords())
     <div class="flex justify-between items-center px-2 py-3 bg-gray-50 rounded border">
       <div class="text-sm text-gray-600">
         Items {{ (currentPage - 1) * rowsPerPage + 1 }} - {{ Math.min(currentPage * rowsPerPage, totalItems) }} of {{
-        totalItems }} |
+          totalItems }} |
         Page {{ currentPage }} of {{ totalPages }}
       </div>
       <div class="flex items-center gap-4">

@@ -1,0 +1,107 @@
+/* Custom CSS for Azonation */
+
+/* default css */
+
+/* * {
+    margin: 0px;
+    padding: 0px;
+    outline: 0px;
+  }
+
+  img {
+    border: 0px;
+    margin: 0px;
+    padding: 0px;
+  }
+  
+  ol, ul, li {
+    list-style-type: none;
+  }
+  
+  a, a:hover, a:focus {
+    text-decoration: none;
+    outline: 0;
+  }
+  
+  body {
+    background-color: #ffffff;
+  }
+  row {
+    padding: 0px;
+    margin: 0px;
+  } */
+
+/* Custom CSS */
+
+/* .navbar-width{
+    --bs-navbar-padding-y: 1.5rem !important;
+} */
+
+html,
+body {
+  height: 100%;
+  overflow-y: auto;
+  margin: 0;
+}
+
+table thead tr th {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #555 !important;
+  background-color: #fff !important;
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+}
+
+table tbody tr:hover {
+  background-color: #eeeeee !important;
+}
+table tbody tr:hover td {
+  color: #212121 !important;
+}
+
+table tbody tr td {
+  font-size: 13px !important;
+  color: #555;
+  border-bottom: 1px solid #e0e0e0 !important;
+  padding: 10px 0 !important;
+}
+
+.vue3-easy-data-table__main {
+  min-height: unset !important;
+}
+
+table thead tr th:first-child,
+table tbody tr td:first-child{
+  padding-left: 10px !important;
+}
+table thead tr th:last-child,
+table tbody tr td:last-child{
+  padding-right: 10px !important;
+}
+
+/* Normal table row styles */
+.normal-table .vue3-easy-data-table__body tr td{
+  padding-top: 1.25rem !important;
+  padding-bottom: 1.25rem !important;
+}
+
+/* Compact table row styles */
+.compact-table .vue3-easy-data-table__body tr td{
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
+
+/* .vue3-easy-data-table__table {
+  border: none !important;
+} */
+
+/* .vue3-easy-data-table__header th:last-child .header{
+	justify-content: flex-end !important;
+} */
+/* .vue3-easy-data-table__header th:last-child .header{
+	justify-content: flex-end !important;
+} */
+

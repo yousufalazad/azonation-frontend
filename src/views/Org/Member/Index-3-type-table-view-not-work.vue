@@ -31,7 +31,8 @@ const viewModal = ref(false)
 const editModal = ref(false)
 const membership_type_id = ref("")
 const sponsored_user_id = ref("")
-const compact_view = ref(false)
+// const rowHeight = ref(localStorage.getItem('row_height') || 'default')
+const rowHeight = ref('default') // options: default, comfortable, compact
 
 
 const exportToWord = async () => {
@@ -349,7 +350,6 @@ const paginatedMembers = computed(() => {
 });
 
 
-
 watch([search, rowsPerPage], () => {
   currentPage.value = 1
 })
@@ -363,9 +363,13 @@ const goToNext = () => {
 const goToLast = () => currentPage.value = totalPages.value
 
 
+watch(rowHeight, () => {
+  localStorage.setItem('row_height', rowHeight.value)
+})
 
 // ✅ Lifecycle
 onMounted(() => {
+  // localStorage.removeItem('row_height') // optionally clear old value
   fetchMemberList()
   fetchMembershipType()
 })
@@ -401,7 +405,6 @@ onMounted(() => {
         <button @click="$router.push({ name: 'create-member' })"
           class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm">+ Add Member</button>
       </div>
-
     </div>
 
     <!-- Filters -->
@@ -427,8 +430,9 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Column View -->
+    <!-- Column Settings -->
     <div class="bg-gray-50 border rounded p-4 flex flex-wrap gap-8 items-start">
+      <!-- Column View Selector -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Column View:</label>
         <select v-model="selectedProfile" @change="applyProfile" class="border rounded px-3 py-1.5 text-sm w-48">
@@ -436,6 +440,19 @@ onMounted(() => {
           <option value="detailed">Detailed</option>
         </select>
       </div>
+
+      <!-- Row Height Selector -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Row Height:</label>
+        <select v-model="rowHeight" class="border rounded px-3 py-1.5 text-sm w-48">
+          <option value="default">Default</option>
+          <option value="comfortable">Comfortable</option>
+          <option value="compact">Compact</option>
+        </select>
+      </div>
+
+
+      <!-- Visible Columns -->
       <div>
         <label class="text-sm font-medium text-gray-700 mb-1 block">Visible Columns</label>
         <div class="flex flex-wrap gap-4">
@@ -448,11 +465,16 @@ onMounted(() => {
       </div>
     </div>
 
+
     <!-- Member Table -->
-    <!-- :items="filteredMembers" -->
-    <EasyDataTable :headers="headers"   :items="paginatedMembers" :search-value="search" :loading="loading" show-index
-      hide-footer table-class="min-w-full text-sm" header-class="bg-gray-100" body-row-class="text-sm"
-      :theme-color="'#3b82f6'">
+    <!-- Wrap the table with the row height class -->
+
+    <EasyDataTable :headers="headers" :items="paginatedMembers" :search-value="search" :loading="loading" show-index
+      hide-footer table-class="min-w-full text-sm" header-class="bg-gray-100" :theme-color="'#3b82f6'"
+      :body-row-class-name="() => 'row-' + rowHeight">
+
+
+
 
       <!-- Profile Image -->
       <template #item-image_url="{ image_url }">
@@ -461,12 +483,9 @@ onMounted(() => {
 
       <!-- Full Name -->
       <template #item-full_name="{ full_name }">
-        <div class="py-5">
-          <span class="text-gray-700">
-            {{ full_name || '--' }}
-          </span>
-        </div>
-
+        <span>
+          {{ full_name || '--' }}
+        </span>
       </template>
 
       <!-- Membership ID -->
@@ -697,4 +716,103 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* Apply row height styles */
+::v-deep(.vue3-easy-data-table__body-row.row-default) {
+  min-height: 52px;
+}
+
+::v-deep(.vue3-easy-data-table__body-row.row-comfortable) {
+  min-height: 72px;
+}
+
+::v-deep(.vue3-easy-data-table__body-row.row-compact) {
+  min-height: 36px;
+}
+
+/* Padding + Font-size */
+::v-deep(.vue3-easy-data-table__body-row.row-default .vue3-easy-data-table__body-cell) {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+  font-size: 14px;
+}
+
+::v-deep(.vue3-easy-data-table__body-row.row-comfortable .vue3-easy-data-table__body-cell) {
+  padding-top: 20px !important;
+  padding-bottom: 20px !important;
+  font-size: 18px;
+}
+
+::v-deep(.vue3-easy-data-table__body-row.row-compact .vue3-easy-data-table__body-cell) {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  font-size: 12px;
+}
+
+/* Optional: image size */
+::v-deep(.vue3-easy-data-table__body-row.row-default img) {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+::v-deep(.vue3-easy-data-table__body-row.row-comfortable img) {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+::v-deep(.vue3-easy-data-table__body-row.row-compact img) {
+  width: 28px !important;
+  height: 28px !important;
+}
+</style>
+
+
+<!-- <style scoped>
+/* Scoped deep selector for vue3-easy-data-table row content */
+::v-deep(.row-compact .vue3-easy-data-table__body-cell) {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  font-size: 12px;
+}
+
+::v-deep(.row-comfortable .vue3-easy-data-table__body-cell) {
+  padding-top: 20px !important;
+  padding-bottom: 20px !important;
+  font-size: 18px;
+}
+
+::v-deep(.row-default .vue3-easy-data-table__body-cell) {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+  font-size: 14px;
+}
+::v-deep(.row-compact img) {
+  height: 28px !important;
+  width: 28px !important;
+}
+
+::v-deep(.row-comfortable img) {
+  height: 48px !important;
+  width: 48px !important;
+}
+
+::v-deep(.row-default img) {
+  height: 40px !important;
+  width: 40px !important;
+}
+
+/* Force minimum height for all rows using ::v-deep */
+::v-deep(.vue3-easy-data-table__body-row.row-compact) {
+  min-height: 36px;
+}
+
+::v-deep(.vue3-easy-data-table__body-row.row-default) {
+  min-height: 52px;
+}
+
+::v-deep(.vue3-easy-data-table__body-row.row-comfortable) {
+  min-height: 72px;
+}
+
+
+</style> -->

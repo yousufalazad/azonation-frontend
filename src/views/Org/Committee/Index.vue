@@ -333,8 +333,15 @@ onMounted(fetchCommitteeList)
       <template #item-status_display="{ status_display }">
         <span :class="status_display === 'Active' ? 'text-green-600' : 'text-red-600'">{{ status_display }}</span>
       </template>
+      <!-- Header Alignment Fix -->
+      <template #header-actions>
+        <div class="text-right w-full pr-2">
+          Actions
+        </div>
+      </template>
+      <!-- Actions Slot -->
       <template #item-actions="{ id }">
-        <div class="flex gap-2 justify-end">
+        <div class="flex justify-end gap-2">
           <!-- <button @click="$router.push({ name: 'index-committee-member', params: { committeeId: id, committeeName: name } })"
             class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded-lg text-xs">
             Members

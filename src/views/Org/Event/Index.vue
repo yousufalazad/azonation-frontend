@@ -297,17 +297,8 @@ onMounted(() => {
     </div>
 
     <!-- Data Table -->
-    <EasyDataTable
-      :headers="filteredHeaders"
-      :items="paginatedCommittees"
-      :loading="loading"
-      show-index
-      hide-footer
-      table-class="min-w-full text-sm"
-      header-class="bg-gray-100"
-      body-row-class="text-sm"
-      :theme-color="'#3b82f6'"
-    >
+    <EasyDataTable :headers="filteredHeaders" :items="paginatedCommittees" :loading="loading" show-index hide-footer
+      table-class="min-w-full text-sm" header-class="bg-gray-100" body-row-class="text-sm" :theme-color="'#3b82f6'">
       <!-- Status Badge Slot -->
       <template #item-status_display="{ status_display }">
         <span :class="{
@@ -318,9 +309,15 @@ onMounted(() => {
         </span>
       </template>
 
+      <!-- Header Alignment Fix -->
+      <template #header-actions>
+        <div class="text-right w-full pr-2">
+          Actions
+        </div>
+      </template>
       <!-- Actions Slot -->
       <template #item-actions="{ id }">
-        <div class="flex flex-wrap gap-2 justify-end">
+        <div class="flex justify-end gap-2">
           <button @click="viewSummary(eventList.find(e => e.id === id))"
             v-if="eventSummary.find(s => s.event_id === id)"
             class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs">

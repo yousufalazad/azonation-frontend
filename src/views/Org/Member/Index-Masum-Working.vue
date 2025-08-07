@@ -33,7 +33,6 @@ const membership_type_id = ref("")
 const sponsored_user_id = ref("")
 const compact_view = ref(false)
 
-
 const exportToWord = async () => {
   const tableRows = [
     new TableRow({
@@ -108,14 +107,13 @@ const allHeaders = [
   { text: 'Membership Type', value: 'membership_type.name', sortable: true },
   { text: 'Joining Date', value: 'membership_start_date', sortable: true },
   { text: 'Membership Age', value: 'membership_age' },
-  { text: 'Actions', value: 'actions' }
+  { text: 'Actions', value: 'actions' },
 ]
 
 // Visibility filter
 const headers = computed(() =>
   allHeaders.filter(h => visibleColumns.value.includes(h.value))
 )
-
 
 // ✅ Fetch member list
 const fetchMemberList = async () => {
@@ -447,66 +445,98 @@ onMounted(() => {
         </div>
       </div>
     </div>
+     
+    <!-- Compact View Control -->
+    <!-- <div class="md:col-span-4"> -->
+    <div class="bg-gray-50 border rounded px-4 py-4 flex flex-wrap gap-8 items-start">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Row Height:</label>
+      <div class="flex gap-4">
+        <label class="flex items-center gap-2 text-sm">
+          <input 
+            type="radio" 
+            v-model="compact_view" 
+            :value="false" 
+            class="accent-blue-600"
+          />
+          <span>Default</span>
+        </label>
+        <label class="flex items-center gap-2 text-sm">
+          <input 
+            type="radio" 
+            v-model="compact_view" 
+            :value="true" 
+            class="accent-blue-600"
+          />
+          <span>Compact</span>
+        </label>
+      </div>
+    </div>
 
     <!-- Member Table -->
     <!-- :items="filteredMembers" -->
-    <EasyDataTable :headers="headers"   :items="paginatedMembers" :search-value="search" :loading="loading" show-index
-      hide-footer table-class="min-w-full text-sm" header-class="bg-gray-100" body-row-class="text-sm"
-      :theme-color="'#3b82f6'">
+    <div :class="compact_view ? 'compact-table' : 'normal-table'">
+      <EasyDataTable :headers="headers" :items="paginatedMembers" :search-value="search" :loading="loading" show-index
+        hide-footer table-class="min-w-full text-sm" header-class="bg-gray-100"  
+        :theme-color="'#3b82f6'">
 
-      <!-- Profile Image -->
-      <template #item-image_url="{ image_url }">
-        <img :src="image_url" class="h-10 w-10 rounded-full object-cover bg-gray-100" />
-      </template>
+        <!-- Profile Image -->
+        <template #item-image_url="{ image_url }">
+          <img :src="image_url" class="h-10 w-10 rounded-full object-cover bg-gray-100" />
+        </template>
 
-      <!-- Full Name -->
-      <template #item-full_name="{ full_name }">
-        <div class="py-5">
-          <span class="text-gray-700">
-            {{ full_name || '--' }}
+        <!-- Full Name -->
+        <template #item-full_name="{ full_name }">
+            <span>
+              {{ full_name || '--' }}
+            </span>
+        </template>
+
+        <!-- Membership ID -->
+        <template #item-existing_membership_id="{ existing_membership_id }">
+          <span>
+            {{ existing_membership_id || '--' }}
           </span>
-        </div>
+        </template>
 
-      </template>
+        <!-- Membership Type -->
+        <template #item-membership_type.name="{ membership_type }">
+          <span>
+            {{ membership_type?.name || '--' }}
+          </span>
+        </template>
 
-      <!-- Membership ID -->
-      <template #item-existing_membership_id="{ existing_membership_id }">
-        <span>
-          {{ existing_membership_id || '--' }}
-        </span>
-      </template>
+        <!-- Joining Date -->
+        <template #item-membership_start_date="{ membership_start_date }">
+          <span>
+            {{ membership_start_date ? dayjs(membership_start_date).format('DD-MM-YYYY') : '--' }}
+          </span>
+        </template>
 
-      <!-- Membership Type -->
-      <template #item-membership_type.name="{ membership_type }">
-        <span>
-          {{ membership_type?.name || '--' }}
-        </span>
-      </template>
+        <!-- Membership Age -->
+        <template #item-membership_age="{ membership_start_date }">
+          <span class="inline-block text-gray-700 py-0.5 rounded-full text-xs">
+            {{ calculateMembershipAge(membership_start_date) }}
+          </span>
+        </template>
 
-      <!-- Joining Date -->
-      <template #item-membership_start_date="{ membership_start_date }">
-        <span>
-          {{ membership_start_date ? dayjs(membership_start_date).format('DD-MM-YYYY') : '--' }}
-        </span>
-      </template>
+        <!-- Header Alignment Fix -->
+        <template #header-actions>
+          <div class="text-right w-full pr-2">
+            Actions
+          </div>
+        </template>
+        <!-- Actions Slot -->
+        <template #item-actions="{ id }">
+          <div class="flex justify-end gap-2">
+            <button @click="viewMemberDetail(memberList.find(m => m.id === id))"
+              class="text-blue-600 hover:underline px-2 py-1 text-xs">
+              Details
+            </button>
+          </div>
+        </template>
 
-      <!-- Membership Age -->
-      <template #item-membership_age="{ membership_start_date }">
-        <span>
-          {{ calculateMembershipAge(membership_start_date) }}
-        </span>
-      </template>
-
-
-      <!-- Actions -->
-      <template #item-actions="{ id }">
-        <button @click="viewMemberDetail(memberList.find(m => m.id === id))"
-          class="text-blue-600 hover:underline text-xs">
-          Details
-        </button>
-      </template>
-
-    </EasyDataTable>
+      </EasyDataTable>
+    </div>
 
     <!-- Bottom Pagination -->
     <div class="flex justify-between items-center px-2 py-3 bg-gray-50 rounded border">

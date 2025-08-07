@@ -37,7 +37,7 @@ const allHeaders = [
   { text: 'Time', value: 'time', sortable: true },
   { text: 'Status', value: 'status_display', sortable: true },
   { text: 'Conduct Type', value: 'conduct_type_name', sortable: true },
-  { text: 'Action', value: 'actions' },
+  { text: 'Actions', value: 'actions' },
 ]
 
 watch([visibleColumns, selectedProfile], () => {
@@ -283,6 +283,13 @@ onMounted(() => {
         </span>
       </template>
 
+      <!-- Header Alignment Fix -->
+      <template #header-actions>
+        <div class="text-right w-full pr-2">
+          Actions
+        </div>
+      </template>
+      <!-- Actions Slot -->
       <template #item-actions="{ id }">
         <div class="flex justify-end gap-2">
           <template v-if="meetingMinuteList.find(s => s.meeting_id === id)">

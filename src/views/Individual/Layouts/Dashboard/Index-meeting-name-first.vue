@@ -74,9 +74,10 @@ const fetchDashboardData = async () => {
       allAssets.value = organisationsSummary.value.flatMap(org =>
         (org.responsible_assets || []).map(asset => ({
           ...asset,
-          org_name: org.org_name,
+          org_name: org.org_name
         }))
       );
+
     }
 
   } catch (error) {
@@ -107,8 +108,8 @@ onMounted(() => {
       <div class="bg-white p-6 rounded shadow">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-lg font-semibold text-gray-800">Connected Organisations</h2>
-          <router-link to="/individual-dashboard/connected-orgs" class="text-sm text-blue-600 hover:underline">See
-            all</router-link>
+          <!-- <router-link to="/individual-dashboard/connected-orgs" class="text-sm text-blue-600 hover:underline">See
+            all</router-link> -->
         </div>
         <div class="overflow-x-auto">
           <table class="min-w-full bg-white shadow rounded-md">
@@ -119,8 +120,6 @@ onMounted(() => {
                 <th class="px-4 py-3 text-left">Membership ID</th>
                 <th class="px-4 py-3 text-left">Membership Type ID</th>
                 <th class="px-4 py-3 text-left">Start Date</th>
-                <th class="px-4 py-3 text-left">Sponsored By</th>
-                <th class="px-4 py-3 text-left">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -129,14 +128,14 @@ onMounted(() => {
                 <td class="px-4 py-3">{{ index + 1 }}</td>
                 <td class="px-4 py-3">{{ org.org_name }}</td>
                 <td class="px-4 py-3">{{ org.existing_membership_id || '—' }}</td>
-                <td class="px-4 py-3">{{ org.membership_type.name || '—' }}</td>
+                <td class="px-4 py-3">{{ org.membership_type_id || '—' }}</td>
                 <td class="px-4 py-3">{{ org.membership_start_date || '—' }}</td>
-                <td class="px-4 py-3">{{ org.sponsored_user_id || '—' }}</td>
+                <!-- <td class="px-4 py-3">{{ org.sponsored_user_id || '—' }}</td>
                 <td class="px-4 py-3">
                   <span :class="org.is_active ? 'text-green-600 font-medium' : 'text-red-500 font-medium'">
                     {{ org.is_active ? 'Active' : 'Inactive' }}
                   </span>
-                </td>
+                </td> -->
               </tr>
             </tbody>
           </table>
@@ -158,20 +157,20 @@ onMounted(() => {
             <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
               <tr>
                 <th class="px-4 py-3 text-left">#</th>
-                <th class="px-4 py-3 text-left">Organisation</th>
                 <th class="px-4 py-3 text-left">Committee Name</th>
+                <th class="px-4 py-3 text-left">Designation</th>
+                <th class="px-4 py-3 text-left">Organization</th>
                 <th class="px-4 py-3 text-left">Start Date</th>
-                <th class="px-4 py-3 text-left">End Date</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(committee, index) in allCommittees" :key="`${committee.org_name}-${committee.id}-${index}`"
                 class="border-t text-sm text-gray-800 hover:bg-gray-50">
                 <td class="px-4 py-3">{{ index + 1 }}</td>
-                <td class="px-4 py-3">{{ committee.org_name || '—' }}</td>
                 <td class="px-4 py-3">{{ committee.name || '—' }}</td>
+                <td class="px-4 py-3">{{ committee.designation_id || '—' }}</td>
+                <td class="px-4 py-3">{{ committee.org_name || '—' }}</td>
                 <td class="px-4 py-3">{{ committee.start_date || '—' }}</td>
-                <td class="px-4 py-3">{{ committee.end_date || '—' }}</td>
               </tr>
             </tbody>
           </table>
@@ -191,22 +190,22 @@ onMounted(() => {
             <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
               <tr>
                 <th class="px-4 py-3 text-left">#</th>
-                <th class="px-4 py-3 text-left">Organisation</th>
                 <th class="px-4 py-3 text-left">Meeting Name</th>
+                <th class="px-4 py-3 text-left">Organisation</th>
                 <th class="px-4 py-3 text-left">Date</th>
-                <th class="px-4 py-3 text-left">Start Time</th>
-                <th class="px-4 py-3 text-left">End Time</th>
+                <th class="px-4 py-3 text-left">Time</th>
+                <th class="px-4 py-3 text-left">Venue</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(meeting, index) in allMeetings" :key="meeting.id"
                 class="border-t text-sm text-gray-800 hover:bg-gray-50">
                 <td class="px-4 py-3">{{ index + 1 }}</td>
-                <td class="px-4 py-3">{{ meeting.org_name || '—' }}</td>
                 <td class="px-4 py-3">{{ meeting.name || '—' }}</td>
+                <td class="px-4 py-3">{{ meeting.org_name || '—' }}</td>
                 <td class="px-4 py-3">{{ meeting.date || '—' }}</td>
                 <td class="px-4 py-3">{{ meeting.start_time || '—' }}</td>
-                <td class="px-4 py-3">{{ meeting.end_time || '—' }}</td>
+                <td class="px-4 py-3">{{ meeting.address || '—' }}</td>
               </tr>
             </tbody>
           </table>
@@ -226,20 +225,22 @@ onMounted(() => {
             <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
               <tr>
                 <th class="px-4 py-3 text-left">#</th>
-                <th class="px-4 py-3 text-left">Organisation</th>
                 <th class="px-4 py-3 text-left">Event Name</th>
-                <th class="px-4 py-3 text-left">Event Date</th>
+                <th class="px-4 py-3 text-left">Organisation</th>
+                <th class="px-4 py-3 text-left">Date</th>
                 <th class="px-4 py-3 text-left">Time</th>
+                <th class="px-4 py-3 text-left">Venue</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(event, index) in allEvents" :key="event.id"
                 class="border-t text-sm text-gray-800 hover:bg-gray-50">
                 <td class="px-4 py-3">{{ index + 1 }}</td>
-                <td class="px-4 py-3">{{ event.org_name || '—' }}</td>
                 <td class="px-4 py-3">{{ event.name || '—' }}</td>
+                <td class="px-4 py-3">{{ event.org_name || '—' }}</td>
                 <td class="px-4 py-3">{{ event.date || '—' }}</td>
                 <td class="px-4 py-3">{{ event.time || '—' }}</td>
+                <td class="px-4 py-3">{{ event.venue_name || '—' }}, {{ event.venue_address || '-' }}</td>
               </tr>
             </tbody>
           </table>
@@ -259,20 +260,22 @@ onMounted(() => {
             <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
               <tr>
                 <th class="px-4 py-3 text-left">#</th>
-                <th class="px-4 py-3 text-left">Organisation</th>
                 <th class="px-4 py-3 text-left">Project Name</th>
-                <th class="px-4 py-3 text-left">Start Date</th>
-                <th class="px-4 py-3 text-left">End Date</th>
+                <th class="px-4 py-3 text-left">Organisation</th>
+                <th class="px-4 py-3 text-left">Date</th>
+                <th class="px-4 py-3 text-left">Time</th>
+                <th class="px-4 py-3 text-left">Venue</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(project, index) in allProjects" :key="project.id"
                 class="border-t text-sm text-gray-800 hover:bg-gray-50">
                 <td class="px-4 py-3">{{ index + 1 }}</td>
-                <td class="px-4 py-3">{{ project.org_name || '—' }}</td>
                 <td class="px-4 py-3">{{ project.title || '—' }}</td>
+                <td class="px-4 py-3">{{ project.org_name || '—' }}</td>
                 <td class="px-4 py-3">{{ project.start_date || '—' }}</td>
-                <td class="px-4 py-3">{{ project.end_date || '—' }}</td>
+                <td class="px-4 py-3">{{ project.start_time || '—' }}</td>
+                <td class="px-4 py-3">{{ project.venue_name || '—' }}, {{ project.venue_address || '-' }}</td>
               </tr>
             </tbody>
           </table>
@@ -292,22 +295,22 @@ onMounted(() => {
             <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
               <tr>
                 <th class="px-4 py-3 text-left">#</th>
-                <th class="px-4 py-3 text-left">Organisation</th>
                 <th class="px-4 py-3 text-left">Asset Name</th>
+                <th class="px-4 py-3 text-left">Organisation</th>
                 <th class="px-4 py-3 text-left">Responsible From</th>
-                <th class="px-4 py-3 text-left">Life Cycle</th>
                 <th class="px-4 py-3 text-left">Quantity</th>
+                <th class="px-4 py-3 text-left">Asset Life Cycle Status</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(asset, index) in allAssets" :key="asset.id"
                 class="border-t text-sm text-gray-800 hover:bg-gray-50">
                 <td class="px-4 py-3">{{ index + 1 }}</td>
-                <td class="px-4 py-3">{{ asset.org_name || '—' }}</td>
                 <td class="px-4 py-3">{{ asset.name || '—' }}</td>
+                <td class="px-4 py-3">{{ asset.org_name || '—' }}</td>
                 <td class="px-4 py-3">{{ asset.assignment_start_date || '—' }}</td>
-                <td class="px-4 py-3">{{ asset.asset_lifecycle_status_name || '—' }}</td>
                 <td class="px-4 py-3">{{ asset.quantity || 0 }}</td>
+                <td class="px-4 py-3">{{ asset.asset_lifecycle_status_id || '—' }}</td>
               </tr>
             </tbody>
           </table>

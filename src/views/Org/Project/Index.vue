@@ -98,13 +98,13 @@ const getRecords = async () => {
     const res = await auth.fetchProtectedApi('/api/projects', {}, 'GET')
     recordList.value = res.status
       ? res.data.map(p => ({
-          id: p.id,
-          title: p.title ?? '',
-          start_date: p.start_date ?? '',
-          end_date: p.end_date ?? '',
-          status: p.is_active ?? 0,
-          status_display: p.is_active === 1 ? 'Active' : 'Disabled'
-        }))
+        id: p.id,
+        title: p.title ?? '',
+        start_date: p.start_date ?? '',
+        end_date: p.end_date ?? '',
+        status: p.status ?? 0,
+        status_display: p.status === 1 ? 'Active' : 'Disabled'
+      }))
       : []
   } catch (e) {
     console.error('Error fetching projects:', e)
@@ -257,16 +257,8 @@ onMounted(() => {
     </div>
 
     <!-- Table -->
-    <EasyDataTable
-      :headers="filteredHeaders"
-      :items="paginatedProjects"
-      :loading="loading"
-      :search-value="search"
-      show-index
-      hide-footer
-      table-class="min-w-full text-sm"
-      header-class="bg-gray-100"
-      body-row-class="text-sm"
+    <EasyDataTable :headers="filteredHeaders" :items="paginatedProjects" :loading="loading" :search-value="search"
+      show-index hide-footer table-class="min-w-full text-sm" header-class="bg-gray-100" body-row-class="text-sm"
       :theme-color="'#3b82f6'">
 
       <template #item-status_display="{ status_display }">
@@ -278,17 +270,21 @@ onMounted(() => {
         </span>
       </template>
 
+      <!-- Header Alignment Fix -->
+      <template #header-actions>
+        <div class="text-right w-full pr-2">
+          Actions
+        </div>
+      </template>
+      <!-- Actions Slot -->
       <template #item-actions="{ id }">
-        <div class="flex justify-end flex-wrap gap-2">
-          <button
-            v-if="projectSummary.find(s => s.project_id === id)"
+        <div class="flex justify-end gap-2">
+          <button v-if="projectSummary.find(s => s.project_id === id)"
             @click="$router.push({ name: 'view-project-summary', params: { summaryId: projectSummary.find(s => s.project_id === id).id } })"
             class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs">
             Summary
           </button>
-          <button
-            v-else
-            @click="$router.push({ name: 'create-project-summary', params: { projectId: id } })"
+          <button v-else @click="$router.push({ name: 'create-project-summary', params: { projectId: id } })"
             class="bg-sky-600 text-white px-3 py-1 rounded text-xs hover:bg-sky-700">
             Add Summary
           </button>
@@ -300,8 +296,7 @@ onMounted(() => {
             class="bg-yellow-500 text-white px-3 py-1 rounded text-xs">Edit</button>
           <button @click="$router.push({ name: 'view-project', params: { id } })"
             class="bg-green-600 text-white px-3 py-1 rounded text-xs">View</button>
-          <button @click="deleteRecord(id)"
-            class="bg-red-500 text-white px-3 py-1 rounded text-xs">Delete</button>
+          <button @click="deleteRecord(id)" class="bg-red-500 text-white px-3 py-1 rounded text-xs">Delete</button>
         </div>
       </template>
     </EasyDataTable>
@@ -328,23 +323,19 @@ onMounted(() => {
           </select>
         </div>
         <div class="flex gap-1">
-          <button @click="goToFirst" :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-sm"
+          <button @click="goToFirst" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
             :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
             First
           </button>
-          <button @click="goToPrev" :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-sm"
+          <button @click="goToPrev" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
             :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
             Prev
           </button>
-          <button @click="goToNext" :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-sm"
+          <button @click="goToNext" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
             :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
             Next
           </button>
-          <button @click="goToLast" :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-sm"
+          <button @click="goToLast" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
             :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
             Last
           </button>

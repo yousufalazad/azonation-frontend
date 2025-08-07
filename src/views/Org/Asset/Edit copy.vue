@@ -35,7 +35,6 @@ const documents = ref([{ id: Date.now(), file: null }]);
 const responsibleUsers = ref([]);
 const assetLifecycleSetups = ref([]);
 const privacySetups = ref([]);
-const getOrgAllMemberName = ref([]);
 
 // Fetch event details for editing
 const getAssetDetails = async () => {
@@ -64,9 +63,9 @@ const getAssetDetails = async () => {
             name.value = data.name;
             description.value = data.description;
             is_long_term.value = data.is_long_term ? 1 : 0;
-            quantity.value = data.quantity ? data.quantity : 0;
-            value_amount.value = data.value_amount ? data.value_amount : 0;
-            inkind_value.value = data.inkind_value ? data.inkind_value : 0;
+            quantity.value = data.quantity?data.quantity:0;
+            value_amount.value = data.value_amount?data.value_amount:0;
+            inkind_value.value = data.inkind_value?data.inkind_value:0;
             is_tangible.value = data.is_tangible ? 1 : 0;
             responsible_user_id.value = data.responsible_user_id;
             start_date.value = data.start_date;
@@ -144,17 +143,17 @@ const submitForm = async () => {
     formData.append('user_id', userId);
     formData.append('name', name.value);
     formData.append('description', description.value);
-    formData.append('quantity', quantity.value);
-    formData.append('value_amount', value_amount.value);
-    formData.append('inkind_value', inkind_value.value);
-    formData.append('responsible_user_id', responsible_user_id.value || '');
-    formData.append('start_date', start_date.value || '');
-    formData.append('end_date', end_date.value || '');
-    formData.append('assignment_start_date', assignment_start_date.value || '');
-    formData.append('assignment_end_date', assignment_end_date.value || '');
+    formData.append('quantity', quantity.value)??0;
+    formData.append('value_amount', value_amount.value)??0;
+    formData.append('inkind_value', inkind_value.value)??0;
+    formData.append('responsible_user_id', responsible_user_id.value);
+    formData.append('start_date', start_date.value);
+    formData.append('end_date', end_date.value);
+    formData.append('assignment_start_date', assignment_start_date.value);
+    formData.append('assignment_end_date', assignment_end_date.value);
     formData.append('note', note.value);
-    formData.append('asset_lifecycle_statuses_id', asset_lifecycle_statuses_id.value || '');
-    formData.append('privacy_setup_id', privacy_setup_id.value || '');
+    formData.append('asset_lifecycle_statuses_id', asset_lifecycle_statuses_id.value);
+    formData.append('privacy_setup_id', privacy_setup_id.value);
     formData.append('is_long_term', is_long_term.value ? 1 : 0);
     formData.append('is_tangible', is_tangible.value ? 1 : 0);
     formData.append('is_active', is_active.value ? 1 : 0);
@@ -210,8 +209,6 @@ onMounted(() => {
     fetchDropdownData(`/api/org-members/${userId}`, responsibleUsers);
     fetchDropdownData('/api/asset-lifecycle-setups', assetLifecycleSetups);
     fetchDropdownData('/api/privacy-setups', privacySetups);
-    fetchDropdownData('/api/org-all-member-name', getOrgAllMemberName);
-    // Fetch asset details if editing
     getAssetDetails();
 });
 </script>
@@ -236,13 +233,13 @@ onMounted(() => {
             <div class="mb-4">
                 <label for="description" class="block text-gray-700 font-semibold mb-2">Description</label>
                 <input v-model="description" type="text" id="description"
-                    class="w-full  border border-gray-300 rounded-md py-2 px-4" />
+                    class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
             </div>
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
                     <label for="start_date" class="block text-gray-700 font-semibold mb-2">Start Date</label>
                     <input v-model="start_date" type="date" id="start_date"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" />
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
                 </div>
 
                 <div>
@@ -255,12 +252,12 @@ onMounted(() => {
                 <div>
                     <label for="quantity" class="block text-gray-700 font-semibold mb-2">Quantity</label>
                     <input v-model="quantity" type="number" id="quantity" min="0"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" />
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
                 </div>
                 <div>
                     <label for="value_amount" class="block text-gray-700 font-semibold mb-2">Value Amount</label>
                     <input v-model="value_amount" type="number" id="value_amount" min="0"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" />
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4"/>
                 </div>
                 <div>
                     <label for="inkind_value" class="block text-gray-700 font-semibold mb-2">In-Kind Value</label>
@@ -295,27 +292,21 @@ onMounted(() => {
                 <select v-model="responsible_user_id" id="responsible_user_id"
                     class="w-full  border border-gray-300 rounded-md py-2 px-4">
                     <option value="" disabled>Select Responsible User</option>
-                    <option v-for="orgMember in getOrgAllMemberName" :key="orgMember.individual.id"
-                        :value="orgMember.individual.id">
-                        {{ orgMember.individual.first_name }} {{ orgMember.individual.last_name }}</option>
-
-                    <!-- <option v-for="user in responsibleUsers" :key="user.individual.id" :value="user.individual.id">
-                        {{ user.individual.name }}</option> -->
+                    <option v-for="user in responsibleUsers" :key="user.individual.id" :value="user.individual.id">
+                        {{ user.individual.name }}</option>
                 </select>
             </div>
 
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label for="assignment_start_date" class="block text-gray-700 font-semibold mb-2">Responsibility
-                        Start
+                    <label for="assignment_start_date" class="block text-gray-700 font-semibold mb-2">Responsibility Start
                         Date</label>
                     <input v-model="assignment_start_date" type="date" id="assignment_start_date"
                         class="w-full  border border-gray-300 rounded-md py-2 px-4" />
                 </div>
 
                 <div>
-                    <label for="assignment_end_date" class="block text-gray-700 font-semibold mb-2">Responsibility End
-                        Date</label>
+                    <label for="assignment_end_date" class="block text-gray-700 font-semibold mb-2">Responsibility End Date</label>
                     <input v-model="assignment_end_date" type="date" id="assignment_end_date"
                         class="w-full  border border-gray-300 rounded-md py-2 px-4" />
                 </div>
@@ -359,8 +350,8 @@ onMounted(() => {
                 </select>
             </div>
 
-            <!-- Images Upload -->
-            <div class="mb-4">
+             <!-- Images Upload -->
+             <div class="mb-4">
                 <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
                 <div class="space-y-3">
                     <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
