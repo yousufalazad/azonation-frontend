@@ -22,6 +22,13 @@ const props = defineProps({
 const openSections = ref([]);
 const route = useRoute();
 
+const emit = defineEmits(['close-mobile-menu']);
+const handleLinkClick = () => {
+  if (window.innerWidth < 1024) {
+    emit('close-mobile-menu');
+  }
+};
+
 const toggleSection = (section) => {
   if (openSections.value.includes(section)) {
     openSections.value = openSections.value.filter(s => s !== section);
@@ -52,6 +59,7 @@ const isActive = (path) => route.path === path;
     ]" :key="link.path">
       <router-link
         :to="link.path"
+         @click="handleLinkClick"
         :class="[
           'flex items-center gap-3 px-4 py-2 rounded-md transition-all duration-200 whitespace-nowrap',
           isActive(link.path) ? 'bg-gray-200 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'
@@ -82,13 +90,13 @@ const isActive = (path) => route.path === path;
       </button>
       <transition name="fade-slide">
         <div v-if="isSectionOpen('profile') && props.isSidebarExpanded" class="ml-7 space-y-1">
-          <router-link to="/org-dashboard/my-account/profile" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Profile</router-link>
-          <router-link to="/org-dashboard/founders" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Founders</router-link>
-          <router-link to="/org-dashboard/strategic-plan" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Strategic Plan</router-link>
-          <router-link to="/org-dashboard/recognition" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Recognition</router-link>
-          <router-link to="/org-dashboard/success-story" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Success Story</router-link>
-          <router-link to="/org-dashboard/history" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">History</router-link>
-          <router-link to="/org-dashboard/year-plan" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Year Plan</router-link>
+          <router-link to="/org-dashboard/my-account/profile"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Profile</router-link>
+          <router-link to="/org-dashboard/founders"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Founders</router-link>
+          <router-link to="/org-dashboard/strategic-plan"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Strategic Plan</router-link>
+          <router-link to="/org-dashboard/recognition"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Recognition</router-link>
+          <router-link to="/org-dashboard/success-story"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Success Story</router-link>
+          <router-link to="/org-dashboard/history"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">History</router-link>
+          <router-link to="/org-dashboard/year-plan"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Year Plan</router-link>
         </div>
       </transition>
     </div>
@@ -112,8 +120,8 @@ const isActive = (path) => route.path === path;
       </button>
       <transition name="fade-slide">
         <div v-if="isSectionOpen('reports') && props.isSidebarExpanded" class="ml-7 space-y-1">
-          <router-link to="/org-dashboard/org-report" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Income</router-link>
-          <router-link to="/org-dashboard/org-expense-report" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Expense</router-link>
+          <router-link to="/org-dashboard/org-report"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Income</router-link>
+          <router-link to="/org-dashboard/org-expense-report"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Expense</router-link>
         </div>
       </transition>
     </div>

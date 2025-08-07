@@ -298,6 +298,16 @@ watch([search, itemsPerPage], () => {
 watch(columnView, (newVal) => {
   setVisibleColumns(newVal);
 });
+
+// watch(columnView, (newVal) => {
+//   const selectedSet = newVal === 'minimal' ? minimalColumns : detailedColumns;
+
+//   Object.keys(visibleColumns.value).forEach((key) => {
+//     visibleColumns.value[key] = selectedSet.includes(key);
+//   });
+// }, { immediate: true }); // Run once on setup
+
+
 </script>
 
 <template>
@@ -307,7 +317,7 @@ watch(columnView, (newVal) => {
       <div class="flex flex-col gap-1">
         <h2 class="text-lg font-semibold text-gray-700">Unlinked Members <span class="text-red-500">(Not
             Recommended)</span></h2>
-        <p class="text-xs text-gray-500 max-w-2xl break-words">
+        <p class="text-xs text-gray-500 max-w-2xl">
           It is recommended to add members using the <span class="font-medium text-gray-600">Search</span> option.
           If the member does not have an Azonation account, you can add them manually.
           Please note that <span class="font-semibold text-red-500">unlinked members</span> will not receive updates,
@@ -353,8 +363,9 @@ watch(columnView, (newVal) => {
     </div>
 
     <!-- Table -->
-    <div class="overflow-x-auto custom-scrollbar">
-      <table class="w-full min-w-[800px] divide-y divide-gray-200 border">
+    <!-- ✅ Table Component -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200 border">
         <thead class="bg-gray-50">
           <tr>
             <th class="py-3 px-4 text-left text-xs font-bold text-gray-600">#</th>
@@ -456,81 +467,56 @@ watch(columnView, (newVal) => {
       </table>
     </div>
 
-    <!-- Responsive Pagination -->
-<div
-  v-if="filteredMembers.length > 0"
-  class="border rounded bg-gray-50 p-4 mt-4 space-y-4 md:space-y-0 md:flex md:items-center md:justify-between"
->
-  <!-- Item summary -->
-  <div class="text-sm text-center md:text-left text-gray-600">
-    {{ itemSummary }} | Page {{ currentPage }} of {{ totalPages }}
-  </div>
 
-  <!-- Items per page selector -->
-  <div class="flex items-center justify-center md:justify-start gap-2 text-sm">
-    <label for="itemsPerPage" class="whitespace-nowrap">Items per page:</label>
-    <select
-      id="itemsPerPage"
-      v-model="itemsPerPage"
-      class="border rounded px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-    >
-      <option :value="5">5</option>
-      <option :value="10">10</option>
-      <option :value="20">20</option>
-      <option :value="50">50</option>
-      <option :value="100">100</option>
-      <option :value="250">250</option>
-      <option :value="500">500</option>
-      <option :value="1000">1000</option>
-    </select>
-  </div>
-
-  <!-- Navigation buttons -->
-  <div class="flex flex-wrap justify-center md:justify-end gap-2 text-sm">
-    <button
-      @click="currentPage = 1"
-      :disabled="currentPage === 1"
-      class="px-4 py-2 border rounded transition"
-      :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'"
-    >
-      First
-    </button>
-    <button
-      @click="currentPage--"
-      :disabled="currentPage === 1"
-      class="px-4 py-2 border rounded transition"
-      :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'"
-    >
-      Prev
-    </button>
-    <button
-      @click="currentPage++"
-      :disabled="currentPage === totalPages"
-      class="px-4 py-2 border rounded transition"
-      :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'"
-    >
-      Next
-    </button>
-    <button
-      @click="currentPage = totalPages"
-      :disabled="currentPage === totalPages"
-      class="px-4 py-2 border rounded transition"
-      :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'"
-    >
-      Last
-    </button>
-  </div>
-</div>
+    <!-- ✅ Pagination -->
+    <div v-if="filteredMembers.length > 0" class="border rounded bg-gray-50 p-4 flex justify-between items-center mt-4">
+      <div class="text-sm text-gray-600">
+        {{ itemSummary }} | Page {{ currentPage }} of {{ totalPages }}
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <label class="text-sm">Items per page:</label>
+          <select v-model="itemsPerPage" class="border rounded px-2 py-1 text-sm">
+            <option :value="5">5</option>
+            <option :value="10">10</option>
+            <option :value="20">20</option>
+            <option :value="50">50</option>
+            <option :value="100">100</option>
+            <option :value="250">250</option>
+            <option :value="500">500</option>
+            <option :value="1000">1000</option>
+          </select>
+        </div>
+        <div class="flex gap-2">
+          <button @click="currentPage = 1" :disabled="currentPage === 1" class="px-3 py-1 border rounded text-sm"
+            :class="currentPage === 1 ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-100'">
+            First
+          </button>
+          <button @click="currentPage--" :disabled="currentPage === 1" class="px-3 py-1 border rounded text-sm"
+            :class="currentPage === 1 ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-100'">
+            Prev
+          </button>
+          <button @click="currentPage++" :disabled="currentPage === totalPages" class="px-3 py-1 border rounded text-sm"
+            :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-100'">
+            Next
+          </button>
+          <button @click="currentPage = totalPages" :disabled="currentPage === totalPages"
+            class="px-3 py-1 border rounded text-sm"
+            :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-100'">
+            Last
+          </button>
+        </div>
+      </div>
+    </div>
 
 
     <!-- Add/Edit Modal -->
     <div v-if="isModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <!-- <div class="bg-white p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto"> -->
-      <div class="bg-white p-4 sm:p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="bg-white p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <h2 class="text-xl font-bold mb-4">
           {{ isEditMode ? 'Edit' : 'Add' }} Member
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block mb-1">First Name</label>
             <input v-model="form.first_name" type="text" class="w-full border rounded p-2" />
@@ -578,8 +564,7 @@ watch(columnView, (newVal) => {
 
     <!-- View Modal -->
     <div v-if="viewModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <!-- <div class="bg-white p-6 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl"> -->
-      <div class="bg-white p-4 sm:p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="bg-white p-6 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
         <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2">Member Details</h2>
 
         <div class="space-y-4">
@@ -660,25 +645,3 @@ watch(columnView, (newVal) => {
 
   </div>
 </template>
-<style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-  height: 30px;
-  /* ✅ Increase height */
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
-  border: 9px solid #f1f1f1;
-  /* ✅ Optional for padding effect */
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-</style>

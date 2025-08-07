@@ -39,7 +39,6 @@ onMounted(() => {
                 class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
                 Back to Asset List
             </button>
-
         </div>
         <!-- Event Details Table -->
         <div class="overflow-x-auto">
@@ -59,6 +58,16 @@ onMounted(() => {
                         <td class="p-2 text-left font-semibold w-36">Quantity</td>
                         <td class="p-2">:</td>
                         <td class="p-2">{{ record.quantity }}</td>
+                    </tr>
+                    <tr>
+                        <td class="p-2 text-left font-semibold w-36">Asset Start Date</td>
+                        <td class="p-2">:</td>
+                        <td class="p-2">{{ record.start_date }}</td>
+                    </tr>
+                    <tr>
+                        <td class="p-2 text-left font-semibold w-36">Asset End Date</td>
+                        <td class="p-2">:</td>
+                        <td class="p-2">{{ record.end_date }}</td>
                     </tr>
                     <tr>
                         <td class="p-2 text-left font-semibold w-36">Value</td>

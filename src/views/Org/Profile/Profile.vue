@@ -453,23 +453,31 @@ onMounted(() => {
     <div class="flex flex-col h-screen overflow-y-auto pb-7 pr-7">
         <!-- Logo Section -->
         <section>
-            <h2 class="text-sm font-semibold text-gray-700 mb-4 py-2">Logo</h2>
-            <div class="mb-4 flex justify-between pb-9">
-                <div v-if="logoPath">
-                    <img :src="`${baseURL}${logoPath}`" alt="Logo" class="rounded-lg w-[350px] ml-5">
-                </div>
-                <div v-else>
-                    <img src="../../../assets/Logo/Your-logo-here.png" alt="Logo" class="rounded-lg w-[350px] ml-5">
-                </div>
-                <div>
-                    <label for="logo" class="block text-sm font-medium text-gray-700 mb-4">Upload new logo</label>
-                    <input type="file" id="logo" @change="handleImageUpload"
-                        class="block w-full text-sm text-gray-500 mb-4">
-                    <button @click="profileImageUpdate"
-                        class="mt-2 bg-blue-500 text-white py-2 px-4 rounded">Save</button>
-                </div>
-            </div>
-        </section>
+  <h2 class="text-sm font-semibold text-gray-700 mb-4 py-2">Logo</h2>
+  <div class="mb-4 flex flex-col md:flex-row md:justify-between gap-6 pb-9">
+    
+    <!-- Image Display -->
+    <div v-if="logoPath" class="flex justify-center md:justify-start">
+      <img :src="`${baseURL}${logoPath}`" alt="Logo" class="rounded-lg w-full max-w-[250px]">
+    </div>
+    <div v-else class="flex justify-center md:justify-start">
+      <img src="../../../assets/Logo/Your-logo-here.png" alt="Logo" class="rounded-lg w-full max-w-[250px]">
+    </div>
+
+    <!-- Upload Section -->
+    <div class="w-full md:w-auto mt-4 md:mt-0">
+      <label for="logo" class="block text-sm font-medium text-gray-700 mb-4">Upload new logo</label>
+      <input type="file" id="logo" @change="handleImageUpload"
+        class="block w-full text-sm text-gray-500 mb-4">
+      <button @click="profileImageUpdate"
+        class="mt-2 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition">
+        Save
+      </button>
+    </div>
+
+  </div>
+</section>
+
 
         <!-- Org name section -->
         <section>
