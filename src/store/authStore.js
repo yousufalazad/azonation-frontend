@@ -58,6 +58,7 @@ const authStore = reactive({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        withCredentials: true,
         data: ["POST", "PUT"].includes(requestType.toUpperCase())
           ? params
           : null,
@@ -216,7 +217,8 @@ const authStore = reactive({
   },
 
   getUserToken() {
-    return this.user?.accessToken;
+    // return this.user?.accessToken;
+    return this.user?.accessToken || this.user?.token || this.user?.plainTextToken || this.user?.access_token;
   },
 
   getUserType() {

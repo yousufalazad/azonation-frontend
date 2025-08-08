@@ -30,7 +30,7 @@ const handleClickOutside = (event) => {
 
 const fetchNotifications = async () => {
   try {
-    const response = await auth.fetchPublicApi(`/api/notifications/get-all/${userId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/notifications/get-all/${userId}`, {}, 'GET');
     notifications.value = response.data || [];
   } catch (error) {
     console.error('Error fetching notifications:', error);
@@ -39,7 +39,7 @@ const fetchNotifications = async () => {
 
 const markAllAsRead = async () => {
   try {
-    const response = await auth.fetchPublicApi(`/api/notifications/mark-all-as-read/${userId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/notifications/mark-all-as-read/${userId}`, {}, 'GET');
     if (response.status) {
       notifications.value.forEach(n => n.read_at = new Date().toISOString());
     }
@@ -50,7 +50,7 @@ const markAllAsRead = async () => {
 
 const markAsRead = async (notificationId) => {
   try {
-    const response = await auth.fetchPublicApi(`/api/notifications/mark-as-read/${userId}/${notificationId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/notifications/mark-as-read/${userId}/${notificationId}`, {}, 'GET');
     if (response.status) {
       notifications.value = notifications.value.map(n =>
         n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n
