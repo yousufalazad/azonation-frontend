@@ -3,6 +3,13 @@ import { ref, onMounted } from 'vue';
 import { authStore } from '@/store/authStore';
 import { useRouter } from 'vue-router';
 
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.extend(duration);
+dayjs.extend(relativeTime);
+
 const auth = authStore;
 const router = useRouter();
 
@@ -27,6 +34,22 @@ const allMeetings = ref([]);
 const allEvents = ref([]);
 const allProjects = ref([]);
 const allAssets = ref([]);
+
+const calculateMembershipAge = (startDate) => {
+  if (!startDate) return '—';
+
+  const start = dayjs(startDate);
+  if (!start.isValid()) return '—';
+
+  const now = dayjs();
+  if (start.isAfter(now)) return '—';
+
+  const diffYears = now.diff(start, 'year');
+  const diffMonths = now.diff(start.add(diffYears, 'year'), 'month');
+  const diffDays = now.diff(start.add(diffYears, 'year').add(diffMonths, 'month'), 'day');
+
+  return `${diffYears}y ${diffMonths}m ${diffDays}d`;
+};
 
 const fetchDashboardData = async () => {
   try {
@@ -138,8 +161,9 @@ onMounted(() => {
                 <p>{{ org.membership_start_date || '—' }}</p>
               </div>
               <div>
-                <p class="text-gray-500 text-xs">Sponsored By</p>
-                <p class="break-words">{{ org.sponsored_user_id || '—' }}</p>
+                <p class="text-gray-500 text-xs">Membership Age</p>
+                <p class="break-words">{{ calculateMembershipAge(org.membership_start_date) }}</p>
+
               </div>
             </div>
           </div>
@@ -153,9 +177,9 @@ onMounted(() => {
                 <th class="px-4 py-3 text-left">#</th>
                 <th class="px-4 py-3 text-left">Organisation Name</th>
                 <th class="px-4 py-3 text-left">Membership ID</th>
-                <th class="px-4 py-3 text-left">Membership Type ID</th>
+                <th class="px-4 py-3 text-left">Membership Type</th>
                 <th class="px-4 py-3 text-left">Start Date</th>
-                <th class="px-4 py-3 text-left">Sponsored By</th>
+                <th class="px-4 py-3 text-left">Membership Age</th>
                 <th class="px-4 py-3 text-left">Status</th>
               </tr>
             </thead>
@@ -167,9 +191,21 @@ onMounted(() => {
                   {{ org.org_name }}
                 </td>
                 <td class="px-4 py-3 break-words">{{ org.existing_membership_id || '—' }}</td>
-                <td class="px-4 py-3 break-words">{{ org.membership_type.name || '—' }}</td>
-                <td class="px-4 py-3">{{ org.membership_start_date || '—' }}</td>
-                <td class="px-4 py-3 break-words">{{ org.sponsored_user_id || '—' }}</td>
+                <td class="px-4 py-3 break-words">{{ org.membership_type?.name || '—' }}</td>
+                <td class="px-4 py-3">
+                  {{
+                    org.membership_start_date
+                      ? new Date(org.membership_start_date).toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      })
+                      : '—'
+                  }}
+                </td>
+                <td class="px-4 py-3 break-words">
+                  {{ calculateMembershipAge(org.membership_start_date) }}
+                </td>
                 <td class="px-4 py-3">
                   <span :class="org.is_active ? 'text-green-600 font-medium' : 'text-red-500 font-medium'">
                     {{ org.is_active ? 'Active' : 'Inactive' }}
@@ -179,6 +215,7 @@ onMounted(() => {
             </tbody>
           </table>
         </div>
+
 
         <!-- <div v-else class="text-gray-500 italic">No connected organisations.</div> -->
       </div>
@@ -196,29 +233,42 @@ onMounted(() => {
         <!-- Mobile cards -->
         <div v-if="allCommittees.length" class="md:hidden space-y-3">
           <div v-for="(item, index) in allCommittees" :key="`${item.org_name}-${item.id}-${index}`"
-            class="border rounded p-4 text-sm text-gray-800">
-            <div class="font-medium mb-1">#{{ index + 1 }}</div>
-            <p class="text-gray-500 text-xs">Designation</p>
-            <p class="font-medium break-words mb-2">{{ item.name || '—' }}</p>
+            class="border rounded-lg p-3 bg-white shadow-sm">
+            <!-- Top: index -->
+            <div class="text-xs text-gray-500 mb-2">
+              <span class="font-medium"># {{ index + 1 }}</span>
+            </div>
 
-            <p class="text-gray-500 text-xs">Committee Name</p>
-            <p class="font-medium break-words mb-2">{{ item.name || '—' }}</p>
+            <!-- Content -->
+            <div class="space-y-1.5 text-sm">
+              <div class="flex gap-2">
+                <span class="w-28 shrink-0 text-gray-500">Designation:</span>
+                <span class="text-gray-800 break-words">{{ item.designation_id || '—' }}</span>
+              </div>
+              <div class="flex gap-2">
+                <span class="w-28 shrink-0 text-gray-500">Committee:</span>
+                <span class="text-gray-800 break-words">{{ item.name || '—' }}</span>
+              </div>
+              <div class="flex gap-2">
+                <span class="w-28 shrink-0 text-gray-500">Organisation:</span>
+                <span class="text-gray-800 break-words">{{ item.org_name || '—' }}</span>
+              </div>
+            </div>
 
-            <p class="text-gray-500 text-xs">Organisation</p>
-            <p class="font-medium break-words mb-2">{{ item.org_name || '—' }}</p>
-
-            <div class="grid grid-cols-2 gap-3">
+            <!-- Bottom: Start/End grid -->
+            <div class="grid grid-cols-2 gap-3 border-t pt-2 mt-3">
               <div>
                 <p class="text-gray-500 text-xs">Start</p>
-                <p>{{ item.start_date || '—' }}</p>
+                <p class="text-sm">{{ item.start_date || '—' }}</p>
               </div>
               <div>
                 <p class="text-gray-500 text-xs">End</p>
-                <p>{{ item.end_date || '—' }}</p>
+                <p class="text-sm">{{ item.end_date || '—' }}</p>
               </div>
             </div>
           </div>
         </div>
+
 
         <!-- Table -->
         <div v-else-if="!allCommittees.length" class="text-gray-500 italic">
@@ -242,7 +292,8 @@ onMounted(() => {
               <tr v-for="(committee, index) in allCommittees" :key="`${committee.org_name}-${committee.id}-${index}`"
                 class="border-t text-sm text-gray-800 hover:bg-gray-50 align-top">
                 <td class="px-4 py-3">{{ index + 1 }}</td>
-                <td class="px-4 py-3 max-w-[280px] whitespace-normal break-words">{{ committee.name || '—' }}</td>
+                <td class="px-4 py-3 max-w-[280px] whitespace-normal break-words">{{ committee.designation_id || '—' }}
+                </td>
                 <td class="px-4 py-3 max-w-[280px] whitespace-normal break-words">{{ committee.name || '—' }}</td>
                 <td class="px-4 py-3 max-w-[280px] whitespace-normal break-words">{{ committee.org_name || '—' }}</td>
                 <td class="px-4 py-3">{{ committee.start_date || '—' }}</td>
@@ -257,7 +308,8 @@ onMounted(() => {
       <div class="bg-white p-6 rounded shadow">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
           <h2 class="text-lg font-semibold text-gray-800">Upcoming Meetings</h2>
-          <button @click="router.push({ name: 'individual-meetings' })" class="text-sm text-blue-600 hover:underline self-start sm:self-auto">
+          <button @click="router.push({ name: 'individual-meetings' })"
+            class="text-sm text-blue-600 hover:underline self-start sm:self-auto">
             See all
           </button>
         </div>
@@ -322,7 +374,8 @@ onMounted(() => {
       <div class="bg-white p-6 rounded shadow">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
           <h2 class="text-lg font-semibold text-gray-800">Upcoming Events</h2>
-          <button @click="router.push({ name: 'individual-events' })" class="text-sm text-blue-600 hover:underline self-start sm:self-auto">
+          <button @click="router.push({ name: 'individual-events' })"
+            class="text-sm text-blue-600 hover:underline self-start sm:self-auto">
             See all
           </button>
         </div>
@@ -382,7 +435,8 @@ onMounted(() => {
       <div class="bg-white p-6 rounded shadow">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
           <h2 class="text-lg font-semibold text-gray-800">Upcoming Projects</h2>
-          <button @click="router.push({ name: 'individual-projects' })" class="text-sm text-blue-600 hover:underline self-start sm:self-auto">
+          <button @click="router.push({ name: 'individual-projects' })"
+            class="text-sm text-blue-600 hover:underline self-start sm:self-auto">
             See all
           </button>
         </div>
@@ -442,7 +496,8 @@ onMounted(() => {
       <div class="bg-white p-6 rounded shadow">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
           <h2 class="text-lg font-semibold text-gray-800">Responsible Assets</h2>
-          <button @click="router.push({ name: 'individual-assets' })" class="text-sm text-blue-600 hover:underline self-start sm:self-auto">
+          <button @click="router.push({ name: 'individual-assets' })"
+            class="text-sm text-blue-600 hover:underline self-start sm:self-auto">
             See all
           </button>
         </div>
