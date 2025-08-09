@@ -12,8 +12,12 @@ const closeOnEscape = (e) => {
   if (e.key === 'Escape') emit('close-mobile-menu');
 };
 
-onMounted(() => document.addEventListener('keydown', closeOnEscape));
-onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
+onMounted(() => {
+  document.addEventListener('keydown', closeOnEscape);
+});
+onUnmounted(() => {
+  document.removeEventListener('keydown', closeOnEscape);
+});
 </script>
 
 <template>
@@ -28,13 +32,9 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
     <!-- Sidebar -->
     <aside
       :class="[
-        // mobile: hidden by default, slide-in when open
-        'transition-all duration-300 ease-in-out bg-white shadow-md z-40',
-        props.isMobileMenuOpen
-          ? 'fixed top-16 left-0 h-[calc(100vh-64px)] w-64 block lg:hidden'
-          : 'hidden lg:block',
-        // desktop: fixed + collapsible width
-        'lg:fixed lg:top-16 lg:left-0 lg:h-[calc(100vh-64px)]',
+        'bg-white shadow-md z-40 transition-all duration-300 ease-in-out',
+        props.isMobileMenuOpen ? 'fixed top-16 left-0 h-[calc(100vh-64px)] w-64' : '',
+        'lg:fixed lg:top-16 lg:left-0 lg:h-[calc(100vh-64px)] lg:block',
         props.isSidebarExpanded ? 'lg:w-64' : 'lg:w-20'
       ]"
     >
@@ -56,7 +56,14 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
 </template>
 
 <style scoped>
-aside::-webkit-scrollbar { width: 4px; }
-aside::-webkit-scrollbar-thumb { background-color: darkgray; border-radius: 10px; }
-aside::-webkit-scrollbar-track { background: lightgray; }
+aside::-webkit-scrollbar {
+  width: 4px;
+}
+aside::-webkit-scrollbar-thumb {
+  background-color: darkgray;
+  border-radius: 10px;
+}
+aside::-webkit-scrollbar-track {
+  background: lightgray;
+}
 </style>

@@ -1,6 +1,5 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue';
-import { useRoute } from 'vue-router'; // ⬅️ add
 import Header from './Header.vue';
 import MainContent from './MainContent.vue';
 
@@ -9,8 +8,7 @@ const SIDEBAR_KEY = 'azonation_individual_sidebar';
 const isSidebarExpanded = ref(true);
 const isMobileMenuOpen = ref(false);
 
-const route = useRoute(); // ⬅️ add
-
+// Load sidebar state from localStorage on mount
 onMounted(() => {
   const saved = localStorage.getItem(SIDEBAR_KEY);
   if (saved !== null) {
@@ -18,7 +16,7 @@ onMounted(() => {
   }
 });
 
-// persist desktop sidebar state
+// Save sidebar state on change
 watch(isSidebarExpanded, (newVal) => {
   localStorage.setItem(SIDEBAR_KEY, newVal.toString());
 });
@@ -27,28 +25,24 @@ const toggleSidebar = () => {
   isSidebarExpanded.value = !isSidebarExpanded.value;
 };
 
-const toggleMobileMenu = () => { isMobileMenuOpen.value = !isMobileMenuOpen.value; };
+const openMobileMenu = () => {
+  isMobileMenuOpen.value = true;
+};
 
 const closeMobileMenu = () => {
   isMobileMenuOpen.value = false;
 };
-
-// ⬅️ NEW: automatically close the mobile menu on navigation
-watch(
-  () => route.fullPath,
-  () => {
-    isMobileMenuOpen.value = false;
-  }
-);
 </script>
 
 <template>
   <div class="min-h-screen flex flex-col bg-gray-100">
+    <!-- Header -->
     <Header
       @toggle-sidebar="toggleSidebar"
-     @toggle-mobile-sidebar="toggleMobileMenu"
-      @close-mobile-sidebar="closeMobileMenu"
+      @toggle-mobile-sidebar="openMobileMenu"
     />
+
+    <!-- Main Content -->
     <MainContent
       :isSidebarExpanded="isSidebarExpanded"
       :isMobileMenuOpen="isMobileMenuOpen"
