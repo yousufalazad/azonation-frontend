@@ -118,13 +118,17 @@ onMounted(() => {
   <div class="space-y-8">
     <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
 
+    <!-- Loading -->
     <div v-if="isLoading" class="text-gray-500">Loading...</div>
 
+    <!-- No connection -->
     <div v-else-if="!hasConnection" class="p-6 bg-yellow-50 text-yellow-700 rounded shadow">
       <p>You are not currently connected to any organisation.</p>
     </div>
 
+    <!-- Main content -->
     <div v-else class="space-y-8">
+
       <!-- Connected Organisations -->
       <div class="bg-white p-6 rounded shadow">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
@@ -135,42 +139,52 @@ onMounted(() => {
           </router-link>
         </div>
 
-        <!-- Mobile: Card list -->
-        <div v-if="connectedOrgs.length" class="md:hidden space-y-3">
-          <div v-for="(org, index) in connectedOrgs" :key="org.id" class="border rounded p-4 text-sm text-gray-800">
-            <div class="flex items-center justify-between mb-2">
-              <span class="font-medium">#{{ index + 1 }}</span>
-              <span :class="org.is_active ? 'text-green-600 font-medium' : 'text-red-500 font-medium'">
-                {{ org.is_active ? 'Active' : 'Inactive' }}
-              </span>
-            </div>
-            <p class="text-gray-500 text-xs mb-1">Organisation</p>
-            <p class="font-medium break-words">{{ org.org_name }}</p>
-
-            <div class="grid grid-cols-2 gap-3 mt-3">
-              <div>
-                <p class="text-gray-500 text-xs">Membership ID</p>
-                <p class="break-words">{{ org.existing_membership_id || '—' }}</p>
-              </div>
-              <div>
-                <p class="text-gray-500 text-xs">Membership Type</p>
-                <p class="break-words">{{ org.membership_type.name || '—' }}</p>
-              </div>
-              <div>
-                <p class="text-gray-500 text-xs">Start Date</p>
-                <p>{{ org.membership_start_date || '—' }}</p>
-              </div>
-              <div>
-                <p class="text-gray-500 text-xs">Membership Age</p>
-                <p class="break-words">{{ calculateMembershipAge(org.membership_start_date) }}</p>
-
-              </div>
-            </div>
+        <!-- Mobile Cards -->
+        <div v-if="connectedOrgs.length" class="sm:hidden space-y-3">
+          <div v-for="(org, index) in connectedOrgs" :key="org.id"
+            class="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
+            <div class="text-xs text-gray-500 mb-2 font-semibold"># {{ index + 1 }}</div>
+            <table class="text-sm w-full border-collapse border-0" style="border-spacing: 0;">
+              <tbody>
+                <tr>
+                  <td class="text-gray-600 w-[120px] pr-2 font-medium">Organisation</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800 break-words">{{ org.org_name }}</td>
+                </tr>
+                <tr>
+                  <td class="text-gray-600 font-medium">Membership ID</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800 break-words">{{ org.existing_membership_id || '—' }}</td>
+                </tr>
+                <tr>
+                  <td class="text-gray-600 font-medium">Membership Type</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800 break-words">{{ org.membership_type?.name || '—' }}</td>
+                </tr>
+                <tr>
+                  <td class="text-gray-600 font-medium">Start Date</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800">{{ org.membership_start_date || '—' }}</td>
+                </tr>
+                <tr>
+                  <td class="text-gray-600 font-medium">Membership Age</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800">{{ calculateMembershipAge(org.membership_start_date) }}</td>
+                </tr>
+                <tr>
+                  <td class="text-gray-600 font-medium">Status</td>
+                  <td class="w-3 text-center">:</td>
+                  <td :class="org.is_active ? 'text-green-600 font-medium' : 'text-red-500 font-medium'">
+                    {{ org.is_active ? 'Active' : 'Inactive' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <!-- Desktop/Tablet: Table -->
-        <div class="overflow-x-auto hidden md:block">
+        <!-- Desktop Table -->
+        <div class="hidden sm:block overflow-x-auto">
           <table class="min-w-full bg-white shadow rounded-md">
             <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
               <tr>
@@ -187,25 +201,11 @@ onMounted(() => {
               <tr v-for="(org, index) in connectedOrgs" :key="org.id"
                 class="border-t text-sm text-gray-800 hover:bg-gray-50 align-top">
                 <td class="px-4 py-3">{{ index + 1 }}</td>
-                <td class="px-4 py-3 max-w-[320px] whitespace-normal break-words">
-                  {{ org.org_name }}
-                </td>
+                <td class="px-4 py-3 break-words">{{ org.org_name }}</td>
                 <td class="px-4 py-3 break-words">{{ org.existing_membership_id || '—' }}</td>
                 <td class="px-4 py-3 break-words">{{ org.membership_type?.name || '—' }}</td>
-                <td class="px-4 py-3">
-                  {{
-                    org.membership_start_date
-                      ? new Date(org.membership_start_date).toLocaleDateString('en-GB', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })
-                      : '—'
-                  }}
-                </td>
-                <td class="px-4 py-3 break-words">
-                  {{ calculateMembershipAge(org.membership_start_date) }}
-                </td>
+                <td class="px-4 py-3">{{ org.membership_start_date || '—' }}</td>
+                <td class="px-4 py-3">{{ calculateMembershipAge(org.membership_start_date) }}</td>
                 <td class="px-4 py-3">
                   <span :class="org.is_active ? 'text-green-600 font-medium' : 'text-red-500 font-medium'">
                     {{ org.is_active ? 'Active' : 'Inactive' }}
@@ -215,68 +215,65 @@ onMounted(() => {
             </tbody>
           </table>
         </div>
-
-
-        <!-- <div v-else class="text-gray-500 italic">No connected organisations.</div> -->
       </div>
 
       <!-- Your Committees -->
       <div class="bg-white p-6 rounded shadow">
+        <!-- Header -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
           <h2 class="text-lg font-semibold text-gray-800">Your Committees</h2>
-          <button @click="router.push({ name: 'individual-committees' })"
+          <button @click="$router.push({ name: 'individual-committees' })"
             class="text-sm text-blue-600 hover:underline self-start sm:self-auto">
             See all
           </button>
         </div>
 
-        <!-- Mobile cards -->
-        <div v-if="allCommittees.length" class="md:hidden space-y-3">
+        <!-- Empty state -->
+        <div v-if="!allCommittees.length" class="text-gray-500 italic">
+          You are not a member of any committee yet.
+        </div>
+
+        <!-- Mobile Cards -->
+        <div v-else class="sm:hidden space-y-3">
           <div v-for="(item, index) in allCommittees" :key="`${item.org_name}-${item.id}-${index}`"
-            class="border rounded-lg p-3 bg-white shadow-sm">
-            <!-- Top: index -->
-            <div class="text-xs text-gray-500 mb-2">
-              <span class="font-medium"># {{ index + 1 }}</span>
+            class="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
+            <div class="text-xs text-gray-500 mb-2 font-semibold">
+              # {{ index + 1 }}
             </div>
-
-            <!-- Content -->
-            <div class="space-y-1.5 text-sm">
-              <div class="flex gap-2">
-                <span class="w-28 shrink-0 text-gray-500">Designation:</span>
-                <span class="text-gray-800 break-words">{{ item.designation_id || '—' }}</span>
-              </div>
-              <div class="flex gap-2">
-                <span class="w-28 shrink-0 text-gray-500">Committee:</span>
-                <span class="text-gray-800 break-words">{{ item.name || '—' }}</span>
-              </div>
-              <div class="flex gap-2">
-                <span class="w-28 shrink-0 text-gray-500">Organisation:</span>
-                <span class="text-gray-800 break-words">{{ item.org_name || '—' }}</span>
-              </div>
-            </div>
-
-            <!-- Bottom: Start/End grid -->
-            <div class="grid grid-cols-2 gap-3 border-t pt-2 mt-3">
-              <div>
-                <p class="text-gray-500 text-xs">Start</p>
-                <p class="text-sm">{{ item.start_date || '—' }}</p>
-              </div>
-              <div>
-                <p class="text-gray-500 text-xs">End</p>
-                <p class="text-sm">{{ item.end_date || '—' }}</p>
-              </div>
-            </div>
+            <table class="text-sm w-full border-collapse border-0" style="border-spacing: 0;">
+              <tbody>
+                <tr>
+                  <td class="text-gray-600 w-[100px] pr-2 font-medium">Designation</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800 break-words">{{ item.designation_id || '—' }}</td>
+                </tr>
+                <tr>
+                  <td class="text-gray-600 font-medium">Committee</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800 break-words">{{ item.name || '—' }}</td>
+                </tr>
+                <tr>
+                  <td class="text-gray-600 font-medium">Organisation</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800 break-words">{{ item.org_name || '—' }}</td>
+                </tr>
+                <tr>
+                  <td class="text-gray-600 font-medium">Start Date</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800">{{ item.start_date || '—' }}</td>
+                </tr>
+                <tr>
+                  <td class="text-gray-600 font-medium">End Date</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800">{{ item.end_date || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-
-        <!-- Table -->
-        <div v-else-if="!allCommittees.length" class="text-gray-500 italic">
-          You are not a member of any committee yet.
-        </div>
-        <div v-else class="overflow-x-auto hidden md:block"><!-- unreachable; kept for structure --></div>
-
-        <div v-if="allCommittees.length" class="overflow-x-auto hidden md:block">
+        <!-- Desktop Table -->
+        <div v-if="allCommittees.length" class="hidden sm:block overflow-x-auto">
           <table class="min-w-full bg-white shadow rounded-md">
             <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
               <tr>
@@ -292,10 +289,9 @@ onMounted(() => {
               <tr v-for="(committee, index) in allCommittees" :key="`${committee.org_name}-${committee.id}-${index}`"
                 class="border-t text-sm text-gray-800 hover:bg-gray-50 align-top">
                 <td class="px-4 py-3">{{ index + 1 }}</td>
-                <td class="px-4 py-3 max-w-[280px] whitespace-normal break-words">{{ committee.designation_id || '—' }}
-                </td>
-                <td class="px-4 py-3 max-w-[280px] whitespace-normal break-words">{{ committee.name || '—' }}</td>
-                <td class="px-4 py-3 max-w-[280px] whitespace-normal break-words">{{ committee.org_name || '—' }}</td>
+                <td class="px-4 py-3 break-words">{{ committee.designation_id || '—' }}</td>
+                <td class="px-4 py-3 break-words">{{ committee.name || '—' }}</td>
+                <td class="px-4 py-3 break-words">{{ committee.org_name || '—' }}</td>
                 <td class="px-4 py-3">{{ committee.start_date || '—' }}</td>
                 <td class="px-4 py-3">{{ committee.end_date || '—' }}</td>
               </tr>
@@ -306,43 +302,61 @@ onMounted(() => {
 
       <!-- Upcoming Meetings -->
       <div class="bg-white p-6 rounded shadow">
+        <!-- Header -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
           <h2 class="text-lg font-semibold text-gray-800">Upcoming Meetings</h2>
-          <button @click="router.push({ name: 'individual-meetings' })"
+          <button @click="$router.push({ name: 'individual-meetings' })"
             class="text-sm text-blue-600 hover:underline self-start sm:self-auto">
             See all
           </button>
         </div>
 
-        <!-- Mobile cards -->
-        <div v-if="allMeetings.length" class="md:hidden space-y-3">
-          <div v-for="(item, index) in allMeetings" :key="item.id" class="border rounded p-4 text-sm text-gray-800">
-            <div class="font-medium mb-1">#{{ index + 1 }}</div>
-            <p class="text-gray-500 text-xs">Meeting Name</p>
-            <p class="font-medium break-words mb-2">{{ item.name || '—' }}</p>
+        <!-- Empty state -->
+        <div v-if="!allMeetings.length" class="text-gray-500 italic">
+          No upcoming meetings.
+        </div>
 
-            <p class="text-gray-500 text-xs">Organisation</p>
-            <p class="font-medium break-words mb-2">{{ item.org_name || '—' }}</p>
-
-            <p class="text-gray-500 text-xs">Date</p>
-            <p class="font-medium break-words mb-2">{{ item.date || '—' }}</p>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <p class="text-gray-500 text-xs">Start Time</p>
-                <p>{{ item.start_time || '—' }}</p>
-              </div>
-              <div>
-                <p class="text-gray-500 text-xs">End Time</p>
-                <p>{{ item.end_time || '—' }}</p>
-              </div>
+        <!-- Mobile Cards -->
+        <div v-else class="sm:hidden space-y-3">
+          <div v-for="(item, index) in allMeetings" :key="item.id"
+            class="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
+            <div class="text-xs text-gray-500 mb-2 font-semibold">
+              # {{ index + 1 }}
             </div>
+            <table class="text-sm w-full border-collapse border-0" style="border-spacing: 0;">
+              <tbody>
+                <tr>
+                  <td class="text-gray-600 w-[100px] pr-2 font-medium">Meeting Name</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800 break-words">{{ item.name || '—' }}</td>
+                </tr>
+                <tr>
+                  <td class="text-gray-600 font-medium">Organisation</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800 break-words">{{ item.org_name || '—' }}</td>
+                </tr>
+                <tr>
+                  <td class="text-gray-600 font-medium">Date</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800">{{ item.date || '—' }}</td>
+                </tr>
+                <tr>
+                  <td class="text-gray-600 font-medium">Start Time</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800">{{ item.start_time || '—' }}</td>
+                </tr>
+                <tr>
+                  <td class="text-gray-600 font-medium">End Time</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800">{{ item.end_time || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <!-- Table -->
-        <div v-else class="text-gray-500 italic md:hidden">No upcoming meetings.</div>
-        <div v-if="allMeetings.length" class="overflow-x-auto hidden md:block">
+        <!-- Desktop Table -->
+        <div v-if="allMeetings.length" class="hidden sm:block overflow-x-auto">
           <table class="min-w-full bg-white shadow rounded-md">
             <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
               <tr>
@@ -358,8 +372,8 @@ onMounted(() => {
               <tr v-for="(meeting, index) in allMeetings" :key="meeting.id"
                 class="border-t text-sm text-gray-800 hover:bg-gray-50 align-top">
                 <td class="px-4 py-3">{{ index + 1 }}</td>
-                <td class="px-4 py-3 max-w-[280px] whitespace-normal break-words">{{ meeting.name || '—' }}</td>
-                <td class="px-4 py-3 max-w-[280px] whitespace-normal break-words">{{ meeting.org_name || '—' }}</td>
+                <td class="px-4 py-3 break-words">{{ meeting.name || '—' }}</td>
+                <td class="px-4 py-3 break-words">{{ meeting.org_name || '—' }}</td>
                 <td class="px-4 py-3">{{ meeting.date || '—' }}</td>
                 <td class="px-4 py-3">{{ meeting.start_time || '—' }}</td>
                 <td class="px-4 py-3">{{ meeting.end_time || '—' }}</td>
@@ -367,106 +381,148 @@ onMounted(() => {
             </tbody>
           </table>
         </div>
-        <div v-else class="text-gray-500 italic hidden md:block">No upcoming meetings.</div>
       </div>
 
       <!-- Upcoming Events -->
       <div class="bg-white p-6 rounded shadow">
+        <!-- Header -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
           <h2 class="text-lg font-semibold text-gray-800">Upcoming Events</h2>
-          <button @click="router.push({ name: 'individual-events' })"
+          <button @click="$router.push({ name: 'individual-events' })"
             class="text-sm text-blue-600 hover:underline self-start sm:self-auto">
             See all
           </button>
         </div>
 
-        <!-- Mobile cards -->
-        <div v-if="allEvents.length" class="md:hidden space-y-3">
-          <div v-for="(item, index) in allEvents" :key="item.id" class="border rounded p-4 text-sm text-gray-800">
-            <div class="font-medium mb-1">#{{ index + 1 }}</div>
-            <p class="text-gray-500 text-xs">Event Name</p>
-            <p class="font-medium break-words mb-2">{{ item.name || '—' }}</p>
+        <!-- Loading -->
+        <div v-if="isLoading" class="text-gray-500 italic">Loading...</div>
 
-            <p class="text-gray-500 text-xs">Organisation</p>
-            <p class="font-medium break-words mb-2">{{ item.org_name || '—' }}</p>
+        <!-- Empty State (Mobile) -->
+        <div v-else-if="!allEvents.length" class="text-gray-500 italic md:hidden">
+          No upcoming events.
+        </div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <p class="text-gray-500 text-xs">Date</p>
-                <p>{{ item.date || '—' }}</p>
-              </div>
-              <div>
-                <p class="text-gray-500 text-xs">Time</p>
-                <p>{{ item.time || '—' }}</p>
-              </div>
+        <!-- Mobile Cards -->
+        <div v-else class="md:hidden space-y-3">
+          <div v-for="(event, index) in allEvents" :key="event.id"
+            class="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
+            <div class="text-xs text-gray-500 mb-2 font-semibold">
+              # {{ index + 1 }}
             </div>
+            <table class="text-sm w-full border-collapse border-0" style="border-spacing: 0;">
+              <tbody>
+                <tr class="border-0 border-b-0">
+                  <td class="text-gray-600 w-[100px] pr-2 font-medium">Event Name</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800 break-words">{{ event.name || '—' }}</td>
+                </tr>
+                <tr class="border-0 border-b-0">
+                  <td class="text-gray-600 w-[100px] pr-2 font-medium">Organisation</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800 break-words">{{ event.org_name || '—' }}</td>
+                </tr>
+                <tr class="border-0 border-b-0">
+                  <td class="text-gray-600 w-[100px] pr-2 font-medium">Date</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800">{{ event.date || '—' }}</td>
+                </tr>
+                <tr class="border-0 border-b-0">
+                  <td class="text-gray-600 w-[100px] pr-2 font-medium">Time</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800">{{ event.time || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <!-- Table -->
-        <div v-else class="text-gray-500 italic md:hidden">No upcoming events.</div>
-        <div v-if="allEvents.length" class="overflow-x-auto hidden md:block">
+        <!-- Desktop Table -->
+        <div v-if="!isLoading && allEvents.length" class="overflow-x-auto hidden md:block">
           <table class="min-w-full bg-white shadow rounded-md">
             <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
               <tr>
-                <th class="px-4 py-3 text-left">#</th>
+                <th class="px-4 py-3 text-left w-12">#</th>
                 <th class="px-4 py-3 text-left">Event Name</th>
                 <th class="px-4 py-3 text-left">Organisation</th>
-                <th class="px-4 py-3 text-left">Event Date</th>
+                <th class="px-4 py-3 text-left">Date</th>
                 <th class="px-4 py-3 text-left">Time</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(event, index) in allEvents" :key="event.id"
-                class="border-t text-sm text-gray-800 hover:bg-gray-50 align-top">
+                class="border-t text-sm text-gray-800 hover:bg-gray-50 transition">
                 <td class="px-4 py-3">{{ index + 1 }}</td>
-                <td class="px-4 py-3 max-w-[280px] whitespace-normal break-words">{{ event.name || '—' }}</td>
-                <td class="px-4 py-3 max-w-[280px] whitespace-normal break-words">{{ event.org_name || '—' }}</td>
+                <td class="px-4 py-3 max-w-[240px] whitespace-normal break-words">{{ event.name || '—' }}</td>
+                <td class="px-4 py-3 max-w-[240px] whitespace-normal break-words">{{ event.org_name || '—' }}</td>
                 <td class="px-4 py-3">{{ event.date || '—' }}</td>
                 <td class="px-4 py-3">{{ event.time || '—' }}</td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div v-else class="text-gray-500 italic hidden md:block">No upcoming events.</div>
+
+        <!-- Empty State (Desktop) -->
+        <div v-else-if="!isLoading && !allEvents.length" class="text-gray-500 italic hidden md:block">
+          No upcoming events.
+        </div>
       </div>
+
 
       <!-- Upcoming Projects -->
       <div class="bg-white p-6 rounded shadow">
+        <!-- Header -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
           <h2 class="text-lg font-semibold text-gray-800">Upcoming Projects</h2>
-          <button @click="router.push({ name: 'individual-projects' })"
+          <button @click="$router.push({ name: 'individual-projects' })"
             class="text-sm text-blue-600 hover:underline self-start sm:self-auto">
             See all
           </button>
         </div>
 
-        <!-- Mobile cards -->
-        <div v-if="allProjects.length" class="md:hidden space-y-3">
-          <div v-for="(item, index) in allProjects" :key="item.id" class="border rounded p-4 text-sm text-gray-800">
-            <div class="font-medium mb-1">#{{ index + 1 }}</div>
-            <p class="text-gray-500 text-xs">Project Name</p>
-            <p class="font-medium break-words mb-2">{{ item.title || '—' }}</p>
+        <!-- Loading -->
+        <div v-if="isLoading" class="text-gray-500 italic">Loading...</div>
 
-            <p class="text-gray-500 text-xs">Organisation</p>
-            <p class="font-medium break-words mb-2">{{ item.org_name || '—' }}</p>
+        <!-- Empty State (Mobile) -->
+        <div v-else-if="!allProjects.length" class="text-gray-500 italic md:hidden">
+          No upcoming projects.
+        </div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <p class="text-gray-500 text-xs">Start</p>
-                <p>{{ item.start_date || '—' }}</p>
-              </div>
-              <div>
-                <p class="text-gray-500 text-xs">End</p>
-                <p>{{ item.end_date || '—' }}</p>
-              </div>
+        <!-- Mobile Cards -->
+        <div v-else class="md:hidden space-y-3">
+          <div v-for="(project, index) in allProjects" :key="project.id"
+            class="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
+            <div class="text-xs text-gray-500 mb-2 font-semibold">
+              # {{ index + 1 }}
             </div>
+            <table class="text-sm w-full border-collapse border-0" style="border-spacing: 0;">
+              <tbody>
+                <tr class="border-0 border-b-0">
+                  <td class="text-gray-600 w-[100px] pr-2 font-medium">Project Name</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800 break-words">{{ project.title || '—' }}</td>
+                </tr>
+                <tr class="border-0 border-b-0">
+                  <td class="text-gray-600 w-[100px] pr-2 font-medium">Organisation</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800 break-words">{{ project.org_name || '—' }}</td>
+                </tr>
+                <tr class="border-0 border-b-0">
+                  <td class="text-gray-600 w-[100px] pr-2 font-medium">Start Date</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800">{{ project.start_date || '—' }}</td>
+                </tr>
+                <tr class="border-0 border-b-0">
+                  <td class="text-gray-600 w-[100px] pr-2 font-medium">End Date</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800">{{ project.end_date || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <!-- Table -->
-        <div v-else class="text-gray-500 italic md:hidden">No upcoming projects.</div>
-        <div v-if="allProjects.length" class="overflow-x-auto hidden md:block">
+        <!-- Desktop Table -->
+        <div v-if="!isLoading && allProjects.length" class="overflow-x-auto hidden md:block">
           <table class="min-w-full bg-white shadow rounded-md">
             <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
               <tr>
@@ -489,50 +545,74 @@ onMounted(() => {
             </tbody>
           </table>
         </div>
-        <div v-else class="text-gray-500 italic hidden md:block">No upcoming projects.</div>
+
+        <!-- Empty State (Desktop) -->
+        <div v-else-if="!isLoading && !allProjects.length" class="text-gray-500 italic hidden md:block">
+          No upcoming projects.
+        </div>
       </div>
+
 
       <!-- Responsible Assets -->
       <div class="bg-white p-6 rounded shadow">
+        <!-- Header -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
           <h2 class="text-lg font-semibold text-gray-800">Responsible Assets</h2>
-          <button @click="router.push({ name: 'individual-assets' })"
+          <button @click="$router.push({ name: 'individual-assets' })"
             class="text-sm text-blue-600 hover:underline self-start sm:self-auto">
             See all
           </button>
         </div>
 
-        <!-- Mobile cards -->
-        <div v-if="allAssets.length" class="md:hidden space-y-3">
-          <div v-for="(item, index) in allAssets" :key="item.id" class="border rounded p-4 text-sm text-gray-800">
-            <div class="font-medium mb-1">#{{ index + 1 }}</div>
-            <p class="text-gray-500 text-xs">Organisation</p>
-            <p class="font-medium break-words mb-2">{{ item.org_name || '—' }}</p>
+        <!-- Loading -->
+        <div v-if="isLoading" class="text-gray-500 italic">Loading...</div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <p class="text-gray-500 text-xs">Asset</p>
-                <p class="break-words">{{ item.name || '—' }}</p>
-              </div>
-              <div>
-                <p class="text-gray-500 text-xs">From</p>
-                <p>{{ item.assignment_start_date || '—' }}</p>
-              </div>
-              <div>
-                <p class="text-gray-500 text-xs">Lifecycle</p>
-                <p class="break-words">{{ item.asset_lifecycle_status_name || '—' }}</p>
-              </div>
-              <div>
-                <p class="text-gray-500 text-xs">Qty</p>
-                <p>{{ item.quantity || 0 }}</p>
-              </div>
+        <!-- Empty State -->
+        <div v-else-if="!allAssets.length" class="text-gray-500 italic md:hidden">
+          No responsible assets found.
+        </div>
+
+        <!-- Mobile Cards -->
+        <div v-else class="md:hidden space-y-3">
+          <div v-for="(asset, index) in allAssets" :key="asset.id"
+            class="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
+            <div class="text-xs text-gray-500 mb-2 font-semibold">
+              # {{ index + 1 }}
             </div>
+            <table class="text-sm w-full border-collapse border-0" style="border-spacing: 0;">
+              <tbody>
+                <tr class="border-0 border-b-0">
+                  <td class="text-gray-600 w-[100px] pr-2 font-medium">Organisation</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800 break-words">{{ asset.org_name || '—' }}</td>
+                </tr>
+                <tr class="border-0 border-b-0">
+                  <td class="text-gray-600 w-[100px] pr-2 font-medium">Asset</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800 break-words">{{ asset.name || '—' }}</td>
+                </tr>
+                <tr class="border-0 border-b-0">
+                  <td class="text-gray-600 w-[100px] pr-2 font-medium">From</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800">{{ asset.assignment_start_date || '—' }}</td>
+                </tr>
+                <tr class="border-0 border-b-0">
+                  <td class="text-gray-600 w-[100px] pr-2 font-medium">Lifecycle</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800 break-words">{{ asset.asset_lifecycle_status_name || '—' }}</td>
+                </tr>
+                <tr class="border-0 border-b-0">
+                  <td class="text-gray-600 w-[100px] pr-2 font-medium">Qty</td>
+                  <td class="w-3 text-center">:</td>
+                  <td class="text-gray-800">{{ asset.quantity || 0 }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <!-- Table -->
-        <div v-else class="text-gray-500 italic md:hidden">No responsible assets found.</div>
-        <div v-if="allAssets.length" class="overflow-x-auto hidden md:block">
+        <!-- Desktop Table -->
+        <div v-if="!isLoading && allAssets.length" class="overflow-x-auto hidden md:block">
           <table class="min-w-full bg-white shadow rounded-md">
             <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
               <tr>
@@ -558,10 +638,13 @@ onMounted(() => {
             </tbody>
           </table>
         </div>
-        <div v-else class="text-gray-500 italic hidden md:block">No responsible assets found.</div>
+
+        <!-- Desktop Empty State -->
+        <div v-else-if="!isLoading && !allAssets.length" class="text-gray-500 italic hidden md:block">
+          No responsible assets found.
+        </div>
       </div>
 
-      <!-- Summary Cards -->
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6">
         <div v-for="(count, label) in summaryCounts" :key="label"
           class="bg-white p-4 sm:p-5 rounded shadow text-center">

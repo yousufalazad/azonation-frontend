@@ -58,7 +58,6 @@ onMounted(() => {
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
         <h2 class="text-base sm:text-lg font-semibold text-gray-800">Present Committees</h2>
       </div>
-
       <!-- Mobile: card list -->
       <div class="sm:hidden space-y-3">
         <div v-for="(committee, index) in allCommittees" :key="committee.id"
@@ -69,32 +68,35 @@ onMounted(() => {
           </div>
 
           <!-- Content -->
-          <div class="space-y-1.5 text-sm">
-            <div class="flex gap-2">
-              <span class="w-28 shrink-0 text-gray-500">Designation:</span>
-              <span class="text-gray-800 break-words">{{ committee.designation_id || '—' }}</span>
-            </div>
-            <div class="flex gap-2">
-              <span class="w-28 shrink-0 text-gray-500">Committee:</span>
-              <span class="text-gray-800 break-words">{{ committee.committee?.name || '—' }}</span>
-            </div>
-            <div class="flex gap-2">
-              <span class="w-28 shrink-0 text-gray-500">Organisation:</span>
-              <span class="text-gray-800 break-words">{{ committee.org_name || '—' }}</span>
-            </div>
-          </div>
-
-          <!-- Bottom: Start/End grid -->
-          <div class="grid grid-cols-2 gap-3 border-t pt-2 mt-3">
-            <div>
-              <p class="text-gray-500 text-xs">Start</p>
-              <p class="text-sm">{{ committee.start_date || '—' }}</p>
-            </div>
-            <div>
-              <p class="text-gray-500 text-xs">End</p>
-              <p class="text-sm">{{ committee.end_date || '—' }}</p>
-            </div>
-          </div>
+          <table class="text-sm w-full border-collapse border-0" style="border-spacing: 0;">
+            <tbody>
+              <tr class="border-0 border-b-0">
+                <td class="text-gray-500 w-[100px] pr-2">Designation</td>
+                <td class="w-3 text-center">:</td>
+                <td class="text-gray-800 ">{{ committee.designation_id || '—' }}</td>
+              </tr>
+              <tr class="border-0 border-b-0">
+                <td class="text-gray-500 w-[100px] pr-2">Committee</td>
+                <td class="w-3 text-center">:</td>
+                <td class="text-gray-800 ">{{ committee.committee?.name || '—' }}</td>
+              </tr>
+              <tr class="border-0 border-b-0">
+                <td class="text-gray-500 w-[100px] pr-2">Organisation</td>
+                <td class="w-3 text-center">:</td>
+                <td class="text-gray-800 ">{{ committee.org_name || '—' }}</td>
+              </tr>
+              <tr v-if="committee.start_date" class="border-0 border-b-0">
+                <td class="text-gray-500 w-[100px] pr-2">Start Date</td>
+                <td class="w-3 text-center">:</td>
+                <td class="text-gray-800 ">{{ committee.start_date || '—' }}</td>
+              </tr>
+              <tr v-if="committee.end_date" class="border-0 border-b-0">
+                <td class="text-gray-500 w-[100px] pr-2">End Date</td>
+                <td class="w-3 text-center">:</td>
+                <td class="text-gray-800 ">{{ committee.end_date || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 

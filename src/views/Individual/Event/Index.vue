@@ -35,25 +35,63 @@ onMounted(() => {
 </script>
 <template>
   <div class="space-y-8">
-    <div class="flex justify-between items-center mb-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <h1 class="text-2xl font-bold text-gray-800">Upcoming Events</h1>
-      <div>
-        <button @click="$router.push({ name: 'past-individual-events' })"
-          class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
-          Past Event List
-        </button>
-      </div>
+      <button @click="$router.push({ name: 'past-individual-events' })"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
+        Past Event List
+      </button>
     </div>
+
+    <!-- Loading -->
     <div v-if="isLoading" class="text-gray-500">Loading...</div>
 
-    <div v-else-if="!allEvents.length" class="text-gray-500 italic">No upcoming events found.</div>
+    <!-- Empty State -->
+    <div v-else-if="!allEvents.length" class="text-gray-500 italic">
+      No upcoming events found.
+    </div>
 
-    <div v-else class="bg-white p-6 rounded shadow">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-lg font-semibold text-gray-800">All Upcoming Events</h2>
+    <!-- Data -->
+    <div v-else>
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">All Upcoming Events</h2>
+
+      <!-- Mobile Cards -->
+      <div class="sm:hidden space-y-3">
+        <div v-for="(event, index) in allEvents" :key="event.id"
+          class="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
+          <div class="text-xs text-gray-500 mb-2 font-semibold">
+            # {{ index + 1 }}
+          </div>
+          <table class="text-sm w-full border-collapse border-0" style="border-spacing: 0;">
+            <tbody>
+              <tr class="border-0 border-b-0">
+                <td class="text-gray-600 w-[100px] pr-2 font-medium">Organisation</td>
+                <td class="w-3 text-center">:</td>
+                <td class="text-gray-800 break-words">{{ event.org_name || '—' }}</td>
+              </tr>
+              <tr class="border-0 border-b-0">
+                <td class="text-gray-600 w-[100px] pr-2 font-medium">Event Name</td>
+                <td class="w-3 text-center">:</td>
+                <td class="text-gray-800 break-words">{{ event.name || '—' }}</td>
+              </tr>
+              <tr class="border-0 border-b-0">
+                <td class="text-gray-600 w-[100px] pr-2 font-medium">Event Date</td>
+                <td class="w-3 text-center">:</td>
+                <td class="text-gray-800">{{ event.date || '—' }}</td>
+              </tr>
+              <tr class="border-0 border-b-0">
+                <td class="text-gray-600 w-[100px] pr-2 font-medium">Time</td>
+                <td class="w-3 text-center">:</td>
+                <td class="text-gray-800">{{ event.time || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div class="overflow-x-auto">
+      <!-- Desktop Table -->
+      <div class="hidden sm:block overflow-x-auto">
         <table class="min-w-full bg-white shadow rounded-md">
           <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
             <tr>
