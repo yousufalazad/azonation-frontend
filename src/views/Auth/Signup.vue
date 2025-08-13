@@ -1,12 +1,16 @@
 <!-- Signup vue page -->
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { authStore } from "../../store/authStore";
+import { useRouter } from "vue-router";
 import Header from "../Common/Header.vue";
 import Footer from "../Common/Footer.vue";
+import Swal from "sweetalert2";
 
 const auth = authStore;
-
+const router = useRouter();
+const isSubmitting = ref(false);
+const triedSubmit = ref(false);
 const first_name = ref('')
 const last_name = ref('')
 const org_name = ref('')
@@ -32,7 +36,21 @@ const showPassword = ref(false)
 const referral = ref('');
 const referralSource = ref('');
 
+// If user changes away from "referral"/"other", clear the note
+watch(referralSource, (v) => {
+  if (!['referral', 'other'].includes(v)) referral.value = '';
+});
 
+// ----- referral validation (required field) -----
+const referralValid = computed(() => {
+  // must choose a source
+  if (!referralSource.value) return false;
+  // if 'referral' or 'other', the text input becomes required
+  if (["referral", "other"].includes(referralSource.value)) {
+    return referral.value.trim() !== "";
+  }
+  return true;
+});
 
 
 // Form validation
@@ -44,9 +62,12 @@ const canSignUp = computed(() => {
     password.value.trim() !== "" &&
     confirmPassword.value.trim() !== "" &&
     passwordsMatch.value &&
+    referralValid.value &&
+    // Individual or Organisation fields
     (type.value === "individual"
       ? first_name.value.trim() !== "" && last_name.value.trim() !== ""
       : org_name.value.trim() !== "")
+
   );
 });
 
@@ -79,7 +100,20 @@ function closeAllMenus() {
 }
 
 // Handle form submission
-function submitForm() {
+async function submitForm() {
+  triedSubmit.value = true;
+  if (!canSignUp.value) return;
+
+  // local password confirm guard (optional visual)
+  if (!passwordsMatch.value) {
+    await Swal.fire({
+      icon: "warning",
+      title: "Passwords don’t match",
+      text: "Please confirm your password.",
+    });
+    return;
+  }
+
   const payload = {
     first_name: type.value === "individual" ? first_name.value : null,
     last_name: type.value === "individual" ? last_name.value : null,
@@ -88,12 +122,90 @@ function submitForm() {
     email: email.value,
     country_id: Number(country_id.value),
     password: password.value,
-    referral: referral.value || null,
-    referral_source: referralSource.value || null
+    // ALWAYS send a string so it never gets dropped by the client
+    referral_source: String(referralSource.value),              // must have a value
+    // if referralSource is 'referral' or 'other', send the referral code
+    referral: ['referral', 'other'].includes(referralSource.value)
+      ? referral.value.trim()
+      : null,
   };
 
-  auth.register(payload);
+  try {
+    isSubmitting.value = true;
+    auth.errors = null; // clear previous errors
+
+    const res = await auth.fetchPublicApi("/api/register", payload, "POST");
+
+    // Support both axios-like and plain-JSON return shapes
+    const httpOk =
+      typeof res?.status === "number" ? res.status >= 200 && res.status < 300 : false;
+    const apiOk = typeof res?.status === "boolean" ? res.status === true : false;
+    const ok = httpOk || apiOk;
+
+    if (ok) {
+      await Swal.fire({
+        icon: "success",
+        title: "Registration successful",
+        text: "You have successfully registered. Please check your email to verify your email address.",
+        confirmButtonText: "OK",
+      });
+
+      // (Optional) clear form fields
+      first_name.value = "";
+      last_name.value = "";
+      org_name.value = "";
+      type.value = "";
+      email.value = "";
+      country_id.value = "";
+      password.value = "";
+      confirmPassword.value = "";
+      referral.value = "";
+      referralSource.value = "";
+
+      // Navigate AFTER the user dismisses the alert
+      router.push({ name: "login" }); // or: router.push("/login")
+      return;
+    }
+
+    // If not OK, surface API validation errors into your existing UI
+    const apiErrors = res?.data?.errors || res?.errors || null;
+    if (apiErrors) {
+      auth.errors = apiErrors;
+      const firstErr =
+        Object.values(apiErrors)?.[0]?.[0] || "Please review the highlighted fields.";
+      await Swal.fire({
+        icon: "error",
+        title: "Couldn’t sign you up",
+        text: firstErr,
+      });
+    } else {
+      await Swal.fire({
+        icon: "error",
+        title: "Couldn’t sign you up",
+        text: "Unexpected response from the server.",
+      });
+    }
+  } catch (error) {
+    // Network/HTTP errors
+    auth.errors =
+      error?.response?.data?.errors || {
+        general: ["Something went wrong. Please try again."],
+      };
+
+    const msg =
+      Object.values(auth.errors)?.[0]?.[0] ||
+      error?.response?.data?.message ||
+      "Something went wrong. Please try again.";
+    await Swal.fire({
+      icon: "error",
+      title: "Registration failed",
+      text: msg,
+    });
+  } finally {
+    isSubmitting.value = false;
+  }
 }
+
 
 // Initialization
 onMounted(() => {
@@ -128,19 +240,14 @@ onMounted(() => {
 
         <!-- Account Type Selection -->
         <div class="flex flex-col md:flex-row gap-6 mb-8">
-
           <!-- Individual type -->
           <label @click="type = 'individual'"
             class="flex-1 cursor-pointer border rounded-lg p-5 hover:shadow transition"
             :class="type === 'individual' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'">
             <div class="flex items-start">
-              <div class="w-5 h-5 mt-1 border rounded-sm flex items-center justify-center"
-                :class="type === 'individual' ? 'bg-blue-600 border-blue-600' : 'border-gray-400 bg-white'">
-                <svg v-if="type === 'individual'" class="w-3 h-3 text-white" fill="none" stroke="currentColor"
-                  stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
+              <!-- Radio -->
+              <input type="radio" name="accountType" value="individual" v-model="type"
+                class="w-5 h-5 mt-1 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-0 rounded-full" />
               <div class="ml-4">
                 <p class="font-medium text-gray-800">Individual Account</p>
                 <p class="text-sm text-gray-600 mt-1">Join organisations and manage your personal profile.</p>
@@ -153,13 +260,9 @@ onMounted(() => {
             class="flex-1 cursor-pointer border rounded-lg p-5 hover:shadow transition"
             :class="type === 'organisation' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'">
             <div class="flex items-start">
-              <div class="w-5 h-5 mt-1 border rounded-sm flex items-center justify-center"
-                :class="type === 'organisation' ? 'bg-blue-600 border-blue-600' : 'border-gray-400 bg-white'">
-                <svg v-if="type === 'organisation'" class="w-3 h-3 text-white" fill="none" stroke="currentColor"
-                  stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
+              <!-- Radio -->
+              <input type="radio" name="accountType" value="organisation" v-model="type"
+                class="w-5 h-5 mt-1 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-0 rounded-full" />
               <div class="ml-4">
                 <p class="font-medium text-gray-800">Organisation Account</p>
                 <p class="text-sm text-gray-600 mt-1">Register and manage an organisation. Invite members.</p>
@@ -169,7 +272,6 @@ onMounted(() => {
         </div>
 
         <p v-if="auth.errors?.type" class="text-red-500 text-sm mb-4">{{ auth.errors?.type[0] }}</p>
-
         <!-- Form -->
         <div class="bg-white border rounded-lg shadow-sm p-6">
           <div v-if="type === 'individual'" class="grid grid-cols-1 gap-4">
@@ -239,9 +341,10 @@ onMounted(() => {
           </div>
 
           <!-- How did you hear about us? -->
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700">How did you hear about us?</label>
-            <select v-model="referralSource"
+          <div class="mb-2">
+            <label class="block text-sm font-medium text-gray-700">How did you hear about us? <span
+                class="text-red-500">*</span></label>
+            <select v-model="referralSource" required
               class="mt-1 w-full border px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
               <option value="">Select one</option>
               <option value="friend">Friend or Colleague</option>
@@ -250,22 +353,26 @@ onMounted(() => {
               <option value="referral">I have a referral code</option>
               <option value="other">Other</option>
             </select>
+            <p v-if="triedSubmit && !referralValid" class="text-xs text-red-500 mt-1">
+              Please choose a source. If you select Referral or Other, add a short note below.
+            </p>
           </div>
 
           <!-- Referral Code or Description -->
           <div class="mb-4" v-if="referralSource === 'referral' || referralSource === 'other'">
-            <label class="block text-sm font-medium text-gray-700">Referral Code or Details <span
-                class="text-gray-400 text-xs">(optional)</span></label>
+            <label class="block text-sm font-medium text-gray-700">
+              Referral Code or Details <span class="text-red-500">*</span>
+            </label>
             <input v-model="referral" type="text" placeholder="Code, Name or Description"
               class="mt-1 w-full border px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" />
           </div>
 
 
-
           <div class="pt-2">
-            <button @click="submitForm" :disabled="!canSignUp"
+            <button @click="submitForm" :disabled="!canSignUp || isSubmitting"
               class="w-full py-2 px-4 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed">
-              Sign Up
+              <span v-if="!isSubmitting">Sign Up</span>
+              <span v-else>Signing up…</span>
             </button>
           </div>
         </div>

@@ -4,7 +4,7 @@ import { ref, onMounted, computed } from "vue";
 import { authStore } from "../../store/authStore";
 import Header from "../Common/Header.vue";
 import Footer from "../Common/Footer.vue";
-
+import Swal from "sweetalert2";
 const auth = authStore;
 
 const first_name = ref('')
@@ -31,7 +31,7 @@ const showPassword = ref(false)
 // Referral fields (optional)
 const referral = ref('');
 const referralSource = ref('');
-
+const isSubmitting = ref(false);
 
 
 
@@ -47,7 +47,6 @@ const canSignUp = computed(() => {
     (type.value === "individual"
       ? first_name.value.trim() !== "" && last_name.value.trim() !== ""
       : org_name.value.trim() !== "")
-      
   );
 });
 
@@ -80,7 +79,17 @@ function closeAllMenus() {
 }
 
 // Handle form submission
-function submitForm() {
+async function submitForm() {
+  if (!canSignUp.value) return;
+  if (!passwordsMatch.value) {
+    Swal.fire({
+      icon: "warning",
+      title: "Passwords don’t match",
+      text: "Please confirm your password.",
+    });
+    return;
+  }
+
   const payload = {
     first_name: type.value === "individual" ? first_name.value : null,
     last_name: type.value === "individual" ? last_name.value : null,
@@ -90,11 +99,63 @@ function submitForm() {
     country_id: Number(country_id.value),
     password: password.value,
     referral: referral.value || null,
-    referral_source: referralSource.value || null
+    referral_source: referralSource.value || null,
   };
 
-  auth.register(payload);
+  try {
+    isSubmitting.value = true;
+
+    // Await the registration call
+    const res = await auth.register(payload);
+
+    // If your store sets `auth.errors` on failure, check that first
+    const hasErrors =
+      auth.errors && Object.keys(auth.errors).length > 0;
+
+    if (!hasErrors) {
+      await Swal.fire({
+        icon: "success",
+        title: "Account created",
+        text:
+          "Your account was created successfully. Please check your email to verify your account.",
+        confirmButtonText: "OK",
+      });
+
+      // (Optional) clear the form
+      first_name.value = "";
+      last_name.value = "";
+      org_name.value = "";
+      type.value = "";
+      email.value = "";
+      country_id.value = "";
+      password.value = "";
+      confirmPassword.value = "";
+      referral.value = "";
+      referralSource.value = "";
+    } else {
+      // Show the first backend validation error in an alert
+      const firstErr =
+        Object.values(auth.errors)?.[0]?.[0] ||
+        "Please review the highlighted fields.";
+      Swal.fire({
+        icon: "error",
+        title: "Couldn’t sign you up",
+        text: firstErr,
+      });
+    }
+  } catch (e) {
+    Swal.fire({
+      icon: "error",
+      title: "Something went wrong",
+      text:
+        e?.response?.data?.message ||
+        "Unexpected error occurred. Please try again.",
+    });
+  } finally {
+    isSubmitting.value = false;
+  }
 }
+
 
 // Initialization
 onMounted(() => {
@@ -129,118 +190,38 @@ onMounted(() => {
 
         <!-- Account Type Selection -->
         <div class="flex flex-col md:flex-row gap-6 mb-8">
-
           <!-- Individual type -->
-          <!-- <label @click="type = 'individual'"
+          <label @click="type = 'individual'"
             class="flex-1 cursor-pointer border rounded-lg p-5 hover:shadow transition"
             :class="type === 'individual' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'">
             <div class="flex items-start">
-              <div class="w-5 h-5 mt-1 border rounded-sm flex items-center justify-center"
-                :class="type === 'individual' ? 'bg-blue-600 border-blue-600' : 'border-gray-400 bg-white'">
-                <svg v-if="type === 'individual'" class="w-3 h-3 text-white" fill="none" stroke="currentColor"
-                  stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
+              <!-- Radio -->
+              <input type="radio" name="accountType" value="individual" v-model="type"
+                class="w-5 h-5 mt-1 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-0 rounded-full" />
               <div class="ml-4">
                 <p class="font-medium text-gray-800">Individual Account</p>
                 <p class="text-sm text-gray-600 mt-1">Join organisations and manage your personal profile.</p>
               </div>
             </div>
-          </label> -->
+          </label>
 
           <!-- Organisation type -->
-          <!-- <label @click="type = 'organisation'"
+          <label @click="type = 'organisation'"
             class="flex-1 cursor-pointer border rounded-lg p-5 hover:shadow transition"
             :class="type === 'organisation' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'">
             <div class="flex items-start">
-              <div class="w-5 h-5 mt-1 border rounded-sm flex items-center justify-center"
-                :class="type === 'organisation' ? 'bg-blue-600 border-blue-600' : 'border-gray-400 bg-white'">
-                <svg v-if="type === 'organisation'" class="w-3 h-3 text-white" fill="none" stroke="currentColor"
-                  stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
+              <!-- Radio -->
+              <input type="radio" name="accountType" value="organisation" v-model="type"
+                class="w-5 h-5 mt-1 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-0 rounded-full" />
               <div class="ml-4">
                 <p class="font-medium text-gray-800">Organisation Account</p>
                 <p class="text-sm text-gray-600 mt-1">Register and manage an organisation. Invite members.</p>
               </div>
             </div>
-          </label> -->
-
-          <fieldset class="space-y-3">
-  <legend class="text-sm font-medium text-gray-700">Account type</legend>
-
-  <div class="flex gap-4">
-    <!-- Individual -->
-    <label
-      class="flex-1 cursor-pointer rounded-lg border p-5 hover:shadow transition focus-within:ring-2 focus-within:ring-blue-600"
-      :class="type === 'individual' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'"
-    >
-      <input
-        type="radio"
-        name="accountType"
-        value="individual"
-        v-model="type"
-        class="sr-only peer"
-      />
-
-      <div class="flex items-start">
-        <!-- Full round radio -->
-        <span
-          class="mt-1 flex h-6 w-6 items-center justify-center rounded-full border border-gray-400 bg-white
-                 peer-checked:border-blue-600 peer-checked:bg-white"
-        >
-          <!-- Big blue dot inside -->
-          <span
-            class="h-4 w-4 rounded-full bg-blue-600 scale-0 peer-checked:scale-100 transition-transform duration-150"
-          ></span>
-        </span>
-
-        <div class="ml-4">
-          <p class="font-medium text-gray-800">Individual Account</p>
-          <p class="text-sm text-gray-600 mt-1">Join organisations and manage your personal profile.</p>
-        </div>
-      </div>
-    </label>
-
-    <!-- Organisation -->
-    <label
-      class="flex-1 cursor-pointer rounded-lg border p-5 hover:shadow transition focus-within:ring-2 focus-within:ring-blue-600"
-      :class="type === 'organisation' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'"
-    >
-      <input
-        type="radio"
-        name="accountType"
-        value="organisation"
-        v-model="type"
-        class="sr-only peer"
-      />
-
-      <div class="flex items-start">
-        <span
-          class="mt-1 flex h-6 w-6 items-center justify-center rounded-full border border-gray-400 bg-white
-                 peer-checked:border-blue-600 peer-checked:bg-white"
-        >
-          <span
-            class="h-4 w-4 rounded-full bg-blue-600 scale-0 peer-checked:scale-100 transition-transform duration-150"
-          ></span>
-        </span>
-
-        <div class="ml-4">
-          <p class="font-medium text-gray-800">Organisation Account</p>
-          <p class="text-sm text-gray-600 mt-1">Register and manage an organisation. Invite members.</p>
-        </div>
-      </div>
-    </label>
-  </div>
-</fieldset>
-
-
+          </label>
         </div>
 
         <p v-if="auth.errors?.type" class="text-red-500 text-sm mb-4">{{ auth.errors?.type[0] }}</p>
-
         <!-- Form -->
         <div class="bg-white border rounded-lg shadow-sm p-6">
           <div v-if="type === 'individual'" class="grid grid-cols-1 gap-4">
@@ -334,10 +315,12 @@ onMounted(() => {
 
 
           <div class="pt-2">
-            <button @click="submitForm" :disabled="!canSignUp"
+            <button @click="submitForm" :disabled="!canSignUp || isSubmitting"
               class="w-full py-2 px-4 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed">
-              Sign Up
+              <span v-if="!isSubmitting">Sign Up</span>
+              <span v-else>Signing up…</span>
             </button>
+
           </div>
         </div>
       </div>

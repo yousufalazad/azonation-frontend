@@ -652,13 +652,13 @@ onMounted(() => {
 
                     <!-- Modal Title -->
                     <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">
-                        Edit Name
+                        Edit Username
                     </h2>
 
                     <!-- Input Field -->
                     <div class="mb-5">
                         <label for="newUsername" class="block text-sm font-medium text-gray-700 mb-2">
-                            New Name
+                            New Username
                         </label>
                         <input v-model="newUsername" type="text" id="newUsername" class="w-full border border-gray-300 rounded-lg p-2.5 text-gray-900 
                        shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" required />
@@ -825,8 +825,6 @@ onMounted(() => {
                     <h2 class="text-2xl font-bold mb-4 text-center">
                         {{ isEditModePhone ? 'Edit mobile number' : 'Add Mobile Number' }}
                     </h2>
-
-
 
                     <div class="mb-4">
                         <label for="dialing_code_id" class="block text-sm font-medium text-gray-700 required">Dialing

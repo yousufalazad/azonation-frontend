@@ -47,7 +47,6 @@ const canSignUp = computed(() => {
     (type.value === "individual"
       ? first_name.value.trim() !== "" && last_name.value.trim() !== ""
       : org_name.value.trim() !== "")
-      
   );
 });
 
@@ -129,118 +128,38 @@ onMounted(() => {
 
         <!-- Account Type Selection -->
         <div class="flex flex-col md:flex-row gap-6 mb-8">
-
           <!-- Individual type -->
-          <!-- <label @click="type = 'individual'"
+          <label @click="type = 'individual'"
             class="flex-1 cursor-pointer border rounded-lg p-5 hover:shadow transition"
             :class="type === 'individual' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'">
             <div class="flex items-start">
-              <div class="w-5 h-5 mt-1 border rounded-sm flex items-center justify-center"
-                :class="type === 'individual' ? 'bg-blue-600 border-blue-600' : 'border-gray-400 bg-white'">
-                <svg v-if="type === 'individual'" class="w-3 h-3 text-white" fill="none" stroke="currentColor"
-                  stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
+              <!-- Radio -->
+              <input type="radio" name="accountType" value="individual" v-model="type"
+                class="w-5 h-5 mt-1 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-0 rounded-full" />
               <div class="ml-4">
                 <p class="font-medium text-gray-800">Individual Account</p>
                 <p class="text-sm text-gray-600 mt-1">Join organisations and manage your personal profile.</p>
               </div>
             </div>
-          </label> -->
+          </label>
 
           <!-- Organisation type -->
-          <!-- <label @click="type = 'organisation'"
+          <label @click="type = 'organisation'"
             class="flex-1 cursor-pointer border rounded-lg p-5 hover:shadow transition"
             :class="type === 'organisation' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'">
             <div class="flex items-start">
-              <div class="w-5 h-5 mt-1 border rounded-sm flex items-center justify-center"
-                :class="type === 'organisation' ? 'bg-blue-600 border-blue-600' : 'border-gray-400 bg-white'">
-                <svg v-if="type === 'organisation'" class="w-3 h-3 text-white" fill="none" stroke="currentColor"
-                  stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
+              <!-- Radio -->
+              <input type="radio" name="accountType" value="organisation" v-model="type"
+                class="w-5 h-5 mt-1 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-0 rounded-full" />
               <div class="ml-4">
                 <p class="font-medium text-gray-800">Organisation Account</p>
                 <p class="text-sm text-gray-600 mt-1">Register and manage an organisation. Invite members.</p>
               </div>
             </div>
-          </label> -->
-
-          <fieldset class="space-y-3">
-  <legend class="text-sm font-medium text-gray-700">Account type</legend>
-
-  <div class="flex gap-4">
-    <!-- Individual -->
-    <label
-      class="flex-1 cursor-pointer rounded-lg border p-5 hover:shadow transition focus-within:ring-2 focus-within:ring-blue-600"
-      :class="type === 'individual' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'"
-    >
-      <input
-        type="radio"
-        name="accountType"
-        value="individual"
-        v-model="type"
-        class="sr-only peer"
-      />
-
-      <div class="flex items-start">
-        <!-- Full round radio -->
-        <span
-          class="mt-1 flex h-6 w-6 items-center justify-center rounded-full border border-gray-400 bg-white
-                 peer-checked:border-blue-600 peer-checked:bg-white"
-        >
-          <!-- Big blue dot inside -->
-          <span
-            class="h-4 w-4 rounded-full bg-blue-600 scale-0 peer-checked:scale-100 transition-transform duration-150"
-          ></span>
-        </span>
-
-        <div class="ml-4">
-          <p class="font-medium text-gray-800">Individual Account</p>
-          <p class="text-sm text-gray-600 mt-1">Join organisations and manage your personal profile.</p>
-        </div>
-      </div>
-    </label>
-
-    <!-- Organisation -->
-    <label
-      class="flex-1 cursor-pointer rounded-lg border p-5 hover:shadow transition focus-within:ring-2 focus-within:ring-blue-600"
-      :class="type === 'organisation' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'"
-    >
-      <input
-        type="radio"
-        name="accountType"
-        value="organisation"
-        v-model="type"
-        class="sr-only peer"
-      />
-
-      <div class="flex items-start">
-        <span
-          class="mt-1 flex h-6 w-6 items-center justify-center rounded-full border border-gray-400 bg-white
-                 peer-checked:border-blue-600 peer-checked:bg-white"
-        >
-          <span
-            class="h-4 w-4 rounded-full bg-blue-600 scale-0 peer-checked:scale-100 transition-transform duration-150"
-          ></span>
-        </span>
-
-        <div class="ml-4">
-          <p class="font-medium text-gray-800">Organisation Account</p>
-          <p class="text-sm text-gray-600 mt-1">Register and manage an organisation. Invite members.</p>
-        </div>
-      </div>
-    </label>
-  </div>
-</fieldset>
-
-
+          </label>
         </div>
 
         <p v-if="auth.errors?.type" class="text-red-500 text-sm mb-4">{{ auth.errors?.type[0] }}</p>
-
         <!-- Form -->
         <div class="bg-white border rounded-lg shadow-sm p-6">
           <div v-if="type === 'individual'" class="grid grid-cols-1 gap-4">

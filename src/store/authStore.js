@@ -99,30 +99,6 @@ const authStore = reactive({
     }
   },
 
-  async register(payload) {
-    try {
-      const res = await this.fetchPublicApi("/api/register", payload, "POST");
-
-      if (res.status) {
-        this.errors = null;
-        Swal.fire({
-          icon: "success",
-          title: "Registration successful",
-          text: "You have successfully registered.",
-          showConfirmButton: true,
-        });
-        router.push({ name: "login" });
-      } else {
-        this.errors = res.errors;
-      }
-    } catch (error) {
-      console.error("Registration error:", error);
-      this.errors = error.response?.data?.errors || {
-        general: ["Something went wrong. Please try again."],
-      };
-    }
-  },
-
   async authenticate(username, password, remember_token) {
     try {
       const response = await this.fetchPublicApi(
@@ -141,14 +117,20 @@ const authStore = reactive({
         switch (response.data.type) {
           case "individual":
             // router.push({ name: "individual-dashboard-index" });
-            router.push({ name: "individual-dashboard-index" }).then(() => location.reload());
+            router
+              .push({ name: "individual-dashboard-index" })
+              .then(() => location.reload());
             break;
           case "organisation":
             // router.push({ name: "org-dashboard-index" });
-            router.push({ name: "org-dashboard-index" }).then(() => location.reload());
+            router
+              .push({ name: "org-dashboard-index" })
+              .then(() => location.reload());
             break;
           case "superadmin":
-            router.push({ name: "superadmin-dashboard-index" }).then(() => location.reload());
+            router
+              .push({ name: "superadmin-dashboard-index" })
+              .then(() => location.reload());
             break;
           default:
             router.push({ name: "login" });
@@ -218,7 +200,12 @@ const authStore = reactive({
 
   getUserToken() {
     // return this.user?.accessToken;
-    return this.user?.accessToken || this.user?.token || this.user?.plainTextToken || this.user?.access_token;
+    return (
+      this.user?.accessToken ||
+      this.user?.token ||
+      this.user?.plainTextToken ||
+      this.user?.access_token
+    );
   },
 
   getUserType() {

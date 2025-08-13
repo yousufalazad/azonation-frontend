@@ -69,7 +69,7 @@ const resetPassword = async () => {
                 </div>
 
                 <div>
-                    <label class="block mb-1 text-sm font-semibold text-gray-700">Confirm Password</label>
+                    <label class="block mb-1 text-sm font-semibold text-gray-700">Confirm New Password</label>
                     <input type="password" v-model="password_confirmation" required
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
                         placeholder="Confirm new password" />

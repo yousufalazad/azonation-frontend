@@ -846,16 +846,16 @@ onMounted(() => {
                             {{ userCountry }}
                         </p>
                     </div>
-                    <button @click="openCountryModal()"
+                    <!-- <button @click="openCountryModal()"
                         class="text-sm text-primary hover:underline ml-4 whitespace-nowrap">
                         Edit
-                    </button>
+                    </button> -->
                 </div>
             </div>
 
 
             <!-- Country Modal -->
-            <div v-if="modalOpenCountry"
+            <!-- <div v-if="modalOpenCountry"
                 class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                 <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
                     <h2 class="text-2xl font-bold mb-4 text-center">
@@ -887,7 +887,7 @@ onMounted(() => {
                         </button>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </section>
 
         <section class="mt-5 pb-5 mb-5">
