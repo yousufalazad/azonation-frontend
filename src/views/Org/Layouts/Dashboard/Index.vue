@@ -37,7 +37,6 @@ const thisYearNewMemberCount = ref(0);
 const thisMonthNewMemberCount = ref(0);
 
 
-
 const fetchMemberList = async () => {
   try {
     const response = await authStore.fetchProtectedApi('/api/org-members/', {}, 'GET');
@@ -626,6 +625,21 @@ const LineChartMembership = {
   `
 };
 
+// ✅ Fetch Currencies
+const transactionCurrencySymbol = ref('');
+
+const fetchCurrencyPreference = async () => {
+  try {
+    const res = await auth.fetchProtectedApi('/api/accounts-transaction-currencies', {}, 'GET');
+    const payload = res?.data;
+    transactionCurrencySymbol.value = payload?.currency?.symbol ?? '';
+  } catch (err) {
+    console.error('Failed to fetch user currency preference', err);
+    transactionCurrencySymbol.value = '';
+  }
+};
+
+
 
 onMounted(() => {
   fetchMemberList();
@@ -639,6 +653,7 @@ onMounted(() => {
   fetchIncomeReportData();
   fetchBalanceReportData();
   fetchMembershipGrowthReportData();
+  fetchCurrencyPreference(); 
 });
 
 </script>
@@ -671,7 +686,9 @@ onMounted(() => {
 
         <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
           <h5 class="text-sm text-gray-500 font-medium mb-1">Balance</h5>
-          <p class="text-2xl font-bold text-gray-500">{{ balance }}</p>
+          <p class="text-2xl font-bold text-gray-500">
+                {{  transactionCurrencySymbol   || '' }}
+                {{ balance >= 0 ? '+' : '' }}{{ balance }}</p>
           <router-link to="/org-dashboard/accounts">
             <button class="text-blue-500 text-sm hover:underline mt-2 inline-block">
               See all transactions
@@ -710,11 +727,11 @@ onMounted(() => {
               </button>
             </router-link>
 
-            <router-link :to="{ path: '/org-dashboard/past-members' }">
+            <!-- <router-link :to="{ path: '/org-dashboard/past-members' }">
               <button class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
                 Former Members
               </button>
-            </router-link>
+            </router-link> -->
           </div>
 
           <!-- + Add Member -->

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import { utils, writeFileXLSX } from 'xlsx'
@@ -21,22 +21,6 @@ const loading = ref(false)
 
 const rowsPerPage = ref(10)
 const currentPage = ref(1)
-
-
-const openMenuId = ref(null)
-const toggleMenu = (id) => {
-  openMenuId.value = openMenuId.value === id ? null : id
-}
-const closeMenu = () => (openMenuId.value = null)
-
-const _onDocClick = () => closeMenu()
-
-onMounted(() => {
-  document.addEventListener('click', _onDocClick)
-})
-onBeforeUnmount(() => {
-  document.removeEventListener('click', _onDocClick)
-})
 
 const columnProfiles = {
   minimal: ['name', 'date', 'status_display', 'actions'],
@@ -226,14 +210,10 @@ onMounted(() => {
     <div class="flex justify-between items-center">
       <h2 class="text-xl font-semibold text-gray-800">Meeting List</h2>
       <div class="flex gap-2 items-center">
-        <button @click="exportCSV"
-          class="border px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">CSV</button>
-        <button @click="exportXLSX"
-          class="border px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">Excel</button>
-        <button @click="exportPDF"
-          class="border px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">PDF</button>
-        <button @click="goToCreateMeeting" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Create
-          Meeting</button>
+        <button @click="exportCSV" class="border px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">CSV</button>
+        <button @click="exportXLSX" class="border px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">Excel</button>
+        <button @click="exportPDF" class="border px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">PDF</button>
+        <button @click="goToCreateMeeting" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Create Meeting</button>
       </div>
     </div>
 
@@ -249,8 +229,7 @@ onMounted(() => {
       </div>
       <div>
         <label class="text-sm text-gray-600 mb-1 block">Quick Filter</label>
-        <select v-model="quickDateFilter" @change="applyQuickDateFilter"
-          class="w-full border rounded px-3 py-1.5 text-sm">
+        <select v-model="quickDateFilter" @change="applyQuickDateFilter" class="w-full border rounded px-3 py-1.5 text-sm">
           <option value="">All</option>
           <option value="last7">Last 7 Days</option>
           <option value="thisMonth">This Month</option>
@@ -276,8 +255,7 @@ onMounted(() => {
         <label class="text-sm font-medium text-gray-700 mb-1 block">Visible Columns</label>
         <div class="flex flex-wrap gap-4">
           <div v-for="header in allHeaders" :key="header.value" class="flex items-center gap-2 text-sm">
-            <input type="checkbox" v-model="visibleColumns" :value="header.value" :id="header.value"
-              class="accent-blue-600" />
+            <input type="checkbox" v-model="visibleColumns" :value="header.value" :id="header.value" class="accent-blue-600" />
             <label :for="header.value" class="text-gray-700">{{ header.text }}</label>
           </div>
         </div>
@@ -285,8 +263,17 @@ onMounted(() => {
     </div>
 
     <!-- ✅ Data Table -->
-    <EasyDataTable :headers="filteredHeaders" :items="paginatedCommittees" :loading="loading" show-index hide-footer
-      table-class="min-w-full text-sm" header-class="bg-gray-100" body-row-class="text-sm" :theme-color="'#3b82f6'">
+    <EasyDataTable
+      :headers="filteredHeaders"
+      :items="paginatedCommittees"
+      :loading="loading"
+      show-index
+      hide-footer
+      table-class="min-w-full text-sm"
+      header-class="bg-gray-100"
+      body-row-class="text-sm"
+      :theme-color="'#3b82f6'"
+    >
       <template #item-status_display="{ status_display }">
         <span :class="{
           'bg-green-100 text-green-800': status_display === 'Active',
@@ -304,68 +291,65 @@ onMounted(() => {
       </template>
       <!-- Actions Slot -->
       <template #item-actions="{ id }">
-        <div class="relative flex justify-end">
-          <!-- ⋯ trigger -->
-          <button @click.stop="toggleMenu(id)"
-            class="inline-flex items-center justify-center h-8 w-8 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-            aria-label="More actions">
-            <!-- vertical dots icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-              <path
-                d="M10 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 5.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 5.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" />
-            </svg>
-          </button>
+  <div class="flex justify-end gap-2">
+    <template v-if="meetingMinuteList.find(s => s.meeting_id === id)">
+      <button
+        @click="$router.push({ name: 'view-meeting-minutes', params: { id: meetingMinuteList.find(s => s.meeting_id === id).id } })"
+        class="px-3 py-1 border border-gray-300 rounded text-xs text-gray-700 bg-white hover:bg-gray-50 transition"
+      >
+        Minutes View
+      </button>
+    </template>
+    <template v-else>
+      <button
+        @click="$router.push({ name: 'create-meeting-minutes', params: { meetingId: id } })"
+        class="px-3 py-1 border border-gray-300 rounded text-xs text-gray-700 bg-white hover:bg-gray-50 transition"
+      >
+        Minutes Add
+      </button>
+    </template>
 
-          <!-- dropdown -->
-          <div v-if="openMenuId === id" @click.stop
-            class="absolute right-0 z-20 mt-2 w-48 rounded-lg border border-gray-200 bg-white shadow-lg p-1">
-            <!-- Minutes item (conditional) -->
-            <template v-if="meetingMinuteList.find(s => s.meeting_id === id)">
-              <button
-                @click="$router.push({ name: 'view-meeting-minutes', params: { id: meetingMinuteList.find(s => s.meeting_id === id).id } })"
-                class="w-full text-left px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-50">
-                Minutes – View
-              </button>
-            </template>
-            <template v-else>
-              <button @click="$router.push({ name: 'create-meeting-minutes', params: { meetingId: id } })"
-                class="w-full text-left px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-50">
-                Minutes – Add
-              </button>
-            </template>
+    <button
+      @click="$router.push({ name: 'meeting-guest-attendance', params: { id } })"
+      class="px-3 py-1 border border-gray-300 rounded text-xs text-gray-700 bg-white hover:bg-gray-50 transition"
+    >
+      Guest
+    </button>
 
-            <div class="my-1 h-px bg-gray-100"></div>
+    <button
+      @click="$router.push({ name: 'meeting-attendances', params: { id } })"
+      class="px-3 py-1 border border-gray-300 rounded text-xs text-gray-700 bg-white hover:bg-gray-50 transition"
+    >
+      Attendees
+    </button>
 
-            <button @click="$router.push({ name: 'meeting-guest-attendance', params: { id } })"
-              class="w-full text-left px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-50">
-              Guest
-            </button>
-            <button @click="$router.push({ name: 'meeting-attendances', params: { id } })"
-              class="w-full text-left px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-50">
-              Attendees
-            </button>
+    <button
+      @click="viewMeeting(id)"
+      class="px-3 py-1 border border-gray-300 rounded text-xs text-gray-700 bg-white hover:bg-gray-50 transition"
+    >
+      View
+    </button>
 
-            <div class="my-1 h-px bg-gray-100"></div>
+    <button
+      @click="editMeeting(id)"
+      class="px-3 py-1 border border-gray-300 rounded text-xs text-gray-700 bg-white hover:bg-gray-50 transition"
+    >
+      Edit
+    </button>
 
-            <button @click="viewMeeting(id)"
-              class="w-full text-left px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-50">
-              View
-            </button>
-            <button @click="editMeeting(id)"
-              class="w-full text-left px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-50">
-              Edit
-            </button>
-            <button @click="deleteMeeting(id)"
-              class="w-full text-left px-3 py-2 rounded text-sm text-red-600 hover:bg-red-50">
-              Delete
-            </button>
-          </div>
-        </div>
-      </template>
+    <button
+      @click="deleteMeeting(id)"
+      class="px-3 py-1 border border-gray-300 rounded text-xs text-gray-700 bg-white hover:bg-gray-50 transition"
+    >
+      Delete
+    </button>
+  </div>
+</template>
+
     </EasyDataTable>
 
     <!-- ✅ Bottom Pagination -->
-    <div class="flex justify-between items-center px-2 py-3 bg-gray-50 rounded border">
+     <div class="flex justify-between items-center px-2 py-3 bg-gray-50 rounded border">
       <!-- ✅ Left info -->
       <div class="text-sm text-gray-600">
         Items
@@ -413,3 +397,4 @@ onMounted(() => {
 
   </div>
 </template>
+

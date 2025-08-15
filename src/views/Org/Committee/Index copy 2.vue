@@ -356,28 +356,56 @@ onMounted(fetchCommitteeList)
       </template>
       <!-- Actions Slot -->
       <template #item-actions="{ id }">
-        <div class="flex justify-end gap-2">
-          <!-- <button @click="$router.push({ name: 'index-committee-member', params: { committeeId: id, committeeName: name } })"
-            class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded-lg text-xs">
-            Members
-          </button> -->
-          <button @click="$router.push({ name: 'index-committee-member', params: { committeeId: id } })"
-            class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded-lg text-xs">
-            Members
-          </button>
-          <button @click="openViewModal(committeeList.find(c => c.id === id))"
-            class="bg-green-500 px-3 py-1 rounded text-xs">
-            View
-          </button>
-          <button @click="openModal(committeeList.find(c => c.id === id))"
-            class="bg-yellow-400 px-3 py-1 rounded text-xs">
-            Edit
-          </button>
-          <button @click="deleteCommittee(id)" class="bg-red-500 px-3 py-1 rounded text-xs">
-            Delete
-          </button>
-        </div>
-      </template>
+  <div class="relative flex justify-end">
+    <!-- ⋯ trigger -->
+    <button
+      @click.stop="toggleMenu(id)"
+      class="inline-flex items-center justify-center h-8 w-8 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+      aria-label="More actions"
+    >
+      <!-- vertical dots -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M10 4a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM10 11.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM10 19a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/>
+      </svg>
+    </button>
+
+    <!-- dropdown -->
+    <div
+      v-if="openMenuId === id"
+      @click.stop
+      class="absolute right-0 z-20 mt-2 w-48 rounded-lg border border-gray-200 bg-white shadow-lg p-1"
+    >
+      <button
+        @click="$router.push({ name: 'index-committee-member', params: { committeeId: id } })"
+        class="w-full text-left px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-50"
+      >
+        Members
+      </button>
+
+      <div class="my-1 h-px bg-gray-100"></div>
+
+      <button
+        @click="openViewModal(committeeList.find(c => c.id === id))"
+        class="w-full text-left px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-50"
+      >
+        View
+      </button>
+      <button
+        @click="openModal(committeeList.find(c => c.id === id))"
+        class="w-full text-left px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-50"
+      >
+        Edit
+      </button>
+      <button
+        @click="deleteCommittee(id)"
+        class="w-full text-left px-3 py-2 rounded text-sm text-red-600 hover:bg-red-50"
+      >
+        Delete
+      </button>
+    </div>
+  </div>
+</template>
+
     </EasyDataTable>
 
     <!-- ✅ Custom Footer -->
