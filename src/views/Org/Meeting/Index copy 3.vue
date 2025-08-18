@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import { utils, writeFileXLSX } from 'xlsx'
@@ -21,6 +21,22 @@ const loading = ref(false)
 
 const rowsPerPage = ref(10)
 const currentPage = ref(1)
+
+
+const openMenuId = ref(null)
+const toggleMenu = (id) => {
+  openMenuId.value = openMenuId.value === id ? null : id
+}
+const closeMenu = () => (openMenuId.value = null)
+
+const _onDocClick = () => closeMenu()
+
+onMounted(() => {
+  document.addEventListener('click', _onDocClick)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('click', _onDocClick)
+})
 
 const columnProfiles = {
   minimal: ['name', 'date', 'status_display', 'actions'],
@@ -207,29 +223,34 @@ onMounted(() => {
 <template>
   <div class="p-6 bg-white rounded-lg shadow space-y-6">
     <!-- ✅ Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-      <h2 class="text-lg sm:text-xl font-semibold text-gray-800 text-center sm:text-left">Meeting List</h2>
-      <div class="flex flex-wrap justify-center sm:justify-end gap-2">
-        <button @click="exportCSV" class="border px-3 py-1.5 text-xs sm:text-sm rounded text-gray-700 hover:bg-gray-100">CSV</button>
-        <button @click="exportXLSX" class="border px-3 py-1.5 text-xs sm:text-sm rounded text-gray-700 hover:bg-gray-100">Excel</button>
-        <button @click="exportPDF" class="border px-3 py-1.5 text-xs sm:text-sm rounded text-gray-700 hover:bg-gray-100">PDF</button>
-        <button @click="goToCreateMeeting" class="bg-blue-600 text-white px-4 py-2 rounded text-xs sm:text-sm">Create Meeting</button>
+    <div class="flex justify-between items-center">
+      <h2 class="text-xl font-semibold text-gray-800">Meeting List</h2>
+      <div class="flex gap-2 items-center">
+        <button @click="exportCSV"
+          class="border px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">CSV</button>
+        <button @click="exportXLSX"
+          class="border px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">Excel</button>
+        <button @click="exportPDF"
+          class="border px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">PDF</button>
+        <button @click="goToCreateMeeting" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Create
+          Meeting</button>
       </div>
     </div>
 
     <!-- ✅ Filters -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       <div>
-        <label class="text-xs sm:text-sm text-gray-600 mb-1 block">Start Date</label>
-        <input type="date" v-model="startDate" class="w-full border rounded px-3 py-1.5 text-xs sm:text-sm" />
+        <label class="text-sm text-gray-600 mb-1 block">Start Date</label>
+        <input type="date" v-model="startDate" class="w-full border rounded px-3 py-1.5 text-sm" />
       </div>
       <div>
-        <label class="text-xs sm:text-sm text-gray-600 mb-1 block">End Date</label>
-        <input type="date" v-model="endDate" class="w-full border rounded px-3 py-1.5 text-xs sm:text-sm" />
+        <label class="text-sm text-gray-600 mb-1 block">End Date</label>
+        <input type="date" v-model="endDate" class="w-full border rounded px-3 py-1.5 text-sm" />
       </div>
       <div>
-        <label class="text-xs sm:text-sm text-gray-600 mb-1 block">Quick Filter</label>
-        <select v-model="quickDateFilter" @change="applyQuickDateFilter" class="w-full border rounded px-3 py-1.5 text-xs sm:text-sm">
+        <label class="text-sm text-gray-600 mb-1 block">Quick Filter</label>
+        <select v-model="quickDateFilter" @change="applyQuickDateFilter"
+          class="w-full border rounded px-3 py-1.5 text-sm">
           <option value="">All</option>
           <option value="last7">Last 7 Days</option>
           <option value="thisMonth">This Month</option>
@@ -237,25 +258,26 @@ onMounted(() => {
         </select>
       </div>
       <div>
-        <label class="text-xs sm:text-sm text-gray-600 mb-1 block">Search</label>
-        <input v-model="search" placeholder="Search..." class="w-full border rounded px-3 py-1.5 text-xs sm:text-sm" />
+        <label class="text-sm text-gray-600 mb-1 block">Search</label>
+        <input v-model="search" placeholder="Search..." class="w-full border rounded px-3 py-1.5 text-sm" />
       </div>
     </div>
 
     <!-- ✅ Column View Settings -->
-    <div class="bg-gray-50 border rounded p-4 flex flex-col lg:flex-row flex-wrap gap-6">
+    <div class="bg-gray-50 border rounded p-4 flex flex-wrap gap-8 items-start">
       <div>
-        <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Column View:</label>
-        <select v-model="selectedProfile" @change="applyProfile" class="border rounded px-3 py-1.5 text-xs sm:text-sm w-full sm:w-48">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Column View:</label>
+        <select v-model="selectedProfile" @change="applyProfile" class="border rounded px-3 py-1.5 text-sm w-48">
           <option value="minimal">Minimal</option>
           <option value="detailed">Detailed</option>
         </select>
       </div>
-      <div class="flex-1">
-        <label class="text-xs sm:text-sm font-medium text-gray-700 mb-1 block">Visible Columns</label>
+      <div>
+        <label class="text-sm font-medium text-gray-700 mb-1 block">Visible Columns</label>
         <div class="flex flex-wrap gap-4">
-          <div v-for="header in allHeaders" :key="header.value" class="flex items-center gap-2 text-xs sm:text-sm">
-            <input type="checkbox" v-model="visibleColumns" :value="header.value" :id="header.value" class="accent-blue-600" />
+          <div v-for="header in allHeaders" :key="header.value" class="flex items-center gap-2 text-sm">
+            <input type="checkbox" v-model="visibleColumns" :value="header.value" :id="header.value"
+              class="accent-blue-600" />
             <label :for="header.value" class="text-gray-700">{{ header.text }}</label>
           </div>
         </div>
@@ -263,22 +285,13 @@ onMounted(() => {
     </div>
 
     <!-- ✅ Data Table -->
-    <EasyDataTable
-      :headers="filteredHeaders"
-      :items="paginatedCommittees"
-      :loading="loading"
-      show-index
-      hide-footer
-      table-class="min-w-full text-xs sm:text-sm"
-      header-class="bg-gray-100"
-      body-row-class="text-xs sm:text-sm"
-      :theme-color="'#3b82f6'"
-    >
+    <EasyDataTable :headers="filteredHeaders" :items="paginatedCommittees" :loading="loading" show-index hide-footer
+      table-class="min-w-full text-sm" header-class="bg-gray-100" body-row-class="text-sm" :theme-color="'#3b82f6'">
       <template #item-status_display="{ status_display }">
         <span :class="{
           'bg-green-100 text-green-800': status_display === 'Active',
           'bg-red-100 text-red-800': status_display !== 'Active'
-        }" class="text-[10px] sm:text-xs font-medium px-2 py-1 rounded">
+        }" class="text-xs font-medium px-2 py-1 rounded">
           {{ status_display }}
         </span>
       </template>
@@ -289,68 +302,114 @@ onMounted(() => {
           Actions
         </div>
       </template>
-
       <!-- Actions Slot -->
       <template #item-actions="{ id }">
-        <div class="flex flex-wrap justify-end gap-2">
-          <template v-if="meetingMinuteList.find(s => s.meeting_id === id)">
-            <button @click="$router.push({ name: 'view-meeting-minutes', params: { id: meetingMinuteList.find(s => s.meeting_id === id).id } })"
-              class="bg-sky-500 hover:bg-sky-600 text-white px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs">Minutes view</button>
-          </template>
-          <template v-else>
-            <button @click="$router.push({ name: 'create-meeting-minutes', params: { meetingId: id } })"
-              class="bg-sky-500 hover:bg-sky-600 text-white px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs">Minutes add</button>
-          </template>
+        <div class="relative flex justify-end">
+          <!-- ⋯ trigger -->
+          <button @click.stop="toggleMenu(id)"
+            class="inline-flex items-center justify-center h-8 w-8 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+            aria-label="More actions">
+            <!-- vertical dots icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path
+                d="M10 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 5.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 5.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" />
+            </svg>
+          </button>
 
-          <button @click="$router.push({ name: 'meeting-guest-attendance', params: { id } })"
-            class="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs">Guest</button>
+          <!-- dropdown -->
+          <div v-if="openMenuId === id" @click.stop
+            class="absolute right-0 z-20 mt-2 w-48 rounded-lg border border-gray-200 bg-white shadow-lg p-1">
+            <!-- Minutes item (conditional) -->
+            <template v-if="meetingMinuteList.find(s => s.meeting_id === id)">
+              <button
+                @click="$router.push({ name: 'view-meeting-minutes', params: { id: meetingMinuteList.find(s => s.meeting_id === id).id } })"
+                class="w-full text-left px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-50">
+                Minutes – View
+              </button>
+            </template>
+            <template v-else>
+              <button @click="$router.push({ name: 'create-meeting-minutes', params: { meetingId: id } })"
+                class="w-full text-left px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-50">
+                Minutes – Add
+              </button>
+            </template>
 
-          <button @click="$router.push({ name: 'meeting-attendances', params: { id } })"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs">Attendees</button>
+            <div class="my-1 h-px bg-gray-100"></div>
 
-          <button @click="viewMeeting(id)" class="bg-green-500 hover:bg-green-600 text-white px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs">View</button>
-          <button @click="editMeeting(id)" class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs">Edit</button>
-          <button @click="deleteMeeting(id)" class="bg-red-500 hover:bg-red-600 text-white px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs">Delete</button>
+            <button @click="$router.push({ name: 'meeting-guest-attendance', params: { id } })"
+              class="w-full text-left px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-50">
+              Guest
+            </button>
+            <button @click="$router.push({ name: 'meeting-attendances', params: { id } })"
+              class="w-full text-left px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-50">
+              Attendees
+            </button>
+
+            <div class="my-1 h-px bg-gray-100"></div>
+
+            <button @click="viewMeeting(id)"
+              class="w-full text-left px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-50">
+              View
+            </button>
+            <button @click="editMeeting(id)"
+              class="w-full text-left px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-50">
+              Edit
+            </button>
+            <button @click="deleteMeeting(id)"
+              class="w-full text-left px-3 py-2 rounded text-sm text-red-600 hover:bg-red-50">
+              Delete
+            </button>
+          </div>
         </div>
       </template>
     </EasyDataTable>
 
     <!-- ✅ Bottom Pagination -->
-    <div class="flex flex-col sm:flex-row justify-between items-center gap-3 px-2 py-3 bg-gray-50 rounded border">
+    <div class="flex justify-between items-center px-2 py-3 bg-gray-50 rounded border">
       <!-- ✅ Left info -->
-      <div class="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
-        Items {{ (currentPage - 1) * rowsPerPage + 1 }} -
-        {{ Math.min(currentPage * rowsPerPage, totalItems) }}
+      <div class="text-sm text-gray-600">
+        Items
+        {{ (currentPage - 1) * rowsPerPage + 1 }}-
+        {{
+          Math.min(currentPage * rowsPerPage, totalItems)
+        }}
         of {{ totalItems }} |
         Page {{ currentPage }} of {{ totalPages }}
       </div>
 
       <!-- ✅ Right controls -->
-      <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+      <div class="flex items-center gap-4">
         <!-- Page Size -->
-        <div class="flex items-center justify-center sm:justify-start gap-1">
-          <span class="text-xs sm:text-sm text-gray-600">Items per page:</span>
-          <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-xs sm:text-sm">
-            <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">{{ size }}</option>
+        <div class="flex items-center gap-1">
+          <span class="text-sm text-gray-600">Items per page:</span>
+          <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-sm">
+            <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">
+              {{ size }}
+            </option>
           </select>
         </div>
 
         <!-- Navigation Buttons -->
-        <div class="flex justify-center flex-wrap gap-1">
-          <button @click="goToFirst" :disabled="currentPage === 1"
-            class="border rounded px-2 sm:px-3 py-1 text-xs sm:text-sm transition"
-            :class="currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">First</button>
-          <button @click="goToPrev" :disabled="currentPage === 1"
-            class="border rounded px-2 sm:px-3 py-1 text-xs sm:text-sm transition"
-            :class="currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">Prev</button>
-          <button @click="goToNext" :disabled="currentPage === totalPages"
-            class="border rounded px-2 sm:px-3 py-1 text-xs sm:text-sm transition"
-            :class="currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">Next</button>
-          <button @click="goToLast" :disabled="currentPage === totalPages"
-            class="border rounded px-2 sm:px-3 py-1 text-xs sm:text-sm transition"
-            :class="currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">Last</button>
+        <div class="flex gap-1">
+          <button @click="goToFirst" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
+            First
+          </button>
+          <button @click="goToPrev" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
+            Prev
+          </button>
+          <button @click="goToNext" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
+            Next
+          </button>
+          <button @click="goToLast" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
+            Last
+          </button>
         </div>
       </div>
     </div>
+
   </div>
 </template>

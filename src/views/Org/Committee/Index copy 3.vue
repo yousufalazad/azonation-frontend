@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import { utils, writeFileXLSX } from 'xlsx'
@@ -32,6 +32,21 @@ const loading = ref(false)
 
 const rowsPerPage = ref(10)
 const currentPage = ref(1)
+
+const openMenuId = ref(null)
+const toggleMenu = (id) => {
+  openMenuId.value = openMenuId.value === id ? null : id
+}
+const closeMenu = () => (openMenuId.value = null)
+
+const _onDocClick = () => closeMenu()
+
+onMounted(() => {
+  document.addEventListener('click', _onDocClick)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('click', _onDocClick)
+})
 
 const columnProfiles = {
   minimal: ['name', 'start_date', 'status_display', 'actions'],
@@ -260,11 +275,11 @@ onMounted(fetchCommitteeList)
 
 
 <template>
-  <div class="p-4 sm:p-6 bg-white shadow rounded-lg space-y-6">
+  <div class="p-6 bg-white shadow rounded-lg space-y-6">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-      <h2 class="text-lg sm:text-xl font-semibold">Committees</h2>
-      <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+    <div class="flex justify-between items-center">
+      <h2 class="text-xl font-semibold">Committees</h2>
+      <div class="flex gap-2">
         <button @click="exportCSV"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           CSV
@@ -277,9 +292,7 @@ onMounted(fetchCommitteeList)
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           PDF
         </button>
-        <button @click="openModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm">
-          + Add Committee
-        </button>
+        <button @click="openModal()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">+ Add Committee</button>
       </div>
     </div>
 
@@ -295,8 +308,7 @@ onMounted(fetchCommitteeList)
       </div>
       <div>
         <label class="text-sm text-gray-600">Quick Filter</label>
-        <select v-model="quickDateFilter" @change="applyQuickDateFilter"
-          class="w-full border rounded px-3 py-1.5 text-sm">
+        <select v-model="quickDateFilter" @change="applyQuickDateFilter" class="w-full border rounded px-3 py-1.5 text-sm">
           <option value="">All</option>
           <option value="last7">Last 7 Days</option>
           <option value="thisMonth">This Month</option>
@@ -304,22 +316,20 @@ onMounted(fetchCommitteeList)
       </div>
       <div>
         <label class="text-sm text-gray-600">Search</label>
-        <input v-model="search" type="text" placeholder="Search..."
-          class="w-full border rounded px-3 py-1.5 text-sm" />
+        <input v-model="search" type="text" placeholder="Search..." class="w-full border rounded px-3 py-1.5 text-sm" />
       </div>
     </div>
 
     <!-- Column Settings -->
-    <div class="bg-gray-50 border rounded p-4 flex flex-col lg:flex-row gap-6">
+    <div class="bg-gray-50 border rounded p-4 flex flex-wrap gap-8 items-start">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Column View:</label>
-        <select v-model="selectedProfile" @change="applyProfile"
-          class="border rounded px-3 py-1.5 text-xs sm:text-sm w-full sm:w-48">
+        <select v-model="selectedProfile" @change="applyProfile" class="border rounded px-3 py-1.5 text-sm w-48">
           <option value="minimal">Minimal</option>
           <option value="detailed">Detailed</option>
         </select>
       </div>
-      <div class="w-full md:flex-1">
+      <div>
         <label class="text-sm font-medium text-gray-700 mb-1 block">Visible Columns</label>
         <div class="flex flex-wrap gap-4">
           <div v-for="header in allHeaders" :key="header.value" class="flex items-center gap-2 text-sm">
@@ -330,51 +340,62 @@ onMounted(fetchCommitteeList)
         </div>
       </div>
     </div>
-
     <!-- Table -->
-    <div class="overflow-x-auto">
-      <EasyDataTable :headers="filteredHeaders" :items="paginatedCommittees" :loading="loading" show-index hide-footer
-        table-class="min-w-full text-sm" header-class="bg-gray-100" body-row-class="text-sm"
-        :theme-color="'#3b82f6'">
-        <template #item-status_display="{ status_display }">
-          <span :class="status_display === 'Active' ? 'text-green-600' : 'text-red-600'">
-            {{ status_display }}
-          </span>
-        </template>
-        <template #header-actions>
-          <div class="text-right w-full pr-2">Actions</div>
-        </template>
-        <template #item-actions="{ id }">
-          <div class="flex flex-wrap justify-end gap-2">
-            <button @click="$router.push({ name: 'index-committee-member', params: { committeeId: id } })"
-              class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded-lg text-xs">
-              Members
-            </button>
-            <button @click="openViewModal(committeeList.find(c => c.id === id))"
-              class="bg-green-500 px-3 py-1 rounded text-xs">
-              View
-            </button>
-            <button @click="openModal(committeeList.find(c => c.id === id))"
-              class="bg-yellow-400 px-3 py-1 rounded text-xs">
-              Edit
-            </button>
-            <button @click="deleteCommittee(id)"
-              class="bg-red-500 px-3 py-1 rounded text-xs">
-              Delete
-            </button>
-          </div>
-        </template>
-      </EasyDataTable>
-    </div>
+    <EasyDataTable :headers="filteredHeaders" :items="paginatedCommittees" :loading="loading" show-index hide-footer
+      table-class="min-w-full text-sm" header-class="bg-gray-100" body-row-class="text-sm" :theme-color="'#3b82f6'">
 
-    <!-- Footer -->
-    <div class="flex flex-col md:flex-row justify-between items-center gap-3 px-2 py-3 bg-gray-50 rounded border">
-      <div class="text-sm text-gray-600 text-center md:text-left">
-        Items {{ (currentPage - 1) * rowsPerPage + 1 }} -
-        {{ Math.min(currentPage * rowsPerPage, totalItems) }} of {{ totalItems }} |
+
+      <template #item-status_display="{ status_display }">
+        <span :class="status_display === 'Active' ? 'text-green-600' : 'text-red-600'">{{ status_display }}</span>
+      </template>
+      <!-- Header Alignment Fix -->
+      <template #header-actions>
+        <div class="text-right w-full pr-2">
+          Actions
+        </div>
+      </template>
+      <!-- Actions Slot -->
+      <template #item-actions="{ id }">
+        <div class="flex justify-end gap-2">
+          <!-- <button @click="$router.push({ name: 'index-committee-member', params: { committeeId: id, committeeName: name } })"
+            class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded-lg text-xs">
+            Members
+          </button> -->
+          <button @click="$router.push({ name: 'index-committee-member', params: { committeeId: id } })"
+            class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded-lg text-xs">
+            Members
+          </button>
+          <button @click="openViewModal(committeeList.find(c => c.id === id))"
+            class="bg-green-500 px-3 py-1 rounded text-xs">
+            View
+          </button>
+          <button @click="openModal(committeeList.find(c => c.id === id))"
+            class="bg-yellow-400 px-3 py-1 rounded text-xs">
+            Edit
+          </button>
+          <button @click="deleteCommittee(id)" class="bg-red-500 px-3 py-1 rounded text-xs">
+            Delete
+          </button>
+        </div>
+      </template>
+    </EasyDataTable>
+
+    <!-- ✅ Custom Footer -->
+    <div class="flex justify-between items-center px-2 py-3 bg-gray-50 rounded border">
+      <!-- ✅ Left info -->
+      <div class="text-sm text-gray-600">
+        Items
+        {{ (currentPage - 1) * rowsPerPage + 1 }}-
+        {{
+          Math.min(currentPage * rowsPerPage, totalItems)
+        }}
+        of {{ totalItems }} |
         Page {{ currentPage }} of {{ totalPages }}
       </div>
-      <div class="flex flex-col sm:flex-row items-center gap-3">
+
+      <!-- ✅ Right controls -->
+      <div class="flex items-center gap-4">
+        <!-- Page Size -->
         <div class="flex items-center gap-1">
           <span class="text-sm text-gray-600">Items per page:</span>
           <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-sm">
@@ -383,24 +404,22 @@ onMounted(fetchCommitteeList)
             </option>
           </select>
         </div>
-        <div class="flex flex-wrap justify-center gap-1">
-          <button @click="goToFirst" :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-sm"
+
+        <!-- Navigation Buttons -->
+        <div class="flex gap-1">
+          <button @click="goToFirst" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
             :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
             First
           </button>
-          <button @click="goToPrev" :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-sm"
+          <button @click="goToPrev" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
             :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
             Prev
           </button>
-          <button @click="goToNext" :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-sm"
+          <button @click="goToNext" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
             :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
             Next
           </button>
-          <button @click="goToLast" :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-sm"
+          <button @click="goToLast" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
             :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
             Last
           </button>
@@ -408,6 +427,115 @@ onMounted(fetchCommitteeList)
       </div>
     </div>
 
-    <!-- Modals ... (keep your modal code but add responsive width like max-w-sm md:max-w-xl lg:max-w-2xl) -->
+    <!-- Modals (View/Edit) go here... -->
+     <!-- Create/Edit Modal -->
+  <div v-if="modalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl mx-auto p-6 md:p-8">
+      <!-- Modal Header -->
+      <h2 class="text-lg md:text-2xl font-semibold text-center text-gray-800 mb-6">
+        {{ isEditMode ? 'Edit Committee' : 'Create Committee' }}
+      </h2>
+
+      <!-- Scrollable Form -->
+      <div class="max-h-[28rem] overflow-y-auto space-y-4">
+        <!-- Committee Name -->
+        <div>
+          <label for="newName" class="block text-sm font-medium text-gray-700 mb-1">Committee Name</label>
+          <input v-model="newName" id="newName" type="text"
+            class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <!-- Short Description -->
+        <div>
+          <label for="short_description" class="block text-sm font-medium text-gray-700 mb-1">Short Description</label>
+          <input v-model="short_description" id="short_description" type="text"
+            class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <!-- Dates -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+            <input v-model="start_date" id="start_date" type="date"
+              class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+            <input v-model="end_date" id="end_date" type="date"
+              class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+        </div>
+
+        <!-- Note -->
+        <div>
+          <label for="note" class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+          <textarea v-model="note" id="note" rows="3"
+            class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+
+        <!-- is_active -->
+        <div>
+          <label for="is_active" class="block text-sm font-medium text-gray-700 mb-1">Is Active</label>
+          <select v-model="is_active" id="is_active"
+            class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex justify-end mt-6 space-x-3">
+        <button @click="closeModal"
+          class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+          Cancel
+        </button>
+        <!-- <button @click="submitForm()" -->
+        <button @click="isEditMode ? updateCommittee() : createCommittee()"
+          class="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
+          {{ isEditMode ? 'Update' : 'Submit' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Modal -->
+  <div v-if="viewModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl mx-auto p-6 md:p-8">
+      <!-- Header -->
+      <h2 class="text-lg md:text-2xl font-semibold text-center text-gray-800 mb-6">
+        View Committee
+      </h2>
+
+      <!-- Committee Info Table -->
+      <div class="max-h-[28rem] overflow-y-auto">
+        <table class="w-full table-auto border-separate border-spacing-y-3">
+          <tbody class="text-gray-700 text-sm md:text-base">
+            <tr v-for="(value, label) in {
+              'Name': selectedCommittee.name,
+              'Short Description': selectedCommittee.short_description,
+              'Start Date': selectedCommittee.start_date,
+              'End Date': selectedCommittee.end_date,
+              'Note': selectedCommittee.note,
+              'Is Active': selectedCommittee.is_active == '1' ? 'Yes' : 'No'
+            }" :key="label">
+              <td class="font-medium text-gray-600 w-40 align-top">{{ label }}</td>
+              <td class="text-gray-500">:</td>
+              <td class="text-gray-800">{{ value }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer -->
+      <div class="text-right mt-6">
+        <button @click="closeViewModal"
+          class="px-5 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+  
   </div>
 </template>

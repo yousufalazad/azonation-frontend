@@ -186,27 +186,25 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="p-4 sm:p-6 space-y-6 bg-white shadow rounded-lg">
+  <div class="p-6 space-y-6 bg-white shadow rounded-lg">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-      <h2 class="text-lg sm:text-xl font-semibold text-gray-800 text-center sm:text-left">
-        Project List
-      </h2>
-      <div class="flex flex-wrap justify-center sm:justify-end gap-2">
+    <div class="flex justify-between items-center">
+      <h2 class="text-xl font-semibold text-gray-800">Project List</h2>
+      <div class="flex gap-2">
         <button @click="exportCSV"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-2 sm:px-3 py-1.5 text-xs sm:text-sm rounded text-gray-700 hover:bg-gray-100">
+          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           <FileText class="w-4 h-4" /> CSV
         </button>
         <button @click="exportXLSX"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-2 sm:px-3 py-1.5 text-xs sm:text-sm rounded text-gray-700 hover:bg-gray-100">
+          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           <FileSpreadsheet class="w-4 h-4" /> Excel
         </button>
         <button @click="exportPDF"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-2 sm:px-3 py-1.5 text-xs sm:text-sm rounded text-gray-700 hover:bg-gray-100">
+          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           <FileDown class="w-4 h-4" /> PDF
         </button>
         <button @click="$router.push({ name: 'create-project' })"
-          class="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded text-xs sm:text-sm font-medium">
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium">
           Add Project
         </button>
       </div>
@@ -215,45 +213,41 @@ onMounted(() => {
     <!-- Filters -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div>
-        <label class="text-xs sm:text-sm text-gray-600">Start Date</label>
-        <input type="date" v-model="startDate"
-          class="w-full border rounded px-2 sm:px-3 py-1.5 text-xs sm:text-sm" />
+        <label class="text-sm text-gray-600">Start Date</label>
+        <input type="date" v-model="startDate" class="w-full border rounded px-3 py-1.5 text-sm" />
       </div>
       <div>
-        <label class="text-xs sm:text-sm text-gray-600">End Date</label>
-        <input type="date" v-model="endDate"
-          class="w-full border rounded px-2 sm:px-3 py-1.5 text-xs sm:text-sm" />
+        <label class="text-sm text-gray-600">End Date</label>
+        <input type="date" v-model="endDate" class="w-full border rounded px-3 py-1.5 text-sm" />
       </div>
       <div>
-        <label class="text-xs sm:text-sm text-gray-600">Quick Filter</label>
+        <label class="text-sm text-gray-600">Quick Filter</label>
         <select v-model="quickDateFilter" @change="applyQuickDateFilter"
-          class="w-full border rounded px-2 sm:px-3 py-1.5 text-xs sm:text-sm">
+          class="w-full border rounded px-3 py-1.5 text-sm">
           <option value="">All</option>
           <option value="last7">Last 7 Days</option>
           <option value="thisMonth">This Month</option>
         </select>
       </div>
       <div>
-        <label class="text-xs sm:text-sm text-gray-600">Search</label>
-        <input v-model="search" type="text" placeholder="Search..."
-          class="w-full border rounded px-2 sm:px-3 py-1.5 text-xs sm:text-sm" />
+        <label class="text-sm text-gray-600">Search</label>
+        <input v-model="search" type="text" placeholder="Search..." class="w-full border rounded px-3 py-1.5 text-sm" />
       </div>
     </div>
 
     <!-- Column Settings -->
-    <div class="bg-gray-50 border rounded p-4 flex flex-col lg:flex-row gap-6">
-      <div>
+    <div class="bg-gray-50 border rounded p-4 flex flex-wrap gap-8 items-start">
+      <div class="flex flex-col">
         <label class="block text-sm font-medium text-gray-700 mb-1">Column View:</label>
-        <select v-model="selectedProfile" @change="applyProfile"
-          class="border rounded px-3 py-1.5 text-xs sm:text-sm w-full sm:w-48">
+        <select v-model="selectedProfile" @change="applyProfile" class="border rounded px-3 py-1.5 text-sm w-48">
           <option value="minimal">Minimal</option>
           <option value="detailed">Detailed</option>
         </select>
       </div>
-      <div class="flex-1">
+      <div>
         <label class="text-sm font-medium text-gray-700 mb-1 block">Visible Columns</label>
         <div class="flex flex-wrap gap-4">
-          <div v-for="header in allHeaders" :key="header.value" class="flex items-center gap-2 text-xs sm:text-sm">
+          <div v-for="header in allHeaders" :key="header.value" class="flex items-center gap-2 text-sm">
             <input type="checkbox" v-model="visibleColumns" :value="header.value" :id="header.value"
               class="accent-blue-600" />
             <label :for="header.value" class="text-gray-700">{{ header.text }}</label>
@@ -263,75 +257,54 @@ onMounted(() => {
     </div>
 
     <!-- Table -->
-    <div class="overflow-x-auto">
-      <EasyDataTable
-        :headers="filteredHeaders"
-        :items="paginatedProjects"
-        :loading="loading"
-        :search-value="search"
-        show-index
-        hide-footer
-        table-class="min-w-full text-xs sm:text-sm"
-        header-class="bg-gray-100"
-        body-row-class="text-xs sm:text-sm"
-        :theme-color="'#3b82f6'"
-      >
-        <template #item-status_display="{ status_display }">
-          <span :class="{
-            'text-green-600 font-medium': status_display === 'Active',
-            'text-red-500 font-medium': status_display !== 'Active'
-          }">
-            {{ status_display }}
-          </span>
-        </template>
+    <EasyDataTable :headers="filteredHeaders" :items="paginatedProjects" :loading="loading" :search-value="search"
+      show-index hide-footer table-class="min-w-full text-sm" header-class="bg-gray-100" body-row-class="text-sm"
+      :theme-color="'#3b82f6'">
 
-        <!-- Header Alignment Fix -->
-        <template #header-actions>
-          <div class="text-right w-full pr-2">Actions</div>
-        </template>
+      <template #item-status_display="{ status_display }">
+        <span :class="{
+          'text-green-600 font-medium': status_display === 'Active',
+          'text-red-500 font-medium': status_display !== 'Active'
+        }">
+          {{ status_display }}
+        </span>
+      </template>
 
-        <!-- Actions Slot -->
-        <template #item-actions="{ id }">
-          <div class="flex flex-wrap justify-end gap-2">
-            <button v-if="projectSummary.find(s => s.project_id === id)"
-              @click="$router.push({ name: 'view-project-summary', params: { summaryId: projectSummary.find(s => s.project_id === id).id } })"
-              class="bg-sky-500 hover:bg-sky-600 text-white px-2 sm:px-3 py-1 rounded text-[11px] sm:text-xs">
-              Summary
-            </button>
-            <button v-else
-              @click="$router.push({ name: 'create-project-summary', params: { projectId: id } })"
-              class="bg-sky-600 text-white px-2 sm:px-3 py-1 rounded text-[11px] sm:text-xs hover:bg-sky-700">
-              Add Summary
-            </button>
-            <button @click="$router.push({ name: 'project-attendances', params: { id } })"
-              class="bg-blue-500 text-white px-2 sm:px-3 py-1 rounded text-[11px] sm:text-xs">
-              Attendance
-            </button>
-            <button @click="$router.push({ name: 'project-guest-attendance', params: { id } })"
-              class="bg-blue-600 text-white px-2 sm:px-3 py-1 rounded text-[11px] sm:text-xs">
-              Guests
-            </button>
-            <button @click="$router.push({ name: 'edit-project', params: { id } })"
-              class="bg-yellow-500 text-white px-2 sm:px-3 py-1 rounded text-[11px] sm:text-xs">
-              Edit
-            </button>
-            <button @click="$router.push({ name: 'view-project', params: { id } })"
-              class="bg-green-600 text-white px-2 sm:px-3 py-1 rounded text-[11px] sm:text-xs">
-              View
-            </button>
-            <button @click="deleteRecord(id)"
-              class="bg-red-500 text-white px-2 sm:px-3 py-1 rounded text-[11px] sm:text-xs">
-              Delete
-            </button>
-          </div>
-        </template>
-      </EasyDataTable>
-    </div>
+      <!-- Header Alignment Fix -->
+      <template #header-actions>
+        <div class="text-right w-full pr-2">
+          Actions
+        </div>
+      </template>
+      <!-- Actions Slot -->
+      <template #item-actions="{ id }">
+        <div class="flex justify-end gap-2">
+          <button v-if="projectSummary.find(s => s.project_id === id)"
+            @click="$router.push({ name: 'view-project-summary', params: { summaryId: projectSummary.find(s => s.project_id === id).id } })"
+            class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs">
+            Summary
+          </button>
+          <button v-else @click="$router.push({ name: 'create-project-summary', params: { projectId: id } })"
+            class="bg-sky-600 text-white px-3 py-1 rounded text-xs hover:bg-sky-700">
+            Add Summary
+          </button>
+          <button @click="$router.push({ name: 'project-attendances', params: { id } })"
+            class="bg-blue-500 text-white px-3 py-1 rounded text-xs">Attendance</button>
+          <button @click="$router.push({ name: 'project-guest-attendance', params: { id } })"
+            class="bg-blue-600 text-white px-3 py-1 rounded text-xs">Guests</button>
+          <button @click="$router.push({ name: 'edit-project', params: { id } })"
+            class="bg-yellow-500 text-white px-3 py-1 rounded text-xs">Edit</button>
+          <button @click="$router.push({ name: 'view-project', params: { id } })"
+            class="bg-green-600 text-white px-3 py-1 rounded text-xs">View</button>
+          <button @click="deleteRecord(id)" class="bg-red-500 text-white px-3 py-1 rounded text-xs">Delete</button>
+        </div>
+      </template>
+    </EasyDataTable>
 
     <!-- Pagination Controls -->
-    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 px-2 py-3 bg-gray-50 rounded border">
+    <div class="flex justify-between items-center px-2 py-3 bg-gray-50 rounded border">
       <!-- Info -->
-      <div class="text-xs sm:text-sm text-gray-600 text-center md:text-left">
+      <div class="text-sm text-gray-600">
         Items
         {{ (currentPage - 1) * rowsPerPage + 1 }} -
         {{ Math.min(currentPage * rowsPerPage, totalItems) }}
@@ -340,32 +313,30 @@ onMounted(() => {
       </div>
 
       <!-- Controls -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-center gap-3 w-full md:w-auto">
-        <div class="flex items-center justify-center gap-1">
-          <span class="text-xs sm:text-sm text-gray-600">Items per page:</span>
-          <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-xs sm:text-sm">
-            <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">{{ size }}</option>
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-1">
+          <span class="text-sm text-gray-600">Items per page:</span>
+          <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-sm">
+            <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">
+              {{ size }}
+            </option>
           </select>
         </div>
-        <div class="flex justify-center flex-wrap gap-1">
-          <button @click="goToFirst" :disabled="currentPage === 1"
-            class="border rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
-            :class="currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+        <div class="flex gap-1">
+          <button @click="goToFirst" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
             First
           </button>
-          <button @click="goToPrev" :disabled="currentPage === 1"
-            class="border rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
-            :class="currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+          <button @click="goToPrev" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
             Prev
           </button>
-          <button @click="goToNext" :disabled="currentPage === totalPages"
-            class="border rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
-            :class="currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+          <button @click="goToNext" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
             Next
           </button>
-          <button @click="goToLast" :disabled="currentPage === totalPages"
-            class="border rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
-            :class="currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+          <button @click="goToLast" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
             Last
           </button>
         </div>

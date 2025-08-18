@@ -376,10 +376,9 @@ onMounted(() => {
   <div class="p-6 bg-white rounded-lg shadow space-y-6">
 
     <!-- Top Bar -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+    <div class="flex justify-between items-center">
       <h2 class="text-lg font-semibold text-gray-700">Members</h2>
-      <div class="flex flex-wrap gap-2">
-        <!-- Export Buttons -->
+      <div class="flex gap-2">
         <button @click="exportToCSV"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           <FileText class="w-4 h-4" /> CSV
@@ -396,21 +395,20 @@ onMounted(() => {
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           <FileText class="w-4 h-4" /> Word
         </button>
-        <button @click="$router.push({ name: 'unlink-member' })"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
-          Unlink Member
-        </button>
+        <button @click="$router.push({ name: 'independent-member' })"
+          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">Unlink
+          Member</button>
         <button @click="$router.push({ name: 'create-member' })"
           class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm">+ Add Member</button>
       </div>
+
     </div>
 
     <!-- Filters -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div>
         <label class="text-sm text-gray-600">Search</label>
-        <input v-model="search" type="text" placeholder="Search..."
-          class="w-full border rounded px-3 py-1.5 text-sm" />
+        <input v-model="search" type="text" placeholder="Search..." class="w-full border rounded px-3 py-1.5 text-sm" />
       </div>
       <div>
         <label class="text-sm text-gray-600">Membership Type</label>
@@ -430,22 +428,20 @@ onMounted(() => {
     </div>
 
     <!-- Column View -->
-    <div class="bg-gray-50 border rounded p-4 flex flex-col lg:flex-row gap-6">
+    <div class="bg-gray-50 border rounded p-4 flex flex-wrap gap-8 items-start">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Column View:</label>
-        <select v-model="selectedProfile" @change="applyProfile"
-          class="border rounded px-3 py-1.5 text-xs sm:text-sm w-full sm:w-48">
+        <select v-model="selectedProfile" @change="applyProfile" class="border rounded px-3 py-1.5 text-sm w-48">
           <option value="minimal">Minimal</option>
           <option value="detailed">Detailed</option>
         </select>
       </div>
-      <div class="flex-1">
+      <div>
         <label class="text-sm font-medium text-gray-700 mb-1 block">Visible Columns</label>
         <div class="flex flex-wrap gap-4">
-          <div v-for="header in allHeaders" :key="header.value"
-            class="flex items-center gap-2 text-sm">
-            <input type="checkbox" v-model="visibleColumns" :value="header.value"
-              :id="header.value" class="accent-blue-600" />
+          <div v-for="header in allHeaders" :key="header.value" class="flex items-center gap-2 text-sm">
+            <input type="checkbox" v-model="visibleColumns" :value="header.value" :id="header.value"
+              class="accent-blue-600" />
             <label :for="header.value" class="text-gray-700">{{ header.text }}</label>
           </div>
         </div>
@@ -453,112 +449,130 @@ onMounted(() => {
     </div>
 
     <!-- Member Table -->
-    <div class="overflow-x-auto">
-      <EasyDataTable :headers="headers" :items="paginatedMembers" :search-value="search"
-        :loading="loading" show-index hide-footer
-        table-class="min-w-full text-sm" header-class="bg-gray-100"
-        body-row-class="text-sm" :theme-color="'#3b82f6'">
+    <!-- :items="filteredMembers" -->
+    <EasyDataTable :headers="headers"   :items="paginatedMembers" :search-value="search" :loading="loading" show-index
+      hide-footer table-class="min-w-full text-sm" header-class="bg-gray-100" body-row-class="text-sm"
+      :theme-color="'#3b82f6'">
 
-        <!-- Profile Image -->
-        <template #item-image_url="{ image_url }">
-          <img :src="image_url" class="h-10 w-10 rounded-full object-cover bg-gray-100" />
-        </template>
+      <!-- Profile Image -->
+      <template #item-image_url="{ image_url }">
+        <img :src="image_url" class="h-10 w-10 rounded-full object-cover bg-gray-100" />
+      </template>
 
-        <!-- Full Name -->
-        <template #item-full_name="{ full_name }">
-          <span class="text-gray-700">{{ full_name || '--' }}</span>
-        </template>
+      <!-- Full Name -->
+      <template #item-full_name="{ full_name }">
+        <div class="py-5">
+          <span class="text-gray-700">
+            {{ full_name || '--' }}
+          </span>
+        </div>
 
-        <!-- Membership ID -->
-        <template #item-existing_membership_id="{ existing_membership_id }">
-          <span>{{ existing_membership_id || '--' }}</span>
-        </template>
+      </template>
 
-        <!-- Membership Type -->
-        <template #item-membership_type.name="{ membership_type }">
-          <span>{{ membership_type?.name || '--' }}</span>
-        </template>
+      <!-- Membership ID -->
+      <template #item-existing_membership_id="{ existing_membership_id }">
+        <span>
+          {{ existing_membership_id || '--' }}
+        </span>
+      </template>
 
-        <!-- Joining Date -->
-        <template #item-membership_start_date="{ membership_start_date }">
-          <span>{{ membership_start_date ? dayjs(membership_start_date).format('DD-MM-YYYY') : '--' }}</span>
-        </template>
+      <!-- Membership Type -->
+      <template #item-membership_type.name="{ membership_type }">
+        <span>
+          {{ membership_type?.name || '--' }}
+        </span>
+      </template>
 
-        <!-- Membership Age -->
-        <template #item-membership_age="{ membership_start_date }">
-          <span>{{ calculateMembershipAge(membership_start_date) }}</span>
-        </template>
+      <!-- Joining Date -->
+      <template #item-membership_start_date="{ membership_start_date }">
+        <span>
+          {{ membership_start_date ? dayjs(membership_start_date).format('DD-MM-YYYY') : '--' }}
+        </span>
+      </template>
 
-        <!-- Actions -->
-        <template #item-actions="{ id }">
-          <button @click="viewMemberDetail(memberList.find(m => m.id === id))"
-            class="text-blue-600 hover:underline text-xs">Details</button>
-        </template>
-      </EasyDataTable>
+      <!-- Membership Age -->
+      <template #item-membership_age="{ membership_start_date }">
+        <span>
+          {{ calculateMembershipAge(membership_start_date) }}
+        </span>
+      </template>
+
+
+      <!-- Actions -->
+      <template #item-actions="{ id }">
+        <button @click="viewMemberDetail(memberList.find(m => m.id === id))"
+          class="text-blue-600 hover:underline text-xs">
+          Details
+        </button>
+      </template>
+
+    </EasyDataTable>
+
+    <!-- Bottom Pagination -->
+    <div class="flex justify-between items-center px-2 py-3 bg-gray-50 rounded border">
+      <!-- Left info -->
+      <div class="text-sm text-gray-600">
+        Items
+        {{ (currentPage - 1) * rowsPerPage + 1 }}-
+        {{
+          Math.min(currentPage * rowsPerPage, totalItems)
+        }}
+        of {{ totalItems }} |
+        Page {{ currentPage }} of {{ totalPages }}
+      </div>
+
+      <!-- ✅ Right controls -->
+      <div class="flex items-center gap-4">
+        <!-- Page Size -->
+        <div class="flex items-center gap-1">
+          <span class="text-sm text-gray-600">Items per page:</span>
+          <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-sm">
+            <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">
+              {{ size }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex gap-1">
+          <button @click="goToFirst" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
+            First
+          </button>
+          <button @click="goToPrev" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
+            Prev
+          </button>
+          <button @click="goToNext" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
+            Next
+          </button>
+          <button @click="goToLast" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
+            Last
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- Pagination -->
-    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 px-2 py-3 bg-gray-50 rounded border">
-  <!-- Status Text -->
-  <div class="text-xs sm:text-sm text-gray-600 text-center md:text-left">
-    Items {{ (currentPage - 1) * rowsPerPage + 1 }} -
-    {{ Math.min(currentPage * rowsPerPage, totalItems) }}
-    of {{ totalItems }} |
-    Page {{ currentPage }} of {{ totalPages }}
-  </div>
-
-  <!-- Controls -->
-  <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
-    <!-- Page Size -->
-    <div class="flex items-center justify-center sm:justify-start gap-1">
-      <span class="text-xs sm:text-sm text-gray-600">Items per page:</span>
-      <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-xs sm:text-sm">
-        <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">{{ size }}</option>
-      </select>
-    </div>
-
-    <!-- Navigation -->
-    <div class="flex justify-center flex-wrap gap-1">
-      <button @click="goToFirst" :disabled="currentPage === 1"
-        class="border rounded px-3 py-1 text-xs sm:text-sm transition"
-        :class="currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
-        First
-      </button>
-      <button @click="goToPrev" :disabled="currentPage === 1"
-        class="border rounded px-3 py-1 text-xs sm:text-sm transition"
-        :class="currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
-        Prev
-      </button>
-      <button @click="goToNext" :disabled="currentPage === totalPages"
-        class="border rounded px-3 py-1 text-xs sm:text-sm transition"
-        :class="currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
-        Next
-      </button>
-      <button @click="goToLast" :disabled="currentPage === totalPages"
-        class="border rounded px-3 py-1 text-xs sm:text-sm transition"
-        :class="currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
-        Last
-      </button>
-    </div>
-  </div>
-</div>
-
-
-    <!-- ✅ Modals -->
-    <!-- View Modal -->
+    <!-- ✅ View Member Modal -->
     <div v-if="viewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 relative overflow-y-auto max-h-[90vh]">
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between border-b pb-4 mb-6 gap-4">
+      <div class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-8 relative">
+
+        <div class="flex justify-between items-start border-b pb-4 mb-6">
+          <!-- <button @click="closeViewModal"
+            class="text-gray-500 hover:text-gray-700 absolute top-4 right-4">&times;</button> -->
+
           <img :src="selectedMember?.image_url ?? placeholderImage" alt="Member Image"
-            class="h-24 w-24 rounded-full object-cover" />
-          <div class="flex-1">
-            <h2 class="text-2xl font-semibold text-gray-800">
-              {{ selectedMember?.individual?.first_name ?? '--' }} {{ selectedMember?.individual?.last_name ?? '--' }}
-            </h2>
+            class="h-24 w-24 rounded-full object-cover mb-2" />
+
+
+          <div>
+            <h2 class="text-2xl font-semibold text-gray-800">{{ selectedMember?.individual?.first_name ?? '--' }} {{
+              selectedMember?.individual?.last_name ?? '--' }}</h2>
             <p class="text-sm text-gray-500">Membership Id: {{ selectedMember?.existing_membership_id }}</p>
           </div>
-          <div>
+          <div class="text-right">
             <span class="text-sm px-3 py-1 rounded-full"
               :class="selectedMember?.is_active === 1 ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'">
               {{ selectedMember?.is_active === 1 ? 'Active' : 'Inactive' }}
@@ -566,35 +580,42 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Details -->
-        <div class="grid grid-cols-1 gap-y-4 text-sm text-gray-700">
+        <div class="grid grid-cols-1 gap-y-4 gap-x-8 text-sm text-gray-700">
           <div class="flex justify-between">
             <span class="font-medium text-gray-600">Membership type:</span>
-            <span>{{ selectedMember?.membership_type?.name ?? '--' }}</span>
+            <span class="text-right">{{ selectedMember?.membership_type?.name ?? '--' }}</span>
           </div>
           <div class="flex justify-between">
             <span class="font-medium text-gray-600">Start date:</span>
-            <span>
-              {{ selectedMember?.membership_start_date
-                ? new Date(selectedMember?.membership_start_date).toLocaleDateString('en-GB',{ day:'numeric',month:'long',year:'numeric' })
-                : 'Not provided' }}
+            <span class="text-right">
+              {{
+                selectedMember?.membership_start_date
+                  ? new Date(selectedMember?.membership_start_date).toLocaleDateString('en-GB', {
+                    day: 'numeric', month: 'long', year: 'numeric'
+                  })
+                  : 'Not provided'
+              }}
             </span>
           </div>
           <div class="flex justify-between">
             <span class="font-medium text-gray-600">Membership age:</span>
-            <span>{{ calculateMembershipAge(selectedMember?.membership_start_date) }}</span>
+            <span class="text-right">
+              {{ calculateMembershipAge(selectedMember?.membership_start_date) }}
+            </span>
           </div>
           <div class="flex justify-between">
             <span class="font-medium text-gray-600">Reference/sponsored by:</span>
-            <span>
-              {{ selectedMember?.sponsored_user_id
-                ? memberList.find(m => m.individual.id === selectedMember.sponsored_user_id)?.full_name
-                : 'Not provided' }}
+            <span class="text-right">
+              {{
+                selectedMember?.sponsored_user_id
+                  ? memberList.find(m => m.individual.id === selectedMember.sponsored_user_id)?.full_name
+                  : 'Not provided'
+              }}
             </span>
+
           </div>
         </div>
 
-        <!-- Actions -->
         <div class="mt-8 flex justify-end gap-3">
           <button @click="editMember"
             class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-5 py-2 rounded-lg">Edit</button>
@@ -606,57 +627,61 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Edit Modal -->
+    <!-- ✅ Edit Member Modal -->
     <div v-if="editModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 relative overflow-y-auto max-h-[90vh]">
+      <div class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 relative">
         <div class="flex justify-between items-center border-b pb-4 mb-6">
           <h2 class="text-xl font-semibold text-gray-800">Edit Member</h2>
           <button @click="closeEditModal" class="text-gray-500 hover:text-gray-700">&times;</button>
         </div>
 
-        <div class="mb-6 text-center">
+        <div class="mb-6">
           <img :src="selectedMember?.image_url ?? placeholderImage" alt="Member Image"
-            class="h-24 w-24 rounded-full object-cover mx-auto mb-4" />
-          <h2 class="text-2xl font-semibold text-gray-800">
-            {{ selectedMember?.individual?.first_name ?? '--' }} {{ selectedMember?.individual?.last_name ?? '--' }}
-          </h2>
+            class="h-24 w-24 rounded-full object-cover mb-4">
+
+          <h2 class="text-2xl font-semibold text-gray-800">{{ selectedMember?.individual?.first_name ?? '--' }} {{
+            selectedMember?.individual?.last_name ?? '--' }}</h2>
           <p class="text-sm text-gray-500">Unique Azon Id: {{ selectedMember?.individual?.azon_id ?? '' }}</p>
         </div>
 
-        <form @submit.prevent="updateMember" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Organisation Membership Id</label>
-            <input v-model="selectedMember.existing_membership_id" type="text"
-              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-          </div>
 
-          <div>
-            <label for="membership_type_id" class="block text-sm font-medium text-gray-700">Membership type</label>
-            <select v-model="membership_type_id" id="membership_type_id"
-              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
-              <option value="" disabled>Select membership type</option>
-              <option v-for="membershipType in membershipTypes" :key="membershipType.id" :value="membershipType.id">
-                {{ membershipType.name }}
-              </option>
-            </select>
-          </div>
+        <form @submit.prevent="updateMember">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Organisation Membership Id</label>
+              <input v-model="selectedMember.existing_membership_id" type="text"
+                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Membership Start Date</label>
-            <input v-model="selectedMember.membership_start_date" type="date"
-              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-          </div>
+            <div>
+              <label for="membership_type_id" class="block text-sm font-medium text-gray-700">Membership type</label>
+              <select v-model="membership_type_id" id="membership_type_id"
+                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <option value="" disabled>Select membership type</option>
+                <option v-for="membershipType in membershipTypes" :key="membershipType.id" :value="membershipType.id">
+                  {{ membershipType.name }}
+                </option>
+              </select>
+            </div>
 
-          <div>
-            <label for="sponsored_user_id" class="block text-sm font-medium text-gray-700">Reference/Sponsored
-              Member</label>
-            <select v-model="sponsored_user_id" id="sponsored_user_id"
-              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
-              <option value="" disabled>Select Reference/Sponsored Member</option>
-              <option v-for="orgMember in memberList" :key="orgMember.individual.id" :value="orgMember.individual.id">
-                {{ orgMember.full_name }}
-              </option>
-            </select>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Membership Start Date</label>
+              <input v-model="selectedMember.membership_start_date" type="date"
+                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
+
+            <div>
+              <label for="sponsored_user_id" class="block text-sm font-medium text-gray-700">Reference/Sponsored
+                Member</label>
+              <select v-model="sponsored_user_id" id="sponsored_user_id"
+                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <option value="" disabled>Select Reference/Sponsored Member</option>
+                <option v-for="orgMember in memberList" :key="orgMember.individual.id" :value="orgMember.individual.id">
+                  {{ orgMember.full_name }}
+                </option>
+              </select>
+            </div>
+
           </div>
 
           <div class="mt-6 flex justify-end gap-3">
@@ -671,3 +696,5 @@ onMounted(() => {
 
   </div>
 </template>
+
+<style scoped></style>

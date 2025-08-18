@@ -471,13 +471,12 @@ onMounted(() => {
 
 
 <template>
-    <div class="p-4 sm:p-6 space-y-6 bg-white shadow rounded-lg">
+    <div class="p-6 bg-white rounded-lg shadow space-y-6">
 
         <!-- ✅ Top Bar -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <h2 class="text-lg sm:text-xl font-semibold text-gray-800 text-center sm:text-left">
-                Accounts Transactions</h2>
-            <div class="flex flex-wrap justify-center sm:justify-end gap-2">
+        <div class="flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-700">Accounts Transactions</h2>
+            <div class="flex gap-2">
                 <!-- Currency Dropdown or Selected Display -->
                 <div>
                     <div class="flex items-center gap-2">
@@ -545,11 +544,11 @@ onMounted(() => {
         </div>
 
         <!-- ✅ Column View Settings -->
-        <div class="bg-gray-50 border rounded p-4 flex flex-col lg:flex-row gap-6">
+        <div class="bg-gray-50 border rounded p-4 flex flex-wrap gap-8 items-start">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Column View:</label>
                 <select v-model="selectedProfile" @change="applyProfile"
-                    class="border rounded px-3 py-1.5 text-xs sm:text-sm w-full sm:w-48">
+                    class="border rounded px-3 py-1.5 text-sm w-48">
                     <option value="minimal">Minimal</option>
                     <option value="detailed">Detailed</option>
                 </select>
@@ -653,50 +652,50 @@ onMounted(() => {
         </div>
 
         <!-- ✅ Pagination -->
-        <div v-if="filteredTransactions.length > 0"
-            class="flex flex-col md:flex-row justify-between items-center mt-4 gap-3 md:gap-0">
-            <!-- Info -->
-            <div class="text-sm text-gray-600 text-center md:text-left w-full md:w-auto">
+        <div v-if="filteredTransactions.length > 0" class="flex justify-between items-center mt-4">
+            <div class="text-sm text-gray-600">
                 {{ itemSummary }} | Page {{ currentPage }} of {{ totalPages }}
             </div>
 
-            <!-- Controls -->
-            <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto justify-center">
-                <!-- Items per page -->
-                <div class="flex items-center gap-2">
-                    <label class="text-sm">Items per page:</label>
+            <div class="flex items-center gap-4">
+                <div class="items-center gap-2">
+                    <label class="text-sm">Items per page: </label>
                     <select v-model="itemsPerPage" class="border rounded px-2 py-1 text-sm">
-                        <option v-for="size in [5, 10, 20, 50, 100, 250, 500, 1000]" :key="size" :value="size">{{ size }}
-                        </option>
+                        <option :value="5">5</option>
+                        <option :value="10">10</option>
+                        <option :value="20">20</option>
+                        <option :value="50">50</option>
+                        <option :value="100">100</option>
+                        <option :value="250">250</option>
+                        <option :value="500">500</option>
+                        <option :value="1000">1000</option>
                     </select>
                 </div>
 
-                <!-- Navigation buttons -->
-                <div class="flex flex-wrap gap-2 justify-center">
+                <div class="flex gap-2">
                     <button @click="currentPage = 1" :disabled="currentPage === 1"
                         class="px-3 py-1 border rounded text-sm"
-                        :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+                        :class="currentPage === 1 ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-100'">
                         First
                     </button>
                     <button @click="currentPage--" :disabled="currentPage === 1"
                         class="px-3 py-1 border rounded text-sm"
-                        :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+                        :class="currentPage === 1 ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-100'">
                         Prev
                     </button>
                     <button @click="currentPage++" :disabled="currentPage === totalPages"
                         class="px-3 py-1 border rounded text-sm"
-                        :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+                        :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-100'">
                         Next
                     </button>
                     <button @click="currentPage = totalPages" :disabled="currentPage === totalPages"
                         class="px-3 py-1 border rounded text-sm"
-                        :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+                        :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400' : 'hover:bg-gray-100'">
                         Last
                     </button>
                 </div>
             </div>
         </div>
-
 
         <div v-if="!filteredTransactions.length" class="text-center text-gray-500 text-sm mt-4">
             No transactions found.
