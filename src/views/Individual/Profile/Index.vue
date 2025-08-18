@@ -491,7 +491,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="flex flex-col h-screen overflow-y-auto pb-7 pr-7">
+    <div class="flex flex-col pb-7 pr-7">
         <!-- Logo Section -->
         <section>
             <div class="bg-white shadow rounded-lg p-6">
@@ -531,7 +531,7 @@ onMounted(() => {
         <section>
             <div class="bg-white shadow rounded-lg p-6 mt-5">
                 <!-- Card Header -->
-                <h2 class="text-lg font-semibold text-gray-800 mb-6">Name Update</h2>
+                <h2 class="text-lg font-semibold text-gray-800 mb-6">Name</h2>
 
                 <!-- Name Display -->
                 <div class="flex items-center justify-between pb-4">
@@ -879,7 +879,7 @@ onMounted(() => {
         <section>
             <div class="bg-white shadow rounded-lg p-6 mt-5">
                 <!-- Card Header -->
-                <h2 class="text-lg font-semibold text-gray-800 mb-6">User Email</h2>
+                <h2 class="text-lg font-semibold text-gray-800 mb-6">Email</h2>
 
                 <!-- Email Display -->
                 <div class="flex items-start justify-between pb-4">
@@ -903,11 +903,11 @@ onMounted(() => {
                     class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4 sm:px-0">
                     <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
                         <!-- Modal Title -->
-                        <h2 class="text-xl font-semibold text-gray-800 text-center mb-6">Edit User Email</h2>
+                        <h2 class="text-xl font-semibold text-gray-800 text-center mb-6">Edit Email</h2>
 
                         <!-- Input Field -->
                         <div class="mb-4">
-                            <label for="newEmail" class="block text-sm font-medium text-gray-700">User Email
+                            <label for="newEmail" class="block text-sm font-medium text-gray-700">Email
                                 Address</label>
                             <input v-model="newEmail" type="email" id="newEmail" class="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm p-2.5
                         focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition" required />

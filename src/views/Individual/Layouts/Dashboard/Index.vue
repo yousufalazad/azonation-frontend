@@ -133,10 +133,10 @@ onMounted(() => {
       <div class="bg-white p-6 rounded shadow">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
           <h2 class="text-lg font-semibold text-gray-800">Connected Organisations</h2>
-          <router-link to="/individual-dashboard/connected-orgs"
+          <button @click="$router.push({ name: 'connected-organisations' })"
             class="text-sm text-blue-600 hover:underline self-start sm:self-auto">
             See all
-          </router-link>
+          </button>
         </div>
 
         <!-- Mobile Cards -->

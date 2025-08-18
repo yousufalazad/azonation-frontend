@@ -29,11 +29,6 @@ function isAuthenticated() {
 const baseRoutes = [
   {
     path: "/",
-    name: "home",
-    component: Signup, // Assuming this is the landing page
-  },
-  {
-    path: "/login",
     name: "login",
     component: Login,
   },

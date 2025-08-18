@@ -2,17 +2,18 @@
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import {
-  HomeIcon,
-  BriefcaseIcon,
-  CalendarIcon,
-  ClipboardListIcon,
-  FolderIcon,
-  FileTextIcon,
-  CheckCircleIcon,
-  UserCircleIcon,
-  SettingsIcon,
-  BarChartIcon
-} from 'lucide-vue-next';
+  Home as HomeIcon,
+  Users as UsersIcon,
+  Briefcase as BriefcaseIcon,
+  Calendar as CalendarIcon,
+  ClipboardList as ClipboardListIcon,
+  Folder as FolderIcon,
+  FileText as FileTextIcon,
+  CheckCircle as CheckCircleIcon,
+  UserCircle as UserCircleIcon,
+  Settings as SettingsIcon,
+  BarChart as BarChartIcon,
+} from 'lucide-vue-next'
 
 const openSections = ref([]);
 const route = useRoute();
@@ -41,6 +42,7 @@ const isActive = (path) => route.path === path;
     <!-- Static Links -->
     <template v-for="link in [
       { name: 'Home', routeName: 'individual-dashboard-index', icon: HomeIcon },
+      { name: 'Organisations', routeName: 'connected-organisations', icon: UsersIcon },
       { name: 'Committees', routeName: 'individual-committees', icon: BriefcaseIcon },
       { name: 'Meetings', routeName: 'individual-meetings', icon: CalendarIcon },
       { name: 'Events', routeName: 'individual-events', icon: ClipboardListIcon },

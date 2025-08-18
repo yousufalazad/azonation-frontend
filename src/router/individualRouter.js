@@ -1,6 +1,7 @@
 import IndividualDashboardLayout from "../views/Individual/Layouts/Layout.vue";
 import IndividualDashboardIndex from "../views/Individual/Layouts/Dashboard/Index.vue";
 import Notification from "../views/Individual/Layouts/Notification.vue";
+import Organisations from "../views/Individual/Organisation/Index.vue";
 
 import IndividualProfile from "../views/Individual/Profile/Index.vue";
 import IndividualSecurity from "../views/Individual/Profile/Security/Index.vue";
@@ -36,6 +37,12 @@ const individualRoutes = [
         path: "notification",
         name: "notification",
         component: Notification,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "connected-organisations",
+        name: "connected-organisations",
+        component: Organisations,
         meta: { requiresAuth: true },
       },
       {
