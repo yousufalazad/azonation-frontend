@@ -171,13 +171,13 @@
           <!-- Desktop Menu -->
           <div class="hidden lg:flex items-center space-x-4">
             <router-link to="/help" class="text-sm">Help</router-link>
-            <router-link to="/login"
+            <router-link to="/"
               class="text-sm border border-black px-4 py-2 rounded-full font-medium hover:bg-black hover:text-white">
               Log In
             </router-link>
           </div>
           <div class="lg:hidden">
-            <router-link @click="showMobileMenu = false" to="/login"
+            <router-link @click="showMobileMenu = false" to="/"
             class="text-sm border border-black px-4 py-2 rounded-full font-medium hover:bg-black hover:text-white">
             Log In
           </router-link>
