@@ -3,7 +3,7 @@ import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { authStore } from '../../../store/authStore';
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
 import dayjs from 'dayjs';
-import Notification from './Notification.vue';
+import Notification from './HeaderNotification.vue';
 
 const emit = defineEmits(['toggle-mobile-sidebar', 'toggle-sidebar']);
 

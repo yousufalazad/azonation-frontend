@@ -92,7 +92,7 @@ const fetchMeetingMinutes = async () => {
 const fetchData = async () => {
   try {
     const [orgMemberListResponse, privacySetupResponse] = await Promise.all([
-      auth.fetchProtectedApi('/api/individual-users'),
+      auth.fetchProtectedApi('/api/org-all-member-name'),
       auth.fetchProtectedApi('/api/privacy-setups'),
     ]);
 
@@ -210,16 +210,25 @@ onMounted(() => {
 
 <template>
   <div class="container mx-auto max-w-7xl p-6 bg-white rounded-lg shadow-md mt-10">
-    <div class="flex justify-between items-center mb-6">
-      <h5 class="text-xl font-semibold">Edit Meeting Minutes</h5>
-      <div>
-          <button @click="$router.push({ name: 'view-meeting-minutes', params: { id: id } })"
-                  class="bg-green-500 hover:bg-green-600 text-white p-2 m-2 rounded">Meeting Minutes View</button>
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+      <!-- Title -->
+      <h5 class="text-lg sm:text-xl font-semibold text-gray-800">
+        Edit Meeting Minutes
+      </h5>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-2">
+        <button @click="$router.push({ name: 'view-meeting-minutes', params: { id } })"
+          class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-3 rounded-lg transition">
+          Meeting Minutes View
+        </button>
         <button @click="$router.push({ name: 'index-meeting' })"
-          class="bg-blue-500 text-white font-semibold py-2 px-2 rounded-md">Back Meeting List
+          class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-3 rounded-lg transition">
+          Back to Meeting List
         </button>
       </div>
     </div>
+
 
     <form @submit.prevent="submitForm">
       <div class="mb-4">
@@ -285,15 +294,17 @@ onMounted(() => {
           <label class="block text-sm font-medium text-gray-700">Reviewed By</label>
           <select v-model="reviewed_by" class="w-full p-2 border border-gray-300 rounded-md">
             <option value="">Select Reviewed By</option>
-            <option v-for="orgMember in orgMemberList" :key="orgMember.id" :value="orgMember.id">{{ orgMember.name }}
+            <option v-for="user in orgMemberList" :key="user.individual.id" :value="user.individual.id">
+              {{ user.individual.first_name }} {{ user.individual.last_name }}
             </option>
           </select>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700">Prepared By</label>
           <select v-model="prepared_by" class="w-full p-2 border border-gray-300 rounded-md">
-            <option value="">Select Prepared By</option>
-            <option v-for="orgMember in orgMemberList" :key="orgMember.id" :value="orgMember.id">{{ orgMember.name }}
+            <option value="">Select Prepared By {{prepared_by}}</option>
+            <option v-for="user in orgMemberList" :key="user.individual.id" :value="user.individual.id">
+              {{ user.individual.first_name }} {{ user.individual.last_name }}
             </option>
           </select>
         </div>

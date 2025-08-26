@@ -1,6 +1,7 @@
 import IndividualDashboardLayout from "../views/Individual/Layouts/Layout.vue";
 import IndividualDashboardIndex from "../views/Individual/Layouts/Dashboard/Index.vue";
-import Notification from "../views/Individual/Layouts/Notification.vue";
+import HeaderNotifications from "../views/Individual/Layouts/HeaderNotification.vue";
+import Notifications from "../views/Individual/Notification/Index.vue";
 import Organisations from "../views/Individual/Organisation/Index.vue";
 
 import IndividualProfile from "../views/Individual/Profile/Index.vue";
@@ -19,13 +20,12 @@ import Asset from "../views/Individual/Asset/Index.vue";
 import PastAsset from "../views/Individual/Asset/PastAsset.vue";
 import Attendance from "../views/Individual/Attendance/Index.vue";
 
-
 const individualRoutes = [
   {
     path: "/individual-dashboard",
     name: "individual-dashboard",
     component: IndividualDashboardLayout,
-    meta: { requiresAuth: true, type: 'individual' },
+    meta: { requiresAuth: true, type: "individual" },
     children: [
       {
         path: "index",
@@ -34,9 +34,15 @@ const individualRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "notification",
-        name: "notification",
-        component: Notification,
+        path: "header-notifications",
+        name: "header-notifications",
+        component: HeaderNotifications,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "notifications",
+        name: "notifications",
+        component: Notifications,
         meta: { requiresAuth: true },
       },
       {
@@ -129,7 +135,6 @@ const individualRoutes = [
         component: Attendance,
         meta: { requiresAuth: true },
       },
-      
     ],
   },
 ];

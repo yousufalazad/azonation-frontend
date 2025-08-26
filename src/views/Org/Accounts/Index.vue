@@ -638,11 +638,11 @@ onMounted(() => {
                         <td v-if="visibleColumns.includes('actions')" class="px-3 py-2">
                             <div class="flex gap-2">
                                 <button @click="openModal(transaction)"
-                                    class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600">
+                                    class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
                                     Edit
                                 </button>
                                 <button @click="openViewModal(transaction)"
-                                    class="px-2 py-1 bg-gray-500 text-white text-xs rounded hover:bg-gray-600">
+                                    class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
                                     View
                                 </button>
                             </div>

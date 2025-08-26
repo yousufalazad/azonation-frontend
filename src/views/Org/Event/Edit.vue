@@ -28,6 +28,17 @@ const eventId = route.params.id;
 const images = ref([{ id: Date.now(), file: null }]);
 const documents = ref([{ id: Date.now(), file: null }]);
 
+const conductTypeList = ref([]);
+const getConductTypes = async () => {
+    try {
+        const response = await auth.fetchProtectedApi('/api/conduct-types', {}, 'GET');
+        conductTypeList.value = response.status ? response.data : [];
+    } catch (error) {
+        console.error('Error fetching conduct types:', error);
+        conductTypeList.value = [];
+    }
+};
+
 // Fetch event details for editing
 const getEventDetails = async () => {
     try {
@@ -188,7 +199,9 @@ const submitForm = async () => {
 // Fetch event details when component is mounted
 onMounted(() => {
     getEventDetails();
+    getConductTypes();
 });
+
 </script>
 
 <template>
@@ -277,8 +290,9 @@ onMounted(() => {
                     <label for="conduct_type" class="block text-sm font-medium text-gray-700">Conduct Type</label>
                     <select id="conduct_type" v-model="conduct_type"
                         class="w-full  border border-gray-300 rounded-md py-2 px-4">
-                        <option value="1">In Person</option>
-                        <option value="2">Online</option>
+                        <option v-for="type in conductTypeList" :key="type.id" :value="type.id">
+                            {{ type.name }}
+                        </option>
                     </select>
                 </div>
             </div>

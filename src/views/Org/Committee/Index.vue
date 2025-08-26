@@ -304,8 +304,7 @@ onMounted(fetchCommitteeList)
       </div>
       <div>
         <label class="text-sm text-gray-600">Search</label>
-        <input v-model="search" type="text" placeholder="Search..."
-          class="w-full border rounded px-3 py-1.5 text-sm" />
+        <input v-model="search" type="text" placeholder="Search..." class="w-full border rounded px-3 py-1.5 text-sm" />
       </div>
     </div>
 
@@ -334,8 +333,7 @@ onMounted(fetchCommitteeList)
     <!-- Table -->
     <div class="overflow-x-auto">
       <EasyDataTable :headers="filteredHeaders" :items="paginatedCommittees" :loading="loading" show-index hide-footer
-        table-class="min-w-full text-sm" header-class="bg-gray-100" body-row-class="text-sm"
-        :theme-color="'#3b82f6'">
+        table-class="min-w-full text-sm" header-class="bg-gray-100" body-row-class="text-sm" :theme-color="'#3b82f6'">
         <template #item-status_display="{ status_display }">
           <span :class="status_display === 'Active' ? 'text-green-600' : 'text-red-600'">
             {{ status_display }}
@@ -347,19 +345,19 @@ onMounted(fetchCommitteeList)
         <template #item-actions="{ id }">
           <div class="flex flex-wrap justify-end gap-2">
             <button @click="$router.push({ name: 'index-committee-member', params: { committeeId: id } })"
-              class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded-lg text-xs">
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
               Members
             </button>
             <button @click="openViewModal(committeeList.find(c => c.id === id))"
-              class="bg-green-500 px-3 py-1 rounded text-xs">
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
               View
             </button>
             <button @click="openModal(committeeList.find(c => c.id === id))"
-              class="bg-yellow-400 px-3 py-1 rounded text-xs">
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
               Edit
             </button>
             <button @click="deleteCommittee(id)"
-              class="bg-red-500 px-3 py-1 rounded text-xs">
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
               Delete
             </button>
           </div>
@@ -384,23 +382,19 @@ onMounted(fetchCommitteeList)
           </select>
         </div>
         <div class="flex flex-wrap justify-center gap-1">
-          <button @click="goToFirst" :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-sm"
+          <button @click="goToFirst" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
             :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
             First
           </button>
-          <button @click="goToPrev" :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-sm"
+          <button @click="goToPrev" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
             :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">
             Prev
           </button>
-          <button @click="goToNext" :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-sm"
+          <button @click="goToNext" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
             :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
             Next
           </button>
-          <button @click="goToLast" :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-sm"
+          <button @click="goToLast" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
             :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">
             Last
           </button>
@@ -408,6 +402,114 @@ onMounted(fetchCommitteeList)
       </div>
     </div>
 
-    <!-- Modals ... (keep your modal code but add responsive width like max-w-sm md:max-w-xl lg:max-w-2xl) -->
+    <!-- Create/Edit Modal -->
+    <div v-if="modalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl mx-auto p-6 md:p-8">
+        <!-- Modal Header -->
+        <h2 class="text-lg md:text-2xl font-semibold text-center text-gray-800 mb-6">
+          {{ isEditMode ? 'Edit Committee' : 'Create Committee' }}
+        </h2>
+
+        <!-- Scrollable Form -->
+        <div class="max-h-[28rem] overflow-y-auto space-y-4">
+          <!-- Committee Name -->
+          <div>
+            <label for="newName" class="block text-sm font-medium text-gray-700 mb-1">Committee Name</label>
+            <input v-model="newName" id="newName" type="text"
+              class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <!-- Short Description -->
+          <div>
+            <label for="short_description" class="block text-sm font-medium text-gray-700 mb-1">Short
+              Description</label>
+            <input v-model="short_description" id="short_description" type="text"
+              class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <!-- Dates -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+              <input v-model="start_date" id="start_date" type="date"
+                class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+              <input v-model="end_date" id="end_date" type="date"
+                class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+
+          <!-- Note -->
+          <div>
+            <label for="note" class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+            <textarea v-model="note" id="note" rows="3"
+              class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+          </div>
+
+          <!-- is_active -->
+          <div>
+            <label for="is_active" class="block text-sm font-medium text-gray-700 mb-1">Is Active</label>
+            <select v-model="is_active" id="is_active"
+              class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="1">Yes</option>
+              <option value="0">No</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex justify-end mt-6 space-x-3">
+          <button @click="closeModal"
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+            Cancel
+          </button>
+          <!-- <button @click="submitForm()" -->
+          <button @click="isEditMode ? updateCommittee() : createCommittee()"
+            class="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
+            {{ isEditMode ? 'Update' : 'Submit' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Modal -->
+    <div v-if="viewModalVisible" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl mx-auto p-6 md:p-8">
+        <!-- Header -->
+        <h2 class="text-lg md:text-2xl font-semibold text-center text-gray-800 mb-6">
+          View Committee
+        </h2>
+
+        <!-- Committee Info Table -->
+        <div class="max-h-[28rem] overflow-y-auto">
+          <table class="w-full table-auto border-separate border-spacing-y-3">
+            <tbody class="text-gray-700 text-sm md:text-base">
+              <tr v-for="(value, label) in {
+                'Name': selectedCommittee.name,
+                'Short Description': selectedCommittee.short_description,
+                'Start Date': selectedCommittee.start_date,
+                'End Date': selectedCommittee.end_date,
+                'Note': selectedCommittee.note,
+                'Is Active': selectedCommittee.is_active == '1' ? 'Yes' : 'No'
+              }" :key="label">
+                <td class="font-medium text-gray-600 w-40 align-top">{{ label }}</td>
+                <td class="text-gray-500">:</td>
+                <td class="text-gray-800">{{ value }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-right mt-6">
+          <button @click="closeViewModal"
+            class="px-5 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

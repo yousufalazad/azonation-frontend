@@ -132,7 +132,7 @@ const exportPDF = () => {
 };
 
 const getOrgUserList = async () => {
-    const res = await auth.fetchProtectedApi('/api/project-attendances/org-user-list', {}, 'GET');
+    const res = await auth.fetchProtectedApi('/api/org-all-member-name', {}, 'GET');
     if (res.status) userList.value = res.data;
 };
 
@@ -229,246 +229,295 @@ const deleteMember = async (id) => {
     }
 };
 
+const CommitteeDetails = ref([]);
+// Fetch meeting details
+const fetchCommitteeDetails = async () => {
+    try {
+        const response = await auth.fetchProtectedApi(`/api/committees/${committeeId.value}`, {}, 'GET');
+        CommitteeDetails.value = response.status ? response.data : [];
+    } catch (error) {
+        console.error('Error fetching committees:', error);
+        CommitteeDetails.value = [];
+    }
+};
+
 onMounted(() => {
     getOrgUserList();
     getDesignationList();
     getCommitteeMemberList();
+    fetchCommitteeDetails();
 });
 </script>
 
 <template>
-    <div class="container mx-auto px-4 py-6">
-        <!-- Header & Actions -->
-        <div class="flex justify-between items-center bg-white p-4 rounded shadow">
-            <h2 class="text-lg font-semibold text-gray-800">{{ committeeName }} Members</h2>
-            <div class="flex gap-2">
-                <button @click="exportCSV" class="border px-3 py-1.5 text-sm rounded hover:bg-gray-100">CSV</button>
-                <button @click="exportXLSX" class="border px-3 py-1.5 text-sm rounded hover:bg-gray-100">Excel</button>
-                <button @click="exportPDF" class="border px-3 py-1.5 text-sm rounded hover:bg-gray-100">PDF</button>
-                <button @click="openModalForAdd"
-                    class="bg-green-600 text-white px-4 py-2 text-sm rounded hover:bg-green-500">+ Add Member</button>
-                <button @click="router.push({ name: 'committees' })"
-                    class="bg-blue-600 text-white px-4 py-2 text-sm rounded hover:bg-blue-500">← Back</button>
-            </div>
-        </div>
+  <div class="container mx-auto px-4 py-6">
+    <!-- Committee Details -->
+    <section class="mb-6">
+      <div class="bg-white shadow-md rounded-xl p-4 border">
+        <h5 class="text-sm sm:text-md text-gray-800 flex flex-wrap gap-2">
+          <span>Name: {{ CommitteeDetails.name }}</span>
+          <span class="mx-2 hidden sm:inline">•</span>
+          <span>Start Date: {{ CommitteeDetails.start_date }}</span>
+          <span class="mx-2 hidden sm:inline">•</span>
+          <span>End Date: {{ CommitteeDetails.end_date }}</span>
+        </h5>
+      </div>
+    </section>
 
-        <!-- Filters -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-            <div>
-                <label class="text-sm text-gray-600">Search</label>
-                <input v-model="search" type="text" placeholder="Search..."
-                    class="w-full border rounded px-3 py-1.5 text-sm" />
-            </div>
-            <div>
-                <label class="text-sm text-gray-600">Start Date</label>
-                <input type="date" v-model="startFilter" class="w-full border rounded px-3 py-1.5 text-sm" />
-            </div>
-            <div>
-                <label class="text-sm text-gray-600">End Date</label>
-                <input type="date" v-model="endFilter" class="w-full border rounded px-3 py-1.5 text-sm" />
-            </div>
-            <div>
-                <label class="text-sm text-gray-600">Quick Filter</label>
-                <select v-model="quickDateFilter" @change="applyQuickDateFilter"
-                    class="w-full border rounded px-3 py-1.5 text-sm">
-                    <option value="">All</option>
-                    <option value="last7">Last 7 Days</option>
-                    <option value="thisMonth">This Month</option>
-                </select>
-            </div>
-
-        </div>
-
-        <!-- Table -->
-        <div class="mt-6">
-            <EasyDataTable :headers="headers" :items="paginatedList" :search-value="search" :rows-per-page="rowsPerPage"
-                :current-page="currentPage" :loading="false" :hide-footer="true" table-class="min-w-full text-sm"
-                header-class="bg-gray-100" body-row-class="text-sm" theme-color="#3b82f6">
-                <template #item-status_display="{ status_display }">
-                    <span :class="status_display === 'Active' ? 'text-green-600' : 'text-red-600'">{{ status_display
-                        }}</span>
-                </template>
-                <template #item-actions="{ id }">
-                    <div class="flex gap-2 justify-end">
-                        <button @click="openViewModal(committeeMemberList.find(c => c.id === id))"
-                            class="bg-blue-500 px-3 py-1 text-white rounded text-xs">View</button>
-                        <button @click="openModalForEdit(committeeMemberList.find(c => c.id === id))"
-                            class="bg-yellow-400 px-3 py-1 text-white rounded text-xs">Edit</button>
-                        <button @click="deleteMember(id)"
-                            class="bg-red-500 px-3 py-1 text-white rounded text-xs">Delete</button>
-                    </div>
-                </template>
-            </EasyDataTable>
-        </div>
-
-        <!-- Custom Pagination -->
-        <div class="flex items-center justify-between border rounded px-4 py-3 bg-gray-50 mt-4 text-sm text-gray-700">
-            <!-- Left Info -->
-            <div>
-                Items {{ (currentPage - 1) * rowsPerPage + 1 }} -
-                {{ Math.min(currentPage * rowsPerPage, filteredList.length) }}
-                of {{ filteredList.length }} |
-                Page {{ currentPage }} of {{ totalPages }}
-            </div>
-
-            <!-- ✅ Right controls -->
-            <div class="flex items-center gap-4">
-                <!-- Page Size -->
-                <div class="flex items-center gap-1">
-                    <span class="text-sm text-gray-600">Items per page:</span>
-                    <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-sm">
-                        <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">
-                            {{ size }}
-                        </option>
-                    </select>
-                </div>
-
-                <!-- Page Navigation -->
-                <div class="flex gap-1">
-                    <button @click="currentPage = 1" :disabled="currentPage === 1" class="border rounded px-3 py-1"
-                        :class="currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
-                        First
-                    </button>
-                    <button @click="currentPage = Math.max(1, currentPage - 1)" :disabled="currentPage === 1"
-                        class="border rounded px-3 py-1"
-                        :class="currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
-                        Prev
-                    </button>
-                    <button @click="currentPage = Math.min(totalPages, currentPage + 1)"
-                        :disabled="currentPage === totalPages" class="border rounded px-3 py-1"
-                        :class="currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
-                        Next
-                    </button>
-                    <button @click="currentPage = totalPages" :disabled="currentPage === totalPages"
-                        class="border rounded px-3 py-1"
-                        :class="currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
-                        Last
-                    </button>
-                </div>
-            </div>
-        </div>
+    <!-- Header & Actions -->
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-white p-4 rounded shadow gap-3">
+      <h2 class="text-base sm:text-lg font-semibold text-gray-800">
+        {{ CommitteeDetails.name }} Members
+      </h2>
+      <div class="flex flex-wrap gap-2">
+        <button @click="exportCSV"
+          class="border px-3 py-1.5 text-xs sm:text-sm rounded hover:bg-gray-100">
+          CSV
+        </button>
+        <button @click="exportXLSX"
+          class="border px-3 py-1.5 text-xs sm:text-sm rounded hover:bg-gray-100">
+          Excel
+        </button>
+        <button @click="exportPDF"
+          class="border px-3 py-1.5 text-xs sm:text-sm rounded hover:bg-gray-100">
+          PDF
+        </button>
+        <button @click="openModalForAdd"
+          class="bg-green-600 text-white px-3 sm:px-4 py-2 text-xs sm:text-sm rounded hover:bg-green-500">
+          + Add Member
+        </button>
+        <button @click="router.push({ name: 'committees' })"
+          class="bg-blue-600 text-white px-3 sm:px-4 py-2 text-xs sm:text-sm rounded hover:bg-blue-500">
+          ← Back
+        </button>
+      </div>
     </div>
 
-    <!-- Add/Edit Modal -->
-     <!-- View Modal -->
-        <div v-if="isViewModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-6">View Committee Member</h2>
+    <!-- Filters -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+      <div>
+        <label class="text-sm text-gray-600">Search</label>
+        <input v-model="search" type="text" placeholder="Search..."
+          class="w-full border rounded px-3 py-1.5 text-sm" />
+      </div>
+      <div>
+        <label class="text-sm text-gray-600">Start Date</label>
+        <input type="date" v-model="startFilter"
+          class="w-full border rounded px-3 py-1.5 text-sm" />
+      </div>
+      <div>
+        <label class="text-sm text-gray-600">End Date</label>
+        <input type="date" v-model="endFilter"
+          class="w-full border rounded px-3 py-1.5 text-sm" />
+      </div>
+      <div>
+        <label class="text-sm text-gray-600">Quick Filter</label>
+        <select v-model="quickDateFilter" @change="applyQuickDateFilter"
+          class="w-full border rounded px-3 py-1.5 text-sm">
+          <option value="">All</option>
+          <option value="last7">Last 7 Days</option>
+          <option value="thisMonth">This Month</option>
+        </select>
+      </div>
+    </div>
 
-                <div class="space-y-4 text-sm text-gray-700">
-                    <div class="flex justify-between pb-2">
-                        <span class="font-medium text-gray-600 w-40">Name:</span>
-                        <span class="text-gray-800">{{ viewData.first_name }} {{ viewData.last_name }}</span>
-                    </div>
+    <!-- Table -->
+    <div class="my-6 overflow-x-auto">
+      <EasyDataTable
+        :headers="headers"
+        :items="paginatedList"
+        :search-value="search"
+        :rows-per-page="rowsPerPage"
+        :current-page="currentPage"
+        :loading="false"
+        :hide-footer="true"
+        table-class="min-w-full text-sm"
+        header-class="bg-gray-100"
+        body-row-class="text-sm"
+        theme-color="#3b82f6"
+      >
+        <template #item-status_display="{ status_display }">
+          <span :class="status_display === 'Active' ? 'text-green-600' : 'text-red-600'">
+            {{ status_display }}
+          </span>
+        </template>
+        <template #item-actions="{ id }">
+          <div class="flex flex-wrap gap-2 justify-end">
+            <button
+              @click="openViewModal(committeeMemberList.find(c => c.id === id))"
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
+              View
+            </button>
+            <button
+              @click="openModalForEdit(committeeMemberList.find(c => c.id === id))"
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
+              Edit
+            </button>
+            <button
+              @click="deleteMember(id)"
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
+              Delete
+            </button>
+          </div>
+        </template>
+      </EasyDataTable>
+    </div>
 
-                    <div class="flex justify-between pb-2">
-                        <span class="font-medium text-gray-600 w-40">Designation:</span>
-                        <span class="text-gray-800">{{ viewData.designation_name }}</span>
-                    </div>
+    <!-- Custom Pagination -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-3 px-2 py-3 bg-gray-50 rounded border">
+      <!-- Left Info -->
+      <div class="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
+        Items {{ (currentPage - 1) * rowsPerPage + 1 }} -
+        {{ Math.min(currentPage * rowsPerPage, filteredList.length) }}
+        of {{ filteredList.length }} |
+        Page {{ currentPage }} of {{ totalPages }}
+      </div>
 
-                    <div class="flex justify-between pb-2">
-                        <span class="font-medium text-gray-600 w-40">Start Date:</span>
-                        <span class="text-gray-800">{{ viewData.start_date }}</span>
-                    </div>
-
-                    <div class="flex justify-between pb-2">
-                        <span class="font-medium text-gray-600 w-40">End Date:</span>
-                        <span class="text-gray-800">{{ viewData.end_date }}</span>
-                    </div>
-
-                    <div class="flex justify-between pb-2">
-                        <span class="font-medium text-gray-600 w-40">Note:</span>
-                        <span class="text-gray-800">{{ viewData.note }}</span>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <span class="font-medium text-gray-600 w-40">Status:</span>
-                        <span :class="viewData.is_active == 1 ? 'text-green-600' : 'text-red-600'">
-                            {{ viewData.is_active == 1 ? 'Active' : 'Disabled' }}
-                        </span>
-                    </div>
-                </div>
-
-                <div class="text-right pt-6">
-                    <button @click="isViewModalOpen = false"
-                        class="bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-5 rounded-md transition">
-                        Close
-                    </button>
-                </div>
-            </div>
+      <!-- Right controls -->
+      <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+        <!-- Page Size -->
+        <div class="flex items-center justify-center sm:justify-start gap-1">
+          <span class="text-gray-600">Items per page:</span>
+          <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-xs sm:text-sm">
+            <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">
+              {{ size }}
+            </option>
+          </select>
         </div>
 
-        <!-- Add/Edit Modal -->
-        <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-6">
-                <h2 class="text-xl font-semibold text-gray-800">
-                    {{ isEditMode ? 'Edit' : 'Add' }} Committee Member
-                </h2>
-
-                <form @submit.prevent="submitForm" class="space-y-5">
-                    <!-- Committee member name -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Committee Member Name</label>
-                        <select v-model="user_id" required
-                            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none">
-                            <option value="">Select User</option>
-                            <option v-for="user in userList" :key="user.id" :value="user.id">{{ user.first_name }} {{ user.last_name }}</option>
-                        </select>
-                    </div>
-
-                    <!-- Designation -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Designation</label>
-                        <select v-model="designation_id" required
-                            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none">
-                            <option value="">Select Designation</option>
-                            <option v-for="d in designationList" :key="d.id" :value="d.id">{{ d.name }}</option>
-                        </select>
-                    </div>
-
-                    <!-- Start Date -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                        <input v-model="start_date" type="date"
-                            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none" />
-                    </div>
-
-                    <!-- End Date -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                        <input v-model="end_date" type="date"
-                            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none" />
-                    </div>
-
-                    <!-- Note -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
-                        <input v-model="note" type="text"
-                            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none" />
-                    </div>
-
-                    <!-- Status -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                        <select v-model="is_active"
-                            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none">
-                            <option value="1">Active</option>
-                            <option value="0">Disabled</option>
-                        </select>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="flex justify-end space-x-3 pt-4">
-                        <button type="submit"
-                            class="bg-green-600 hover:bg-green-500 text-white font-medium py-2 px-5 rounded-md transition">
-                            {{ isEditMode ? 'Update' : 'Add' }}
-                        </button>
-                        <button @click="isModalOpen = false" type="button"
-                            class="bg-red-600 hover:bg-red-500 text-white font-medium py-2 px-5 rounded-md transition">
-                            Cancel
-                        </button>
-                    </div>
-                </form>
-            </div>
+        <!-- Page Navigation -->
+        <div class="flex justify-center flex-wrap gap-1">
+          <button @click="currentPage = 1" :disabled="currentPage === 1"
+            class="border rounded px-3 py-1"
+            :class="currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+            First
+          </button>
+          <button @click="currentPage = Math.max(1, currentPage - 1)" :disabled="currentPage === 1"
+            class="border rounded px-3 py-1"
+            :class="currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+            Prev
+          </button>
+          <button @click="currentPage = Math.min(totalPages, currentPage + 1)" :disabled="currentPage === totalPages"
+            class="border rounded px-3 py-1"
+            :class="currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+            Next
+          </button>
+          <button @click="currentPage = totalPages" :disabled="currentPage === totalPages"
+            class="border rounded px-3 py-1"
+            :class="currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+            Last
+          </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Modal -->
+  <div v-if="isViewModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6">
+      <h2 class="text-lg sm:text-xl font-semibold text-gray-800 mb-6">
+        View Committee Member
+      </h2>
+
+      <div class="space-y-4 text-xs sm:text-sm text-gray-700">
+        <div class="flex justify-between pb-2">
+          <span class="font-medium text-gray-600 w-32 sm:w-40">Name:</span>
+          <span class="text-gray-800">{{ viewData.first_name }} {{ viewData.last_name }}</span>
+        </div>
+        <div class="flex justify-between pb-2">
+          <span class="font-medium text-gray-600 w-32 sm:w-40">Designation:</span>
+          <span class="text-gray-800">{{ viewData.designation_name }}</span>
+        </div>
+        <div class="flex justify-between pb-2">
+          <span class="font-medium text-gray-600 w-32 sm:w-40">Start Date:</span>
+          <span class="text-gray-800">{{ viewData.start_date }}</span>
+        </div>
+        <div class="flex justify-between pb-2">
+          <span class="font-medium text-gray-600 w-32 sm:w-40">End Date:</span>
+          <span class="text-gray-800">{{ viewData.end_date }}</span>
+        </div>
+        <div class="flex justify-between pb-2">
+          <span class="font-medium text-gray-600 w-32 sm:w-40">Note:</span>
+          <span class="text-gray-800">{{ viewData.note }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-medium text-gray-600 w-32 sm:w-40">Status:</span>
+          <span :class="viewData.is_active == 1 ? 'text-green-600' : 'text-red-600'">
+            {{ viewData.is_active == 1 ? 'Active' : 'Disabled' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="text-right pt-6">
+        <button @click="isViewModalOpen = false"
+          class="bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-5 rounded-md transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-6">
+      <h2 class="text-lg sm:text-xl font-semibold text-gray-800">
+        {{ isEditMode ? 'Edit' : 'Add' }} Committee Member
+      </h2>
+
+      <form @submit.prevent="submitForm" class="space-y-5">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Committee Member Name</label>
+          <select v-model="user_id" required
+            class="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+            <option value="">Select User</option>
+            <option v-for="user in userList" :key="user.individual.id" :value="user.individual.id">
+              {{ user.individual.first_name }} {{ user.individual.last_name }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Designation</label>
+          <select v-model="designation_id" required
+            class="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+            <option value="">Select Designation</option>
+            <option v-for="d in designationList" :key="d.id" :value="d.id">{{ d.name }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+          <input v-model="start_date" type="date"
+            class="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+          <input v-model="end_date" type="date"
+            class="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+          <input v-model="note" type="text"
+            class="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+          <select v-model="is_active"
+            class="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+            <option value="1">Active</option>
+            <option value="0">Disabled</option>
+          </select>
+        </div>
+        <div class="flex justify-end space-x-3 pt-4">
+          <button type="submit"
+            class="bg-green-600 hover:bg-green-500 text-white font-medium py-2 px-5 rounded-md transition">
+            {{ isEditMode ? 'Update' : 'Add' }}
+          </button>
+          <button @click="isModalOpen = false" type="button"
+            class="bg-red-600 hover:bg-red-500 text-white font-medium py-2 px-5 rounded-md transition">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </template>
+

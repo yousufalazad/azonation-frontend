@@ -83,7 +83,7 @@ onMounted(fetchProjectDetails);
         <tr>
           <td class="py-2 px-4 border-b font-medium">Status</td>
           <td>:</td>
-          <td class="py-2 px-4 border-b">{{ project.status === 0 ? 'Active' : 'Disabled' }}</td>
+          <td class="py-2 px-4 border-b">{{ project.is_active === 0 ? 'No' : 'Yes' }}</td>
         </tr>
         <tr>
           <td class="py-2 px-4 border-b font-medium">Conduct Type</td>

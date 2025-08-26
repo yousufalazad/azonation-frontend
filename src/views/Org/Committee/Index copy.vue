@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import { utils, writeFileXLSX } from 'xlsx'
@@ -32,21 +32,6 @@ const loading = ref(false)
 
 const rowsPerPage = ref(10)
 const currentPage = ref(1)
-
-const openMenuId = ref(null)
-const toggleMenu = (id) => {
-  openMenuId.value = openMenuId.value === id ? null : id
-}
-const closeMenu = () => (openMenuId.value = null)
-
-const _onDocClick = () => closeMenu()
-
-onMounted(() => {
-  document.addEventListener('click', _onDocClick)
-})
-onBeforeUnmount(() => {
-  document.removeEventListener('click', _onDocClick)
-})
 
 const columnProfiles = {
   minimal: ['name', 'start_date', 'status_display', 'actions'],

@@ -7,9 +7,10 @@ import functions from "../../../global/cookie";
 
 const auth = authStore;
 const userId = auth.user.id;
-const name = auth.user.name;
+const org_name = auth.user.org_name;
 const email = auth.user.email;
 const username = auth.user.username;
+// lastName.value = last_name;
 const baseURL = auth.apiBase;
 
 
@@ -42,10 +43,12 @@ const isEditModePhone = ref(false);
 const allDialingCodes = ref([]);
 
 
-// Org Name Change
+// First Name Change
 const modalVisibleName = ref(false);
-const newName = ref('');
-
+const orgName = ref('');
+// Last Name Change
+const modalVisibleLastName = ref(false);
+const lastName = ref('');
 // Org username Change
 const modalVisibleUsername = ref(false);
 const newUsername = ref('');
@@ -92,10 +95,10 @@ const profileImageUpdate = async () => {
     }
 };
 
-const updateName = async () => {
+const updateOrgName = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/update-name/${userId}`, {
-            name: newName.value,
+            org_name: orgName.value,
         }, 'PUT');
         if (response.status) {
             // Success handling
@@ -104,10 +107,10 @@ const updateName = async () => {
             // Close the modal after successful update
             closeNameModal();
 
-            // Update the name in sessionStorage explicitly
+            // Update the org_name in sessionStorage explicitly
             let user = JSON.parse(functions.getCookie('user'));
             if (user) {
-                user.name = newName.value;
+                user.org_name = orgName.value;
                 functions.setCookie('user', JSON.stringify(user));
             }
 
@@ -120,11 +123,42 @@ const updateName = async () => {
 
     } catch (error) {
         // Catch block for any other errors
-        console.error("Error updating name:", error);
-        Swal.fire('Error', error.response?.data?.message || 'An unexpected error occurred while updating the name', 'error');
+        console.error("Error updating org_name:", error);
+        Swal.fire('Error', error.response?.data?.message || 'An unexpected error occurred while updating the org_name', 'error');
     }
 };
+const updateLastName = async () => {
+    try {
+        const response = await auth.fetchProtectedApi(`/api/update-last-name/${userId}`, {
+            last_name: lastName.value,
+        }, 'PUT');
+        if (response.status) {
+            // Success handling
+            Swal.fire('Success', response.message || 'Last Name updated successfully', 'success');
 
+            // Close the modal after successful update
+            closeLastNameModal();
+
+            // Update the last_name in sessionStorage explicitly
+            let user = JSON.parse(functions.getCookie('user'));
+            if (user) {
+                user.last_name = lastName.value;
+                functions.setCookie('user', JSON.stringify(user));
+            }
+
+            // Optionally, you can reload the page or update the UI without reloading
+            window.location.reload();
+        } else {
+            // Display error message from server response
+            Swal.fire('Error', response.message || 'Failed to update last_name, please try again.', 'error');
+        }
+
+    } catch (error) {
+        // Catch block for any other errors
+        console.error("Error updating last_name:", error);
+        Swal.fire('Error', error.response?.data?.message || 'An unexpected error occurred while updating the last_name', 'error');
+    }
+};
 //Update username
 const updateUsername = async () => {
     try {
@@ -139,7 +173,7 @@ const updateUsername = async () => {
             // Close the modal after successful update
             closeUsernameModal();
 
-            // Update the name in sessionStorage explicitly
+            // Update the last_name in sessionStorage explicitly
             let user = JSON.parse(sessionStorage.getItem('user'));
             if (user) {
                 user.username = newUsername.value;
@@ -247,7 +281,7 @@ const fetchOrgPhoneNumber = async () => {
             phone_type.value = response.data.phone_type || '';
             statusPhone.value = response.data.status || '';
         } else {
-            //Swal.fire('Error', 'Failed to fetch organization Phone Number', 'error');
+            Swal.fire('Error', 'Failed to fetch organization Phone Number', 'error');
         }
     } catch (error) {
         console.error("Error fetching organization Phone Number:", error);
@@ -278,7 +312,9 @@ const updateOrgPhoneNumber = async () => {
 
 const fetchDialingCode = async () => {
     try {
-        const response = await auth.fetchProtectedApi("/api/phone-numbers/dialing-codes/", {}, 'GET');
+        // const response = await auth.fetchProtectedApi("/api/phone-numbers/dialing-codes/", {}, 'GET');
+        const response = await auth.fetchProtectedApi("/api/dialing-codes/", {}, 'GET');
+
         // Ensure the response status is true and data exists
         if (response.status && response.data) {
             allDialingCodes.value = response.data;
@@ -304,7 +340,7 @@ const updateUserEmail = async () => {
             // Close the modal after successful update
             closeEmailModal();
 
-            // Update the name in sessionStorage explicitly
+            // Update the email in sessionStorage explicitly
             let user = JSON.parse(sessionStorage.getItem('user'));
             if (user) {
                 user.email = newEmail.value;
@@ -332,7 +368,7 @@ const updateUserEmail = async () => {
 //             // Close the modal after successful update
 //             closeCountryModal();
 
-//             // Update the name in sessionStorage explicitly
+//             // Update the  country_name in sessionStorage explicitly
 //             let user = JSON.parse(sessionStorage.getItem('user'));
 //             if (user) {
 //                 user.country_name = newCountry.value;
@@ -403,12 +439,12 @@ const closePhoneModal = () => {
 
 const openNameModal = () => {
     modalVisibleName.value = true;
-    newName.value = name;
+    orgName.value = org_name;
 };
 
 const closeNameModal = () => {
     modalVisibleName.value = false;
-    newName.value = {};
+    orgName.value = {};
 };
 
 const openUsernameModal = () => {
@@ -453,446 +489,486 @@ onMounted(() => {
     <div class="flex flex-col h-screen overflow-y-auto pb-7 pr-7">
         <!-- Logo Section -->
         <section>
-  <h2 class="text-sm font-semibold text-gray-700 mb-4 py-2">Logo</h2>
-  <div class="mb-4 flex flex-col md:flex-row md:justify-between gap-6 pb-9">
-    
-    <!-- Image Display -->
-    <div v-if="logoPath" class="flex justify-center md:justify-start">
-      <img :src="`${baseURL}${logoPath}`" alt="Logo" class="rounded-lg w-full max-w-[250px]">
-    </div>
-    <div v-else class="flex justify-center md:justify-start">
-      <img src="../../../assets/Logo/Your-logo-here.png" alt="Logo" class="rounded-lg w-full max-w-[250px]">
-    </div>
+            <div class="bg-white shadow rounded-lg p-6">
+                <!-- Card Header -->
+                <h2 class="text-lg font-semibold text-gray-800 mb-6">Logo</h2>
 
-    <!-- Upload Section -->
-    <div class="w-full md:w-auto mt-4 md:mt-0">
-      <label for="logo" class="block text-sm font-medium text-gray-700 mb-4">Upload new logo</label>
-      <input type="file" id="logo" @change="handleImageUpload"
-        class="block w-full text-sm text-gray-500 mb-4">
-      <button @click="profileImageUpdate"
-        class="mt-2 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition">
-        Save
-      </button>
-    </div>
+                <!-- Card Content -->
+                <div class="flex flex-col md:flex-row md:justify-between gap-6">
 
-  </div>
-</section>
-
-
-        <!-- Org name section -->
-        <section>
-            <div class="space-y-2">
-                <div class="flex items-center justify-between border-b pb-2">
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-700">Name</h3>
-                        <p class="text-gray-900 mt-1">{{ name }}</p>
+                    <!-- Image Display -->
+                    <div class="flex justify-center md:justify-start">
+                        <img v-if="logoPath" :src="`${baseURL}${logoPath}`" alt="Logo"
+                            class="rounded-lg w-full max-w-[250px]">
+                        <img v-else src="../../../assets/Logo/Your-logo-here.png" alt="Logo"
+                            class="rounded-lg w-full max-w-[250px]">
                     </div>
-                    <button @click="openNameModal()" class="text-sm text-primary hover:underline">
+
+                    <!-- Upload Section -->
+                    <div class="w-full md:w-auto flex flex-col justify-center mt-4 md:mt-0">
+                        <label for="logo" class="block text-sm font-medium text-gray-700 mb-2">
+                            Upload new logo
+                        </label>
+                        <input type="file" id="logo" @change="handleImageUpload"
+                            class="block w-full text-sm text-gray-500 mb-4">
+                        <button @click="profileImageUpdate"
+                            class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition">
+                            Save
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+
+        <!--  org_name section -->
+        <section>
+            <div class="bg-white shadow rounded-lg p-6 mt-5">
+                <!-- Card Header -->
+                <h2 class="text-lg font-semibold text-gray-800 mb-6">Org Name</h2>
+
+                <!-- Name Display -->
+                <div class="flex items-center justify-between pb-4">
+                    <div>
+                        <p class="text-gray-900 font-medium">{{ org_name }}</p>
+                    </div>
+                    <button @click="openNameModal()" class="text-sm text-blue-600 hover:underline">
                         Edit
                     </button>
                 </div>
-            </div>
 
-            <!-- Org name Modal -->
-            <div v-if="modalVisibleName"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
-                    <h2 class="text-2xl font-bold mb-4 text-center">
-                        Edit Name
-                    </h2>
+                <!-- Modal -->
+                <div v-if="modalVisibleName"
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4 sm:px-0">
+                    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
+                        <!-- Modal Title -->
+                        <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">
+                            Edit Name
+                        </h2>
 
-                    <div class="mb-4">
-                        <label for="newName" class="block text-sm font-medium text-gray-700">New Name</label>
-                        <input v-model="newName" type="text" id="newName"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            required />
-                        <p v-if="auth.errors?.newName" class="text-red-500 text-sm mt-1">{{
-                            auth.errors?.newName[0] }}</p>
-                    </div>
-
-
-                    <div class="flex justify-end">
-                        <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
-                            @click="closeNameModal">
-                            Close
-                        </button>
-
-                        <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                            @click="updateName()">
-                            Update
-                        </button>
+                        <!-- First Name -->
+                        <div class="mb-5">
+                            <label for="orgName" class="block text-sm font-medium text-gray-700 mb-2">First
+                                Name</label>
+                            <input v-model="orgName" type="text" id="orgName" class="w-full border border-gray-300 rounded-lg p-2.5 text-gray-900 shadow-sm 
+                        focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" required />
+                            <p v-if="auth.errors?.orgName" class="text-red-500 text-xs mt-2">
+                                {{ auth.errors?.orgName[0] }}
+                            </p>
+                        </div>                    
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col-reverse sm:flex-row justify-end gap-3">
+                            <button @click="closeNameModal"
+                                class="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg shadow transition">
+                                Close
+                            </button>
+                            <button @click="updateOrgName"
+                                class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow transition">
+                                Update
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
+
 
         <!-- Username section -->
         <section>
-            <div class="space-y-2 mt-5">
-                <div class="flex items-center justify-between border-b pb-2">
+            <div class="bg-white shadow rounded-lg p-6 mt-5">
+                <!-- Card Header -->
+                <h2 class="text-lg font-semibold text-gray-800 mb-6">Username</h2>
+
+                <!-- Username Display -->
+                <div class="flex items-center justify-between pb-4">
                     <div>
-                        <h3 class="text-sm font-semibold text-gray-700">Username</h3>
-                        <p class="text-gray-900 mt-1">{{ username }}</p>
+                        <p class="text-gray-900 font-medium">{{ username }}</p>
                     </div>
-                    <button @click="openUsernameModal()" class="text-sm text-primary hover:underline">
+                    <button @click="openUsernameModal()" class="text-sm text-blue-600 hover:underline">
                         Edit
                     </button>
                 </div>
-            </div>
 
+                <!-- Username Modal -->
+                <div v-if="modalVisibleUsername"
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4 sm:px-0">
+                    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
+                        <!-- Modal Title -->
+                        <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">
+                            Edit Username
+                        </h2>
 
-            <!-- Username Modal -->
-            <div v-if="modalVisibleUsername"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
-                    <h2 class="text-2xl font-bold mb-4 text-center">
-                        Edit Name
-                    </h2>
+                        <!-- Input Field -->
+                        <div class="mb-5">
+                            <label for="newUsername" class="block text-sm font-medium text-gray-700 mb-2">
+                                New Username
+                            </label>
+                            <input v-model="newUsername" type="text" id="newUsername" class="w-full border border-gray-300 rounded-lg p-2.5 text-gray-900 shadow-sm 
+                        focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" required />
+                            <p v-if="auth.errors?.newUsername" class="text-red-500 text-xs mt-2">
+                                {{ auth.errors?.newUsername[0] }}
+                            </p>
+                        </div>
 
-                    <div class="mb-4">
-                        <label for="newUsername" class="block text-sm font-medium text-gray-700">New Name</label>
-                        <input v-model="newUsername" type="text" id="newUsername"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            required />
-                        <p v-if="auth.errors?.newUsername" class="text-red-500 text-sm mt-1">{{
-                            auth.errors?.newUsername[0] }}</p>
-                    </div>
-
-
-                    <div class="flex justify-end">
-                        <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
-                            @click="closeUsernameModal">
-                            Close
-                        </button>
-
-                        <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                            @click="updateUsername()">
-                            Update
-                        </button>
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col-reverse sm:flex-row justify-end gap-3">
+                            <button @click="closeUsernameModal"
+                                class="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg shadow transition">
+                                Close
+                            </button>
+                            <button @click="updateUsername"
+                                class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow transition">
+                                Update
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
+
 
         <!-- Address Section -->
         <section>
-            <div class="space-y-2 mt-5">
-                <div class="flex items-start justify-between border-b pb-2">
+            <div class="bg-white shadow rounded-lg p-6 mt-5">
+                <!-- Card Header -->
+                <h2 class="text-lg font-semibold text-gray-800 mb-6">Address</h2>
+
+                <!-- Address Display -->
+                <div class="flex items-start justify-between pb-4">
                     <div>
-                        <h3 class="text-sm font-semibold text-gray-700">Address</h3>
                         <p class="text-gray-900 mt-1 leading-relaxed">
-                            <span>{{ address_line_one }}</span>,
-                            <span>{{ address_line_two }}</span>,
-                            <span>{{ city }}</span>,
-                            <span>{{ state_or_region }}</span>,
-                            <span>{{ postal_code }}</span>,
-                            <span>{{ userCountry }}</span>
+                            <span v-if="address_line_one">{{ address_line_one }}, </span>
+                            <span v-if="address_line_two">{{ address_line_two }}, </span>
+                            <span v-if="city">{{ city }}, </span>
+                            <span v-if="state_or_region">{{ state_or_region }}, </span>
+                            <span v-if="postal_code">{{ postal_code }}, </span>
+                            <span v-if="userCountry">{{ userCountry }}</span>
                         </p>
                     </div>
                     <button @click="openAddressModal()"
-                        class="text-sm text-primary hover:underline whitespace-nowrap ml-4">
+                        class="text-sm text-blue-600 hover:underline whitespace-nowrap ml-4">
                         Edit
                     </button>
                 </div>
-            </div>
 
-            <!-- Modal -->
-            <div v-if="modalVisibleAddress"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
-                    <h2 class="text-2xl font-bold mb-4 text-center">
-                        {{ isEditMode ? 'Create Address' : 'Edit Address' }}
-                    </h2>
+                <!-- Address Modal -->
+                <div v-if="modalVisibleAddress"
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4 sm:px-0">
+                    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
+                        <!-- Modal Title -->
+                        <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">
+                            {{ isEditMode ? 'Create Address' : 'Edit Address' }}
+                        </h2>
 
-                    <div class="mb-4">
-                        <label for="address_line_one" class="block text-sm font-medium text-gray-700">Address Line
-                            One</label>
-                        <input v-model="address_line_one" type="text" id="address_line_one"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            required />
-                        <p v-if="auth.errors?.address_line_one" class="text-red-500 text-sm mt-1">{{
-                            auth.errors?.address_line_one[0] }}</p>
-                    </div>
+                        <!-- Form Fields -->
+                        <div class="space-y-5">
+                            <!-- Address Line One -->
+                            <div>
+                                <label for="address_line_one" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Address Line One
+                                </label>
+                                <input v-model="address_line_one" type="text" id="address_line_one" class="w-full border border-gray-300 rounded-lg p-2.5 shadow-sm
+                          focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" required />
+                                <p v-if="auth.errors?.address_line_one" class="text-red-500 text-xs mt-2">
+                                    {{ auth.errors?.address_line_one[0] }}
+                                </p>
+                            </div>
 
-                    <div class="mb-4">
-                        <label for="address_line_two" class="block text-sm font-medium text-gray-700">Address Line
-                            Two</label>
-                        <input v-model="address_line_two" type="text" id="address_line_two"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                        <p v-if="auth.errors?.address_line_two" class="text-red-500 text-sm mt-1">{{
-                            auth.errors?.address_line_two[0] }}</p>
-                    </div>
+                            <!-- Address Line Two -->
+                            <div>
+                                <label for="address_line_two" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Address Line Two
+                                </label>
+                                <input v-model="address_line_two" type="text" id="address_line_two" class="w-full border border-gray-300 rounded-lg p-2.5 shadow-sm
+                          focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" />
+                                <p v-if="auth.errors?.address_line_two" class="text-red-500 text-xs mt-2">
+                                    {{ auth.errors?.address_line_two[0] }}
+                                </p>
+                            </div>
 
-                    <div class="mb-4">
-                        <label for="city" class="block text-sm font-medium text-gray-700">city</label>
-                        <input v-model="city" type="text" id="city"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                        <p v-if="auth.errors?.city" class="text-red-500 text-sm mt-1">{{ auth.errors?.city[0] }}</p>
-                    </div>
+                            <!-- City -->
+                            <div>
+                                <label for="city" class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                <input v-model="city" type="text" id="city" class="w-full border border-gray-300 rounded-lg p-2.5 shadow-sm
+                          focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" />
+                                <p v-if="auth.errors?.city" class="text-red-500 text-xs mt-2">{{ auth.errors?.city[0] }}
+                                </p>
+                            </div>
 
+                            <!-- State or Region -->
+                            <div>
+                                <label for="state_or_region" class="block text-sm font-medium text-gray-700 mb-1">
+                                    State or Region
+                                </label>
+                                <input v-model="state_or_region" type="text" id="state_or_region" class="w-full border border-gray-300 rounded-lg p-2.5 shadow-sm
+                          focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" />
+                                <p v-if="auth.errors?.state_or_region" class="text-red-500 text-xs mt-2">
+                                    {{ auth.errors?.state_or_region[0] }}
+                                </p>
+                            </div>
 
-                    <div class="mb-4">
-                        <label for="state_or_region"
-                            class="block text-sm font-medium text-gray-700">state_or_region</label>
-                        <input v-model="state_or_region" type="text" id="state_or_region"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                        <p v-if="auth.errors?.state_or_region" class="text-red-500 text-sm mt-1">{{
-                            auth.errors?.state_or_region[0] }}</p>
-                    </div>
+                            <!-- Postal Code -->
+                            <div>
+                                <label for="postal_code" class="block text-sm font-medium text-gray-700 mb-1">Postal
+                                    Code</label>
+                                <textarea v-model="postal_code" id="postal_code" class="w-full border border-gray-300 rounded-lg p-2.5 shadow-sm resize-none
+                             focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition"></textarea>
+                                <p v-if="auth.errors?.postal_code" class="text-red-500 text-xs mt-2">
+                                    {{ auth.errors?.postal_code[0] }}
+                                </p>
+                            </div>
+                        </div>
 
-                    <div class="mb-4">
-                        <label for="postal_code" class="block text-sm font-medium text-gray-700">postal_code</label>
-                        <textarea v-model="postal_code" id="postal_code"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
-                        <p v-if="auth.errors?.postal_code" class="text-red-500 text-sm mt-1">{{
-                            auth.errors?.postal_code[0]
-                            }}</p>
-                    </div>
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-6">
+                            <button @click="closeAddressModal"
+                                class="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg shadow transition">
+                                Close
+                            </button>
+                            <button @click="isEditMode ? createAddress() : updateAddress()"
+                                class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow transition">
+                                {{ isEditMode ? 'Submit' : 'Update' }}
+                            </button>
+                        </div>
 
-                    <div class="flex justify-end">
-                        <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
-                            @click="closeAddressModal">
-                            Close
-                        </button>
-
-                        <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                            @click="isEditMode ? createAddress() : updateAddress()">
-                            {{ isEditMode ? 'Submit' : 'Update' }}
-
-                            <!-- only update is working for create and update -->
-                        </button>
                     </div>
                 </div>
             </div>
         </section>
 
+
         <!-- Mobile number section -->
         <section>
-            <div class="space-y-2 mt-5">
-                <div class="flex items-start justify-between border-b pb-2">
+            <div class="bg-white shadow rounded-lg p-6 mt-5">
+                <!-- Card Header -->
+                <h2 class="text-lg font-semibold text-gray-800 mb-6">Mobile Number</h2>
+
+                <!-- Mobile Number Display -->
+                <div class="flex items-start justify-between pb-4">
                     <div>
-                        <h3 class="text-sm font-semibold text-gray-700">Mobile Number</h3>
                         <p class="text-gray-900 mt-1 leading-relaxed">
-                            <span>{{ dialing_code }}{{ phone_number }}</span>
-                            <span class="ml-6">Type:
-                                {{ phone_type === 1 ? 'Mobile' : phone_type === 2 ? 'Work' : phone_type === 3 ? 'Home' :
-                                    'Others' }}
+                            <span>{{ dialing_code }} {{ phone_number }}</span>
+                            <span class="ml-6">
+                                Type: {{ phone_type === 1 ? 'Mobile' : phone_type === 2 ? 'Work' : phone_type === 3 ?
+                                    'Home' : 'Others' }}
                             </span>
-                            <span class="ml-6">Status:
-                                {{ statusPhone === 1 ? 'Private' : statusPhone === 2 ? 'Connected Organisation' :
-                                    statusPhone === 3 ? 'Public' : 'Others' }}
+                            <span class="ml-6">
+                                Status: {{ statusPhone === 1 ? 'Private' : statusPhone === 2 ? 'Connected Organisation'
+                                    : statusPhone === 3 ? 'Public' : 'Others' }}
                             </span>
                         </p>
                     </div>
                     <button @click="openPhoneModal()"
-                        class="text-sm text-primary hover:underline ml-4 whitespace-nowrap">
+                        class="text-sm text-blue-600 hover:underline ml-4 whitespace-nowrap">
                         Edit
                     </button>
                 </div>
-            </div>
 
+                <!-- Mobile Number Modal -->
+                <div v-if="modalVisiblePhone"
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4 sm:px-0">
+                    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
+                        <!-- Modal Header -->
+                        <h2 class="text-xl font-semibold text-gray-800 text-center mb-6">
+                            {{ isEditModePhone ? 'Edit Mobile Number' : 'Add Mobile Number' }}
+                        </h2>
 
-            <!-- Mobile number Modal -->
-            <div v-if="modalVisiblePhone"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
-                    <h2 class="text-2xl font-bold mb-4 text-center">
-                        {{ isEditModePhone ? 'Edit mobile number' : 'Add Mobile Number' }}
-                    </h2>
+                        <div class="space-y-4">
+                            <!-- Dialing Code -->
+                            <div>
+                                <label for="dialing_code_id" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Dialing Code <span class="text-red-500">*</span>
+                                </label>
+                                <select v-model="dialing_code_id" id="dialing_code_id"
+                                    class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    required>
+                                    <option value="">Select</option>
+                                    <option v-for="dialing_code in allDialingCodes" :key="dialing_code.id"
+                                        :value="dialing_code.id">
+                                        {{ dialing_code.dialing_code }} - ({{ dialing_code.name }})
+                                    </option>
+                                </select>
+                                <p v-if="auth.errors?.dialing_code_id" class="text-red-500 text-xs mt-1">
+                                    {{ auth.errors?.dialing_code_id[0] }}
+                                </p>
+                            </div>
 
+                            <!-- Phone Number -->
+                            <div>
+                                <label for="phone_number" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Phone Number <span class="text-gray-500">(Numbers only)</span>
+                                </label>
+                                <input v-model="phone_number" type="text" id="phone_number"
+                                    class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    @input="phone_number = phone_number.replace(/\D/g, '')" required />
+                                <p v-if="auth.errors?.phone_number" class="text-red-500 text-xs mt-1">
+                                    {{ auth.errors?.phone_number[0] }}
+                                </p>
+                            </div>
 
+                            <!-- Phone Type -->
+                            <div>
+                                <label for="phone_type" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Phone Type
+                                </label>
+                                <select v-model="phone_type" id="phone_type"
+                                    class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    required>
+                                    <option disabled value="">Select</option>
+                                    <option value="1">Mobile</option>
+                                    <option value="2">Work</option>
+                                    <option value="3">Home</option>
+                                    <option value="4">Other</option>
+                                </select>
+                                <p v-if="auth.errors?.phone_type" class="text-red-500 text-xs mt-1">
+                                    {{ auth.errors?.phone_type[0] }}
+                                </p>
+                            </div>
 
-                    <div class="mb-4">
-                        <label for="dialing_code_id" class="block text-sm font-medium text-gray-700 required">Dialing
-                            Code</label>
-                        <select v-model="dialing_code_id" id="dialing_code_id"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            required>
-                            <option value="">Select</option>
-                            <option v-for="dialing_code in allDialingCodes" :key="dialing_code.id"
-                                :value="dialing_code.id">
-                                {{ dialing_code.dialing_code }} - ({{ dialing_code.country_name }})
-                            </option>
-                        </select>
-                        <p v-if="auth.errors?.dialing_code_id" class="text-red-500 text-sm mt-1">
-                            {{ auth.errors?.dialing_code_id[0] }}
-                        </p>
-                    </div>
+                            <!-- Status -->
+                            <div>
+                                <label for="statusPhone" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Status
+                                </label>
+                                <select v-model="statusPhone" id="statusPhone"
+                                    class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="1">Public</option>
+                                    <option value="0">Private</option>
+                                </select>
+                                <p v-if="auth.errors?.statusPhone" class="text-red-500 text-xs mt-1">
+                                    {{ auth.errors?.statusPhone[0] }}
+                                </p>
+                            </div>
+                        </div>
 
-
-                    <div class="mb-4">
-                        <label for="phone_number" class="block text-sm font-medium text-gray-700">phone_number (number
-                            only)</label>
-
-                        <input v-model="phone_number" type="text" id="phone_number"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            @input="phone_number = phone_number.replace(/\D/g, '')" required />
-
-                        <p v-if="auth.errors?.phone_number" class="text-red-500 text-sm mt-1">{{
-                            auth.errors?.phone_number[0] }}</p>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="phone_type" class="block text-sm font-medium text-gray-700">phone_type
-                            (0/1/2/3)</label>
-
-                        <select v-model="phone_type" id="phone_type"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            required>
-                            <option disabled value="">Select</option>
-                            <option value="1">Mobile</option>
-                            <option value="2">Work</option>
-                            <option value="3">Home</option>
-                            <option value="4">Other</option>
-
-                        </select>
-
-
-                        <p v-if="auth.errors?.phone_type" class="text-red-500 text-sm mt-1">{{
-                            auth.errors?.phone_type[0] }}
-                        </p>
-                    </div>
-
-
-                    <div class="mb-4">
-                        <label for="statusPhone" class="block text-sm font-medium text-gray-700">statusPhone
-                            (boolean)</label>
-                        <input v-model="statusPhone" type="boolean" id="statusPhone"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                        <p v-if="auth.errors?.statusPhone" class="text-red-500 text-sm mt-1">{{
-                            auth.errors?.statusPhone[0] }}</p>
-                    </div>
-
-
-
-                    <div class="flex justify-end">
-                        <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
-                            @click="closePhoneModal">
-                            Close
-                        </button>
-
-                        <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                            @click="isEditModePhone ? updateOrgPhoneNumber() : updateOrgPhoneNumber()">
-                            {{ isEditModePhone ? 'Update' : 'Submit' }}
-                            <!-- only update is working for create and update -->
-                        </button>
+                        <!-- Buttons -->
+                        <div class="flex justify-end gap-3 mt-6">
+                            <button @click="closePhoneModal"
+                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition">
+                                Cancel
+                            </button>
+                            <button @click="isEditModePhone ? updateOrgPhoneNumber() : updateOrgPhoneNumber()"
+                                class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition">
+                                {{ isEditModePhone ? 'Update' : 'Submit' }}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
+
         <!-- User email section -->
         <section>
-            <div class="space-y-2 mt-5">
-                <div class="flex items-start justify-between border-b pb-2">
+            <div class="bg-white shadow rounded-lg p-6 mt-5">
+                <!-- Card Header -->
+                <h2 class="text-lg font-semibold text-gray-800 mb-6">User Email</h2>
+
+                <!-- Email Display -->
+                <div class="flex items-start justify-between pb-4">
                     <div>
-                        <h3 class="text-sm font-semibold text-gray-700">User Email</h3>
                         <p class="text-gray-900 mt-1 leading-relaxed">
                             {{ email }}
-                            <span class="ml-6">Status:
-                                {{ statusPhone === 1 ? 'Private' : statusPhone === 2 ? 'Connected Organisation' :
-                                    statusPhone === 3 ? 'Public' : 'Others' }}
+                            <span class="ml-6">
+                                Status: {{ statusPhone === 1 ? 'Private' : statusPhone === 2 ? 'Connected Organisation'
+                                    : statusPhone === 3 ? 'Public' : 'Others' }}
                             </span>
                         </p>
                     </div>
                     <button @click="openEmailModal()"
-                        class="text-sm text-primary hover:underline ml-4 whitespace-nowrap">
+                        class="text-sm text-blue-600 hover:underline ml-4 whitespace-nowrap">
                         Edit
                     </button>
                 </div>
-            </div>
 
+                <!-- Email Modal -->
+                <div v-if="modalVisibleUserEmail"
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4 sm:px-0">
+                    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
+                        <!-- Modal Title -->
+                        <h2 class="text-xl font-semibold text-gray-800 text-center mb-6">Edit User Email</h2>
 
-            <!-- User email Modal -->
-            <div v-if="modalVisibleUserEmail"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
-                    <h2 class="text-2xl font-bold mb-4 text-center">
-                        Edit User Email
-                    </h2>
+                        <!-- Input Field -->
+                        <div class="mb-4">
+                            <label for="newEmail" class="block text-sm font-medium text-gray-700">User Email
+                                Address</label>
+                            <input v-model="newEmail" type="email" id="newEmail" class="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm p-2.5
+                        focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition" required />
+                            <p v-if="auth.errors?.newEmail" class="text-red-500 text-xs mt-1">
+                                {{ auth.errors?.newEmail[0] }}
+                            </p>
+                        </div>
 
-                    <div class="mb-4">
-                        <label for="newEmail" class="block text-sm font-medium text-gray-700">User email address</label>
-                        <input v-model="newEmail" type="newEmail" id="newEmail"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            required />
-                        <p v-if="auth.errors?.newEmail" class="text-red-500 text-sm mt-1">{{
-                            auth.errors?.newEmail[0] }}</p>
-                    </div>
-
-
-                    <div class="flex justify-end">
-                        <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
-                            @click="closeEmailModal">
-                            Close
-                        </button>
-
-                        <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                            @click="updateUserEmail()">
-                            Update
-                        </button>
+                        <!-- Action Buttons -->
+                        <div class="flex justify-end gap-3 mt-4">
+                            <button @click="closeEmailModal"
+                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition">
+                                Close
+                            </button>
+                            <button @click="updateUserEmail()"
+                                class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
+                                Update
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
+
         <!-- country section -->
         <section>
-            <div class="space-y-4 mt-5 pb-5 mb-5">
-                <div class="flex items-start justify-between border-b pb-2">
+            <div class="bg-white shadow rounded-lg p-6 mt-5">
+                <!-- Card Header -->
+                <h2 class="text-lg font-semibold text-gray-800 mb-6">Country</h2>
+
+                <!-- Country Display -->
+                <div class="flex items-start justify-between pb-4">
                     <div>
-                        <h3 class="text-sm font-semibold text-gray-700">Country</h3>
                         <p class="text-gray-900 mt-1 leading-relaxed">
                             {{ userCountry }}
                         </p>
                     </div>
-                    <!-- <button @click="openCountryModal()"
-                        class="text-sm text-primary hover:underline ml-4 whitespace-nowrap">
-                        Edit
-                    </button> -->
+                    <!-- Edit button commented out
+      <button @click="openCountryModal()" class="text-sm text-blue-600 hover:underline ml-4 whitespace-nowrap">
+        Edit
+      </button>
+      -->
                 </div>
+
+                <!-- Country Modal (commented out) -->
+                <!--
+    <div v-if="modalOpenCountry" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4 sm:px-0">
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
+        <h2 class="text-xl font-semibold text-gray-800 text-center mb-6">Change your country</h2>
+
+        <div class="mb-4">
+          <label for="countryChangeRequest" class="block text-sm font-medium text-gray-700">Country change request</label>
+          <p class="text-sm text-gray-500 mb-2">Please provide a country and a reason for change request</p>
+          <input v-model="countryChangeRequest" type="text" id="countryChangeRequest"
+                 class="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm p-2.5
+                        focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition" required />
+          <p v-if="auth.errors?.countryChangeRequest" class="text-red-500 text-xs mt-1">
+            {{ auth.errors?.countryChangeRequest[0] }}
+          </p>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-4">
+          <button @click="closeCountryModal"
+                  class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition">
+            Close
+          </button>
+          <button @click="updateCountry()"
+                  class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
+            Submit
+          </button>
+        </div>
+      </div>
+    </div>
+    -->
             </div>
-
-
-            <!-- Country Modal -->
-            <!-- <div v-if="modalOpenCountry"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
-                    <h2 class="text-2xl font-bold mb-4 text-center">
-                        Change your country
-                    </h2>
-
-                    <div class="mb-4">
-                        <label for="countryChangeRequest" class="block text-sm font-medium text-gray-700">Country change
-                            request</label>
-                        <p class="text-sm text-gray-500 mb-2">Please provide a country name and a reason for change
-                            request</p>
-                        <input v-model="countryChangeRequest" type="textarea" id="countryChangeRequest"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            required />
-                        <p v-if="auth.errors?.countryChangeRequest" class="text-red-500 text-sm mt-1">{{
-                            auth.errors?.countryChangeRequest[0] }}</p>
-                    </div>
-
-
-                    <div class="flex justify-end">
-                        <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
-                            @click="closeCountryModal">
-                            Close
-                        </button>
-
-                        <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                            @click="updateCountry()">
-                            Submit
-                        </button>
-                    </div>
-                </div>
-            </div> -->
         </section>
 
-        <section class="mt-5 pb-5 mb-5">
-        </section>
     </div>
 </template>
-
-

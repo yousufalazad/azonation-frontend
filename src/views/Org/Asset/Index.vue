@@ -187,8 +187,7 @@ onMounted(() => getRecords())
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       <div>
         <label class="text-sm text-gray-600">Search</label>
-        <input v-model="search" type="text" placeholder="Search..."
-          class="w-full border rounded px-3 py-1.5 text-sm" />
+        <input v-model="search" type="text" placeholder="Search..." class="w-full border rounded px-3 py-1.5 text-sm" />
       </div>
       <div>
         <label class="text-sm text-gray-600">Is Active</label>
@@ -200,13 +199,11 @@ onMounted(() => getRecords())
       </div>
       <div>
         <label class="text-sm text-gray-600">Start Date</label>
-        <input type="date" v-model="startDate"
-          class="w-full border rounded px-3 py-1.5 text-sm" />
+        <input type="date" v-model="startDate" class="w-full border rounded px-3 py-1.5 text-sm" />
       </div>
       <div>
         <label class="text-sm text-gray-600">End Date</label>
-        <input type="date" v-model="endDate"
-          class="w-full border rounded px-3 py-1.5 text-sm" />
+        <input type="date" v-model="endDate" class="w-full border rounded px-3 py-1.5 text-sm" />
       </div>
     </div>
 
@@ -236,18 +233,9 @@ onMounted(() => getRecords())
 
     <!-- Table (scrollable on mobile) -->
     <div class="overflow-x-auto">
-      <EasyDataTable
-        :headers="filteredHeaders"
-        :items="paginatedAssets"
-        :search-value="search"
-        :loading="loading"
-        show-index
-        hide-footer
-        :theme-color="'#2563eb'"
-        table-class="min-w-full text-sm"
-        header-class="bg-gray-100"
-        body-row-class="text-sm"
-      >
+      <EasyDataTable :headers="filteredHeaders" :items="paginatedAssets" :search-value="search" :loading="loading"
+        show-index hide-footer :theme-color="'#2563eb'" table-class="min-w-full text-sm" header-class="bg-gray-100"
+        body-row-class="text-sm">
         <!-- Header Alignment Fix -->
         <template #header-actions>
           <div class="text-right w-full pr-2">Actions</div>
@@ -257,18 +245,20 @@ onMounted(() => getRecords())
         <template #item-actions="{ id }">
           <div class="flex justify-end flex-wrap gap-2">
             <button @click="$router.push({ name: 'view-asset', params: { id } })"
-              class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs">View</button>
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
+              View</button>
             <button @click="$router.push({ name: 'edit-asset', params: { id } })"
-              class="bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded text-xs">Edit</button>
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
+              Edit</button>
             <button @click="deleteRecord(id)"
-              class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs">Delete</button>
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
+              Delete</button>
           </div>
         </template>
 
         <!-- is_active Badge Slot -->
         <template #item-is_active="{ is_active }">
-          <span
-            class="px-2 py-0.5 rounded-full text-xs font-medium"
+          <span class="px-2 py-0.5 rounded-full text-xs font-medium"
             :class="is_active === 'Yes' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
             {{ is_active }}
           </span>
@@ -296,17 +286,13 @@ onMounted(() => getRecords())
           </select>
         </div>
         <div class="flex gap-1">
-          <button @click="goToFirst" :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-sm"
+          <button @click="goToFirst" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
             :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">First</button>
-          <button @click="goToPrev" :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-sm"
+          <button @click="goToPrev" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
             :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">Prev</button>
-          <button @click="goToNext" :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-sm"
+          <button @click="goToNext" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
             :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">Next</button>
-          <button @click="goToLast" :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-sm"
+          <button @click="goToLast" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
             :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">Last</button>
         </div>
       </div>

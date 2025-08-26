@@ -237,11 +237,14 @@ onMounted(async () => {
         <template #item-actions="{ id }">
           <div class="flex justify-end gap-2">
             <button @click="$router.push({ name: 'view-document', params: { id } })"
-              class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs">View</button>
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
+              View</button>
             <button @click="$router.push({ name: 'edit-document', params: { id } })"
-              class="bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded text-xs">Edit</button>
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
+              Edit</button>
             <button @click="deleteRecord(id)"
-              class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs">Delete</button>
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
+              Delete</button>
           </div>
         </template>
 

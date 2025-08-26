@@ -1,14 +1,14 @@
-<!-- meeting g att -->
-
+<!-- Meeting Guest Attendance -->
 <script setup>
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
 import { useRoute, useRouter } from 'vue-router';
+
 const router = useRouter();
 const route = useRoute();
-
 const auth = authStore;
+
 const guest_name = ref('');
 const about_guest = ref('');
 const attendance_type_id = ref("");
@@ -18,10 +18,14 @@ const note = ref('');
 const is_active = ref('1');
 const isEditMode = ref(false);
 const selectedMeetingAttendanceId = ref(null);
+
 // Selected Meeting ID
 const meetingId = ref(route.params.id);
-
 const meetingDetails = ref([]);
+const attendanceTypeList = ref([]);
+const meetingGuestAttendanceList = ref([]);
+const isModalOpen = ref(false);
+
 // Fetch meeting details on mount
 const fetchMeetingDetails = async () => {
     try {
@@ -33,31 +37,29 @@ const fetchMeetingDetails = async () => {
     }
 };
 
-const attendanceTypeList = ref([]);
 // Fetch attendance type list
 const getAttendanceTypeList = async () => {
     try {
         const response = await auth.fetchProtectedApi('/api/attendance-types', {}, 'GET');
         attendanceTypeList.value = response.status ? response.data : [];
     } catch (error) {
-        console.error('Error fetching countries:', error);
+        console.error('Error fetching attendance types:', error);
         attendanceTypeList.value = [];
     }
 };
 
-const meetingGuestAttendanceList = ref([]);
-// Fetch getMeetingGuestAttendanceList
+// Fetch guest attendance list
 const getMeetingGuestAttendanceList = async () => {
     try {
         const response = await auth.fetchProtectedApi('/api/meeting-guest-attendances', {}, 'GET');
         meetingGuestAttendanceList.value = response.status ? response.data : [];
     } catch (error) {
-        console.error('Error fetching funds:', error);
+        console.error('Error fetching meeting guest attendances:', error);
         meetingGuestAttendanceList.value = [];
     }
 };
 
-// Reset form fields
+// Reset form
 const resetForm = () => {
     guest_name.value = '';
     about_guest.value = '';
@@ -70,7 +72,19 @@ const resetForm = () => {
     isEditMode.value = false;
 };
 
-// Add or update meetingGuestAttendance
+// Open modal
+const openModal = () => {
+    resetForm();
+    isModalOpen.value = true;
+};
+
+// Close modal
+const closeModal = () => {
+    resetForm();
+    isModalOpen.value = false;
+};
+
+// Add or update guest attendance
 const submitForm = async () => {
     const payload = {
         meeting_id: meetingId.value,
@@ -91,7 +105,7 @@ const submitForm = async () => {
         }
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this meeting guest attendances?`,
+            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this meeting guest attendance?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, save it!',
@@ -102,38 +116,39 @@ const submitForm = async () => {
             const response = await auth.fetchProtectedApi(apiUrl, payload, method);
 
             if (response.status) {
-                await Swal.fire('Success!', `meeting guest attendances ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
+                await Swal.fire('Success!', `Meeting guest attendance ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
                 getMeetingGuestAttendanceList();
-                resetForm();
+                closeModal();
             } else {
-                Swal.fire('Failed!', 'Failed to save meeting guest attendances.', 'error');
+                Swal.fire('Failed!', 'Failed to save meeting guest attendance.', 'error');
             }
         }
     } catch (error) {
-        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} meeting guest attendances:`, error);
-        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} meeting guest attendances.`, 'error');
+        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} meeting guest attendance:`, error);
+        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} meeting guest attendance.`, 'error');
     }
 };
 
-// Edit meetingGuestAttendance
-const editMeetingAttendance = (meetingGuestAttendance) => {
-    guest_name.value = meetingGuestAttendance.guest_name;
-    about_guest.value = meetingGuestAttendance.about_guest;
-    attendance_type_id.value = meetingGuestAttendance.attendance_type_id;
-    date.value = meetingGuestAttendance.date;
-    time.value = meetingGuestAttendance.time;
-    note.value = meetingGuestAttendance.note;
-    is_active.value = meetingGuestAttendance.is_active;
-    selectedMeetingAttendanceId.value = meetingGuestAttendance.id;
+// Edit guest attendance
+const editMeetingAttendance = (attendance) => {
+    guest_name.value = attendance.guest_name;
+    about_guest.value = attendance.about_guest;
+    attendance_type_id.value = attendance.attendance_type_id;
+    date.value = attendance.date;
+    time.value = attendance.time;
+    note.value = attendance.note;
+    is_active.value = attendance.is_active;
+    selectedMeetingAttendanceId.value = attendance.id;
     isEditMode.value = true;
+    isModalOpen.value = true;
 };
 
-// Delete meetingGuestAttendance
+// Delete guest attendance
 const deleteMeetingAttendance = async (id) => {
     try {
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: 'Do you want to delete this meeting guest attendances?',
+            text: 'Do you want to delete this meeting guest attendance?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, delete it!',
@@ -142,153 +157,198 @@ const deleteMeetingAttendance = async (id) => {
 
         if (result.isConfirmed) {
             const response = await auth.fetchProtectedApi(`/api/meeting-guest-attendances/${id}`, {}, 'DELETE');
-
             if (response.status) {
-                await Swal.fire('Deleted!', 'meeting guest attendances has been deleted.', 'success');
+                await Swal.fire('Deleted!', 'Meeting guest attendance has been deleted.', 'success');
                 getMeetingGuestAttendanceList();
             } else {
-                Swal.fire('Failed!', 'Failed to delete meeting guest attendances.', 'error');
+                Swal.fire('Failed!', 'Failed to delete meeting guest attendance.', 'error');
             }
         }
     } catch (error) {
-        console.error('Error deleting meeting guest attendances:', error);
-        Swal.fire('Error!', 'Failed to delete meeting guest attendances.', 'error');
+        console.error('Error deleting meeting guest attendance:', error);
+        Swal.fire('Error!', 'Failed to delete meeting guest attendance.', 'error');
     }
 };
 
-
-// Fetch Dialing Codes on mount
+// On mount
 onMounted(() => {
     fetchMeetingDetails();
     getAttendanceTypeList();
     getMeetingGuestAttendanceList();
 });
-
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-10/12">
+    <div class="max-w-7xl mx-auto w-11/12">
+        <!-- Meeting Info -->
         <section class="mb-5">
-            <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-bold mt-2">Name:{{ meetingDetails.name }} - Date:{{ meetingDetails.date }} -
-                    Time:{{ meetingDetails.time }}</h5>
+            <div class="bg-white shadow rounded-lg p-4 border">
+                <h5 class="text-md  text-gray-800">
+                    Name: {{ meetingDetails.name }} - Date: {{ meetingDetails.date }} - Time:
+                    {{ meetingDetails.time }}
+                </h5>
             </div>
-            <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">{{ isEditMode ? 'Edit' : 'Add' }} Meeting Guest Attendance</h5>
+        </section>
+
+        <!-- Guest Attendance List -->
+        <section class="bg-white shadow-md rounded-xl border">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b gap-3">
+
+                <!-- Title -->
+                <h5 class="text-md font-semibold text-gray-800">
+                    Guest Attendance List
+                </h5>
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <button @click="openModal"
+                        class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-500 transition">
+                        Add Guest Attendance
+                    </button>
+                    <button @click="router.push({ name: 'index-meeting' })"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition">
+                        Back to Meeting List
+                    </button>
+                </div>
             </div>
-            <form @submit.prevent="submitForm">
-                <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> -->
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <!-- Country Country Name -->
-                    <div class="col-span-4 mb-2">
-                        <label for="guest_name" class="block text-gray-700 font-semibold mb-2">Guest Name</label>
+
+            <!-- Table -->
+            <div class="overflow-x-auto p-4">
+                <table class="min-w-full table-auto border-collapse border border-gray-200 text-sm text-left">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="border px-4 py-2">SL</th>
+                            <th class="py-2 px-4 border">Guest Name</th>
+                            <th class="py-2 px-4 border">About Guest</th>
+                            <th class="py-2 px-4 border">Attendance Type</th>
+                            <th class="py-2 px-4 border">Attendance Time</th>
+                            <th class="py-2 px-4 border">Active</th>
+                            <th class="py-2 px-4 border">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(attendance, index) in meetingGuestAttendanceList" :key="attendance.id"
+                            class="hover:bg-gray-50 transition">
+                            <td class="py-2 px-4 border">{{ index + 1 }}</td>
+                            <td class="py-2 px-4 border">{{ attendance.guest_name }}</td>
+                            <td class="py-2 px-4 border">{{ attendance.about_guest }}</td>
+                            <td class="py-2 px-4 border">
+                                {{ attendance.attendance_types_name }}
+                            </td>
+                            <td class="py-2 px-4 border">{{ attendance.time }}</td>
+                            <td class="py-2 px-4 border">
+                                <span :class="Number(attendance.is_active) === 0
+                                        ? 'text-red-500 font-semibold'
+                                        : 'text-green-600 font-semibold'
+                                    ">
+                                    {{ Number(attendance.is_active) === 0 ? "No" : "Yes" }}
+                                </span>
+                            </td>
+                            <td class="py-2 px-4 border flex gap-2">
+                                <button @click="editMeetingAttendance(attendance)"
+                                    class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
+                                    Edit
+                                </button>
+                                <button @click="deleteMeetingAttendance(attendance.id)"
+                                    class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Modal -->
+        <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl p-6 overflow-y-auto max-h-[90vh] border">
+                <div class="flex justify-between items-center border-b pb-3 mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">
+                        {{ isEditMode ? "Edit" : "Add" }} Meeting Guest Attendance
+                    </h3>
+                    <button @click="closeModal" class="text-gray-500 hover:text-gray-700">
+                        ✖
+                    </button>
+                </div>
+
+                <form @submit.prevent="submitForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Guest Name -->
+                    <div>
+                        <label for="guest_name" class="block text-gray-700 font-semibold mb-1">Guest Name</label>
                         <input v-model="guest_name" type="text"
-                            class="w-full border border-gray-300 rounded-md py-2 px-4" />
+                            class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring focus:ring-green-200" />
                     </div>
-                    <div class="col-span-4 mb-2">
-                        <label for="about_guest" class="block text-gray-700 font-semibold mb-2">About Guest</label>
+
+                    <!-- About Guest -->
+                    <div>
+                        <label for="about_guest" class="block text-gray-700 font-semibold mb-1">About Guest</label>
                         <input v-model="about_guest" type="text"
-                            class="w-full border border-gray-300 rounded-md py-2 px-4" />
+                            class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring focus:ring-green-200" />
                     </div>
-                    <!-- Country Country Name -->
-                    <div class="col-span-4 mb-2">
-                        <label for="attendance_type_id" class="block text-gray-700 font-semibold mb-2">Type Name</label>
+
+                    <!-- Attendance Type -->
+                    <div>
+                        <label for="attendance_type_id" class="block text-gray-700 font-semibold mb-1">Type</label>
                         <select v-model="attendance_type_id" id="attendance_type_id"
-                            class="w-full border border-gray-300 rounded-md p-2">
+                            class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring focus:ring-green-200">
                             <option value="">Select Attendance Type</option>
                             <option v-for="attendanceType in attendanceTypeList" :key="attendanceType.id"
                                 :value="attendanceType.id">
-                                {{ attendanceType.name }}</option>
+                                {{ attendanceType.name }}
+                            </option>
                         </select>
                     </div>
-                    <!-- date -->
-                    <div class="col-span-3 mb-2">
-                        <label for="date" class="block text-gray-700 font-semibold mb-2">Date</label>
-                        <input v-model="date" type="date" class="w-full border border-gray-300 rounded-md py-2 px-4" />
-                    </div>
-                    <!-- time -->
-                    <div class="col-span-3 mb-2">
-                        <label for="time" class="block text-gray-700 font-semibold mb-2">Time</label>
-                        <input v-model="time" type="time" class="w-full border border-gray-300 rounded-md py-2 px-4" />
-                    </div>
-                    <!-- Country Country Name -->
-                    <div class="col-span-4 mb-2">
-                        <label for="note" class="block text-gray-700 font-semibold mb-2">Note</label>
-                        <input v-model="note" type="text" class="w-full border border-gray-300 rounded-md py-2 px-4" />
+
+                    <!-- Date -->
+                    <div>
+                        <label for="date" class="block text-gray-700 font-semibold mb-1">Date</label>
+                        <input v-model="date" type="date"
+                            class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring focus:ring-green-200" />
                     </div>
 
-                    <!-- is_active -->
-                    <div class="col-span-2 mb-2">
-                        <label for="is_active" class="block text-gray-700 font-semibold mb-2">Active</label>
-                        <select v-model="is_active" id="is_active" class="w-full border border-gray-300 rounded-md p-2">
-                            <option value="">Select is Active</option>
+                    <!-- Time -->
+                    <div>
+                        <label for="time" class="block text-gray-700 font-semibold mb-1">Time</label>
+                        <input v-model="time" type="time"
+                            class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring focus:ring-green-200" />
+                    </div>
+
+                    <!-- Note -->
+                    <div>
+                        <label for="note" class="block text-gray-700 font-semibold mb-1">Note</label>
+                        <input v-model="note" type="text"
+                            class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring focus:ring-green-200" />
+                    </div>
+
+                    <!-- Active -->
+                    <div>
+                        <label for="is_active" class="block text-gray-700 font-semibold mb-1">Active</label>
+                        <select v-model="is_active" id="is_active"
+                            class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring focus:ring-green-200">
+                            <option value="">Select</option>
                             <option value="1">Yes</option>
                             <option value="0">No</option>
                         </select>
                     </div>
-                    <!-- Submit button -->
-                    <div class="col-span-12 mb-2 flex items-end justify-end">
-                        <button type="submit" class="bg-green-600 text-white rounded-md py-2 px-4 hover:bg-green-500">
-                            {{ isEditMode ? 'Update' : 'Add' }}
+
+                    <!-- Buttons -->
+                    <div class="col-span-full flex justify-end gap-3 mt-4">
+                        <button type="submit"
+                            class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-500 transition">
+                            {{ isEditMode ? "Update" : "Add" }}
                         </button>
                         <button type="button" @click="resetForm"
-                            class="bg-yellow-600 text-white rounded-md py-2 px-4 mx-4 hover:bg-yellow-700">
+                            class="bg-yellow-600 text-white px-4 py-2 rounded-lg shadow hover:bg-yellow-700 transition">
                             Reset
                         </button>
-                         <button type="button" @click="router.push({ name: 'index-meeting' })" class="bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700">
-                            Back to Meeting List
+                        <button type="button" @click="closeModal"
+                            class="bg-gray-500 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-600 transition">
+                            Close
                         </button>
                     </div>
-                </div>
-            </form>
-        </section>
-        <!-- country list -->
-        <section>
-            <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">Meeting Guest Attendance List</h5>
+                </form>
             </div>
-            <table class="min-w-full table-auto border-collapse border border-gray-300 text-left">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="border px-4 py-2">SL</th>
-                        <th class="py-2 px-4 border border-gray-300">Guest Name</th>
-                        <th class="py-2 px-4 border border-gray-300">About Guest</th>
-                        <th class="py-2 px-4 border border-gray-300">Attendance Type</th>
-                        <th class="py-2 px-4 border border-gray-300">Attendance Time</th>
-                        <th class="py-2 px-4 border border-gray-300">Active</th>
-                        <th class="py-2 px-4 border border-gray-300">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(meetingGuestAttendance, index) in meetingGuestAttendanceList"
-                        :key="meetingGuestAttendance.id">
-                        <td class="py-2 px-4 border">{{ index + 1 }}</td>
-                        <td class="py-2 px-4 border">{{ meetingGuestAttendance.guest_name }}</td>
-                        <td class="py-2 px-4 border">{{ meetingGuestAttendance.about_guest }}</td>
-                        <td class="py-2 px-4 border">{{ meetingGuestAttendance.attendance_types_name }}</td>
-                        <td class="py-2 px-4 border">{{ meetingGuestAttendance.time }}</td>
-                        <td class="py-2 px-4 border">
-                            <span
-                                :class="Number(meetingGuestAttendance.is_active) === 0 ? 'text-red-500' : 'text-green-500'">
-                                {{ Number(meetingGuestAttendance.is_active) === 0 ? "No" : "Yes" }}
-                            </span>
-                        </td>
-                        <td class="py-2 px-4 border flex gap-2">
-                            <button @click="editMeetingAttendance(meetingGuestAttendance)"
-                                class="bg-yellow-400 text-white rounded-md py-1 px-2 hover:bg-yellow-500">Edit</button>
-                            <button @click="deleteMeetingAttendance(meetingGuestAttendance.id)"
-                                class="bg-red-600 text-white rounded-md py-1 px-2 hover:bg-red-700">Delete</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
+        </div>
     </div>
 </template>
-
-<style scoped>
-.left-color-shade {
-    background-color: rgba(76, 175, 80, 0.1);
-    /* Slightly green background */
-}
-</style>

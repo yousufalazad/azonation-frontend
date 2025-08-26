@@ -36,8 +36,22 @@ const note = ref('');
 const description = ref('');
 const short_description = ref('');
 
+const conductTypeList = ref([]);
+
+const getConductTypes = async () => {
+  try {
+    const response = await auth.fetchProtectedApi('/api/conduct-types', {}, 'GET');
+    conductTypeList.value = response.status ? response.data : [];
+  } catch (error) {
+    console.error('Error fetching conduct types:', error);
+    conductTypeList.value = [];
+  }
+};
+
+
 // Initialize Quill editors and fetch existing data
 onMounted(() => {
+
   const options = {
     theme: 'snow',
     placeholder: 'Type here...',
@@ -50,6 +64,8 @@ onMounted(() => {
 
   // Fetch existing project details
   fetchProjectDetails();
+  getConductTypes();
+
 
   // Update refs when content changes
   requirementsEditor.on('text-change', () => {
@@ -228,19 +244,27 @@ const submitForm = async () => {
 <template>
   <div>
     <!-- Header -->
-    <div class="flex justify-between items-center">
-      <h2 class="text-2xl font-bold text-gray-800">Edit Project</h2>
-      <div>
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 py-4 ">
+      <!-- Title -->
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-800">
+        Edit Project
+      </h2>
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-2">
+        <!-- View Project Button -->
         <button @click="$router.push({ name: 'view-project', params: { id: projectId } })"
-          class="bg-green-500 hover:bg-green-600 text-white p-2 m-2 rounded">Project View </button>
+          class="bg-green-500 hover:bg-green-600 text-white text-sm sm:text-base py-2 px-3 sm:px-4 rounded-lg shadow-md transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-300">
+          Project View
+        </button>
 
+        <!-- Back to Project List Button -->
         <button @click="$router.push({ name: 'index-project' })"
-          class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
+          class="bg-blue-500 hover:bg-blue-600 text-white text-sm sm:text-base py-2 px-3 sm:px-4 rounded-lg shadow-md transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-300">
           Back to Project List
         </button>
       </div>
-
     </div>
+
 
     <!-- Form -->
     <form @submit.prevent="submitForm" class="space-y-6">
@@ -328,8 +352,9 @@ const submitForm = async () => {
           <label for="conduct_type" class="block text-sm font-medium text-gray-700">Conduct Type</label>
           <select v-model="conduct_type" id="conduct_type"
             class="mt-2 w-full border border-gray-300 rounded-lg py-2 px-4 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-            <option value="1">In Person</option>
-            <option value="2">Online</option>
+            <option v-for="type in conductTypeList" :key="type.id" :value="type.id">
+              {{ type.name }}
+            </option>
           </select>
         </div>
       </div>

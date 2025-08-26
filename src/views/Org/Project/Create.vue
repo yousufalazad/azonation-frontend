@@ -35,8 +35,20 @@ const note = ref('');
 const description = ref('');
 const short_description = ref('');
 
+const conductTypeList = ref([]);
+
+const getConductTypes = async () => {
+    try {
+        const response = await auth.fetchProtectedApi('/api/conduct-types', {}, 'GET');
+        conductTypeList.value = response.status ? response.data : [];
+    } catch (error) {
+        console.error('Error fetching conduct types:', error);
+        conductTypeList.value = [];
+    }
+};
 // Initialize Quill editors
 onMounted(() => {
+    getConductTypes();  
     const options = {
         theme: 'snow',
         placeholder: 'Type here...',
@@ -90,29 +102,29 @@ const resetForm = () => {
 
 // Handle File Attachments
 const handleDocument = (event) => {
-  file_attachments.value = event.target.files[0];
+    file_attachments.value = event.target.files[0];
 };
 
 const handleFileChange = (event, fileList, index) => {
-  const file = event.target.files[0];
-  if (file) {
-    fileList[index].file = {
-      file,
-      preview: URL.createObjectURL(file),
-      name: file.name
-    };
-  }
+    const file = event.target.files[0];
+    if (file) {
+        fileList[index].file = {
+            file,
+            preview: URL.createObjectURL(file),
+            name: file.name
+        };
+    }
 };
 
 const addMoreFiles = (fileList) => {
-  fileList.push({ id: Date.now(), file: null });
+    fileList.push({ id: Date.now(), file: null });
 };
 
 const removeFile = (fileList, index) => {
-  if (fileList[index].file && fileList[index].file.preview) {
-    URL.revokeObjectURL(fileList[index].file.preview); // Release memory
-  }
-  fileList.splice(index, 1);
+    if (fileList[index].file && fileList[index].file.preview) {
+        URL.revokeObjectURL(fileList[index].file.preview); // Release memory
+    }
+    fileList.splice(index, 1);
 };
 
 
@@ -141,19 +153,19 @@ const submitForm = async () => {
     formData.append('description', description.value ?? '');
     formData.append('short_description', short_description.value ?? '');
 
-   // Images
-  images.value.forEach((fileData, index) => {
-    if (fileData.file) {
-      formData.append(`images[${index}]`, fileData.file.file);
-    }
-  });
+    // Images
+    images.value.forEach((fileData, index) => {
+        if (fileData.file) {
+            formData.append(`images[${index}]`, fileData.file.file);
+        }
+    });
 
-  // Documents
-  documents.value.forEach((fileData, index) => {
-    if (fileData.file) {
-      formData.append(`documents[${index}]`, fileData.file.file);
-    }
-  });
+    // Documents
+    documents.value.forEach((fileData, index) => {
+        if (fileData.file) {
+            formData.append(`documents[${index}]`, fileData.file.file);
+        }
+    });
 
     try {
         const result = await Swal.fire({
@@ -192,12 +204,19 @@ const submitForm = async () => {
 <template>
     <div class="min-h-screen overflow-y-auto p-8 bg-white rounded-lg shadow-lg mt-12">
         <!-- Header -->
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-2xl font-bold text-gray-800">Add New Project</h2>
-            <button @click="$router.push({ name: 'index-project' })"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-lg shadow focus:ring-2 focus:ring-blue-300 focus:outline-none">
-                Back to Project List
-            </button>
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 py-4 ">
+            <!-- Title -->
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-800">
+                Add New Project </h2>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-2">
+                <!-- Back to Project List Button -->
+                <button @click="$router.push({ name: 'index-project' })"
+                    class="bg-blue-500 hover:bg-blue-600 text-white text-sm sm:text-base py-2 px-3 sm:px-4 rounded-lg shadow-md transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    Back to Project List
+                </button>
+            </div>
         </div>
 
         <!-- Form -->
@@ -286,8 +305,9 @@ const submitForm = async () => {
                     <label for="conduct_type" class="block text-sm font-medium text-gray-700">Conduct Type</label>
                     <select v-model="conduct_type" id="conduct_type"
                         class="mt-2 w-full border border-gray-300 rounded-lg py-2 px-4 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                        <option value="1">In Person</option>
-                        <option value="2">Online</option>
+                        <option v-for="type in conductTypeList" :key="type.id" :value="type.id">
+                            {{ type.name }}
+                        </option>
                     </select>
                 </div>
             </div>
@@ -295,21 +315,21 @@ const submitForm = async () => {
             <div class="mb-4">
                 <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
                 <div class="space-y-3">
-                <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
-                    <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept="image/*"
-                    @change="event => handleFileChange(event, images, index)" />
+                    <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
+                        <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept="image/*"
+                            @change="event => handleFileChange(event, images, index)" />
 
-                    <div v-if="file.file && file.file.preview" class="w-16 h-16 border rounded-md overflow-hidden">
-                    <img :src="file.file.preview" alt="Preview" class="w-full h-full object-cover" />
+                        <div v-if="file.file && file.file.preview" class="w-16 h-16 border rounded-md overflow-hidden">
+                            <img :src="file.file.preview" alt="Preview" class="w-full h-full object-cover" />
+                        </div>
+
+                        <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
+                            @click="removeFile(images, index)">X</button>
                     </div>
-
-                    <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-                    @click="removeFile(images, index)">X</button>
-                </div>
                 </div>
                 <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
-                @click="() => addMoreFiles(images)">
-                Add more image
+                    @click="() => addMoreFiles(images)">
+                    Add more image
                 </button>
             </div>
 
@@ -317,19 +337,19 @@ const submitForm = async () => {
             <div class="mb-4">
                 <label class="block text-gray-700 font-semibold mb-2">Upload Documents</label>
                 <div class="space-y-3">
-                <div v-for="(file, index) in documents" :key="file.id" class="flex items-center gap-4">
-                    <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept=".pdf,.doc,.docx"
-                    @change="event => handleFileChange(event, documents, index)" />
+                    <div v-for="(file, index) in documents" :key="file.id" class="flex items-center gap-4">
+                        <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept=".pdf,.doc,.docx"
+                            @change="event => handleFileChange(event, documents, index)" />
 
-                    <span v-if="file.file" class="truncate w-32">{{ file.file.name }}</span>
+                        <span v-if="file.file" class="truncate w-32">{{ file.file.name }}</span>
 
-                    <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-                    @click="removeFile(documents, index)">X</button>
-                </div>
+                        <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
+                            @click="removeFile(documents, index)">X</button>
+                    </div>
                 </div>
                 <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
-                @click="() => addMoreFiles(documents)">
-                Add more document
+                    @click="() => addMoreFiles(documents)">
+                    Add more document
                 </button>
             </div>
             <!-- Actions -->

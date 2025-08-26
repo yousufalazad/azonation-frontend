@@ -6,13 +6,18 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const auth = authStore;
+
+// Form fields
 const name = ref('');
-const is_active = ref('1'); // Default to 'Active' is_active
+const is_active = ref('1'); // Default Active
 const isEditMode = ref(false);
 const selectedFundId = ref(null);
 const fundList = ref([]);
 
-// Fetch funds
+// Modal control
+const showModal = ref(false);
+
+// Fetch all funds
 const getFunds = async () => {
     try {
         const response = await auth.fetchProtectedApi('/api/funds', {}, 'GET');
@@ -23,7 +28,7 @@ const getFunds = async () => {
     }
 };
 
-// Reset form fields
+// Reset form
 const resetForm = () => {
     name.value = '';
     is_active.value = '1';
@@ -31,13 +36,27 @@ const resetForm = () => {
     isEditMode.value = false;
 };
 
-// Add or update fund
-const submitForm = async () => {
-    const payload = {
-        name: name.value,
-        is_active: is_active.value
-    };
+// Open modal for Add/Edit
+const openModal = (fund = null) => {
+    resetForm();
+    if (fund) {
+        name.value = fund.name;
+        is_active.value = fund.is_active.toString();
+        selectedFundId.value = fund.id;
+        isEditMode.value = true;
+    }
+    showModal.value = true;
+};
 
+// Close modal
+const closeModal = () => {
+    resetForm();
+    showModal.value = false;
+};
+
+// Submit (Add/Update)
+const submitForm = async () => {
+    const payload = { name: name.value, is_active: is_active.value };
     try {
         let apiUrl = '/api/funds';
         let method = 'POST';
@@ -62,7 +81,7 @@ const submitForm = async () => {
             if (response.status) {
                 await Swal.fire('Success!', `Fund ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
                 getFunds();
-                resetForm();
+                closeModal();
             } else {
                 Swal.fire('Failed!', 'Failed to save fund.', 'error');
             }
@@ -73,125 +92,118 @@ const submitForm = async () => {
     }
 };
 
-// Edit fund
-const editFund = (fund) => {
-    name.value = fund.name;
-    is_active.value = fund.is_active.toString();
-    selectedFundId.value = fund.id;
-    isEditMode.value = true;
+// Navigate back to accounts
+const goToAccounts = () => {
+    router.push({ name: 'accounts' });
 };
 
-// Delete fund
-//Fund can not be deleted if it is used in any transaction
-// const deleteFund = async (id) => {
-//     try {
-//         const result = await Swal.fire({
-//             title: 'Are you sure?',
-//             text: 'Do you want to delete this fund?',
-//             icon: 'warning',
-//             showCancelButton: true,
-//             confirmButtonText: 'Yes, delete it!',
-//             cancelButtonText: 'No, cancel!'
-//         });
-
-//         if (result.isConfirmed) {
-//             const response = await auth.fetchProtectedApi(`/api/funds/${id}`, {}, 'DELETE');
-
-//             if (response.status) {
-//                 await Swal.fire('Deleted!', 'Fund has been deleted.', 'success');
-//                 getFunds();
-//             } else {
-//                 Swal.fire('Failed!', 'Failed to delete fund.', 'error');
-//             }
-//         }
-//     } catch (error) {
-//         console.error('Error deleting fund:', error);
-//         Swal.fire('Error!', 'Failed to delete fund.', 'error');
-//     }
-// };
-
-// Fetch funds on mount
+// Fetch on mount
 onMounted(() => {
     getFunds();
 });
-
-// Navigate to add form
-const accounts = () => {
-    router.push({ name: 'accounts' });
-};
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-10/12">
-        <section class="mb-5">
-            <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">{{ isEditMode ? 'Edit' : 'Add' }} Fund</h5>
+    <div class="max-w-7xl mx-auto w-11/12">
+        <!-- Attendance List -->
+        <section class="bg-white shadow-md rounded-xl border">
+            <!-- Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b gap-3">
+                <h5 class="text-lg font-semibold text-gray-700">Funds Management</h5>
+
+                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <button @click="openModal()"
+                        class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-500 w-full sm:w-auto">
+                        Add Fund
+                    </button>
+                    <button @click="goToAccounts"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 w-full sm:w-auto">
+                        Back to Accounts
+                    </button>
+                </div>
             </div>
-            <form @submit.prevent="submitForm">
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <!-- Name -->
-                    <div class="col-span-4 mb-4">
-                        <label for="name" class="block text-gray-700 font-semibold mb-2">Name</label>
-                        <input v-model="name" id="name" type="text" class="w-full border border-gray-300 rounded-md py-2 px-4" required />
+
+            <!-- Table -->
+            <div class="overflow-x-auto p-4">
+                <table class="min-w-full table-auto border-collapse border border-gray-200 text-sm text-left">
+                    <thead class="bg-gray-100">
+                        <tr class="text-gray-700">
+                            <th class="border px-4 py-2">SL</th>
+                            <th class="py-2 px-4 border border-gray-300">Name</th>
+                            <th class="py-2 px-4 border border-gray-300">Active Status</th>
+                            <th class="py-2 px-4 border border-gray-300">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(fund, index) in fundList" :key="fund.id">
+                            <td class="py-2 px-4 border">{{ index + 1 }}</td>
+                            <td class="py-2 px-4 border">{{ fund.name }}</td>
+                            <td class="py-2 px-4 border">
+                                <span :class="Number(fund.is_active) === 0 ? 'text-red-500' : 'text-green-500'">
+                                    {{ Number(fund.is_active) === 0 ? 'Inactive' : 'Active' }}
+                                </span>
+                            </td>
+                            <td class="py-2 px-4 border flex gap-2">
+                                <button @click="openModal(fund)"
+                                    class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
+                                    Edit</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Modal -->
+        <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+            <div
+                class="bg-white rounded-xl shadow-lg w-full max-w-3xl sm:max-w-xl md:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto p-6">
+                <!-- Header -->
+                <div class="flex justify-between items-center border-b pb-3 mb-4">
+                    <h5 class="text-lg font-semibold">{{ isEditMode ? 'Edit' : 'Add' }} Fund</h5>
+                    <button @click="closeModal" class="text-gray-500 hover:text-gray-700">✖</button>
+                </div>
+
+                <!-- Form -->
+                <form @submit.prevent="submitForm" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-4">
+                        <!-- Fund Name -->
+                        <div class="col-span-6">
+                            <label class="block text-gray-700 font-semibold mb-1">Name</label>
+                            <input v-model="name" type="text" class="w-full border border-gray-300 rounded-md py-2 px-3"
+                                required />
+                        </div>
+
+                        <!-- Active Status -->
+                        <div class="col-span-6">
+                            <label class="block text-gray-700 font-semibold mb-1">Active Status</label>
+                            <select v-model="is_active" class="w-full border border-gray-300 rounded-md p-2">
+                                <option value="1">Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- Is_active dropdown -->
-                    <div class="col-span-2 mb-4">
-                        <label for="is_active" class="block text-gray-700 font-semibold mb-2">Active status</label>
-                        <select v-model="is_active" id="is_active" class="w-full border border-gray-300 rounded-md py-2 px-4">
-                            <option value="1">Active</option>
-                            <option value="0">Inactive</option>
-                        </select>
-                    </div>
-                    <!-- Submit button -->
-                    <div class="col-span-6 mb-4 flex items-end">
+                    <!-- Buttons -->
+                    <div class="flex justify-end gap-3 mt-4">
                         <button type="submit" class="bg-green-600 text-white rounded-md py-2 px-4 hover:bg-green-500">
                             {{ isEditMode ? 'Update' : 'Submit' }}
                         </button>
-                        <button type="button" @click="resetForm" class="bg-blue-600 text-white rounded-md py-2 px-4 mx-4 hover:bg-blue-700">
-                            Reset
-                        </button>
-                        <button type="button" @click="accounts" class="bg-yellow-500 text-white rounded-md py-2 px-4 hover:bg-yellow-600">
-                            Back to Accounts
-                        </button>
+                        <button type="button" @click="resetForm"
+                            class="bg-yellow-600 text-white rounded-md py-2 px-4 hover:bg-yellow-700">Reset</button>
+                        <button type="button" @click="closeModal"
+                            class="bg-gray-500 text-white rounded-md py-2 px-4 hover:bg-gray-600">Cancel</button>
                     </div>
-                </div>
-            </form>
-        </section>
-
-        <!-- Fund list -->
-        <section>
-            <div class="flex justify-between left-color-shade py-2 my-3">
-                <h5 class="text-md font-semibold mt-2">Funds</h5>
+                </form>
             </div>
-            <table class="min-w-full table-auto border-collapse border border-gray-300 text-left">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="border px-4 py-2">SL</th>
-                        <th class="py-2 px-4 border border-gray-300">Name</th>
-                        <th class="py-2 px-4 border border-gray-300">Active status</th>
-                        <th class="py-2 px-4 border border-gray-300">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(fund, index) in fundList" :key="fund.id">
-                        <td class="py-2 px-4 border">{{ index + 1 }}</td>
-                        <td class="py-2 px-4 border">{{ fund.name }}</td>
-                        <td class="py-2 px-4 border">{{ fund.is_active === 1 ? 'Active' : 'Inactive' }}</td>
-                        <td class="py-2 px-4 border flex gap-2">
-                            <button @click="editFund(fund)" class="bg-yellow-400 text-white rounded-md py-1 px-2 hover:bg-yellow-500">Edit</button>
-                            <!-- <button @click="deleteFund(fund.id)" class="bg-red-600 text-white rounded-md py-1 px-2 hover:bg-red-700">Delete</button> -->
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
+        </div>
+
+
     </div>
 </template>
 
 <style scoped>
 .left-color-shade {
     background-color: rgba(76, 175, 80, 0.1);
-    /* Slightly green background */
 }
 </style>

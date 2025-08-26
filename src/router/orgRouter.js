@@ -1,5 +1,7 @@
 import OrgDashboardLayout from "../views/Org/Layouts/Layout.vue";
 import OrgDashboardIndex from "@/views/Org/Layouts/Dashboard/Index.vue";
+import HeaderNotifications from "../views/Org/Layouts/HeaderNotification.vue";
+import Notifications from "../views/Org/Notification/Index.vue";
 
 
 // Org Profile
@@ -148,6 +150,18 @@ const orgRoutes = [
         path: "index",
         name: "org-dashboard-index",
         component: OrgDashboardIndex,
+        meta: { requiresAuth: true },
+      },
+       {
+        path: "header-notifications",
+        name: "header-notifications",
+        component: HeaderNotifications,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "notifications",
+        name: "notifications",
+        component: Notifications,
         meta: { requiresAuth: true },
       },
       {

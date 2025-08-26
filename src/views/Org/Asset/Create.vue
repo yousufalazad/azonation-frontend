@@ -180,192 +180,288 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="container mx-auto max-w-7xl mx-auto w-10/12 p-6 bg-white rounded-lg shadow-md mt-10">
-        <div class="flex justify-between items-center mb-6">
-            <h5 class="text-xl font-semibold">Add New Asset</h5>
-            <button @click="$router.push({ name: 'index-asset' })"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
-                Back to Asset List
-            </button>
+  <div class="container mx-auto w-11/12 lg:w-10/12 max-w-7xl p-6 bg-white rounded-lg shadow-md mt-10">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-3">
+      <h5 class="text-xl font-semibold">Add New Asset</h5>
+      <button
+        @click="$router.push({ name: 'index-asset' })"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
+        Back to Asset List
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form @submit.prevent="submitForm" class="space-y-6">
+      <!-- Name -->
+      <div>
+        <label for="name" class="block text-gray-700 font-semibold mb-2">Name</label>
+        <input
+          v-model="name"
+          type="text"
+          id="name"
+          class="w-full border border-gray-300 rounded-md py-2 px-4" />
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label for="description" class="block text-gray-700 font-semibold mb-2">Description</label>
+        <input
+          v-model="description"
+          type="text"
+          id="description"
+          class="w-full border border-gray-300 rounded-md py-2 px-4" />
+      </div>
+
+      <!-- Start & End Date -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="start_date" class="block text-gray-700 font-semibold mb-2">Start Date</label>
+          <input
+            v-model="start_date"
+            type="date"
+            id="start_date"
+            class="w-full border border-gray-300 rounded-md py-2 px-4" />
         </div>
 
-        <form @submit.prevent="submitForm">
-            <div class="mb-4">
-                <label for="name" class="block text-gray-700 font-semibold mb-2">Name</label>
-                <input v-model="name" type="text" id="name" class="w-full border border-gray-300 rounded-md py-2 px-4"
-                     />
+        <div>
+          <label for="end_date" class="block text-gray-700 font-semibold mb-2">End Date</label>
+          <input
+            v-model="end_date"
+            type="date"
+            id="end_date"
+            class="w-full border border-gray-300 rounded-md py-2 px-4" />
+        </div>
+      </div>
+
+      <!-- Quantity, Value, In-kind -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label for="quantity" class="block text-gray-700 font-semibold mb-2">Quantity</label>
+          <input
+            v-model="quantity"
+            type="number"
+            id="quantity"
+            min="0"
+            class="w-full border border-gray-300 rounded-md py-2 px-4" />
+        </div>
+        <div>
+          <label for="value_amount" class="block text-gray-700 font-semibold mb-2">Value Amount</label>
+          <input
+            v-model="value_amount"
+            type="number"
+            id="value_amount"
+            min="0"
+            class="w-full border border-gray-300 rounded-md py-2 px-4" />
+        </div>
+        <div>
+          <label for="inkind_value" class="block text-gray-700 font-semibold mb-2">In-Kind Value</label>
+          <input
+            v-model="inkind_value"
+            type="number"
+            id="inkind_value"
+            min="0"
+            class="w-full border border-gray-300 rounded-md py-2 px-4" />
+        </div>
+      </div>
+
+      <!-- Is Long Term & Is Tangible -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="is_long_term" class="block text-gray-700 font-semibold mb-2">Is Long Term?</label>
+          <select
+            v-model="is_long_term"
+            id="is_long_term"
+            class="w-full border border-gray-300 rounded-md py-2 px-4">
+            <option :value="1">Yes</option>
+            <option :value="0">No</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="is_tangible" class="block text-gray-700 font-semibold mb-2">Is Tangible?</label>
+          <select
+            v-model="is_tangible"
+            id="is_tangible"
+            class="w-full border border-gray-300 rounded-md py-2 px-4">
+            <option :value="1">Yes</option>
+            <option :value="0">No</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Responsible Person -->
+      <div>
+        <label for="responsible_user_id" class="block text-gray-700 font-semibold mb-2">Responsible Person</label>
+        <select
+          v-model="responsible_user_id"
+          id="responsible_user_id"
+          class="w-full border border-gray-300 rounded-md py-2 px-4">
+          <option value="" disabled>Select Responsible Person</option>
+          <option
+            v-for="orgMember in getOrgAllMemberName"
+            :key="orgMember.individual.id"
+            :value="orgMember.individual.id">
+            {{ orgMember.individual.first_name }} {{ orgMember.individual.last_name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Assignment Dates -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="assignment_start_date" class="block text-gray-700 font-semibold mb-2">
+            Responsibility Start Date
+          </label>
+          <input
+            v-model="assignment_start_date"
+            type="date"
+            id="assignment_start_date"
+            class="w-full border border-gray-300 rounded-md py-2 px-4" />
+        </div>
+
+        <div>
+          <label for="assignment_end_date" class="block text-gray-700 font-semibold mb-2">
+            Responsibility End Date
+          </label>
+          <input
+            v-model="assignment_end_date"
+            type="date"
+            id="assignment_end_date"
+            class="w-full border border-gray-300 rounded-md py-2 px-4" />
+        </div>
+      </div>
+
+      <!-- Note -->
+      <div>
+        <label for="note" class="block text-gray-700 font-semibold mb-2">Note</label>
+        <input
+          v-model="note"
+          type="text"
+          id="note"
+          class="w-full border border-gray-300 rounded-md py-2 px-4"
+          placeholder="Optional note" />
+      </div>
+
+      <!-- Lifecycle Status & Privacy -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="asset_lifecycle_statuses_id" class="block text-gray-700 font-semibold mb-2">
+            Lifecycle Status
+          </label>
+          <select
+            v-model="asset_lifecycle_statuses_id"
+            id="asset_lifecycle_statuses_id"
+            class="w-full border border-gray-300 rounded-md py-2 px-4">
+            <option value="" disabled>Select Lifecycle Status</option>
+            <option v-for="status in assetLifecycleSetups" :key="status.id" :value="status.id">
+              {{ status.name }}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label for="privacy_setup_id" class="block text-gray-700 font-semibold mb-2">Privacy Setup</label>
+          <select
+            v-model="privacy_setup_id"
+            id="privacy_setup_id"
+            class="w-full border border-gray-300 rounded-md py-2 px-4">
+            <option value="" disabled>Select Privacy Setup</option>
+            <option v-for="setup in privacySetups" :key="setup.id" :value="setup.id">
+              {{ setup.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Active -->
+      <div>
+        <label for="is_active" class="block text-gray-700 font-semibold mb-2">Is Active?</label>
+        <select
+          v-model="is_active"
+          id="is_active"
+          class="w-full border border-gray-300 rounded-md py-2 px-4">
+          <option :value="1">Yes</option>
+          <option :value="0">No</option>
+        </select>
+      </div>
+
+      <!-- Images Upload -->
+      <div>
+        <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
+        <div class="space-y-3">
+          <div v-for="(file, index) in images" :key="file.id" class="flex flex-wrap items-center gap-4">
+            <input
+              type="file"
+              class="border border-gray-300 rounded-md py-2 px-4"
+              accept="image/*"
+              @change="event => handleFileChange(event, images, index)" />
+
+            <div
+              v-if="file.file && file.file.preview"
+              class="w-16 h-16 border rounded-md overflow-hidden">
+              <img :src="file.file.preview" alt="Preview" class="w-full h-full object-cover" />
             </div>
 
-            <div class="mb-4">
-                <label for="description" class="block text-gray-700 font-semibold mb-2">Description</label>
-                <input v-model="description" type="text" id="description"
-                    class="w-full  border border-gray-300 rounded-md py-2 px-4" />
-            </div>
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="start_date" class="block text-gray-700 font-semibold mb-2">Start Date</label>
-                    <input v-model="start_date" type="date" id="start_date"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4"  />
-                </div>
+            <button
+              type="button"
+              class="bg-red-500 text-white px-2 py-1 text-sm rounded hover:bg-red-600"
+              @click="removeFile(images, index)">
+              X
+            </button>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+          @click="() => addMoreFiles(images)">
+          Add more image
+        </button>
+      </div>
 
-                <div>
-                    <label for="end_date" class="block text-gray-700 font-semibold mb-2">End Date</label>
-                    <input v-model="end_date" type="date" id="end_date"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4"  />
-                </div>
-            </div>
-            <div class="grid grid-cols-3 gap-4 mb-4">
-                <div>
-                    <label for="quantity" class="block text-gray-700 font-semibold mb-2">Quantity</label>
-                    <input v-model="quantity" type="number" id="quantity" min="0"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" />
-                </div>
-                <div>
-                    <label for="value_amount" class="block text-gray-700 font-semibold mb-2">Value Amount</label>
-                    <input v-model="value_amount" type="number" id="value_amount" min="0"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" />
-                </div>
-                <div>
-                    <label for="inkind_value" class="block text-gray-700 font-semibold mb-2">In-Kind Value</label>
-                    <input v-model="inkind_value" type="number" id="inkind_value" min="0"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" />
-                </div>
-            </div>
+      <!-- Documents Upload -->
+      <div>
+        <label class="block text-gray-700 font-semibold mb-2">Upload Documents</label>
+        <div class="space-y-3">
+          <div v-for="(file, index) in documents" :key="file.id" class="flex flex-wrap items-center gap-4">
+            <input
+              type="file"
+              class="border border-gray-300 rounded-md py-2 px-4"
+              accept=".pdf,.doc,.docx"
+              @change="event => handleFileChange(event, documents, index)" />
 
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="is_long_term" class="block text-gray-700 font-semibold mb-2">Is Long Term?</label>
-                    <select v-model="is_long_term" id="is_long_term"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" >
-                        <option :value="1">Yes</option>
-                        <option :value="0">No</option>
-                    </select>
-                </div>
+            <span v-if="file.file" class="truncate w-32">{{ file.file.name }}</span>
 
-                <div>
-                    <label for="is_tangible" class="block text-gray-700 font-semibold mb-2">Is Tangible?</label>
-                    <select v-model="is_tangible" id="is_tangible"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" >
-                        <option :value="1">Yes</option>
-                        <option :value="0">No</option>
-                    </select>
-                </div>
-            </div>
+            <button
+              type="button"
+              class="bg-red-500 text-white px-2 py-1 text-sm rounded hover:bg-red-600"
+              @click="removeFile(documents, index)">
+              X
+            </button>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+          @click="() => addMoreFiles(documents)">
+          Add more document
+        </button>
+      </div>
 
-            <div class="mb-4">
-                <label for="responsible_user_id" class="block text-gray-700 font-semibold mb-2">Responsible
-                    Person</label>
-                <select v-model="responsible_user_id" id="responsible_user_id"
-                    class="w-full  border border-gray-300 rounded-md py-2 px-4">
-                    <option value="" disabled>Select Responsible Person</option>
-                    
-                    <option v-for=" orgMember in getOrgAllMemberName" :key="orgMember.individual.id" :value="orgMember.individual.id">
-                        {{ orgMember.individual.first_name }} {{ orgMember.individual.last_name }}</option>
-                </select>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="assignment_start_date" class="block text-gray-700 font-semibold mb-2">Responsibility Start
-                        Date</label>
-                    <input v-model="assignment_start_date" type="date" id="assignment_start_date"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4"  />
-                </div>
-
-                <div>
-                    <label for="assignment_end_date" class="block text-gray-700 font-semibold mb-2">Responsibility End Date</label>
-                    <input v-model="assignment_end_date" type="date" id="assignment_end_date"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4"  />
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <label for="note" class="block text-gray-700 font-semibold mb-2">Note</label>
-                <input v-model="note" type="text" id="note" class="w-full border border-gray-300 rounded-md py-2 px-4"
-                    placeholder="Optional note" />
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="asset_lifecycle_statuses_id" class="block text-gray-700 font-semibold mb-2">Lifecycle
-                        Status</label>
-                    <select v-model="asset_lifecycle_statuses_id" id="asset_lifecycle_statuses_id"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" >
-                        <option value="" disabled>Select Lifecycle Status</option>
-                        <option v-for="status in assetLifecycleSetups" :key="status.id" :value="status.id">{{
-                            status.name }}</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label for="privacy_setup_id" class="block text-gray-700 font-semibold mb-2">Privacy
-                        Setup</label>
-                    <select v-model="privacy_setup_id" id="privacy_setup_id"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" >
-                        <option value="" disabled>Select Privacy Setup</option>
-                        <option v-for="setup in privacySetups" :key="setup.id" :value="setup.id">{{ setup.name }}
-                        </option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <label for="is_active" class="block text-gray-700 font-semibold mb-2">Is Active?</label>
-                <select v-model="is_active" id="is_active" class="w-full  border border-gray-300 rounded-md py-2 px-4"
-                    >
-                    <option :value="1">Yes</option>
-                    <option :value="0">No</option>
-                </select>
-            </div>
-
-            <!-- Images Upload -->
-            <div class="mb-4">
-                <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
-                <div class="space-y-3">
-                    <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
-                        <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept="image/*"
-                            @change="event => handleFileChange(event, images, index)" />
-
-                        <div v-if="file.file && file.file.preview" class="w-16 h-16 border rounded-md overflow-hidden">
-                            <img :src="file.file.preview" alt="Preview" class="w-full h-full object-cover" />
-                        </div>
-
-                        <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-                            @click="removeFile(images, index)">X</button>
-                    </div>
-                </div>
-                <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
-                    @click="() => addMoreFiles(images)">
-                    Add more image
-                </button>
-            </div>
-
-            <!-- Documents Upload -->
-            <div class="mb-4">
-                <label class="block text-gray-700 font-semibold mb-2">Upload Documents</label>
-                <div class="space-y-3">
-                    <div v-for="(file, index) in documents" :key="file.id" class="flex items-center gap-4">
-                        <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept=".pdf,.doc,.docx"
-                            @change="event => handleFileChange(event, documents, index)" />
-
-                        <span v-if="file.file" class="truncate w-32">{{ file.file.name }}</span>
-
-                        <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-                            @click="removeFile(documents, index)">X</button>
-                    </div>
-                </div>
-                <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
-                    @click="() => addMoreFiles(documents)">
-                    Add more document
-                </button>
-            </div>
-
-            <div class="flex justify-end gap-4">
-                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Add
-                    Asset</button>
-                <button type="button" @click="resetForm"
-                    class="px-6 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500">Reset</button>
-            </div>
-        </form>
-    </div>
+      <!-- Buttons -->
+      <div class="flex flex-col sm:flex-row justify-end gap-4">
+        <button
+          type="submit"
+          class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+          Add Asset
+        </button>
+        <button
+          type="button"
+          @click="resetForm"
+          class="px-6 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500">
+          Reset
+        </button>
+      </div>
+    </form>
+  </div>
 </template>

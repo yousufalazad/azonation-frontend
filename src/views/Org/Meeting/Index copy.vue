@@ -294,22 +294,22 @@ onMounted(() => {
         <div class="flex justify-end gap-2">
           <template v-if="meetingMinuteList.find(s => s.meeting_id === id)">
             <button @click="$router.push({ name: 'view-meeting-minutes', params: { id: meetingMinuteList.find(s => s.meeting_id === id).id } })"
-              class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs">Minutes view</button>
+              class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs">Minutes view</button>
           </template>
           <template v-else>
             <button @click="$router.push({ name: 'create-meeting-minutes', params: { meetingId: id } })"
-              class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs">Minutes add</button>
+              class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs">Minutes add</button>
           </template>
 
           <button @click="$router.push({ name: 'meeting-guest-attendance', params: { id } })"
-            class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs">Guest</button>
+            class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">Guest</button>
 
           <button @click="$router.push({ name: 'meeting-attendances', params: { id } })"
-            class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs">Attendees</button>
+            class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs">Attendees</button>
 
-          <button @click="viewMeeting(id)" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs">View</button>
-          <button @click="editMeeting(id)" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs">Edit</button>
-          <button @click="deleteMeeting(id)" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs">Delete</button>
+          <button @click="viewMeeting(id)" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs">View</button>
+          <button @click="editMeeting(id)" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs">Edit</button>
+          <button @click="deleteMeeting(id)" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">Delete</button>
         </div>
       </template>
     </EasyDataTable>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
 import { useRoute, useRouter } from 'vue-router';
@@ -73,6 +73,17 @@ const removeFile = (fileList, index) => {
     fileList.splice(index, 1);
 };
 
+const conductTypeList = ref([]);
+
+const getConductTypes = async () => {
+    try {
+        const response = await auth.fetchProtectedApi('/api/conduct-types', {}, 'GET');
+        conductTypeList.value = response.status ? response.data : [];
+    } catch (error) {
+        console.error('Error fetching conduct types:', error);
+        conductTypeList.value = [];
+    }
+};
 
 // Submit form (create event)
 const submitForm = async () => {
@@ -138,6 +149,10 @@ const submitForm = async () => {
     }
 };
 
+
+onMounted(() => {
+  getConductTypes();
+});
 </script>
 
 <template>
@@ -235,8 +250,9 @@ const submitForm = async () => {
                     <label for="conduct_type" class="block text-gray-700 font-semibold mb-2">Conduct Type</label>
                     <select v-model="conduct_type" id="conduct_type"
                         class="w-full  border border-gray-300 rounded-md py-2 px-4">
-                        <option value="1">In Person</option>
-                        <option value="2">Online</option>
+                        <option v-for="type in conductTypeList" :key="type.id" :value="type.id">
+                            {{ type.name }}
+                        </option>
                     </select>
                 </div>
             </div>

@@ -396,7 +396,11 @@ onMounted(() => {
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           <FileText class="w-4 h-4" /> Word
         </button>
-        <button @click="$router.push({ name: 'unlink-member' })"
+        <button @click="$router.push({ name: 'former-members' })"
+          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
+          Former Member
+        </button>
+        <button @click="$router.push({ name: 'independent-member' })"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           Unlink Member
         </button>

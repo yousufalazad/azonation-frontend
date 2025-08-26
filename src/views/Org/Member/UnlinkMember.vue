@@ -305,7 +305,7 @@ watch(columnView, (newVal) => {
     <!-- Header -->
     <div class="flex flex-wrap justify-between items-start gap-4 py-4">
       <div class="flex flex-col gap-1">
-        <h2 class="text-lg font-semibold text-gray-700">Unlink Members <span class="text-red-500">(Not
+        <h2 class="text-lg font-semibold text-gray-700">Unlinked Members <span class="text-red-500">(Not
             Recommended)</span></h2>
         <p class="text-xs text-gray-500 max-w-2xl break-words">
           It is recommended to add members using the <span class="font-medium text-gray-600">Search</span> option.
@@ -326,7 +326,7 @@ watch(columnView, (newVal) => {
         <button @click="exportPDF"
           class="px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-100">PDF</button>
         <button @click="openModal()" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">
-          + Add Unlink Member
+          + Add
         </button>
       </div>
     </div>
@@ -367,7 +367,7 @@ watch(columnView, (newVal) => {
             <!-- Name with Sorting -->
             <th v-if="visibleColumns.full_name" @click="sort('full_name')"
               class="cursor-pointer py-3 text-left text-xs font-bold text-gray-600 hover:text-blue-600">
-              Name
+              Full Name
               <span v-if="sortBy === 'full_name'">
                 {{ sortDirection === 'asc' ? '▲' : '▼' }}
               </span>
