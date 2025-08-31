@@ -4,6 +4,7 @@ import HeaderNotifications from "../views/Individual/Layouts/HeaderNotification.
 import Notifications from "../views/Individual/Notification/Index.vue";
 import Organisations from "../views/Individual/Organisation/Index.vue";
 
+//Profile
 import IndividualProfile from "../views/Individual/Profile/Index.vue";
 import IndividualSecurity from "../views/Individual/Profile/Security/Index.vue";
 import IndividualSettings from "../views/Individual/Profile/Settings/Index.vue";
