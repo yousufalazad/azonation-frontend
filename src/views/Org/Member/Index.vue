@@ -1,5 +1,6 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, reactive } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { authStore } from '../../../store/authStore'
 import Swal from 'sweetalert2'
 import dayjs from 'dayjs'
@@ -18,6 +19,8 @@ dayjs.extend(duration)
 dayjs.extend(relativeTime)
 
 const auth = authStore
+const route = useRoute()
+const router = useRouter()
 
 const memberList = ref([])
 const search = ref("")
@@ -25,11 +28,13 @@ const dateFrom = ref("")
 const dateTo = ref("")
 const loading = ref(false)
 
-const membershipTypes = ref([])
 const selectedMember = ref(null)
 const viewModal = ref(false)
 const editModal = ref(false)
 const membership_type_id = ref("")
+const membership_status_id = ref("")
+const approved_by = ref("")
+const approved_at = ref("")
 const sponsored_user_id = ref("")
 const compact_view = ref(false)
 
@@ -133,16 +138,65 @@ const fetchMemberList = async () => {
     loading.value = false
   }
 }
-
+const membershipTypes = ref([])
 // ✅ Fetch membership types
 const fetchMembershipType = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/membership-types', {}, 'GET')
+    const response = await auth.fetchProtectedApi('/api/org-membership-types', {}, 'GET')
     membershipTypes.value = response.status ? response.data : []
   } catch (error) {
     console.error('Error fetching membership types:', error)
   }
 }
+
+const membershipStatuses = ref([])
+// ✅ Fetch membership types
+const fetchMembershipSatatuses = async () => {
+  try {
+    const response = await auth.fetchProtectedApi('/api/membership-statuses', {}, 'GET')
+    membershipStatuses.value = response.status ? response.data : []
+  } catch (error) {
+    console.error('Error fetching membership types:', error)
+  }
+}
+
+// ✅ Membership status badge class
+const statusClass = computed(() => {
+  const status = (selectedMember.value?.membership_status?.name || '').toLowerCase()
+
+  const map = {
+    active: 'bg-green-100 text-green-700',
+    inactive: 'bg-gray-200 text-gray-600',
+    suspended: 'bg-red-100 text-red-700',
+    on_hold: 'bg-yellow-100 text-yellow-700',
+    pending: 'bg-blue-100 text-blue-700',
+    probation: 'bg-purple-100 text-purple-700',
+    expired: 'bg-black text-white',
+    applied: 'bg-sky-100 text-sky-700',
+    under_review: 'bg-indigo-100 text-indigo-700',
+    rejected: 'bg-red-200 text-red-800',
+    withdrawn: 'bg-orange-100 text-orange-700',
+    graduated: 'bg-emerald-100 text-emerald-700',
+    retired: 'bg-stone-100 text-stone-700',
+    lifetime: 'bg-teal-100 text-teal-700',
+    honorary: 'bg-pink-100 text-pink-700',
+    deceased: 'bg-gray-800 text-white',
+    banned: 'bg-red-800 text-white',
+  }
+
+  return map[status] || 'bg-gray-200 text-gray-600' // fallback
+})
+
+// ✅ Format status for display
+const formattedStatus = computed(() => {
+  const raw = selectedMember.value?.membership_status?.name || '--'
+  return raw
+    .replace(/_/g, ' ')          // replace underscores with spaces
+    .replace(/\b\w/g, c => c.toUpperCase()) // capitalise each word
+})
+
+
+
 
 // ✅ Membership age calculator
 const calculateMembershipAge = (startDate) => {
@@ -186,7 +240,9 @@ const filteredMembers = computed(() => {
   if (membership_type_id.value) {
     list = list.filter(m => m.membership_type_id === membership_type_id.value)
   }
-
+  if (membership_status_id.value) {
+    list = list.filter(m => m.membership_status_id === membership_status_id.value)
+  }
   if (dateFrom.value && dateTo.value) {
     const from = dayjs(dateFrom.value)
     const to = dayjs(dateTo.value)
@@ -256,6 +312,9 @@ const viewMemberDetail = (member) => {
 const editMember = () => {
   if (selectedMember.value) {
     membership_type_id.value = selectedMember.value.membership_type_id
+    membership_status_id.value = selectedMember.value.membership_status_id
+    approved_by.value = selectedMember.value.approved_by
+    approved_at.value = selectedMember.value.approved_at
     sponsored_user_id.value = selectedMember.value.sponsored_user_id
     editModal.value = true
   }
@@ -269,9 +328,14 @@ const closeViewModal = () => {
 const closeEditModal = () => {
   selectedMember.value = null
   membership_type_id.value = ""
+  membership_status_id.value = ""
+  approved_by.value = ""
+  approved_at.value = ""
   sponsored_user_id.value = ""
   editModal.value = false
   closeViewModal()
+  // ⬇️ remove the query param so refresh won’t reopen the modal
+  router.replace({ name: 'index-member', query: {} })
 }
 
 // ✅ Update Member
@@ -282,6 +346,9 @@ const updateMember = async () => {
       existing_membership_id: selectedMember.value?.existing_membership_id,
       membership_start_date: selectedMember.value?.membership_start_date,
       membership_type_id: membership_type_id.value,
+      membership_status_id: membership_status_id.value,
+      approved_by: approved_by.value,
+      approved_at: approved_at.value,
       sponsored_user_id: sponsored_user_id.value,
     }
     const response = await auth.fetchProtectedApi(`/api/org-members/${memberId}`, payload, 'PUT')
@@ -302,34 +369,6 @@ const updateMember = async () => {
   } catch (error) {
     console.error(error)
     Swal.fire('Error', 'An unexpected error occurred.', 'error')
-  }
-}
-
-// ✅ Delete Member
-const deleteMember = async (memberId) => {
-  const result = await Swal.fire({
-    title: 'Are you sure?',
-    text: 'This action cannot be undone.',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Yes, delete it!',
-    cancelButtonText: 'Cancel'
-  })
-
-  if (result.isConfirmed) {
-    try {
-      const response = await auth.fetchProtectedApi(`/api/org-members/${memberId}`, {}, 'DELETE')
-      if (response.status) {
-        await fetchMemberList()
-        closeViewModal()
-        Swal.fire('Deleted!', 'Member deleted successfully.', 'success')
-      } else {
-        Swal.fire('Error!', 'Failed to delete member.', 'error')
-      }
-    } catch (error) {
-      console.error(error)
-      Swal.fire('Error!', 'An error occurred.', 'error')
-    }
   }
 }
 
@@ -364,10 +403,270 @@ const goToLast = () => currentPage.value = totalPages.value
 
 
 
+const terminationModal = ref(false)
+const terminationMember = ref(null)
+const terminationReasons = ref([])
+const orgAdministrator = ref('')
+
+const terminationForm = reactive({
+  org_type_user_id: auth.user?.id ?? null,                 // org user
+  individual_type_user_id: null,                           // member's user id
+  terminated_member_name: '',
+  terminated_member_email: '',
+  terminated_member_mobile: '',
+  terminated_at: dayjs().format('YYYY-MM-DD'),
+  processed_at: dayjs().format('YYYY-MM-DD'),
+  membership_termination_reason_id: '',
+  org_administrator_id: orgAdministrator.value.id ?? null,  // admin processing
+  rejoin_eligible: true,
+  file_path: null,                                         // File object
+  membership_duration_days: null,
+  membership_status_before_termination: null,              // 'active' | 'suspended' | 'probation'
+  membership_type_before_termination: null,
+  joined_at: dayjs().format('YYYY-MM-DD'),
+  org_note: ''
+})
+
+// ✅ Fetch termination reasons
+const fetchTerminationReasons = async () => {
+  try {
+    const res = await auth.fetchProtectedApi('/api/membership-termination-reasons', {}, 'GET')
+
+    terminationReasons.value = res?.status ? res.data : [];
+  } catch (e) {
+    console.error(e)
+    Swal.fire('An error occurred. Please try again.', '', 'error')
+  }
+}
+const fetchOrgAdministrators = async () => {
+  try {
+    const res = await auth.fetchProtectedApi('/api/org-administrators/primary', {}, 'GET')
+
+    orgAdministrator.value = res?.status ? res.data : {};
+    terminationForm.org_administrator_id = orgAdministrator.value.id ?? null
+  } catch (e) {
+    console.error(e)
+    Swal.fire('An error occurred. Please try again.', '', 'error')
+  }
+}
+// ✅ Duration auto-calc: terminated_at - membership_start_date
+const computeTerminationDuration = () => {
+  const start = terminationMember.value?.membership_start_date
+  const end = terminationForm.terminated_at
+  if (start && end) {
+    terminationForm.membership_duration_days = dayjs(end).diff(dayjs(start), 'day')
+  } else {
+    terminationForm.membership_duration_days = null
+  }
+}
+watch(() => terminationForm.terminated_at, computeTerminationDuration)
+
+// ✅ Open / Close modal
+const openTerminationModal = (member) => {
+  terminationMember.value = member
+  terminationForm.org_type_user_id = auth.user?.id ?? null
+  terminationForm.individual_type_user_id = member?.individual?.id ?? null
+  terminationForm.id = member.id ?? null
+  const first = member?.individual?.first_name ?? ''
+  const last = member?.individual?.last_name ?? ''
+  terminationForm.terminated_member_name = `${first} ${last}`.trim() || ''
+  terminationForm.terminated_member_email = member?.individual?.email ?? ''
+  terminationForm.terminated_member_mobile = member?.individual?.phone_number?.phone_number ?? '016'
+
+  // Defaults
+  terminationForm.terminated_at = dayjs().format('YYYY-MM-DD')
+  terminationForm.processed_at = dayjs().format('YYYY-MM-DD')
+  terminationForm.membership_termination_reason_id = ''
+  terminationForm.org_administrator_id = orgAdministrator.value.id ?? null
+  terminationForm.rejoin_eligible = true
+  terminationForm.file_path = null
+  terminationForm.membership_duration_days = null
+  terminationForm.membership_status_before_termination = member?.membership_status?.name ?? null
+  terminationForm.membership_type_before_termination = member?.membership_type?.name ?? null
+  terminationForm.joined_at = member?.membership_start_date ?? dayjs().format('YYYY-MM-DD')
+  terminationForm.org_note = ''
+
+  computeTerminationDuration()
+  terminationModal.value = true
+}
+
+const closeTerminationModal = () => {
+  terminationModal.value = false
+  terminationMember.value = null
+  // reset core fields (keep object reference intact)
+  Object.assign(terminationForm, {
+    org_type_user_id: auth.user?.id ?? null,
+    individual_type_user_id: null,
+    terminated_member_name: '',
+    terminated_member_email: '',
+    terminated_member_mobile: '',
+    terminated_at: dayjs().format('YYYY-MM-DD'),
+    processed_at: dayjs().format('YYYY-MM-DD'),
+    membership_termination_reason_id: '',
+    org_administrator_id: orgAdministrator.value.id ?? null,
+    rejoin_eligible: true,
+    file_path: null,
+    membership_duration_days: null,
+    membership_status_before_termination: null,
+    membership_type_before_termination: null,
+    joined_at: dayjs().format('YYYY-MM-DD'),
+    org_note: ''
+  })
+}
+
+// ✅ Submit (create) termination
+const submitTermination = async () => {
+  try {
+
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This will permanently terminate the membership.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, terminate it!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    })
+
+    if (!result.isConfirmed) {
+      return // exit early if cancelled
+    }
+
+    // build FormData to support file upload
+    const fd = new FormData()
+    fd.append('org_type_user_id', terminationForm.org_type_user_id ?? '')
+    fd.append('individual_type_user_id', terminationForm.individual_type_user_id ?? '')
+    fd.append('terminated_member_name', terminationForm.terminated_member_name ?? '')
+    fd.append('terminated_member_email', terminationForm.terminated_member_email ?? '')
+    fd.append('terminated_member_mobile', terminationForm.terminated_member_mobile ?? '')
+    fd.append('terminated_at', terminationForm.terminated_at ?? '')
+    fd.append('processed_at', terminationForm.processed_at ?? '')
+    fd.append('membership_termination_reason_id', terminationForm.membership_termination_reason_id ?? '')
+    fd.append('org_administrator_id', terminationForm.org_administrator_id ?? '')
+
+    fd.append('rejoin_eligible', terminationForm.rejoin_eligible ? '1' : '0')
+
+    if (terminationForm.file_path) fd.append('file_path', terminationForm.file_path)
+
+
+    //    if (file_attachments.value) {
+    //   formData.append('file_attachments', file_attachments.value);
+    // }
+
+    // Images
+    // images.value.forEach((fileData, index) => {
+    //   if (fileData.file) {
+    //     formData.append(`images[${index}]`, fileData.file.file);
+    //   }
+    // });
+
+    if (terminationForm.membership_duration_days !== null) {
+      fd.append('membership_duration_days', String(terminationForm.membership_duration_days))
+    }
+    if (terminationForm.membership_status_before_termination) {
+      fd.append('membership_status_before_termination', terminationForm.membership_status_before_termination)
+    }
+    if (terminationForm.membership_type_before_termination) {
+      fd.append('membership_type_before_termination', terminationForm.membership_type_before_termination)
+    }
+    if (terminationForm.joined_at) {
+      fd.append('joined_at', terminationForm.joined_at)
+    }
+    fd.append('org_note', terminationForm.org_note ?? '')
+
+    // const res = await auth.fetchProtectedApi('/api/membership-terminations', fd, 'POST', {
+    //   // make sure your fetchProtectedApi passes content-type automatically for FormData
+    // })
+    const res = await auth.uploadProtectedApi('/api/membership-terminations', fd, 'POST', {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    if (res?.status) {
+      closeTerminationModal()
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Membership terminated',
+        text: 'The termination has been recorded.',
+        timer: 1800,
+        showConfirmButton: false
+      })
+      deleteMember(terminationForm.id)  // also delete member record
+    } else {
+      Swal.fire('An error occurred. Please try again.', '', 'error')
+    }
+  } catch (e) {
+    console.error(e)
+    Swal.fire('An error occurred. Please try again.', '', 'error')
+  }
+}
+
+// ✅ Delete Member
+const deleteMember = async (memberId) => {
+  try {
+    // show processing message
+    Swal.fire({
+      title: 'Deleting...',
+      text: 'Please wait while we remove the member.',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      }
+    })
+
+    const response = await auth.fetchProtectedApi(`/api/org-members/${memberId}`, {}, 'DELETE')
+
+    if (response.status) {
+      await fetchMemberList()
+      closeViewModal()
+      Swal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: 'Member deleted successfully.',
+        timer: 1500,
+        showConfirmButton: false
+      })
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Failed to delete member.',
+        timer: 2000,
+        showConfirmButton: false
+      })
+    }
+  } catch (error) {
+    console.error(error)
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: 'An error occurred.',
+      timer: 2000,
+      showConfirmButton: false
+    })
+  }
+}
+
+
+// ✅ Open edit modal after adding member
+const openEditById = (id) => {
+  if (!id) return
+  const nId = Number(id)
+  const m = memberList.value.find(x => x.id === nId)
+  selectedMember.value = m
+  editMember()
+}
+
 // ✅ Lifecycle
-onMounted(() => {
-  fetchMemberList()
+onMounted(async () => {
+  await fetchMemberList()
   fetchMembershipType()
+  fetchMembershipSatatuses()
+  fetchTerminationReasons()
+  fetchOrgAdministrators()
+
+  const editId = route.query.edit
+  if (editId) openEditById(editId)        // ⬅️ no extra fetch; use memberList
 })
 </script>
 
@@ -396,6 +695,16 @@ onMounted(() => {
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           <FileText class="w-4 h-4" /> Word
         </button>
+
+        <button @click="$router.push({ name: 'membership-statuses' })"
+          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
+          Membership Statuses
+        </button>
+        <button @click="$router.push({ name: 'org-membership-types' })"
+          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
+          Org Membership Types
+        </button>
+
         <button @click="$router.push({ name: 'former-members' })"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           Former Member
@@ -409,29 +718,49 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Filters -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div>
-        <label class="text-sm text-gray-600">Search</label>
-        <input v-model="search" type="text" placeholder="Search..."
-          class="w-full border rounded px-3 py-1.5 text-sm" />
-      </div>
-      <div>
-        <label class="text-sm text-gray-600">Membership Type</label>
-        <select v-model="membership_type_id" class="w-full border rounded px-3 py-1.5 text-sm">
-          <option value="">All Types</option>
-          <option v-for="type in membershipTypes" :key="type.id" :value="type.id">{{ type.name }}</option>
-        </select>
-      </div>
-      <div>
-        <label class="text-sm text-gray-600">Start Date</label>
-        <input v-model="dateFrom" type="date" class="w-full border rounded px-3 py-1.5 text-sm" />
-      </div>
-      <div>
-        <label class="text-sm text-gray-600">End Date</label>
-        <input v-model="dateTo" type="date" class="w-full border rounded px-3 py-1.5 text-sm" />
-      </div>
-    </div>
+    <!-- Filters: fill the full width on desktop, wrap on smaller screens -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+  <!-- Search -->
+  <div class="flex flex-col">
+    <label class="text-sm text-gray-600">Search</label>
+    <input v-model="search" type="text" placeholder="Search..." class="w-full border rounded px-3 py-1.5 text-sm" />
+  </div>
+
+  <!-- Membership Type -->
+  <div class="flex flex-col">
+    <label class="text-sm text-gray-600">Membership Type</label>
+    <select v-model="membership_type_id" class="w-full border rounded px-3 py-1.5 text-sm">
+      <option value="">All Types</option>
+      <option v-for="type in membershipTypes" :key="type.id" :value="type.id">
+        {{ type.membership_type.name }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Membership Status -->
+  <div class="flex flex-col">
+    <label class="text-sm text-gray-600">Membership Status</label>
+    <select v-model="membership_status_id" class="w-full border rounded px-3 py-1.5 text-sm">
+      <option value="">All Membership Status</option>
+      <option v-for="status in membershipStatuses" :key="status.id" :value="status.id">
+        {{ status.name }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Start Date -->
+  <div class="flex flex-col">
+    <label class="text-sm text-gray-600">Start Date</label>
+    <input v-model="dateFrom" type="date" class="w-full border rounded px-3 py-1.5 text-sm" />
+  </div>
+
+  <!-- End Date -->
+  <div class="flex flex-col">
+    <label class="text-sm text-gray-600">End Date</label>
+    <input v-model="dateTo" type="date" class="w-full border rounded px-3 py-1.5 text-sm" />
+  </div>
+</div>
+
 
     <!-- Column View -->
     <div class="bg-gray-50 border rounded p-4 flex flex-col lg:flex-row gap-6">
@@ -446,10 +775,9 @@ onMounted(() => {
       <div class="flex-1">
         <label class="text-sm font-medium text-gray-700 mb-1 block">Visible Columns</label>
         <div class="flex flex-wrap gap-4">
-          <div v-for="header in allHeaders" :key="header.value"
-            class="flex items-center gap-2 text-sm">
-            <input type="checkbox" v-model="visibleColumns" :value="header.value"
-              :id="header.value" class="accent-blue-600" />
+          <div v-for="header in allHeaders" :key="header.value" class="flex items-center gap-2 text-sm">
+            <input type="checkbox" v-model="visibleColumns" :value="header.value" :id="header.value"
+              class="accent-blue-600" />
             <label :for="header.value" class="text-gray-700">{{ header.text }}</label>
           </div>
         </div>
@@ -458,10 +786,9 @@ onMounted(() => {
 
     <!-- Member Table -->
     <div class="overflow-x-auto">
-      <EasyDataTable :headers="headers" :items="paginatedMembers" :search-value="search"
-        :loading="loading" show-index hide-footer
-        table-class="min-w-full text-sm" header-class="bg-gray-100"
-        body-row-class="text-sm" :theme-color="'#3b82f6'">
+      <EasyDataTable :headers="headers" :items="paginatedMembers" :search-value="search" :loading="loading" show-index
+        hide-footer table-class="min-w-full text-sm" header-class="bg-gray-100" body-row-class="text-sm"
+        :theme-color="'#3b82f6'">
 
         <!-- Profile Image -->
         <template #item-image_url="{ image_url }">
@@ -497,55 +824,57 @@ onMounted(() => {
         <template #item-actions="{ id }">
           <button @click="viewMemberDetail(memberList.find(m => m.id === id))"
             class="text-blue-600 hover:underline text-xs">Details</button>
+          <!-- <button @click="openTerminationModal(memberList.find(m => m.id === id))"
+            class="text-red-600 hover:underline text-xs">Terminate</button> -->
         </template>
       </EasyDataTable>
     </div>
 
     <!-- Pagination -->
     <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 px-2 py-3 bg-gray-50 rounded border">
-  <!-- Status Text -->
-  <div class="text-xs sm:text-sm text-gray-600 text-center md:text-left">
-    Items {{ (currentPage - 1) * rowsPerPage + 1 }} -
-    {{ Math.min(currentPage * rowsPerPage, totalItems) }}
-    of {{ totalItems }} |
-    Page {{ currentPage }} of {{ totalPages }}
-  </div>
+      <!-- Status Text -->
+      <div class="text-xs sm:text-sm text-gray-600 text-center md:text-left">
+        Items {{ (currentPage - 1) * rowsPerPage + 1 }} -
+        {{ Math.min(currentPage * rowsPerPage, totalItems) }}
+        of {{ totalItems }} |
+        Page {{ currentPage }} of {{ totalPages }}
+      </div>
 
-  <!-- Controls -->
-  <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
-    <!-- Page Size -->
-    <div class="flex items-center justify-center sm:justify-start gap-1">
-      <span class="text-xs sm:text-sm text-gray-600">Items per page:</span>
-      <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-xs sm:text-sm">
-        <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">{{ size }}</option>
-      </select>
-    </div>
+      <!-- Controls -->
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
+        <!-- Page Size -->
+        <div class="flex items-center justify-center sm:justify-start gap-1">
+          <span class="text-xs sm:text-sm text-gray-600">Items per page:</span>
+          <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-xs sm:text-sm">
+            <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">{{ size }}</option>
+          </select>
+        </div>
 
-    <!-- Navigation -->
-    <div class="flex justify-center flex-wrap gap-1">
-      <button @click="goToFirst" :disabled="currentPage === 1"
-        class="border rounded px-3 py-1 text-xs sm:text-sm transition"
-        :class="currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
-        First
-      </button>
-      <button @click="goToPrev" :disabled="currentPage === 1"
-        class="border rounded px-3 py-1 text-xs sm:text-sm transition"
-        :class="currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
-        Prev
-      </button>
-      <button @click="goToNext" :disabled="currentPage === totalPages"
-        class="border rounded px-3 py-1 text-xs sm:text-sm transition"
-        :class="currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
-        Next
-      </button>
-      <button @click="goToLast" :disabled="currentPage === totalPages"
-        class="border rounded px-3 py-1 text-xs sm:text-sm transition"
-        :class="currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
-        Last
-      </button>
+        <!-- Navigation -->
+        <div class="flex justify-center flex-wrap gap-1">
+          <button @click="goToFirst" :disabled="currentPage === 1"
+            class="border rounded px-3 py-1 text-xs sm:text-sm transition"
+            :class="currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+            First
+          </button>
+          <button @click="goToPrev" :disabled="currentPage === 1"
+            class="border rounded px-3 py-1 text-xs sm:text-sm transition"
+            :class="currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+            Prev
+          </button>
+          <button @click="goToNext" :disabled="currentPage === totalPages"
+            class="border rounded px-3 py-1 text-xs sm:text-sm transition"
+            :class="currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+            Next
+          </button>
+          <button @click="goToLast" :disabled="currentPage === totalPages"
+            class="border rounded px-3 py-1 text-xs sm:text-sm transition"
+            :class="currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+            Last
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
 
     <!-- ✅ Modals -->
@@ -563,24 +892,32 @@ onMounted(() => {
             <p class="text-sm text-gray-500">Membership Id: {{ selectedMember?.existing_membership_id }}</p>
           </div>
           <div>
-            <span class="text-sm px-3 py-1 rounded-full"
-              :class="selectedMember?.is_active === 1 ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'">
-              {{ selectedMember?.is_active === 1 ? 'Active' : 'Inactive' }}
+            <span class="text-sm px-3 py-1 rounded-full" :class="statusClass">
+              {{ formattedStatus }}
             </span>
           </div>
+
+
         </div>
 
         <!-- Details -->
+
         <div class="grid grid-cols-1 gap-y-4 text-sm text-gray-700">
           <div class="flex justify-between">
             <span class="font-medium text-gray-600">Membership type:</span>
             <span>{{ selectedMember?.membership_type?.name ?? '--' }}</span>
           </div>
           <div class="flex justify-between">
+            <span class="font-medium text-gray-600">Membership status:</span>
+            <span>{{ selectedMember?.membership_status?.name ?? '--' }}</span>
+          </div>
+          <div class="flex justify-between">
             <span class="font-medium text-gray-600">Start date:</span>
             <span>
               {{ selectedMember?.membership_start_date
-                ? new Date(selectedMember?.membership_start_date).toLocaleDateString('en-GB',{ day:'numeric',month:'long',year:'numeric' })
+                ? new Date(selectedMember?.membership_start_date).toLocaleDateString('en-GB', {
+                  day: 'numeric', month: 'long', year: 'numeric'
+                })
                 : 'Not provided' }}
             </span>
           </div>
@@ -591,19 +928,42 @@ onMounted(() => {
           <div class="flex justify-between">
             <span class="font-medium text-gray-600">Reference/sponsored by:</span>
             <span>
-              {{ selectedMember?.sponsored_user_id
+              {{selectedMember?.sponsored_user_id
                 ? memberList.find(m => m.individual.id === selectedMember.sponsored_user_id)?.full_name
+                : 'Not provided'}}
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span class="font-medium text-gray-600">Approved by:</span>
+            <span>
+              {{selectedMember?.approved_by
+                ? memberList.find(m => m.individual.id === selectedMember.approved_by)?.full_name
+                : 'Not provided'}}
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span class="font-medium text-gray-600">Approved at:</span>
+            <span>
+              {{ selectedMember?.approved_at
+                ? new Date(selectedMember?.approved_at).toLocaleDateString('en-GB', {
+                  day: 'numeric', month: 'long', year: 'numeric'
+                })
                 : 'Not provided' }}
             </span>
           </div>
+
+
         </div>
 
         <!-- Actions -->
         <div class="mt-8 flex justify-end gap-3">
           <button @click="editMember"
             class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-5 py-2 rounded-lg">Edit</button>
-          <button @click="deleteMember(selectedMember.id)"
-            class="bg-red-600 hover:bg-red-700 text-white text-sm px-5 py-2 rounded-lg">Delete</button>
+
+          <button @click="openTerminationModal(selectedMember)"
+            class="bg-red-600 hover:bg-red-700 text-white text-sm px-5 py-2 rounded-lg">
+            Terminate
+          </button>
           <button @click="closeViewModal"
             class="bg-gray-200 hover:bg-gray-300 text-sm px-5 py-2 rounded-lg">Close</button>
         </div>
@@ -639,8 +999,20 @@ onMounted(() => {
             <select v-model="membership_type_id" id="membership_type_id"
               class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
               <option value="" disabled>Select membership type</option>
-              <option v-for="membershipType in membershipTypes" :key="membershipType.id" :value="membershipType.id">
-                {{ membershipType.name }}
+              <option v-for="membershipType in membershipTypes" :key="membershipType.membership_type_id"
+                :value="membershipType.membership_type_id">
+                {{ membershipType.membership_type.name }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label for="membership_status_id" class="block text-sm font-medium text-gray-700">Membership status</label>
+            <select v-model="membership_status_id" id="membership_status_id"
+              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+              <option value="" disabled>Select membership status</option>
+              <option v-for="membershipStatus in membershipStatuses" :key="membershipStatus.id"
+                :value="membershipStatus.id">
+                {{ membershipStatus.name }}
               </option>
             </select>
           </div>
@@ -663,6 +1035,22 @@ onMounted(() => {
             </select>
           </div>
 
+          <div>
+            <label for="approved_by " class="block text-sm font-medium text-gray-700">Approved by </label>
+            <select v-model="approved_by" id="approved_by "
+              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+              <option value="" disabled>Select Approved by</option>
+              <option v-for="orgMember in memberList" :key="orgMember.individual.id" :value="orgMember.individual.id">
+                {{ orgMember.full_name }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Approved at</label>
+            <input v-model="approved_at" type="date"
+              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+          </div>
+
           <div class="mt-6 flex justify-end gap-3">
             <button type="submit"
               class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg">Save</button>
@@ -672,6 +1060,151 @@ onMounted(() => {
         </form>
       </div>
     </div>
+
+    <!-- Membership Termination Modal -->
+    <div v-if="terminationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div class="bg-white rounded-2xl shadow-lg w-full max-w-3xl p-6 relative overflow-y-auto max-h-[90vh]">
+        <!-- Header -->
+        <div class="flex justify-between items-center border-b pb-4 mb-6">
+          <h2 class="text-xl font-semibold text-gray-800">Terminate Membership</h2>
+          <button @click="closeTerminationModal" class="text-gray-500 hover:text-gray-700">&times;</button>
+        </div>
+
+        <!-- Member summary -->
+        <div class="mb-6 flex items-center gap-4">
+          <img :src="terminationMember?.image_url ?? placeholderImage" class="h-16 w-16 rounded-full object-cover" />
+          <div>
+            <div class="text-lg font-semibold text-gray-800">
+
+              {{ terminationMember?.individual?.first_name ?? '--' }} {{ terminationMember?.individual?.last_name ?? ''
+              }}
+            </div>
+            <div class="text-sm text-gray-500">
+              Membership ID: {{ terminationMember?.existing_membership_id ?? '--' }}
+            </div>
+          </div>
+        </div>
+
+        <form @submit.prevent="submitTermination" class="space-y-5">
+          <!-- Grid fields -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- terminated_member_email -->
+            <div>
+              <!-- terminated_member_name -->
+              <input v-model="terminationForm.terminated_member_name" type="text"
+                class="w-full mt-1 border border-gray-100 bg-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-0"
+                hidden />
+
+              <label class="block text-sm font-medium text-gray-700">Email</label>
+              <input v-model="terminationForm.terminated_member_email" type="email"
+                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0"
+                readonly />
+            </div>
+
+            <!-- terminated_member_mobile -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Mobile</label>
+              <input v-model="terminationForm.terminated_member_mobile" type="text"
+                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0"
+                readonly />
+            </div>
+
+            <!-- membership_duration_days (readonly) -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Membership Duration (days)</label>
+              <input :value="terminationForm.membership_duration_days ?? ''" type="text" readonly
+                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0" />
+            </div>
+            <!-- joined_at -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Joined At</label>
+              <input v-model="terminationForm.joined_at" type="date"
+                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0"
+                readonly />
+            </div>
+
+            <!-- membership_type_before_termination -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Membership Type Before Termination</label>
+              <input :value="terminationForm.membership_type_before_termination" type="text" readonly
+                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0" />
+            </div>
+            <!-- membership_status_before_termination -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Membership Status Before Termination</label>
+              <input :value="terminationForm.membership_status_before_termination" type="text" readonly
+                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0" />
+            </div>
+
+            <!-- membership_termination_reason_id -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700">Termination Reason</label>
+              <select v-model="terminationForm.membership_termination_reason_id"
+                class="w-full mt-1 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm">
+                <option value="" disabled>Select a reason</option>
+                <option v-for="r in terminationReasons" :key="r.id" :value="r.id">{{ r.reason }}</option>
+              </select>
+            </div>
+
+            <!-- terminated_at -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Terminated At</label>
+              <input v-model="terminationForm.terminated_at" type="date" @change="computeTerminationDuration"
+                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
+
+            <!-- processed_at -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Processed At</label>
+              <input v-model="terminationForm.processed_at" type="date"
+                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
+            <!-- file_path -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700">Supporting Document (optional)</label>
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                @change="e => terminationForm.file_path = e.target.files?.[0] ?? null" />
+            </div>
+            <!-- org_note -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700">Organisation Note</label>
+              <textarea v-model="terminationForm.org_note" rows="3"
+                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                placeholder="Reason for leaving the organisation"></textarea>
+            </div>
+
+            <!-- org_administrator_id  (readonly display) -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Org Administrator</label>
+              <input :value="terminationForm.org_administrator_id" type="text" hidden
+                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600" />
+              <input :value="orgAdministrator.first_name + ' ' + orgAdministrator.last_name" type="text" readonly
+                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0" />
+            </div>
+
+            <!-- rejoin_eligible -->
+            <div class="flex items-center gap-2 mt-6">
+              <input id="rejoin_eligible" type="checkbox" v-model="terminationForm.rejoin_eligible"
+                class="accent-blue-600" />
+              <label for="rejoin_eligible" class="text-sm text-gray-700">Eligible to rejoin in future</label>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex justify-end gap-3">
+            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-lg">
+              Confirm Termination
+            </button>
+            <button type="button" @click="closeTerminationModal"
+              class="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded-lg">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
 
   </div>
 </template>

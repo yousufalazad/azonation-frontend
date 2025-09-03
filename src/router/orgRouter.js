@@ -20,6 +20,9 @@ import CreateMember from "../views/Org/Member/Create.vue";
 import IndexMember from "../views/Org/Member/Index.vue";
 import FamilyMember from "../views/Org/Member/FamilyMember.vue";
 
+import MembershipStatuses from "../views/Org/Member/MembershipStatuses.vue";
+import OrgMembershipTypes from "../views/Org/Member/OrgMembershipTypes.vue";
+
 //Founder
 import Founders from "../views/Org/Founder/Index.vue";
 
@@ -186,6 +189,18 @@ const orgRoutes = [
         path: "index-member",
         name: "index-member",
         component: IndexMember,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "membership-statuses",
+        name: "membership-statuses",
+        component: MembershipStatuses,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "org-membership-types",
+        name: "org-membership-types",
+        component: OrgMembershipTypes,
         meta: { requiresAuth: true },
       },
       {

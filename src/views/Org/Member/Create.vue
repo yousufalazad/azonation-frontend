@@ -78,6 +78,7 @@ const addMember = async (individualTypeUserId) => {
       );
 
       if (response.status) {
+        const newOrgMemberId = response?.data?.id;
         await Swal.fire(
           'Added!',
           'Member added successfully.',
@@ -86,7 +87,8 @@ const addMember = async (individualTypeUserId) => {
         selectedIndividual.value = null;
         searchResults.value = [];
         searchQuery.value = '';
-        router.push({ name: "index-member" });
+        // router.push({ name: "index-member" });
+        router.push({ name: "index-member", query: { edit: newOrgMemberId } });
       } else {
         Swal.fire(
           'Failed!',
