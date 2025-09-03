@@ -21,7 +21,7 @@ dayjs.extend(relativeTime);
 const userType = computed(() => auth.user?.type);
 const auth = authStore;
 
-const totalOrgMember = ref('');
+const totalOrgMember = ref(0);
 const memberList = ref([]);
 const selectedMember = ref(null);
 const membershipTypes = ref([]);
@@ -181,6 +181,8 @@ const totalOrgMemberCount = async () => {
     const response = await auth.fetchProtectedApi('/api/total-org-member-count', {}, 'GET');
     if (response.status && response.data) {
       totalOrgMember.value = response.data;
+    }else {
+      totalOrgMember.value = 0;
     }
   } catch (error) {
     console.error("Error fetching total members:", error);
@@ -266,12 +268,15 @@ const orgNextMeeting = async () => {
 
 const getThisYearNewMemberCount = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/org-members/this-year-new-member-count', {}, 'GET');
+    const response = await auth.fetchProtectedApi('/api/this-year-new-member-count', {}, 'GET');
+
     if (response.status && response.data) {
       thisYearNewMemberCount.value = response.data;
+    }else {
+      thisYearNewMemberCount.value = 0;
     }
   } catch (error) {
-    console.error("Error fetching this year new member count:", error);
+    console.error("Error fetching total members:", error);
   }
 };
 
