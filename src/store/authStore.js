@@ -177,7 +177,7 @@ const authStore = reactive({
           this.user = {};
           functions.deleteCookie("auth");
           functions.deleteCookie("user");
-          router.push({ name: "login" });
+          router.push({ name: "login" }).then(() => location.reload());
 
           Swal.fire({
             icon: "success",
