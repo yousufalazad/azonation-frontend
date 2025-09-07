@@ -57,15 +57,10 @@ const isActive = (path) => route.path === path;
       { name: 'Accounts', path: '/org-dashboard/accounts', icon: DollarSignIcon },
 
     ]" :key="link.path">
-      <router-link
-        :to="link.path"
-         @click="handleLinkClick"
-        :class="[
-          'flex items-center gap-3 px-4 py-2 rounded-md transition-all duration-200 whitespace-nowrap',
-          isActive(link.path) ? 'bg-gray-200 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'
-        ]"
-        :title="!props.isSidebarExpanded ? link.name : ''"
-      >
+      <router-link :to="link.path" @click="handleLinkClick" :class="[
+        'flex items-center gap-3 px-4 py-2 rounded-md transition-all duration-200 whitespace-nowrap',
+        isActive(link.path) ? 'bg-gray-200 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'
+      ]" :title="!props.isSidebarExpanded ? link.name : ''">
         <component :is="link.icon" class="h-5 w-5" />
         <span v-if="props.isSidebarExpanded">{{ link.name }}</span>
       </router-link>
@@ -73,55 +68,62 @@ const isActive = (path) => route.path === path;
 
     <!-- Expandable: Profile -->
     <div>
-      <button
-        @click="toggleSection('profile')"
+      <button @click="toggleSection('profile')"
         class="w-full text-left px-4 py-2 flex items-center gap-3 rounded-md text-gray-700 hover:bg-gray-100 transition"
-        :title="!props.isSidebarExpanded ? 'Profile' : ''"
-      >
+        :title="!props.isSidebarExpanded ? 'Profile' : ''">
         <UserCircleIcon class="h-5 w-5" />
         <span v-if="props.isSidebarExpanded">Profile</span>
-        <svg
-          class="ml-auto h-4 w-4 transition-transform"
-          :class="{ 'rotate-180': isSectionOpen('profile') }"
-          fill="none" stroke="currentColor" viewBox="0 0 24 24"
-        >
+        <svg class="ml-auto h-4 w-4 transition-transform" :class="{ 'rotate-180': isSectionOpen('profile') }"
+          fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
         </svg>
       </button>
       <transition name="fade-slide">
         <div v-if="isSectionOpen('profile') && props.isSidebarExpanded" class="ml-7 space-y-1">
-          <router-link to="/org-dashboard/my-account/profile"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Profile</router-link>
-          <router-link to="/org-dashboard/founders"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Founders</router-link>
-          <router-link to="/org-dashboard/strategic-plan"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Strategic Plan</router-link>
-          <router-link to="/org-dashboard/recognition"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Recognition</router-link>
-          <router-link to="/org-dashboard/success-story"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Success Story</router-link>
-          <router-link to="/org-dashboard/history"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">History</router-link>
-          <router-link to="/org-dashboard/year-plan"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Year Plan</router-link>
+          <router-link to="/org-dashboard/my-account/profile" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Profile</router-link>
+          <router-link to="/org-dashboard/founders" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Founders</router-link>
+          <router-link to="/org-dashboard/strategic-plan" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Strategic Plan</router-link>
+          <router-link to="/org-dashboard/recognition" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Recognition</router-link>
+          <router-link to="/org-dashboard/success-story" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Success Story</router-link>
+          <router-link to="/org-dashboard/history" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">History</router-link>
+          <router-link to="/org-dashboard/year-plan" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Year Plan</router-link>
+
+          <router-link to="/org-dashboard/my-account/org-membership-renewal-cycle" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Org Membership Renewal Cycle</router-link>
+          <router-link to="/org-dashboard/my-account/org-membership-renewal-price" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Org Membership Renewal Price</router-link>
+          <router-link to="/org-dashboard/my-account/org-membership-renewal" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Org Membership Renewal</router-link>
+
         </div>
       </transition>
     </div>
 
     <!-- Expandable: Reports -->
     <div>
-      <button
-        @click="toggleSection('reports')"
+      <button @click="toggleSection('reports')"
         class="w-full text-left px-4 py-2 flex items-center gap-3 rounded-md text-gray-700 hover:bg-gray-100 transition"
-        :title="!props.isSidebarExpanded ? 'Reports' : ''"
-      >
+        :title="!props.isSidebarExpanded ? 'Reports' : ''">
         <BarChartIcon class="h-5 w-5" />
         <span v-if="props.isSidebarExpanded">Reports</span>
-        <svg
-          class="ml-auto h-4 w-4 transition-transform"
-          :class="{ 'rotate-180': isSectionOpen('reports') }"
-          fill="none" stroke="currentColor" viewBox="0 0 24 24"
-        >
+        <svg class="ml-auto h-4 w-4 transition-transform" :class="{ 'rotate-180': isSectionOpen('reports') }"
+          fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
         </svg>
       </button>
       <transition name="fade-slide">
         <div v-if="isSectionOpen('reports') && props.isSidebarExpanded" class="ml-7 space-y-1">
-          <router-link to="/org-dashboard/org-report"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Income</router-link>
-          <router-link to="/org-dashboard/org-expense-report"  @click="handleLinkClick" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Expense</router-link>
+          <router-link to="/org-dashboard/org-report" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Income</router-link>
+          <router-link to="/org-dashboard/org-expense-report" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Expense</router-link>
         </div>
       </transition>
     </div>
@@ -132,18 +134,23 @@ const isActive = (path) => route.path === path;
 nav::-webkit-scrollbar {
   width: 4px;
 }
+
 nav::-webkit-scrollbar-thumb {
   background-color: darkgray;
   border-radius: 10px;
 }
+
 nav::-webkit-scrollbar-track {
   background: lightgray;
 }
 
-.fade-slide-enter-active, .fade-slide-leave-active {
+.fade-slide-enter-active,
+.fade-slide-leave-active {
   transition: all 0.3s ease;
 }
-.fade-slide-enter-from, .fade-slide-leave-to {
+
+.fade-slide-enter-from,
+.fade-slide-leave-to {
   opacity: 0;
   transform: translateY(-5px);
 }

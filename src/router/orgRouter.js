@@ -16,6 +16,9 @@ import Administrator from "@/views/Org/Profile/Administrator.vue";
 
 //Org Member
 import UnlinkMember from "../views/Org/Member/UnlinkMember.vue";
+import OrgMembershipRenewalCycle from "../views/Org/Financial/Renewal/OrgMembershipRenewalCycle.vue";
+import OrgMembershipRenewalPrice from "../views/Org/Financial/Renewal/OrgMembershipRenewalPrice.vue";
+import OrgMembershipRenewal from "../views/Org/Financial/Renewal/OrgMembershipRenewal.vue";
 import CreateMember from "../views/Org/Member/Create.vue";
 import IndexMember from "../views/Org/Member/Index.vue";
 import FamilyMember from "../views/Org/Member/FamilyMember.vue";
@@ -701,6 +704,24 @@ const orgRoutes = [
             path: "view-billing/:id",
             name: "view-billing",
             component: ViewBilling,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: "org-membership-renewal-cycle",
+            name: "org-membership-renewal-cycle",
+            component: OrgMembershipRenewalCycle,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: "org-membership-renewal-price",
+            name: "org-membership-renewal-price",
+            component: OrgMembershipRenewalPrice,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: "org-membership-renewal",
+            name: "org-membership-renewal",
+            component: OrgMembershipRenewal,
             meta: { requiresAuth: true },
           },
           {
