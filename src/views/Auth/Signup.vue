@@ -9,6 +9,10 @@ import Swal from "sweetalert2";
 
 const auth = authStore;
 const router = useRouter();
+
+const googleRedirectUrl = `${auth.apiBase}/auth/google/redirect`;
+const goGoogle = () => (window.location.href = googleRedirectUrl);
+
 const isSubmitting = ref(false);
 const triedSubmit = ref(false);
 const first_name = ref('')
@@ -373,6 +377,11 @@ onMounted(() => {
               class="w-full py-2 px-4 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed">
               <span v-if="!isSubmitting">Sign Up</span>
               <span v-else>Signing up…</span>
+            </button>
+          </div>
+          <div class="mt-4">
+            <button @click="goGoogle" class="w-full py-2 px-4 border rounded-md text-sm">
+              Continue with Google
             </button>
           </div>
         </div>

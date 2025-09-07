@@ -11,6 +11,11 @@ const showPassword = ref(false)
 function handleLogin() {
   auth.authenticate(username.value, password.value, remember_token.value)
 }
+
+// Build the Google redirect URL in script (not in template)
+const apiBase = import.meta.env.VITE_API_BASE || auth.apiBase
+const googleRedirectUrl = `${apiBase}/auth/google/redirect`
+const goGoogle = () => { window.location.href = googleRedirectUrl }
 </script>
 
 
@@ -56,6 +61,12 @@ function handleLogin() {
               <button type="submit"
                 class="w-full py-2 px-4 bg-blue-600 text-sm text-white rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                 Log In
+              </button>
+            </div>
+
+            <div class="text-center mt-4">
+              <button type="button" @click="goGoogle" class="w-full py-2 px-4 border rounded-md text-sm">
+                Login with Google
               </button>
             </div>
           </form>
