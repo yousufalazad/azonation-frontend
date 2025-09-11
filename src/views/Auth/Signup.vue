@@ -2,7 +2,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
 import { authStore } from "../../store/authStore";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import Header from "../Common/Header.vue";
 import Footer from "../Common/Footer.vue";
 import Swal from "sweetalert2";
@@ -10,6 +10,7 @@ import { Eye, EyeOff, Check } from "lucide-vue-next";
 
 const auth = authStore;
 const router = useRouter();
+const route = useRoute()
 
 // const googleRedirectUrl = `${auth.apiBase}/auth/google/redirect`;
 const googleRedirectUrl = `${auth.apiBase}/auth/google/redirect?new=1`; // add &consent=1 if you want re-consent too
@@ -234,6 +235,8 @@ async function submitForm() {
 
 // Initialization
 onMounted(() => {
+    fetchCountries();
+
   const updateIsDesktop = () => {
     isDesktop.value = window.innerWidth >= 1024;
   };
@@ -248,7 +251,15 @@ onMounted(() => {
     if (!trigger && !menu) closeAllMenus();
   });
 
-  fetchCountries();
+  const { oauth, status, message } = route.query
+  if (oauth === 'google' && status === 'error') {
+    Swal.fire({
+      icon: 'info',
+      title: 'Google sign-up',
+      text: String(message || 'Sign-up was cancelled.'),
+    })
+  }
+
 });
 </script>
 

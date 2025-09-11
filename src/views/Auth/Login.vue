@@ -1,8 +1,12 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import Swal from 'sweetalert2'
+import { useRoute } from 'vue-router'
 import { authStore } from '../../store/authStore'
 import { Eye, EyeOff, Check } from "lucide-vue-next";
 const auth = authStore
+const route = useRoute()
+
 const username = ref('')
 const password = ref('')
 const remember_token = ref(false)
@@ -32,6 +36,17 @@ const onGoogleClick = async () => {
     googleLoading.value = false;
   }
 };
+
+onMounted(() => {
+  const { oauth, status, message } = route.query
+  if (oauth === 'google' && status === 'error') {
+    Swal.fire({
+      icon: 'info',
+      title: 'Google sign-in',
+      text: String(message || 'Sign-in was cancelled.'),
+    })
+  }
+})
 </script>
 
 
@@ -44,7 +59,7 @@ const onGoogleClick = async () => {
             <img src="../../assets/Logo/Azonation.png" alt="Azonation" class="w-44 mb-12 mx-auto pb-3">
           </div>
 
-          <!-- 🔽 Start form -->
+          <!-- Start form -->
           <form @submit.prevent="handleLogin" class="mt-4 space-y-4">
             <div>
               <label for="username" class="block text-sm text-gray-500">Email</label>
