@@ -6,12 +6,26 @@ import { useRouter } from "vue-router";
 import Header from "../Common/Header.vue";
 import Footer from "../Common/Footer.vue";
 import Swal from "sweetalert2";
+import { Eye, EyeOff, Check } from "lucide-vue-next";
 
 const auth = authStore;
 const router = useRouter();
 
-const googleRedirectUrl = `${auth.apiBase}/auth/google/redirect`;
+// const googleRedirectUrl = `${auth.apiBase}/auth/google/redirect`;
+const googleRedirectUrl = `${auth.apiBase}/auth/google/redirect?new=1`; // add &consent=1 if you want re-consent too
 const goGoogle = () => (window.location.href = googleRedirectUrl);
+
+// Google loading state + wrapper
+const googleLoading = ref(false);
+const onGoogleClick = async () => {
+  if (googleLoading.value) return;
+  try {
+    googleLoading.value = true;
+    await goGoogle();
+  } finally {
+    googleLoading.value = false;
+  }
+};
 
 const isSubmitting = ref(false);
 const triedSubmit = ref(false);
@@ -26,6 +40,13 @@ const country_id = ref('')
 const countryNames = ref([]);
 const showMobileMenu = ref(false);
 
+// separate toggles
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
+
+// accept terms
+const acceptTerms = ref(false);
+
 // Mega menu state
 const showIndividualMenu = ref(false);
 const showOrganisationMenu = ref(false);
@@ -33,7 +54,6 @@ const isDesktop = ref(false);
 
 // Password validation
 const passwordsMatch = computed(() => password.value === confirmPassword.value);
-const showPassword = ref(false)
 
 
 // Referral fields (optional)
@@ -67,6 +87,7 @@ const canSignUp = computed(() => {
     confirmPassword.value.trim() !== "" &&
     passwordsMatch.value &&
     referralValid.value &&
+    acceptTerms.value &&
     // Individual or Organisation fields
     (type.value === "individual"
       ? first_name.value.trim() !== "" && last_name.value.trim() !== ""
@@ -300,12 +321,18 @@ onMounted(() => {
             <p v-if="auth.errors?.org_name" class="text-red-500 text-sm mt-1">{{ auth.errors?.org_name[0] }}</p>
           </div>
 
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700">Email</label>
-            <input v-model="email" type="email" placeholder=""
-              class="mt-1 w-full border px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" />
+          <div class="mb-4 group">
+            <label class="block text-sm font-medium text-gray-700" for="email">Email</label>
+            <input id="email" v-model="email" type="email" autocomplete="email" placeholder="you@example.com"
+              class="mt-1 w-full border px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+              required />
+            <p class="text-xs text-gray-500 mt-1 opacity-0 translate-y-[-2px] transition
+            group-focus-within:opacity-100 group-focus-within:translate-y-0">
+              Use a work or personal email you check regularly.
+            </p>
             <p v-if="auth.errors?.email" class="text-red-500 text-sm mt-1">{{ auth.errors?.email[0] }}</p>
           </div>
+
 
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700">Country</label>
@@ -318,30 +345,46 @@ onMounted(() => {
             </select>
           </div>
 
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700">Password</label>
+          <!-- Password -->
+          <div class="mb-4 group">
+            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
             <div class="relative">
-              <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••"
-                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+              <input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••"
+                autocomplete="new-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
+             focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required />
               <button type="button" @click="showPassword = !showPassword"
-                class="absolute inset-y-0 right-3 flex items-center text-sm text-gray-500 hover:text-gray-700 focus:outline-none">
-                {{ showPassword ? 'Hide' : 'Show' }}
+                class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                aria-label="Toggle password visibility">
+                <Eye v-if="!showPassword" class="w-5 h-5" />
+                <EyeOff v-else class="w-5 h-5" />
               </button>
             </div>
+            <p class="text-xs text-gray-500 mt-1 opacity-0 translate-y-[-2px] transition
+            group-focus-within:opacity-100 group-focus-within:translate-y-0">
+              Aim for at least 8 characters with a mix of letters and numbers.
+            </p>
             <p v-if="auth.errors?.password" class="text-red-500 text-sm mt-1">{{ auth.errors?.password[0] }}</p>
           </div>
 
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700">Confirm Password</label>
+          <!-- Confirm Password -->
+          <div class="mb-4 group">
+            <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label>
             <div class="relative">
-              <input v-model="confirmPassword" :type="showPassword ? 'text' : 'password'" placeholder="••••••••"
-                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-              <button type="button" @click="showPassword = !showPassword"
-                class="absolute inset-y-0 right-3 flex items-center text-sm text-gray-500 hover:text-gray-700 focus:outline-none">
-                {{ showPassword ? 'Hide' : 'Show' }}
+              <input id="confirmPassword" v-model="confirmPassword" :type="showConfirmPassword ? 'text' : 'password'"
+                placeholder="••••••••" autocomplete="new-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm
+             focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required />
+              <button type="button" @click="showConfirmPassword = !showConfirmPassword"
+                class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                aria-label="Toggle confirm password visibility">
+                <Eye v-if="!showConfirmPassword" class="w-5 h-5" />
+                <EyeOff v-else class="w-5 h-5" />
               </button>
             </div>
-            <p v-if="!passwordsMatch" class="text-red-500 text-sm mt-1">Passwords do not match</p>
+            <p class="text-xs text-gray-500 mt-1 opacity-0 translate-y-[-2px] transition
+            group-focus-within:opacity-100 group-focus-within:translate-y-0">
+              Re-enter the same password to confirm.
+            </p>
+            <p v-if="!passwordsMatch && confirmPassword" class="text-red-500 text-sm mt-1">Passwords do not match</p>
           </div>
 
           <!-- How did you hear about us? -->
@@ -372,6 +415,39 @@ onMounted(() => {
           </div>
 
 
+          <!-- Accept Terms -->
+          <div class="mt-6 mb-4">
+            <label for="accept_terms" class="flex items-start gap-2 cursor-pointer select-none text-sm text-gray-600">
+              <!-- Custom checkbox -->
+              <div
+                class="mt-0.5 w-4 h-4 border border-gray-300 rounded flex items-center justify-center transition-colors"
+                :class="acceptTerms ? 'bg-blue-600 border-blue-600' : 'bg-white'">
+                <Check v-if="acceptTerms" class="w-3 h-3 text-white" />
+              </div>
+              <input id="accept_terms" v-model="acceptTerms" type="checkbox" class="hidden" />
+              <span>
+                I have read and agree to the
+                <router-link to="/terms" target="_blank" rel="noopener noreferrer"
+                  class="underline hover:text-gray-700">
+                  Terms of Service
+                </router-link>,
+                <router-link to="/privacy" target="_blank" rel="noopener noreferrer"
+                  class="underline hover:text-gray-700">
+                  Privacy Policy
+                </router-link>,
+                and
+                <router-link to="/cookies" target="_blank" rel="noopener noreferrer"
+                  class="underline hover:text-gray-700">
+                  Cookies Policy
+                </router-link>.
+              </span>
+            </label>
+            <p v-if="triedSubmit && !acceptTerms" class="text-xs text-red-500 mt-1">
+              You must agree to the Terms of Service, Privacy Policy, and Cookies Policy to continue.
+            </p>
+          </div>
+
+          <!-- Submit Button -->
           <div class="pt-2">
             <button @click="submitForm" :disabled="!canSignUp || isSubmitting"
               class="w-full py-2 px-4 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed">
@@ -380,10 +456,33 @@ onMounted(() => {
             </button>
           </div>
           <div class="mt-4">
-            <button @click="goGoogle" class="w-full py-2 px-4 border rounded-md text-sm">
-              Continue with Google
+            <button type="button" @click="onGoogleClick" :disabled="googleLoading"
+              class="w-full inline-flex items-center justify-center gap-3 py-2.5 px-4 border border-gray-300 rounded-lg text-sm text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition"
+              aria-label="Continue with Google">
+              <!-- Google G -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class="h-5 w-5" aria-hidden="true">
+                <path fill="#FFC107"
+                  d="M43.6 20.5H42V20H24v8h11.3C33.6 32.4 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.7 3l5.7-5.7C33.4 6.3 28.9 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c10.6 0 19.5-8.1 19.5-20 0-1.2-.1-2.3-.3-3.5z" />
+                <path fill="#FF3D00"
+                  d="M6.3 14.7l6.6 4.8C14.5 16.1 18.9 12 24 12c3 0 5.7 1.1 7.7 3l5.7-5.7C33.4 6.3 28.9 4 24 4 16.1 4 9.2 8.5 6.3 14.7z" />
+                <path fill="#4CAF50"
+                  d="M24 44c5.2 0 9.9-2 13.3-5.3l-6.1-5.2C29.3 36 26.9 37 24 37c-5.2 0-9.6-3.6-11.1-8.5l-6.6 5.1C9.2 39.4 16.1 44 24 44z" />
+                <path fill="#1976D2"
+                  d="M43.6 20.5H42V20H24v8h11.3c-1 3.2-3.8 5.8-7.3 6.5l6.1 5.2C36.9 37.8 40 31.9 40 24c0-1.2-.1-2.3-.4-3.5z" />
+              </svg>
+
+              <span v-if="!googleLoading">Continue with Google</span>
+              <span v-else class="inline-flex items-center gap-2">
+                <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.25" />
+                  <path d="M22 12a10 10 0 0 1-10 10" fill="none" stroke="currentColor" stroke-width="4"
+                    stroke-linecap="round" />
+                </svg>
+                Redirecting…
+              </span>
             </button>
           </div>
+
         </div>
       </div>
     </main>
