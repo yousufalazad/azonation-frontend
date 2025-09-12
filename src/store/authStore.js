@@ -116,21 +116,21 @@ const authStore = reactive({
 
         switch (response.data.type) {
           case "individual":
-            // router.push({ name: "individual-dashboard-index" });
-            router
-              .push({ name: "individual-dashboard-index" })
-              .then(() => location.reload());
+            router.push({ name: "individual-dashboard-index" });
+            // router
+            //   .push({ name: "individual-dashboard-index" })
+            //   .then(() => location.reload());
             break;
           case "organisation":
-            // router.push({ name: "org-dashboard-index" });
-            router
-              .push({ name: "org-dashboard-index" })
-              .then(() => location.reload());
+            router.push({ name: "org-dashboard-index" });
+            // router
+            //   .push({ name: "org-dashboard-index" })
+            //   .then(() => location.reload());
             break;
           case "superadmin":
             router
               .push({ name: "superadmin-dashboard-index" })
-              .then(() => location.reload());
+              //.then(() => location.reload());
             break;
           default:
             router.push({ name: "login" });
@@ -140,7 +140,7 @@ const authStore = reactive({
           icon: "success",
           title: "Login Successful",
           text: "You have successfully logged in.",
-          timer: 1000,
+          timer: 1500,
           showConfirmButton: false,
         });
       } else {
@@ -177,13 +177,13 @@ const authStore = reactive({
           this.user = {};
           functions.deleteCookie("auth");
           functions.deleteCookie("user");
-          router.push({ name: "login" }).then(() => location.reload());
+          router.push({ name: "login" });
 
           Swal.fire({
             icon: "success",
             title: "Logged Out",
             text: "You have been logged out successfully.",
-            timer: 1000,
+            timer: 2000,
             showConfirmButton: false,
           });
         } catch (error) {
