@@ -19,8 +19,8 @@ const searchLoading = ref(false);
 const fetchAdministrators = async () => {
     const res = await auth.fetchProtectedApi('/api/org-administrators');
     if (res && Array.isArray(res)) {
-        administrators.value = res.filter(admin => admin.is_primary === 1);
-        formerAdministrators.value = res.filter(admin => admin.is_primary === 0);
+        administrators.value = res.filter(admin => admin.is_primary === 1 && admin.individual_user);
+        formerAdministrators.value = res.filter(admin => admin.is_primary === 0 && admin.individual_user);
     } else {
         Swal.fire('Error', 'Failed to load administrators.', 'error');
     }
@@ -225,12 +225,11 @@ fetchAdministrators();
 
         <h2 class="mt-12 mb-4 text-lg text-gray-600 font-semibold">Current Administrator</h2>
         <div v-if="administrators.length" class="space-y-4">
-            <div v-for="admin in administrators" :key="admin.id" class="flex items-center bg-white p-4 rounded shadow">
+            <div v-for="admin in administrators" :key="admin.id" v-if="admin && admin.individual_user" class="flex items-center bg-white p-4 rounded shadow">
                 <img :src="admin.image_url || placeholderImage" alt="Profile"
                     class="w-12 h-12 rounded-full object-cover mr-4" />
                 <div class="flex-1">
-                    <p class="font-medium">{{ admin.individual_user?.first_name }} {{ admin.individual_user?.last_name
-                    }}</p>
+                    <p class="font-medium">{{ admin.individual_user?.first_name ?? '--' }} {{ admin.individual_user?.last_name ?? '--'}}</p>
                     <p class="py-1 text-sm text-gray-400">Azon Id: {{ admin.individual_user?.azon_id }}</p>
                     <p class="py-2 text-xs text-gray-400">From: {{ admin.start_date }}</p>
                     <p class="py-1 text-xs text-gray-400">Admin note: {{ admin.admin_note }}</p>
@@ -242,13 +241,12 @@ fetchAdministrators();
 
         <h2 class="mt-12 mb-4 text-lg text-gray-600 font-semibold">Former Administrators</h2>
         <div class="space-y-4">
-            <div v-for="admin in formerAdministrators" :key="admin.id"
+            <div v-for="admin in formerAdministrators" :key="admin.id" v-if="admin && admin.individual_user"
                 class="flex items-center bg-gray-50 p-4 rounded shadow">
                 <img :src="admin.image_url || placeholderImage" alt="Profile"
                     class="w-12 h-12 rounded-full object-cover mr-4" />
                 <div>
-                    <p class="font-medium">{{ admin.individual_user?.first_name }} {{ admin.individual_user?.last_name
-                        }}</p>
+                    <p class="font-medium">{{ admin.individual_user?.first_name ?? '--' }} {{ admin.individual_user?.last_name ?? '--'}}</p>
                     <p class="py-1 text-xs text-gray-400">Azon Id: {{ admin.individual_user?.azon_id }}</p>
                     <p class="py-1 text-xs text-gray-400">From: {{ admin.start_date }}</p>
                     <p class="py-1 text-xs text-gray-400">To: {{ admin.end_date }}</p>

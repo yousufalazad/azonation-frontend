@@ -1,17 +1,52 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from "sweetalert2";
-import functions from "../../../global/cookie";
-
 
 const auth = authStore;
 const userId = auth.user.id;
-const org_name = auth.user.org_name;
-const email = auth.user.email;
-const username = auth.user.username;
-// lastName.value = last_name;
+const org_name = computed(() => auth.user?.org_name ?? '');
+const email = computed(() => auth.user?.email ?? '');
+const username = computed(() => auth.user?.username ?? '');
 const baseURL = auth.apiBase;
+
+// ---- Local user storage (professional & minimal) ----
+const USER_KEY = 'azonation:user';
+
+const pickUserFields = (u = {}) => ({
+    id: u.id ?? auth.user?.id,
+    org_name: u.org_name ?? auth.user?.org_name,
+    email: u.email ?? auth.user?.email,
+    username: u.username ?? auth.user?.username,
+    country: u.country ?? u.userCountry ?? auth.user?.country, // map if needed
+});
+
+const readUserLS = () => {
+    try {
+        const raw = localStorage.getItem(USER_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+    } catch {
+        return null;
+    }
+};
+
+const writeUserLS = (partial = {}) => {
+    const current = readUserLS() || pickUserFields(auth.user || {});
+    const updated = pickUserFields({ ...current, ...partial });
+
+    // keep auth.user reactive & in sync
+    if (auth.user) Object.assign(auth.user, updated);
+
+    localStorage.setItem(USER_KEY, JSON.stringify(updated));
+    return updated;
+};
+
+// (optional) one-time hydrate from LS -> auth.user
+const hydrateUserFromLS = () => {
+    const saved = readUserLS();
+    if (saved && auth.user) Object.assign(auth.user, saved);
+};
 
 
 // Org logo
@@ -19,6 +54,7 @@ const logoPath = ref('');
 const selectedImage = ref(null);
 
 // Org address
+const addressId = ref(null);
 const address_user_id = ref(null);
 const address_line_one = ref('');
 const address_line_two = ref('');
@@ -26,12 +62,11 @@ const city = ref('');
 const state_or_region = ref('');
 const postal_code = ref('');
 const userCountry = ref('');
-const country_id = ref('');
-const country_name = ref('');
 const modalVisibleAddress = ref(false);
-const isEditMode = ref('');
+const isEditMode = ref(false);
 
 // Org Phone Number
+const phoneId = ref(null);
 const dialing_code = ref('');
 const dialing_code_id = ref('');
 const phone_number = ref('');
@@ -42,27 +77,16 @@ const isEditModePhone = ref(false);
 
 const allDialingCodes = ref([]);
 
-
-// First Name Change
 const modalVisibleName = ref(false);
 const orgName = ref('');
-// Last Name Change
-const modalVisibleLastName = ref(false);
-const lastName = ref('');
+
 // Org username Change
 const modalVisibleUsername = ref(false);
 const newUsername = ref('');
 
-
 // Org User Email Change
 const modalVisibleUserEmail = ref(false);
 const newEmail = ref('');
-
-// Org Country Change
-const modalOpenCountry = ref(false);
-const countryChangeRequest = ref('');
-
-
 
 const fetchLogo = async () => {
     try {
@@ -84,7 +108,7 @@ const profileImageUpdate = async () => {
             if (imageResponse.status) {
                 Swal.fire('Success', 'Logo saved successfully', 'success');
                 logoPath.value = imageResponse.data.image;
-                window.location.reload();
+                //window.location.reload();
             } else {
                 Swal.fire('Error', 'Failed to update logo', 'error');
             }
@@ -101,64 +125,20 @@ const updateOrgName = async () => {
             org_name: orgName.value,
         }, 'PUT');
         if (response.status) {
-            // Success handling
             Swal.fire('Success', response.message || 'Name updated successfully', 'success');
-
-            // Close the modal after successful update
+            writeUserLS({ org_name: orgName.value });
             closeNameModal();
-
-            // Update the org_name in sessionStorage explicitly
-            let user = JSON.parse(functions.getCookie('user'));
-            if (user) {
-                user.org_name = orgName.value;
-                functions.setCookie('user', JSON.stringify(user));
-            }
-
-            // Optionally, you can reload the page or update the UI without reloading
-            window.location.reload();
-        } else {
-            // Display error message from server response
+        }
+        else {
             Swal.fire('Error', response.message || 'Failed to update name, please try again.', 'error');
         }
 
     } catch (error) {
-        // Catch block for any other errors
         console.error("Error updating org_name:", error);
         Swal.fire('Error', error.response?.data?.message || 'An unexpected error occurred while updating the org_name', 'error');
     }
 };
-const updateLastName = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/update-last-name/${userId}`, {
-            last_name: lastName.value,
-        }, 'PUT');
-        if (response.status) {
-            // Success handling
-            Swal.fire('Success', response.message || 'Last Name updated successfully', 'success');
 
-            // Close the modal after successful update
-            closeLastNameModal();
-
-            // Update the last_name in sessionStorage explicitly
-            let user = JSON.parse(functions.getCookie('user'));
-            if (user) {
-                user.last_name = lastName.value;
-                functions.setCookie('user', JSON.stringify(user));
-            }
-
-            // Optionally, you can reload the page or update the UI without reloading
-            window.location.reload();
-        } else {
-            // Display error message from server response
-            Swal.fire('Error', response.message || 'Failed to update last_name, please try again.', 'error');
-        }
-
-    } catch (error) {
-        // Catch block for any other errors
-        console.error("Error updating last_name:", error);
-        Swal.fire('Error', error.response?.data?.message || 'An unexpected error occurred while updating the last_name', 'error');
-    }
-};
 //Update username
 const updateUsername = async () => {
     try {
@@ -167,39 +147,22 @@ const updateUsername = async () => {
         }, 'PUT');
 
         if (response.status) {
-            // Success handling
             Swal.fire('Success', response.message || 'Username updated successfully', 'success');
-
-            // Close the modal after successful update
+            writeUserLS({ username: newUsername.value });
             closeUsernameModal();
-
-            // Update the last_name in sessionStorage explicitly
-            let user = JSON.parse(sessionStorage.getItem('user'));
-            if (user) {
-                user.username = newUsername.value;
-                sessionStorage.setItem('user', JSON.stringify(user));
-            }
-
-            // Optionally, you can reload the page or update the UI without reloading
-            window.location.reload();
         } else {
-            // Handle other non-validation-related errors
             Swal.fire('Error', response.message || 'Failed to update username, please try again.', 'error');
         }
 
     } catch (error) {
-        // Check for validation errors
         if (error.response?.status === 422) {
             const validationErrors = error.response.data.errors;
             if (validationErrors?.username) {
-                // Display validation error specific to the username field
                 Swal.fire('Validation Error', validationErrors.username[0], 'error');
             } else {
-                // General validation error message
                 Swal.fire('Validation Error', 'The provided data is invalid.', 'error');
             }
         } else {
-            // Handle any other errors
             console.error("Error updating username:", error);
             Swal.fire('Error', error.response?.data?.message || 'An unexpected error occurred while updating the username', 'error');
         }
@@ -208,107 +171,142 @@ const updateUsername = async () => {
 
 const fetchOrgAddress = async () => {
     try {
-        const response = await auth.fetchProtectedApi("/api/addresses/", {}, 'GET');
+        const res = await auth.fetchProtectedApi("/api/addresses/", {}, 'GET');
 
-        // Ensure the response status is true and data exists
-        if (response.status && response.data) {
-            console.log(response.data);
-            address_line_one.value = response.data.address_line_one || '';  // Use default values if data is missing
-            address_line_two.value = response.data.address_line_two || '';
-            city.value = response.data.city || '';
-            state_or_region.value = response.data.state_or_region || '';
-            postal_code.value = response.data.postal_code || '';
+        // allow both object and array shapes
+        const data = res?.data;
+        const addr = Array.isArray(data) ? data[0] : data;
+
+        if (res.status && addr) {
+            addressId.value = addr.id ?? null;
+            address_user_id.value = addr.user_id ?? null;
+            address_line_one.value = addr.address_line_one ?? '';
+            address_line_two.value = addr.address_line_two ?? '';
+            city.value = addr.city ?? '';
+            state_or_region.value = addr.state_or_region ?? '';
+            postal_code.value = addr.postal_code ?? '';
+            // choose mode automatically
+            isEditMode.value = !addressId.value; // true => Create, false => Update
         } else {
-            Swal.fire('Error', 'Failed to fetch organization address try-else', 'error');
+            // No address yet — treat as empty, allow Create
+            addressId.value = null;
+            isEditMode.value = true;
         }
-    } catch (error) {
-        console.error("Error fetching organization address:", error);
-        Swal.fire('Error', 'Failed to fetch organization address catch', 'error');
+    } catch (e) {
+        console.error("Error fetching organization address:", e);
+        // Keep the form empty and allow Create instead of popping an error
+        addressId.value = null;
+        isEditMode.value = true;
     }
 };
 
 const createAddress = async () => {
     try {
-        const response = await auth.fetchProtectedApi("/api/addresses/", {
+        const res = await auth.fetchProtectedApi("/api/addresses/", {
             address_line_one: address_line_one.value,
             address_line_two: address_line_two.value,
             city: city.value,
             state_or_region: state_or_region.value,
             postal_code: postal_code.value
         }, 'POST');
-        if (response.status) {
+
+        if (res.status) {
             Swal.fire('Success', 'Address created successfully', 'success');
+            closeAddressModal();
+            await fetchOrgAddress(); // refresh state, no full reload
         } else {
-            Swal.fire('Error', 'Failed to created address', 'error');
+            Swal.fire('Error', res.message || 'Failed to create address', 'error');
         }
-        closeAddressModal();
-        //fetchOrgAddress();
-    } catch (error) {
-        console.error("Error create address:", error);
+    } catch (e) {
+        console.error("Error create address:", e);
         Swal.fire('Error', 'Failed to create address', 'error');
     }
 };
 
 const updateAddress = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/addresses/${userId}`, {
+        if (!addressId.value) {
+            // No record yet — fall back to create
+            return createAddress();
+        }
+        const res = await auth.fetchProtectedApi(`/api/addresses/${addressId.value}`, {
             address_line_one: address_line_one.value,
             address_line_two: address_line_two.value,
             city: city.value,
             state_or_region: state_or_region.value,
             postal_code: postal_code.value
         }, 'PUT');
-        if (response.status) {
+
+        if (res.status) {
             Swal.fire('Success', 'Address updated successfully', 'success');
+            closeAddressModal();
+            await fetchOrgAddress();
         } else {
-            Swal.fire('Error', 'Failed to update address', 'error');
+            Swal.fire('Error', res.message || 'Failed to update address', 'error');
         }
-        closeAddressModal();
-        fetchOrgAddress();
-    } catch (error) {
-        console.error("Error updating address:", error);
+    } catch (e) {
+        console.error("Error updating address:", e);
         Swal.fire('Error', 'Failed to update address', 'error');
     }
 };
 
+const phoneTypeLabel = (v) => ({ 1: 'Mobile', 2: 'Work', 3: 'Home', 4: 'Other' }[Number(v)] || 'Other');
+// Suggest: 0 = Private, 1 = Public (or match your backend exactly)
+const statusLabel = (v) => ({ 0: 'Private', 1: 'Public', 2: 'Connected Organisation', 3: 'Members Only' }[Number(v)] || 'Other');
+
+
 const fetchOrgPhoneNumber = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/phone-numbers/${userId}`, {}, 'GET');
-        // Ensure the response status is true and data exists
-        if (response.status && response.data) {
-            dialing_code.value = response.data.dialing_code || '';
-            phone_number.value = response.data.phone_number || '';
-            phone_type.value = response.data.phone_type || '';
-            statusPhone.value = response.data.status || '';
+        const res = await auth.fetchProtectedApi(`/api/phone-numbers/`, {}, 'GET');
+        const data = res?.data;
+        const phone = Array.isArray(data) ? data[0] : data;
+
+        if (res.status && phone) {
+            phoneId.value = phone.id ?? null;
+            dialing_code_id.value = phone.dialing_code_id ?? ''; // keep id for update
+            dialing_code.value = phone.dialing_code ?? '';       // string for display
+            phone_number.value = phone.phone_number ?? '';
+            phone_type.value = phone.phone_type ?? '';
+            statusPhone.value = phone.status ?? '';
+            isEditModePhone.value = !!phoneId.value; // true => Edit, false => Add
         } else {
-            Swal.fire('Error', 'Failed to fetch organization Phone Number', 'error');
+            phoneId.value = null;
+            isEditModePhone.value = false; // Add
         }
-    } catch (error) {
-        console.error("Error fetching organization Phone Number:", error);
-        Swal.fire('Error', 'Failed to fetch organization Phone Number', 'error');
+    } catch (e) {
+        console.error("Error fetching organization Phone Number:", e);
+        phoneId.value = null;
+        isEditModePhone.value = false;
     }
 };
 
+
 const updateOrgPhoneNumber = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/phone-numbers/${userId}`, {
+        const payload = {
             dialing_code_id: dialing_code_id.value,
             phone_number: phone_number.value,
             phone_type: phone_type.value,
             status: statusPhone.value,
-        }, 'PUT');
-        if (response.status) {
-            Swal.fire('Success', 'Phone Number updated successfully', 'success');
+        };
+
+        const res = phoneId.value
+            ? await auth.fetchProtectedApi(`/api/phone-numbers/${phoneId.value}`, payload, 'PUT')
+            : await auth.fetchProtectedApi(`/api/phone-numbers/`, payload, 'POST');
+
+        if (res.status) {
+            Swal.fire('Success', phoneId.value ? 'Phone Number updated successfully' : 'Phone Number added successfully', 'success');
+            closePhoneModal();
+            await fetchOrgPhoneNumber();
         } else {
-            Swal.fire('Error', 'Failed to update Phone Number', 'error');
+            Swal.fire('Error', res.message || 'Failed to save Phone Number', 'error');
         }
-        closePhoneModal();
-        fetchOrgPhoneNumber();
-    } catch (error) {
-        console.error("Error updating Phone Number:", error);
-        Swal.fire('Error', 'Failed to update Phone Number', 'error');
+    } catch (e) {
+        console.error("Error updating Phone Number:", e);
+        Swal.fire('Error', 'Failed to save Phone Number', 'error');
     }
 };
+
 
 const fetchDialingCode = async () => {
     try {
@@ -337,17 +335,8 @@ const updateUserEmail = async () => {
         }, 'PUT');
         if (response.status) {
             Swal.fire('Success', 'Email updated successfully', 'success');
-            // Close the modal after successful update
+            writeUserLS({ email: newEmail.value });
             closeEmailModal();
-
-            // Update the email in sessionStorage explicitly
-            let user = JSON.parse(sessionStorage.getItem('user'));
-            if (user) {
-                user.email = newEmail.value;
-                sessionStorage.setItem('user', JSON.stringify(user));
-            }
-            // Now refresh the current page
-            window.location.reload();
         } else {
             Swal.fire('Error', 'Failed to update email', 'error');
         }
@@ -357,35 +346,6 @@ const updateUserEmail = async () => {
         Swal.fire('Error', 'Failed to update email', 'error');
     }
 };
-
-// const updateCountry = async () => {
-//     try {
-//         const response = await auth.fetchProtectedApi("/api/update-country/", {
-//             country_name: newCountry.value,
-//         }, 'PUT');
-//         if (response.status) {
-//             Swal.fire('Success', 'Country updated successfully', 'success');
-//             // Close the modal after successful update
-//             closeCountryModal();
-
-//             // Update the  country_name in sessionStorage explicitly
-//             let user = JSON.parse(sessionStorage.getItem('user'));
-//             if (user) {
-//                 user.country_name = newCountry.value;
-//                 sessionStorage.setItem('user', JSON.stringify(user));
-//             }
-//             // Now refresh the current page
-//             window.location.reload();
-//         } else {
-//             Swal.fire('Error', 'Failed to update country', 'error');
-//         }
-
-//     } catch (error) {
-//         console.error("Error updating country:", error);
-//         Swal.fire('Error', 'Failed to update country', 'error');
-//     }
-// };
-
 
 const fetchOrgCountry = async () => {
     try {
@@ -410,16 +370,21 @@ const handleImageUpload = (event) => {
 
 
 //for Address
-const openAddressModal = () => {
+// const openAddressModal = () => {
 
-    if (address_user_id.value === null) {
-        //console.log('true', address_user_id);
-        isEditMode.value = true; // createAddress() will work 
-    } else {
-        //console.log('false', address_user_id);
-        isEditMode.value = false; // updateAddress() will work
-    }
-    //console.log('bahire', address_user_id)
+//     if (address_user_id.value === null) {
+//         //console.log('true', address_user_id);
+//         isEditMode.value = true; // createAddress() will work 
+//     } else {
+//         //console.log('false', address_user_id);
+//         isEditMode.value = false; // updateAddress() will work
+//     }
+//     //console.log('bahire', address_user_id)
+//     modalVisibleAddress.value = true;
+// };
+
+const openAddressModal = () => {
+    // Mode is already inferred in fetchOrgAddress()
     modalVisibleAddress.value = true;
 };
 
@@ -439,17 +404,17 @@ const closePhoneModal = () => {
 
 const openNameModal = () => {
     modalVisibleName.value = true;
-    orgName.value = org_name;
+    orgName.value = org_name.value;
 };
 
 const closeNameModal = () => {
     modalVisibleName.value = false;
-    orgName.value = {};
+    orgName.value = '';
 };
 
 const openUsernameModal = () => {
     modalVisibleUsername.value = true;
-    newUsername.value = username;
+    newUsername.value = username.value;
 };
 
 const closeUsernameModal = () => {
@@ -459,24 +424,15 @@ const closeUsernameModal = () => {
 //Email Address
 const openEmailModal = () => {
     modalVisibleUserEmail.value = true;
-    newEmail.value = email;
+    newEmail.value = email.value;
 };
 
 const closeEmailModal = () => {
     modalVisibleUserEmail.value = false;
 };
 
-//Country
-const openCountryModal = () => {
-    modalOpenCountry.value = true;
-    countryChangeRequest.value = userCountry.value;
-};
-
-const closeCountryModal = () => {
-    modalOpenCountry.value = false;
-};
-
 onMounted(() => {
+    hydrateUserFromLS();
     fetchLogo();
     fetchDialingCode();
     fetchOrgAddress();
@@ -486,7 +442,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="flex flex-col h-screen overflow-y-auto pb-7 pr-7">
+    <div class="flex flex-col pb-7 pr-7">
         <!-- Logo Section -->
         <section>
             <div class="bg-white shadow rounded-lg p-6">
@@ -556,7 +512,7 @@ onMounted(() => {
                             <p v-if="auth.errors?.orgName" class="text-red-500 text-xs mt-2">
                                 {{ auth.errors?.orgName[0] }}
                             </p>
-                        </div>                    
+                        </div>
                         <!-- Action Buttons -->
                         <div class="flex flex-col-reverse sm:flex-row justify-end gap-3">
                             <button @click="closeNameModal"
@@ -710,14 +666,17 @@ onMounted(() => {
 
                             <!-- Postal Code -->
                             <div>
-                                <label for="postal_code" class="block text-sm font-medium text-gray-700 mb-1">Postal
-                                    Code</label>
-                                <textarea v-model="postal_code" id="postal_code" class="w-full border border-gray-300 rounded-lg p-2.5 shadow-sm resize-none
-                             focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition"></textarea>
+                                <label for="postal_code" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Postal Code
+                                </label>
+                                <input v-model="postal_code" type="text" id="postal_code" autocomplete="postal-code"
+                                    inputmode="text" class="w-full border border-gray-300 rounded-lg p-2.5 shadow-sm
+           focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" />
                                 <p v-if="auth.errors?.postal_code" class="text-red-500 text-xs mt-2">
                                     {{ auth.errors?.postal_code[0] }}
                                 </p>
                             </div>
+
                         </div>
 
                         <!-- Action Buttons -->
@@ -750,12 +709,10 @@ onMounted(() => {
                         <p class="text-gray-900 mt-1 leading-relaxed">
                             <span>{{ dialing_code }} {{ phone_number }}</span>
                             <span class="ml-6">
-                                Type: {{ phone_type === 1 ? 'Mobile' : phone_type === 2 ? 'Work' : phone_type === 3 ?
-                                    'Home' : 'Others' }}
+                                Type: {{ phoneTypeLabel(phone_type) }}
                             </span>
                             <span class="ml-6">
-                                Status: {{ statusPhone === 1 ? 'Private' : statusPhone === 2 ? 'Connected Organisation'
-                                    : statusPhone === 3 ? 'Public' : 'Others' }}
+                                Status: {{ statusLabel(statusPhone) }}
                             </span>
                         </p>
                     </div>
@@ -833,8 +790,10 @@ onMounted(() => {
                                 </label>
                                 <select v-model="statusPhone" id="statusPhone"
                                     class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                    <option value="1">Public</option>
                                     <option value="0">Private</option>
+                                    <option value="1">Public</option>
+                                    <option value="2">Connected Organisation</option>
+                                    <option value="3">Members Only</option>
                                 </select>
                                 <p v-if="auth.errors?.statusPhone" class="text-red-500 text-xs mt-1">
                                     {{ auth.errors?.statusPhone[0] }}
@@ -930,45 +889,8 @@ onMounted(() => {
                             {{ userCountry }}
                         </p>
                     </div>
-                    <!-- Edit button commented out
-      <button @click="openCountryModal()" class="text-sm text-blue-600 hover:underline ml-4 whitespace-nowrap">
-        Edit
-      </button>
-      -->
                 </div>
-
-                <!-- Country Modal (commented out) -->
-                <!--
-    <div v-if="modalOpenCountry" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4 sm:px-0">
-      <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
-        <h2 class="text-xl font-semibold text-gray-800 text-center mb-6">Change your country</h2>
-
-        <div class="mb-4">
-          <label for="countryChangeRequest" class="block text-sm font-medium text-gray-700">Country change request</label>
-          <p class="text-sm text-gray-500 mb-2">Please provide a country and a reason for change request</p>
-          <input v-model="countryChangeRequest" type="text" id="countryChangeRequest"
-                 class="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm p-2.5
-                        focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition" required />
-          <p v-if="auth.errors?.countryChangeRequest" class="text-red-500 text-xs mt-1">
-            {{ auth.errors?.countryChangeRequest[0] }}
-          </p>
-        </div>
-
-        <div class="flex justify-end gap-3 mt-4">
-          <button @click="closeCountryModal"
-                  class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition">
-            Close
-          </button>
-          <button @click="updateCountry()"
-                  class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
-            Submit
-          </button>
-        </div>
-      </div>
-    </div>
-    -->
             </div>
         </section>
-
     </div>
 </template>

@@ -417,7 +417,7 @@ const terminationForm = reactive({
   terminated_at: dayjs().format('YYYY-MM-DD'),
   processed_at: dayjs().format('YYYY-MM-DD'),
   membership_termination_reason_id: '',
-  org_administrator_id: orgAdministrator.value.id ?? null,  // admin processing
+  org_administrator_id: orgAdministrator.value?.id ?? null,  // administrator processing
   rejoin_eligible: true,
   file_path: null,                                         // File object
   membership_duration_days: null,
@@ -443,7 +443,7 @@ const fetchOrgAdministrators = async () => {
     const res = await auth.fetchProtectedApi('/api/org-administrators/primary', {}, 'GET')
 
     orgAdministrator.value = res?.status ? res.data : {};
-    terminationForm.org_administrator_id = orgAdministrator.value.id ?? null
+    terminationForm.org_administrator_id = orgAdministrator.value?.id ?? null
   } catch (e) {
     console.error(e)
     Swal.fire('An error occurred. Please try again.', '', 'error')
@@ -477,7 +477,7 @@ const openTerminationModal = (member) => {
   terminationForm.terminated_at = dayjs().format('YYYY-MM-DD')
   terminationForm.processed_at = dayjs().format('YYYY-MM-DD')
   terminationForm.membership_termination_reason_id = ''
-  terminationForm.org_administrator_id = orgAdministrator.value.id ?? null
+  terminationForm.org_administrator_id = orgAdministrator.value?.id ?? null
   terminationForm.rejoin_eligible = true
   terminationForm.file_path = null
   terminationForm.membership_duration_days = null
@@ -503,7 +503,7 @@ const closeTerminationModal = () => {
     terminated_at: dayjs().format('YYYY-MM-DD'),
     processed_at: dayjs().format('YYYY-MM-DD'),
     membership_termination_reason_id: '',
-    org_administrator_id: orgAdministrator.value.id ?? null,
+    org_administrator_id: orgAdministrator.value?.id ?? null,
     rejoin_eligible: true,
     file_path: null,
     membership_duration_days: null,

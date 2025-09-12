@@ -18,7 +18,7 @@ const toggleSidebar = () => {
 </script>
 
 <template>
-  <div class="flex flex-col lg:flex-row h-screen">
+  <div class="flex lg:flex-row">
     <!-- Mobile Toggle Button -->
     <div class="lg:hidden p-4 border-b flex justify-between items-center bg-white shadow z-10">
       <h2 class="text-lg font-bold text-gray-700">My Account</h2>
