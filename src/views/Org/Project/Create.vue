@@ -226,7 +226,7 @@ const submitForm = async () => {
                 <div class="col-span-full">
                     <label for="title"
                         class="block text-sm font-medium text-gray-700 after:content-['*'] after:text-red-500 after:ml-1">
-                        Project Title
+                        Name
                     </label>
                     <input v-model="title" type="text" id="title"
                         class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2"
@@ -234,11 +234,11 @@ const submitForm = async () => {
                 </div>
                 <div>
                     <label for="venue_name"
-                        class="block text-sm font-medium text-gray-700 after:content-['*'] after:text-red-500 after:ml-1">Venue
+                        class="block text-sm font-medium text-gray-700 after:text-red-500 after:ml-1">Venue
                         Name</label>
                     <input v-model="venue_name" type="text" id="venue_name"
                         class="mt-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm px-4 py-2"
-                        placeholder="Venue name" required />
+                        placeholder="Venue name" />
                 </div>
                 <div>
                     <label for="venue_address" class="block text-sm font-medium text-gray-700">Venue Address</label>

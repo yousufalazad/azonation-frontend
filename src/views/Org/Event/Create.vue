@@ -172,12 +172,12 @@ onMounted(() => {
                 <div>
                     <label for="title" class="block text-gray-700 font-semibold mb-2">Title</label>
                     <input v-model="title" type="text" id="title"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4"/>
                 </div>
                 <div>
                     <label for="name" class="block text-gray-700 font-semibold mb-2">Name</label>
                     <input v-model="name" type="text" id="name"
-                        class="w-full  border border-gray-300 rounded-md py-2 px-4" />
+                        class="w-full  border border-gray-300 rounded-md py-2 px-4" required />
                 </div>
             </div>
 
