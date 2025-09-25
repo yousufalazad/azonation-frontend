@@ -5,11 +5,9 @@ import Swal from 'sweetalert2'
 import { authStore } from '../../../store/authStore'
 import EasyDataTable from 'vue3-easy-data-table'
 import { utils, writeFileXLSX } from 'xlsx'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
 import 'vue3-easy-data-table/dist/style.css'
 import { FileText, FileSpreadsheet, FileDown } from 'lucide-vue-next'
-import dayjs from 'dayjs'
+import { pdfExport } from "@/helpers/pdfExport.js";
 
 const router = useRouter()
 const auth = authStore
@@ -51,9 +49,6 @@ const getRecords = async () => {
       asset_lifecycle_status: r.asset_lifecycle_statuses_name,
       is_active: r.is_active === 1 ? 'Yes' : 'No'
     }))
-    // } else {
-    //   recordList.value = []
-    // }
   } catch (err) {
     console.error('Error fetching assets:', err)
   } finally {
@@ -149,13 +144,16 @@ const exportXLSX = () => {
   writeFileXLSX(wb, 'assets.xlsx')
 }
 
+// --- Export Assets PDF ---
 const exportPDF = () => {
-  const doc = new jsPDF()
-  const header = filteredHeaders.value.map(h => h.text)
-  const body = filteredAssets.value.map(r => header.map(h => r[headers.find(hdr => hdr.text === h).value] || ''))
-  autoTable(doc, { head: [header], body })
-  doc.save('assets.pdf')
-}
+  pdfExport({
+    headers: filteredHeaders.value,   // শুধু visible headers যাবে
+    rows: filteredAssets.value,       // dynamic filtered data
+    title: "Asset List",
+    fileName: "Assets.pdf",
+  });
+};
+
 
 onMounted(() => getRecords())
 </script>

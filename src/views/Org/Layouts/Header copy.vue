@@ -118,7 +118,7 @@ const markAsRead = async (notificationId) => {
 
 const fetchLogo = async () => {
   try {
-    const response = await auth.fetchProtectedApi(`/api/org-profile/logo/${userId}`, {}, 'GET');
+    const response = await auth.fetchProtectedApi(`/api/org-profile/logo`, {}, 'GET');
     if (response.status && response.data.image) {
       logoPath.value = response.data.image;
     }
