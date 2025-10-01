@@ -8,6 +8,8 @@ import { utils, writeFileXLSX } from 'xlsx'
 import 'vue3-easy-data-table/dist/style.css'
 import { FileText, FileSpreadsheet, FileDown } from 'lucide-vue-next'
 import { pdfExport } from "@/helpers/pdfExport.js";
+import { excelExport } from "@/helpers/excelExport.js";
+import { csvExport } from "@/helpers/csvExport.js";
 
 const router = useRouter()
 const auth = authStore
@@ -123,26 +125,28 @@ const deleteRecord = async (id) => {
   }
 }
 
-const exportCSV = () => {
-  const header = filteredHeaders.value.map(h => h.text)
-  const rows = filteredAssets.value.map(item => filteredHeaders.value.map(h => item[h.value] || ''))
-  const ws = utils.aoa_to_sheet([header, ...rows])
-  const wb = utils.book_new()
-  utils.book_append_sheet(wb, ws, 'Assets')
-  writeFileXLSX(wb, 'assets.csv', { bookType: 'csv' })
-}
 
-const exportXLSX = () => {
-  const json = filteredAssets.value.map(item => {
-    const obj = {}
-    filteredHeaders.value.forEach(h => obj[h.text] = item[h.value])
-    return obj
-  })
-  const ws = utils.json_to_sheet(json)
-  const wb = utils.book_new()
-  utils.book_append_sheet(wb, ws, 'Assets')
-  writeFileXLSX(wb, 'assets.xlsx')
-}
+// Export CSV with custom header/footer
+const exportCSV = async () => {
+  await csvExport({
+    headers: filteredHeaders.value,
+    rows: filteredAssets.value,
+    title: "Asset List",
+    fileName: "Assets.csv",
+  });
+};
+
+
+// Export XLSX with custom header/footer
+const exportXLSX = async () => {
+  await excelExport({
+  headers: filteredHeaders.value,
+  rows: filteredAssets.value,
+  title: "Asset List",
+  fileName: "Assets.xlsx",
+});
+
+};
 
 // --- Export Assets PDF ---
 const exportPDF = () => {
