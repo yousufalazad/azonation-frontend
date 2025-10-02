@@ -5,62 +5,68 @@ import { authStore } from "../store/authStore";
 
 const auth = authStore;
 
-// --- Utils ---
+/* ----------------------- Helpers ----------------------- */
 const isAbsoluteUrl = (u) => /^https?:\/\//i.test(u);
 const safeJoinUrl = (base, path) =>
   isAbsoluteUrl(path)
     ? path
     : `${base.replace(/\/+$/, "")}/${String(path).replace(/^\/+/, "")}`;
 
-const withTimeout = (promise, ms = 6000) =>
+// Detect image format from a data URL for jsPDF addImage
+const getImageFormatFromDataURL = (dataUrl) => {
+  if (typeof dataUrl !== "string") return "PNG";
+  if (dataUrl.startsWith("data:image/jpeg") || dataUrl.startsWith("data:image/jpg")) return "JPEG";
+  if (dataUrl.startsWith("data:image/webp")) return "WEBP"; // jsPDF >= 2.5 supports via plugin/beta
+  return "PNG"; // default
+};
+
+// Blob → DataURL (avoids tainted canvas + CORS canvas issues)
+const blobToDataURL = (blob) =>
   new Promise((resolve, reject) => {
-    const t = setTimeout(() => reject(new Error("Image load timeout")), ms);
-    promise
-      .then((v) => {
-        clearTimeout(t);
-        resolve(v);
-      })
-      .catch((e) => {
-        clearTimeout(t);
-        reject(e);
-      });
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = reject;
+    fr.readAsDataURL(blob);
   });
 
-const urlToBase64 = (url) =>
-  withTimeout(
-    new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = "Anonymous";
-      img.onload = () => {
-        try {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width || 80;
-          canvas.height = img.height || 80;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0);
-          resolve(canvas.toDataURL("image/png"));
-        } catch (err) {
-          reject(err);
-        }
-      };
-      img.onerror = reject;
-      const sep = url.includes("?") ? "&" : "?";
-      img.src = `${url}${sep}t=${Date.now()}`;
-    }),
-    6000
-  );
+const fetchAsDataURL = async (url, timeoutMs = 8000) => {
+  if (!url) throw new Error("No URL");
 
-const makePlaceholderPng = (initials = "Logo", size = 80) => {
+  const sep = url.includes("?") ? "&" : "?";
+  const bustUrl = `${url}${sep}t=${Date.now()}`;
+
+  const ctrl = new AbortController();
+  const to = setTimeout(() => ctrl.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(bustUrl, {
+      method: "GET",
+      mode: "cors",
+      credentials: "omit",
+      cache: "no-store",
+      signal: ctrl.signal,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const blob = await res.blob();
+    if (!/^image\//i.test(blob.type)) throw new Error(`Not an image: ${blob.type}`);
+
+    return await blobToDataURL(blob); // "data:image/...;base64,...."
+  } finally {
+    clearTimeout(to);
+  }
+};
+
+// Placeholder logo if no usable logo available
+const makePlaceholderPng = (initials = "A", size = 80) => {
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext("2d");
 
-  // background
-  const r = 16,
-    w = size,
-    h = size;
-  ctx.fillStyle = "#2563eb";
+  // Rounded square bg
+  const r = 16, w = size, h = size;
+  ctx.fillStyle = "#D9D9D9"; 
   ctx.beginPath();
   ctx.moveTo(r, 0);
   ctx.lineTo(w - r, 0);
@@ -74,8 +80,8 @@ const makePlaceholderPng = (initials = "Logo", size = 80) => {
   ctx.closePath();
   ctx.fill();
 
-  // text
-  ctx.fillStyle = "#ffffff";
+  // Initial(s)
+  ctx.fillStyle = "#000";
   ctx.font = `700 ${Math.round(size * 0.32)}px Helvetica, Arial, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -84,24 +90,62 @@ const makePlaceholderPng = (initials = "Logo", size = 80) => {
   return canvas.toDataURL("image/png");
 };
 
-// --- Main Export Function ---
-export async function pdfExport({ headers, rows, title, fileName }) {
-  let logoBase64 = null;
+// Cross-browser saver (Firefox/Safari/Edge friendly)
+const savePdfCrossBrowser = async (doc, fileName = "export.pdf") => {
+  const name = /\.pdf$/i.test(fileName) ? fileName : `${fileName}.pdf`;
   try {
-    const response = await auth.fetchProtectedApi(
-      `/api/org-profile/logo`,
-      {},
-      "GET"
-    );
-    const raw = response?.data?.image;
-    if (response?.status && raw) {
-      const fullUrl = safeJoinUrl(auth.apiBase, raw);
-      logoBase64 = await urlToBase64(fullUrl);
+    if (typeof doc.save === "function") {
+      const maybePromise = doc.save(name, { returnPromise: true });
+      if (maybePromise && typeof maybePromise.then === "function") {
+        await maybePromise;
+        return;
+      }
     }
   } catch {
-    logoBase64 = makePlaceholderPng("Logo", 80);
+    // ignore and fall through
+  }
+  const blob = doc.output("blob");
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+/* ----------------------- Main Export ----------------------- */
+export async function pdfExport({ headers, rows, title, fileName }) {
+  // 1) Try to load logo
+  let logoBase64 = null;
+  try {
+    const response = await auth.fetchProtectedApi(`/api/org-profile/logo`, {}, "GET");
+    const raw = response?.data?.image; // could be a path/URL or already data:image...
+    if (response?.status && raw) {
+      if (typeof raw === "string" && raw.startsWith("data:image")) {
+        // Already a data URL
+        logoBase64 = raw;
+      } else {
+        // Treat as path/URL
+        const fullUrl = safeJoinUrl(auth.apiBase, raw);
+        logoBase64 = await fetchAsDataURL(fullUrl);
+      }
+    }
+  } catch {
+    // swallow – will fallback
   }
 
+  // 2) Fallback placeholder ALWAYS if no usable logo
+  if (!logoBase64) {
+    const initials = (auth?.user?.org_name || "Logo").trim().slice(0, 1).toUpperCase();
+    logoBase64 = makePlaceholderPng(initials || "Logo", 80);
+  }
+
+  const imgFormat = getImageFormatFromDataURL(logoBase64); // PNG or JPEG typically
+
+  // 3) Build PDF
   const doc = new jsPDF("p", "pt");
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -118,23 +162,18 @@ export async function pdfExport({ headers, rows, title, fileName }) {
     doc.saveGraphicsState();
     doc.setGState(new doc.GState({ opacity: 0.02 }));
     try {
-      doc.addImage(
-        logoBase64,
-        "PNG",
-        pageWidth / 2 - 100,
-        pageHeight / 2 - 100,
-        200,
-        200
-      );
-    } catch {}
+      doc.addImage(logoBase64, imgFormat, pageWidth / 2 - 100, pageHeight / 2 - 100, 200, 200);
+    } catch {
+      // ignore addImage failures
+    }
     doc.restoreGraphicsState();
   };
 
-  // --- First Page Header ---
+  // Headers
   const addFirstPageHeader = () => {
     if (logoBase64) {
       try {
-        doc.addImage(logoBase64, "PNG", pageWidth / 2 - 20, 20, 40, 40);
+        doc.addImage(logoBase64, imgFormat, pageWidth / 2 - 20, 20, 40, 40);
       } catch {}
     }
     doc.setFontSize(12).setFont("helvetica", "bold").setTextColor(30, 30, 30);
@@ -142,37 +181,30 @@ export async function pdfExport({ headers, rows, title, fileName }) {
 
     doc.setFontSize(10).setFont("helvetica").setTextColor(100);
     doc.text(title, pageWidth / 2, 90, { align: "center" });
-
-    // doc.setDrawColor(220).setLineWidth(0.8);
-    // doc.line(40, 125, pageWidth - 40, 125);
   };
 
-  // --- Other Pages Header ---
   const addOtherPageHeader = () => {
     doc.setFontSize(12).setFont("helvetica", "bold").setTextColor(30, 30, 30);
     doc.text(auth.user.org_name, pageWidth / 2, 30, { align: "center" });
 
     doc.setFontSize(10).setFont("helvetica").setTextColor(100);
     doc.text(title, pageWidth / 2, 45, { align: "center" });
-
-    // doc.setDrawColor(220).setLineWidth(0.8);
-    // doc.line(40, 65, pageWidth - 40, 65);
   };
 
   // Draw first page header
   addFirstPageHeader();
 
-  // Track how many rows per page
+  // Track row counts per page for footer “Items x–y of z”
   const pageRowCounts = {};
 
-  // --- Table ---
+  // Table
   autoTable(doc, {
     head: [header],
     body,
     startY: 100, // below the big header
     margin: { top: 55, right: 40, bottom: 50, left: 40 },
     styles: { fontSize: 10, cellPadding: 6 },
-    headStyles: { fillColor: [37, 99, 235], textColor: 255, fontStyle: "bold" },
+    headStyles: { fillColor: [217, 217, 217], textColor: [30, 30, 30], fontStyle: "bold" },
     alternateRowStyles: { fillColor: [245, 245, 245] },
 
     didDrawCell: (cell) => {
@@ -185,17 +217,11 @@ export async function pdfExport({ headers, rows, title, fileName }) {
     didDrawPage: (data) => {
       const currentPage = doc.internal.getCurrentPageInfo().pageNumber;
       const pageCount = doc.internal.getNumberOfPages();
-      watermark()
-      //if (currentPage === 1) watermark(); else /* no watermark */;
 
-      // Headers
-      if (currentPage === 1) {
-        // already drawn before
-      } else {
-        addOtherPageHeader();
-      }
+      watermark();
+      if (currentPage !== 1) addOtherPageHeader();
 
-      // --- Footer ---
+      // Footer
       const totalItems = rows.length;
       const currentCount = pageRowCounts[currentPage] || 0;
       const priorCount = Object.keys(pageRowCounts)
@@ -220,7 +246,7 @@ export async function pdfExport({ headers, rows, title, fileName }) {
         pageHeight - 25
       );
 
-      // Center (items count)
+      // Centre
       doc.setFont("helvetica", "normal").setTextColor(100);
       doc.text(
         `Items ${startIndex}–${endIndex} of ${totalItems}`,
@@ -229,7 +255,7 @@ export async function pdfExport({ headers, rows, title, fileName }) {
         { align: "center" }
       );
 
-      // Right (page numbers)
+      // Right
       doc.setFont("helvetica", "normal").setTextColor(100);
       doc.text(
         `Page ${currentPage} of ${pageCount}`,
@@ -240,5 +266,6 @@ export async function pdfExport({ headers, rows, title, fileName }) {
     },
   });
 
-  doc.save(fileName);
+  // Save (ensure called from a user click handler)
+  await savePdfCrossBrowser(doc, fileName);
 }
