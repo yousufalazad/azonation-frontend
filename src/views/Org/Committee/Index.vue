@@ -8,6 +8,9 @@ import autoTable from 'jspdf-autotable'
 import { authStore } from '../../../store/authStore'
 import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
+import { pdfExport } from "@/helpers/pdfExport.js";
+import { excelExport } from "@/helpers/excelExport.js";
+import { csvExport } from "@/helpers/csvExport.js";
 
 const router = useRouter()
 const auth = authStore
@@ -101,35 +104,68 @@ const applyQuickDateFilter = () => {
   }
 }
 
-const exportCSV = () => {
-  const header = filteredHeaders.value.map(h => h.text)
-  const rows = filteredCommittees.value.map(c => filteredHeaders.value.map(h => c[h.value] || ''))
-  const ws = utils.aoa_to_sheet([header, ...rows])
-  const wb = utils.book_new()
-  utils.book_append_sheet(wb, ws, 'Committees')
-  writeFileXLSX(wb, 'committees.csv', { bookType: 'csv' })
-}
+// const exportCSV = () => {
+//   const header = filteredHeaders.value.map(h => h.text)
+//   const rows = filteredCommittees.value.map(c => filteredHeaders.value.map(h => c[h.value] || ''))
+//   const ws = utils.aoa_to_sheet([header, ...rows])
+//   const wb = utils.book_new()
+//   utils.book_append_sheet(wb, ws, 'Committees')
+//   writeFileXLSX(wb, 'committees.csv', { bookType: 'csv' })
+// }
 
-const exportXLSX = () => {
-  const json = filteredCommittees.value.map(c => {
-    const obj = {}
-    filteredHeaders.value.forEach(h => obj[h.text] = c[h.value])
-    return obj
-  })
-  const ws = utils.json_to_sheet(json)
-  const wb = utils.book_new()
-  utils.book_append_sheet(wb, ws, 'Committees')
-  writeFileXLSX(wb, 'committees.xlsx')
-}
+// const exportXLSX = () => {
+//   const json = filteredCommittees.value.map(c => {
+//     const obj = {}
+//     filteredHeaders.value.forEach(h => obj[h.text] = c[h.value])
+//     return obj
+//   })
+//   const ws = utils.json_to_sheet(json)
+//   const wb = utils.book_new()
+//   utils.book_append_sheet(wb, ws, 'Committees')
+//   writeFileXLSX(wb, 'committees.xlsx')
+// }
 
+// const exportPDF = () => {
+//   const doc = new jsPDF()
+//   const hdr = filteredHeaders.value.map(h => h.text)
+//   const body = filteredCommittees.value.map(c =>
+//     hdr.map(txt => c[allHeaders.find(hdr => hdr.text === txt).value] || ''))
+//   autoTable(doc, { head: [hdr], body })
+//   doc.save('committees.pdf')
+// }
+
+
+// Export CSV with custom header/footer
+const exportCSV = async () => {
+  await csvExport({
+    headers: filteredHeaders.value,
+    rows: filteredCommittees.value,
+    title: "Committee List",
+    fileName: "Committees.csv",
+  });
+};
+
+
+// Export XLSX with custom header/footer
+const exportXLSX = async () => {
+  await excelExport({
+  headers: filteredHeaders.value,
+  rows: filteredCommittees.value,
+  title: "Committee List",
+  fileName: "Committees.xlsx",
+});
+
+};
+
+// --- Export Committees PDF ---
 const exportPDF = () => {
-  const doc = new jsPDF()
-  const hdr = filteredHeaders.value.map(h => h.text)
-  const body = filteredCommittees.value.map(c =>
-    hdr.map(txt => c[allHeaders.find(hdr => hdr.text === txt).value] || ''))
-  autoTable(doc, { head: [hdr], body })
-  doc.save('committees.pdf')
-}
+  pdfExport({
+    headers: filteredHeaders.value,
+    rows: filteredCommittees.value,
+    title: "Committee List",
+    fileName: "Committees.pdf",
+  });
+};
 
 const fetchCommitteeList = async () => {
   loading.value = true

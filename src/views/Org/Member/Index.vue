@@ -14,6 +14,10 @@ import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
 import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType } from "docx";
 import { saveAs } from "file-saver";
+import { pdfExport } from "@/helpers/pdfExport.js";
+import { excelExport } from "@/helpers/excelExport.js";
+import { csvExport } from "@/helpers/csvExport.js";
+import { docxExport } from "@/helpers/docxExport";
 
 dayjs.extend(duration)
 dayjs.extend(relativeTime)
@@ -21,6 +25,7 @@ dayjs.extend(relativeTime)
 const auth = authStore
 const route = useRoute()
 const router = useRouter()
+const org_name = auth.user.org_name;
 
 const memberList = ref([])
 const search = ref("")
@@ -39,52 +44,52 @@ const sponsored_user_id = ref("")
 const compact_view = ref(false)
 
 
-const exportToWord = async () => {
-  const tableRows = [
-    new TableRow({
-      children: [
-        'Name',
-        'Membership Type',
-        'Membership ID',
-        'Joining Date',
-        'Membership Age'
-      ].map(header => new TableCell({
-        width: { size: 20, type: WidthType.PERCENTAGE },
-        children: [new Paragraph({ text: header, bold: true })]
-      }))
-    }),
-    ...filteredMembers.value.map(m => new TableRow({
-      children: [
-        m.full_name || '--',
-        m.membership_type?.name || '--',
-        m.existing_membership_id || '--',
-        m.membership_start_date ? dayjs(m.membership_start_date).format('YYYY-MM-DD') : '--',
-        calculateMembershipAge(m.membership_start_date)
-      ].map(text => new TableCell({
-        width: { size: 20, type: WidthType.PERCENTAGE },
-        children: [new Paragraph(text)]
-      }))
-    }))
-  ];
+// const exportToWord = async () => {
+//   const tableRows = [
+//     new TableRow({
+//       children: [
+//         'Name',
+//         'Membership Type',
+//         'Membership ID',
+//         'Joining Date',
+//         'Membership Age'
+//       ].map(header => new TableCell({
+//         width: { size: 20, type: WidthType.PERCENTAGE },
+//         children: [new Paragraph({ text: header, bold: true })]
+//       }))
+//     }),
+//     ...filteredMembers.value.map(m => new TableRow({
+//       children: [
+//         m.full_name || '--',
+//         m.membership_type?.name || '--',
+//         m.existing_membership_id || '--',
+//         m.membership_start_date ? dayjs(m.membership_start_date).format('YYYY-MM-DD') : '--',
+//         calculateMembershipAge(m.membership_start_date)
+//       ].map(text => new TableCell({
+//         width: { size: 20, type: WidthType.PERCENTAGE },
+//         children: [new Paragraph(text)]
+//       }))
+//     }))
+//   ];
 
-  const doc = new Document({
-    sections: [{
-      properties: {},
-      children: [
-        new Paragraph({
-          text: "Members",
-          heading: "Heading1",
-        }),
-        new Table({
-          rows: tableRows
-        })
-      ],
-    }],
-  });
+//   const doc = new Document({
+//     sections: [{
+//       properties: {},
+//       children: [
+//         new Paragraph({
+//           text: "Members",
+//           heading: "Heading1",
+//         }),
+//         new Table({
+//           rows: tableRows
+//         })
+//       ],
+//     }],
+//   });
 
-  const blob = await Packer.toBlob(doc);
-  saveAs(blob, "OrgMembers.docx");
-};
+//   const blob = await Packer.toBlob(doc);
+//   saveAs(blob, "OrgMembers.docx");
+// };
 
 // ✅ Column Profile Logic
 const columnProfiles = {
@@ -120,7 +125,6 @@ const allHeaders = [
 const headers = computed(() =>
   allHeaders.filter(h => visibleColumns.value.includes(h.value))
 )
-
 
 // ✅ Fetch member list
 const fetchMemberList = async () => {
@@ -256,52 +260,304 @@ const filteredMembers = computed(() => {
 })
 
 // ✅ Export functions
-const exportToExcel = () => {
-  const data = filteredMembers.value.map(m => ({
-    'Full Name': m.full_name,
-    'Membership Type': m.membership_type?.name || '--',
-    'Joining Date': m.membership_start_date ? dayjs(m.membership_start_date).format('YYYY-MM-DD') : '--',
-    'Membership ID': m.existing_membership_id || '--',
-    'Membership Age': calculateMembershipAge(m.membership_start_date)
-  }))
-  const ws = utils.json_to_sheet(data)
-  const wb = utils.book_new()
-  utils.book_append_sheet(wb, ws, "Members")
-  writeFileXLSX(wb, "OrgMembers.xlsx")
-}
+// const exportXLSX = () => {
+//   const data = filteredMembers.value.map(m => ({
+//     'Full Name': m.full_name,
+//     'Membership Type': m.membership_type?.name || '--',
+//     'Joining Date': m.membership_start_date ? dayjs(m.membership_start_date).format('YYYY-MM-DD') : '--',
+//     'Membership ID': m.existing_membership_id || '--',
+//     'Membership Age': calculateMembershipAge(m.membership_start_date)
+//   }))
+//   const ws = utils.json_to_sheet(data)
+//   const wb = utils.book_new()
+//   utils.book_append_sheet(wb, ws, "Members")
+//   writeFileXLSX(wb, "OrgMembers.xlsx")
+// }
 
-const exportToCSV = () => {
-  const data = filteredMembers.value.map(m => [
-    m.full_name,
-    m.membership_type?.name || '--',
-    m.membership_start_date ? dayjs(m.membership_start_date).format('YYYY-MM-DD') : '--',
-    m.existing_membership_id || '--',
-    calculateMembershipAge(m.membership_start_date)
-  ])
-  const ws = utils.aoa_to_sheet([
-    ['Full Name', 'Membership Type', 'Joining Date', 'Membership ID', 'Membership Age'],
-    ...data
-  ])
-  const wb = utils.book_new()
-  utils.book_append_sheet(wb, ws, "Members")
-  writeFileXLSX(wb, "OrgMembers.csv", { bookType: 'csv' })
-}
+// const exportCSV = () => {
+//   const data = filteredMembers.value.map(m => [
+//     m.full_name,
+//     m.membership_type?.name || '--',
+//     m.membership_start_date ? dayjs(m.membership_start_date).format('YYYY-MM-DD') : '--',
+//     m.existing_membership_id || '--',
+//     calculateMembershipAge(m.membership_start_date)
+//   ])
+//   const ws = utils.aoa_to_sheet([
+//     ['Full Name', 'Membership Type', 'Joining Date', 'Membership ID', 'Membership Age'],
+//     ...data
+//   ])
+//   const wb = utils.book_new()
+//   utils.book_append_sheet(wb, ws, "Members")
+//   writeFileXLSX(wb, "OrgMembers.csv", { bookType: 'csv' })
+// }
 
-const exportToPDF = () => {
-  const doc = new jsPDF()
-  const rows = filteredMembers.value.map(m => [
-    m.full_name,
-    m.membership_type?.name || '--',
-    m.membership_start_date ? dayjs(m.membership_start_date).format('YYYY-MM-DD') : '--',
-    m.existing_membership_id || '--',
-    calculateMembershipAge(m.membership_start_date)
-  ])
-  autoTable(doc, {
-    head: [['Full Name', 'Membership Type', 'Joining Date', 'Membership ID', 'Membership Age']],
-    body: rows,
-  })
-  doc.save("OrgMembers.pdf")
-}
+// Export CSV with custom header/footer
+const exportCSV = async () => {
+  await csvExport({
+    headers: headers.value,
+    rows: filteredMembers.value,
+    title: "Member List",
+    fileName: "Members.csv",
+  });
+};
+
+
+// Export XLSX with custom header/footer
+const exportXLSX = async () => {
+  await excelExport({
+  headers: headers.value,
+  rows: filteredMembers.value,
+  title: "Member List",
+  fileName: "Members.xlsx",
+});
+
+};
+
+// --- Export Members PDF ---
+const exportPDF = () => {
+  pdfExport({
+    headers: headers.value,
+    rows: filteredMembers.value,
+    title: "Member List",
+    fileName: "Members.pdf",
+  });
+};
+
+
+const exportDOCX = () => {
+  docxExport({
+    headers: headers.value,
+    rows: filteredMembers.value,
+    title: "Member List",
+    fileName: "Members.docx",
+      logoPath: "/storage/org/profile/image/20250924184601_map.JPG",
+
+  });
+};
+
+
+
+const logoPath = ref(null);
+const baseURL = auth.apiBase;
+
+// --- Utils ---
+const isAbsoluteUrl = (u) => /^https?:\/\//i.test(u);
+const safeJoinUrl = (base, path) =>
+  isAbsoluteUrl(path) ? path : `${base.replace(/\/+$/, "")}/${String(path).replace(/^\/+/, "")}`;
+
+const withTimeout = (promise, ms = 6000) =>
+  new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error("Image load timeout")), ms);
+    promise.then(v => { clearTimeout(t); resolve(v); }).catch(e => { clearTimeout(t); reject(e); });
+  });
+
+// URL → Base64 (PNG) with CORS + timeout
+const urlToBase64 = (url) => withTimeout(new Promise((resolve, reject) => {
+  const img = new Image();
+  img.crossOrigin = "Anonymous";
+  img.onload = () => {
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width || 80;
+      canvas.height = img.height || 80;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL("image/png")); // <-- REAL PNG
+    } catch (err) {
+      reject(err);
+    }
+  };
+  img.onerror = reject;
+  const sep = url.includes("?") ? "&" : "?";
+  img.src = `${url}${sep}t=${Date.now()}`;
+}), 6000);
+
+// TRUE PNG placeholder via canvas (no SVG)
+const makePlaceholderPng = (initials = "Logo", size = 80) => {
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+
+  // bg (rounded square)
+  const r = 16;
+  const w = size, h = size;
+  ctx.fillStyle = "#2563eb";
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(w - r, 0);
+  ctx.quadraticCurveTo(w, 0, w, r);
+  ctx.lineTo(w, h - r);
+  ctx.quadraticCurveTo(w, h, w - r, h);
+  ctx.lineTo(r, h);
+  ctx.quadraticCurveTo(0, h, 0, h - r);
+  ctx.lineTo(0, r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  // text
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `700 ${Math.round(size * 0.32)}px Helvetica, Arial, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(initials, size / 2, size / 2);
+
+  return canvas.toDataURL("image/png");
+};
+
+// Infer jsPDF image format from data URL
+const guessJsPdfFormat = (dataUrl) => {
+  if (!dataUrl || typeof dataUrl !== "string") return "PNG";
+  if (dataUrl.startsWith("data:image/jpeg")) return "JPEG";
+  if (dataUrl.startsWith("data:image/webp")) return "WEBP";
+  return "PNG";
+};
+
+const ORG_INITIALS = "Logo";
+
+// --- Fetch & prepare logo (with robust fallback) ---
+const fetchLogo = async () => {
+  try {
+    const response = await auth.fetchProtectedApi(`/api/org-profile/logo`, {}, 'GET');
+    const raw = response?.data?.image;
+
+    if (response?.status && raw) {
+      const fullUrl = safeJoinUrl(baseURL, raw);
+      try {
+        logoPath.value = await urlToBase64(fullUrl);
+        console.log("Logo fetched and converted to Base64.", logoPath.value?.slice(0, 32) + "...");
+        return;
+      } catch (imgErr) {
+        console.warn("Logo conversion failed, using placeholder.", imgErr);
+      }
+    } else {
+      console.warn("No image in API response, using placeholder.");
+    }
+  } catch (error) {
+    console.warn("Logo fetch error, using placeholder.", error);
+  }
+  // fallback to TRUE PNG
+  logoPath.value = makePlaceholderPng(ORG_INITIALS, 80);
+};
+
+// Export PDF
+// const exportPDF = async () => {
+//   if (!logoPath.value) {
+//     await fetchLogo()
+//   }
+
+//   const doc = new jsPDF("p", "pt")
+//   const pageWidth = doc.internal.pageSize.getWidth()
+//   const pageHeight = doc.internal.pageSize.getHeight()
+
+//   // ===== WATERMARK (Logo) =====
+//   const watermark = () => {
+//     if (logoPath.value) {
+//       doc.saveGraphicsState()
+//       doc.setGState(new doc.GState({ opacity: 0.08 })) // faint logo
+//       try {
+//         // Logo size বড় রাখছি যাতে ব্যাকগ্রাউন্ডে পরিষ্কার দেখা যায়
+//         doc.addImage(
+//           logoPath.value,
+//           "PNG",
+//           pageWidth / 2 - 100, // center horizontally
+//           pageHeight / 2 - 100, // center vertically
+//           200, // width
+//           200  // height
+//         )
+//       } catch (e) {
+//         console.warn("Watermark logo addImage failed:", e)
+//       }
+//       doc.restoreGraphicsState()
+//     }
+//   }
+
+//   // ===== HEADER =====
+//   const header = () => {
+//     if (logoPath.value) {
+//       try {
+//         doc.addImage(logoPath.value, "PNG", pageWidth / 2 - 20, 20, 40, 40)
+//       } catch (e) {
+//         console.warn("Header logo addImage failed:", e)
+//       }
+//     }
+
+//     // Title
+//     doc.setFontSize(18)
+//     doc.setFont("helvetica", "bold")
+//     doc.setTextColor(30, 30, 30)
+//     doc.text("Organization Name", pageWidth / 2, 80, { align: "center" })
+
+//     // Subtitle
+//     doc.setFontSize(13)
+//     doc.setFont("helvetica", "bold")
+//     doc.setTextColor(37, 99, 235)
+//     doc.text("Member List", pageWidth / 2, 100, { align: "center" })
+
+//     // Date
+//     doc.setFontSize(10)
+//     doc.setFont("helvetica", "normal")
+//     doc.setTextColor(100)
+//     doc.text(`Generated on: ${dayjs().format("YYYY-MM-DD HH:mm")}`, pageWidth / 2, 115, { align: "center" })
+
+//     // Divider
+//     doc.setDrawColor(220)
+//     doc.setLineWidth(0.8)
+//     doc.line(40, 125, pageWidth - 40, 125)
+//   }
+
+//   // ===== TABLE DATA =====
+//   const rows = filteredMembers.value.map(m => [
+//     m.full_name,
+//     m.membership_type?.name || "--",
+//     m.membership_start_date ? dayjs(m.membership_start_date).format("YYYY-MM-DD") : "--",
+//     m.existing_membership_id || "--",
+//     calculateMembershipAge(m.membership_start_date),
+//   ])
+
+//   // ===== AUTOTABLE =====
+//   autoTable(doc, {
+//     head: [["Full Name", "Membership Type", "Joining Date", "Membership ID", "Membership Age"]],
+//     body: rows,
+//     startY: 140,
+//     didDrawPage: (data) => {
+//       watermark() // background logo watermark
+//       header()    // header
+
+//       // Footer Divider
+//       doc.setDrawColor(220)
+//       doc.setLineWidth(0.8)
+//       doc.line(40, pageHeight - 40, pageWidth - 40, pageHeight - 40)
+
+//       const pageCount = doc.internal.getNumberOfPages()
+//       const currentPage = doc.internal.getCurrentPageInfo().pageNumber
+
+//       // Footer text
+//       doc.setFontSize(10)
+
+//       // Left: "Generated by Azonation"
+//       doc.setFont("helvetica", "italic")
+//       doc.setTextColor(100)
+//       doc.text("Generated by Azonation", data.settings.margin.left, pageHeight - 25)
+
+//       // Center: current page only
+//       doc.setFont("helvetica", "bold")
+//       doc.setTextColor(37, 99, 235)
+//       doc.text(`${currentPage}`, pageWidth / 2, pageHeight - 25, { align: "center" })
+
+//       // Right: current-total
+//       doc.setFont("helvetica", "normal")
+//       doc.setTextColor(30, 30, 30)
+//       doc.text(`${currentPage}-${pageCount}`, pageWidth - data.settings.margin.right, pageHeight - 25, { align: "right" })
+//     },
+//     styles: { fontSize: 10, cellPadding: 6 },
+//     headStyles: { fillColor: [37, 99, 235], textColor: 255, fontStyle: "bold" },
+//     alternateRowStyles: { fillColor: [245, 245, 245] },
+//   })
+
+//   doc.save("OrgMembers.pdf")
+// }
 
 // ✅ Modal handlers
 const viewMemberDetail = (member) => {
@@ -387,8 +643,6 @@ const paginatedMembers = computed(() => {
   return filteredMembers.value.slice(start, start + rowsPerPage.value);
 });
 
-
-
 watch([search, rowsPerPage], () => {
   currentPage.value = 1
 })
@@ -417,7 +671,7 @@ const terminationForm = reactive({
   terminated_at: dayjs().format('YYYY-MM-DD'),
   processed_at: dayjs().format('YYYY-MM-DD'),
   membership_termination_reason_id: '',
-  org_administrator_id: orgAdministrator.value?.id ?? null,  // administrator processing
+  org_administrator_id: orgAdministrator.value.id ?? null,  // admin processing
   rejoin_eligible: true,
   file_path: null,                                         // File object
   membership_duration_days: null,
@@ -443,7 +697,7 @@ const fetchOrgAdministrators = async () => {
     const res = await auth.fetchProtectedApi('/api/org-administrators/primary', {}, 'GET')
 
     orgAdministrator.value = res?.status ? res.data : {};
-    terminationForm.org_administrator_id = orgAdministrator.value?.id ?? null
+    terminationForm.org_administrator_id = orgAdministrator.value.id ?? null
   } catch (e) {
     console.error(e)
     Swal.fire('An error occurred. Please try again.', '', 'error')
@@ -477,7 +731,7 @@ const openTerminationModal = (member) => {
   terminationForm.terminated_at = dayjs().format('YYYY-MM-DD')
   terminationForm.processed_at = dayjs().format('YYYY-MM-DD')
   terminationForm.membership_termination_reason_id = ''
-  terminationForm.org_administrator_id = orgAdministrator.value?.id ?? null
+  terminationForm.org_administrator_id = orgAdministrator.value.id ?? null
   terminationForm.rejoin_eligible = true
   terminationForm.file_path = null
   terminationForm.membership_duration_days = null
@@ -503,7 +757,7 @@ const closeTerminationModal = () => {
     terminated_at: dayjs().format('YYYY-MM-DD'),
     processed_at: dayjs().format('YYYY-MM-DD'),
     membership_termination_reason_id: '',
-    org_administrator_id: orgAdministrator.value?.id ?? null,
+    org_administrator_id: orgAdministrator.value.id ?? null,
     rejoin_eligible: true,
     file_path: null,
     membership_duration_days: null,
@@ -664,6 +918,7 @@ onMounted(async () => {
   fetchMembershipSatatuses()
   fetchTerminationReasons()
   fetchOrgAdministrators()
+  fetchLogo()
 
   const editId = route.query.edit
   if (editId) openEditById(editId)        // ⬅️ no extra fetch; use memberList
@@ -679,19 +934,19 @@ onMounted(async () => {
       <h2 class="text-lg font-semibold text-gray-700">Members</h2>
       <div class="flex flex-wrap gap-2">
         <!-- Export Buttons -->
-        <button @click="exportToCSV"
+        <button @click="exportCSV"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           <FileText class="w-4 h-4" /> CSV
         </button>
-        <button @click="exportToExcel"
+        <button @click="exportXLSX"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           <FileSpreadsheet class="w-4 h-4" /> Excel
         </button>
-        <button @click="exportToPDF"
+        <button @click="exportPDF"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           <FileDown class="w-4 h-4" /> PDF
         </button>
-        <button @click="exportToWord"
+        <button @click="exportDOCX"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           <FileText class="w-4 h-4" /> Word
         </button>
@@ -719,47 +974,47 @@ onMounted(async () => {
     </div>
 
     <!-- Filters: fill the full width on desktop, wrap on smaller screens -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-  <!-- Search -->
-  <div class="flex flex-col">
-    <label class="text-sm text-gray-600">Search</label>
-    <input v-model="search" type="text" placeholder="Search..." class="w-full border rounded px-3 py-1.5 text-sm" />
-  </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <!-- Search -->
+      <div class="flex flex-col">
+        <label class="text-sm text-gray-600">Search</label>
+        <input v-model="search" type="text" placeholder="Search..." class="w-full border rounded px-3 py-1.5 text-sm" />
+      </div>
 
-  <!-- Membership Type -->
-  <div class="flex flex-col">
-    <label class="text-sm text-gray-600">Membership Type</label>
-    <select v-model="membership_type_id" class="w-full border rounded px-3 py-1.5 text-sm">
-      <option value="">All Types</option>
-      <option v-for="type in membershipTypes" :key="type.id" :value="type.id">
-        {{ type.membership_type.name }}
-      </option>
-    </select>
-  </div>
+      <!-- Membership Type -->
+      <div class="flex flex-col">
+        <label class="text-sm text-gray-600">Membership Type</label>
+        <select v-model="membership_type_id" class="w-full border rounded px-3 py-1.5 text-sm">
+          <option value="">All Types</option>
+          <option v-for="type in membershipTypes" :key="type.id" :value="type.id">
+            {{ type.membership_type.name }}
+          </option>
+        </select>
+      </div>
 
-  <!-- Membership Status -->
-  <div class="flex flex-col">
-    <label class="text-sm text-gray-600">Membership Status</label>
-    <select v-model="membership_status_id" class="w-full border rounded px-3 py-1.5 text-sm">
-      <option value="">All Membership Status</option>
-      <option v-for="status in membershipStatuses" :key="status.id" :value="status.id">
-        {{ status.name }}
-      </option>
-    </select>
-  </div>
+      <!-- Membership Status -->
+      <div class="flex flex-col">
+        <label class="text-sm text-gray-600">Membership Status</label>
+        <select v-model="membership_status_id" class="w-full border rounded px-3 py-1.5 text-sm">
+          <option value="">All Membership Status</option>
+          <option v-for="status in membershipStatuses" :key="status.id" :value="status.id">
+            {{ status.name }}
+          </option>
+        </select>
+      </div>
 
-  <!-- Start Date -->
-  <div class="flex flex-col">
-    <label class="text-sm text-gray-600">Start Date</label>
-    <input v-model="dateFrom" type="date" class="w-full border rounded px-3 py-1.5 text-sm" />
-  </div>
+      <!-- Start Date -->
+      <div class="flex flex-col">
+        <label class="text-sm text-gray-600">Start Date</label>
+        <input v-model="dateFrom" type="date" class="w-full border rounded px-3 py-1.5 text-sm" />
+      </div>
 
-  <!-- End Date -->
-  <div class="flex flex-col">
-    <label class="text-sm text-gray-600">End Date</label>
-    <input v-model="dateTo" type="date" class="w-full border rounded px-3 py-1.5 text-sm" />
-  </div>
-</div>
+      <!-- End Date -->
+      <div class="flex flex-col">
+        <label class="text-sm text-gray-600">End Date</label>
+        <input v-model="dateTo" type="date" class="w-full border rounded px-3 py-1.5 text-sm" />
+      </div>
+    </div>
 
 
     <!-- Column View -->
@@ -1204,7 +1459,6 @@ onMounted(async () => {
         </form>
       </div>
     </div>
-
 
   </div>
 </template>

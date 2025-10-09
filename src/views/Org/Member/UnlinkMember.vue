@@ -4,7 +4,9 @@ import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
 import { exportToCSV, exportToExcel, exportToPDF } from '../../../global/exportUtils';
-
+import { pdfExport } from "@/helpers/pdfExport.js";
+import { excelExport } from "@/helpers/excelExport.js";
+import { csvExport } from "@/helpers/csvExport.js";
 
 const auth = authStore;
 
@@ -235,17 +237,6 @@ const closeViewModal = () => {
   selectedMember.value = {};
 };
 
-// Export Functions
-const exportCSV = () => {
-  exportToCSV(filteredMembers.value, 'independent_members');
-};
-const exportExcel = () => {
-  exportToExcel(filteredMembers.value, 'independent_members');
-};
-const exportPDF = () => {
-  exportToPDF(filteredMembers.value, 'independent_members');
-};
-
 // Pagination Computed Properties
 const paginatedMembers = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value;
@@ -268,6 +259,42 @@ const itemSummary = computed(() => {
 
 const minimalColumns = ['image', 'full_name', 'mobile', 'is_active', 'action'];
 const detailedColumns = ['image', 'full_name', 'email', 'mobile', 'address', 'note', 'is_active', 'action'];
+
+const columnLabels = {
+  full_name: "Full Name",
+  email: "Email",
+  mobile: "Mobile",
+  address: "Address",
+  note: "Note",
+  is_active: "Status",
+};
+
+const exportHeaders = computed(() => {
+  const selectedColumns = columnView.value === 'minimal' ? minimalColumns : detailedColumns;
+  // Filter out image and action — we don't export those
+  return selectedColumns
+    .filter(c => c !== 'image' && c !== 'action')
+    .map(c => ({
+      text: columnLabels[c] || c,
+      value: c,
+    }));
+});
+const exportRows = computed(() => {
+  const selectedColumns = columnView.value === 'minimal' ? minimalColumns : detailedColumns;
+
+  return filteredMembers.value.map(m => {
+    const row = {};
+    if (selectedColumns.includes('full_name'))
+      row.full_name = `${m.first_name ?? ''} ${m.last_name ?? ''}`.trim();
+    if (selectedColumns.includes('email')) row.email = m.email ?? '';
+    if (selectedColumns.includes('mobile')) row.mobile = m.mobile ?? '';
+    if (selectedColumns.includes('address')) row.address = m.address ?? '';
+    if (selectedColumns.includes('note')) row.note = m.note ?? '';
+    if (selectedColumns.includes('is_active'))
+      row.is_active = m.is_active ? 'Active' : 'Inactive';
+    return row;
+  });
+});
 
 // Set initial visible columns based on column view
 onMounted(() => {
@@ -298,6 +325,38 @@ watch([search, itemsPerPage], () => {
 watch(columnView, (newVal) => {
   setVisibleColumns(newVal);
 });
+
+// --- Export CSV ---
+const exportCSV = async () => {
+  await csvExport({
+    headers: exportHeaders.value,
+    rows: exportRows.value,
+    title: "Independent Members List",
+    fileName: "Independent_Members.csv",
+  });
+};
+
+// --- Export Excel ---
+const exportXLSX = async () => {
+  await excelExport({
+    headers: exportHeaders.value,
+    rows: exportRows.value,
+    title: "Independent Members List",
+    fileName: "Independent_Members.xlsx",
+  });
+};
+
+// --- Export PDF ---
+const exportPDF = () => {
+  pdfExport({
+    headers: exportHeaders.value,
+    rows: exportRows.value,
+    title: "Independent Members List",
+    fileName: "Independent_Members.pdf",
+  });
+};
+
+
 </script>
 
 <template>
@@ -321,7 +380,7 @@ watch(columnView, (newVal) => {
 
         <button @click="exportCSV"
           class="px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-100">CSV</button>
-        <button @click="exportExcel"
+        <button @click="exportXLSX"
           class="px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-100">Excel</button>
         <button @click="exportPDF"
           class="px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-100">PDF</button>

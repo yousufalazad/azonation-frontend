@@ -8,6 +8,9 @@ import autoTable from 'jspdf-autotable'
 import { authStore } from '../../../store/authStore'
 import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
+import { pdfExport } from "@/helpers/pdfExport.js";
+import { excelExport } from "@/helpers/excelExport.js";
+import { csvExport } from "@/helpers/csvExport.js";
 
 const router = useRouter()
 const auth = authStore
@@ -103,34 +106,37 @@ const applyQuickDateFilter = () => {
   }
 }
 
-const exportCSV = () => {
-  const header = filteredHeaders.value.map(h => h.text)
-  const rows = paginatedCommittees.value.map(m => filteredHeaders.value.map(h => m[h.value] ?? ''))
-  const ws = utils.aoa_to_sheet([header, ...rows])
-  const wb = utils.book_new()
-  utils.book_append_sheet(wb, ws, 'Meetings')
-  writeFileXLSX(wb, 'meetings.csv', { bookType: 'csv' })
-}
+// Export CSV with custom header/footer
+const exportCSV = async () => {
+  await csvExport({
+    headers: filteredHeaders.value,
+    rows: paginatedCommittees.value,
+    title: "Meeting List",
+    fileName: "Meetings.csv",
+  });
+};
 
-const exportXLSX = () => {
-  const json = paginatedCommittees.value.map(m => {
-    const obj = {}
-    filteredHeaders.value.forEach(h => obj[h.text] = m[h.value])
-    return obj
-  })
-  const ws = utils.json_to_sheet(json)
-  const wb = utils.book_new()
-  utils.book_append_sheet(wb, ws, 'Meetings')
-  writeFileXLSX(wb, 'meetings.xlsx')
-}
 
+// Export XLSX with custom header/footer
+const exportXLSX = async () => {
+  await excelExport({
+  headers: filteredHeaders.value,
+  rows: paginatedCommittees.value,
+  title: "Meeting List",
+  fileName: "Meetings.xlsx",
+});
+
+};
+
+// --- Export Meetings PDF ---
 const exportPDF = () => {
-  const doc = new jsPDF()
-  const hdr = filteredHeaders.value.map(h => h.text)
-  const body = paginatedCommittees.value.map(m => hdr.map(txt => m[allHeaders.find(c => c.text === txt)?.value] ?? ''))
-  autoTable(doc, { head: [hdr], body })
-  doc.save('meetings.pdf')
-}
+  pdfExport({
+    headers: filteredHeaders.value,
+    rows: paginatedCommittees.value,
+    title: "Meeting List",
+    fileName: "Meetings.pdf",
+  });
+};
 
 const getMeetings = async () => {
   loading.value = true

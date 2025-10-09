@@ -4,9 +4,12 @@ import { useRouter } from 'vue-router'
 import { authStore } from '../../../store/authStore'
 import Swal from 'sweetalert2'
 import dayjs from 'dayjs'
-import { utils, writeFileXLSX } from 'xlsx'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
+// import { utils, writeFileXLSX } from 'xlsx'
+// import jsPDF from 'jspdf'
+// import autoTable from 'jspdf-autotable'
+import { pdfExport } from "@/helpers/pdfExport.js";
+import { excelExport } from "@/helpers/excelExport.js";
+import { csvExport } from "@/helpers/csvExport.js";
 
 const auth = authStore
 const router = useRouter()
@@ -279,52 +282,101 @@ const balance = computed(() => {
 })
 
 // ✅ Export Functions
-const exportToExcel = () => {
-    const data = filteredTransactions.value.map(t => ({
-        Date: t.date,
-        Title: t.transaction_title,
-        Fund: t.funds?.name,
-        Type: t.type,
-        Amount: t.amount
-    }))
-    const ws = utils.json_to_sheet(data)
-    const wb = utils.book_new()
-    utils.book_append_sheet(wb, ws, 'Transactions')
-    writeFileXLSX(wb, 'Transactions.xlsx')
-}
+// const exportXLSX = () => {
+//     const data = filteredTransactions.value.map(t => ({
+//         Date: t.date,
+//         Title: t.transaction_title,
+//         Fund: t.funds?.name,
+//         Type: t.type,
+//         Amount: t.amount
+//     }))
+//     const ws = utils.json_to_sheet(data)
+//     const wb = utils.book_new()
+//     utils.book_append_sheet(wb, ws, 'Transactions')
+//     writeFileXLSX(wb, 'Transactions.xlsx')
+// }
 
-const exportToCSV = () => {
-    const data = filteredTransactions.value.map(t => [
-        t.date,
-        t.transaction_title,
-        t.funds?.name,
-        t.type,
-        t.amount
-    ])
-    const ws = utils.aoa_to_sheet([
-        ['Date', 'Title', 'Fund', 'Type', 'Amount'],
-        ...data
-    ])
-    const wb = utils.book_new()
-    utils.book_append_sheet(wb, ws, 'Transactions')
-    writeFileXLSX(wb, 'Transactions.csv', { bookType: 'csv' })
-}
+// const exportCSV = () => {
+//     const data = filteredTransactions.value.map(t => [
+//         t.date,
+//         t.transaction_title,
+//         t.funds?.name,
+//         t.type,
+//         t.amount
+//     ])
+//     const ws = utils.aoa_to_sheet([
+//         ['Date', 'Title', 'Fund', 'Type', 'Amount'],
+//         ...data
+//     ])
+//     const wb = utils.book_new()
+//     utils.book_append_sheet(wb, ws, 'Transactions')
+//     writeFileXLSX(wb, 'Transactions.csv', { bookType: 'csv' })
+// }
 
-const exportToPDF = () => {
-    const doc = new jsPDF()
-    const rows = filteredTransactions.value.map(t => [
-        t.date,
-        t.transaction_title,
-        t.funds?.name,
-        t.type,
-        t.amount
-    ])
-    autoTable(doc, {
-        head: [['Date', 'Title', 'Fund', 'Type', 'Amount']],
-        body: rows
-    })
-    doc.save('Transactions.pdf')
-}
+// const exportPDF = () => {
+//     const doc = new jsPDF()
+//     const rows = filteredTransactions.value.map(t => [
+//         t.date,
+//         t.transaction_title,
+//         t.funds?.name,
+//         t.type,
+//         t.amount
+//     ])
+//     autoTable(doc, {
+//         head: [['Date', 'Title', 'Fund', 'Type', 'Amount']],
+//         body: rows
+//     })
+//     doc.save('Transactions.pdf')
+// }
+
+const exportHeaders = [
+  { text: "Date", value: "date" },
+  { text: "Title", value: "transaction_title" },
+  { text: "Fund", value: "fund" },
+  { text: "Type", value: "type" },
+  { text: "Amount", value: "amount" },
+];
+
+const exportRows = computed(() => {
+  return filteredTransactions.value.map(t => ({
+    date: t.date || "",
+    transaction_title: t.transaction_title || "",
+    fund: t.funds?.name || "",
+    type: t.type || "",
+    amount: t.amount || "",
+  }));
+});
+
+// Export CSV
+const exportCSV = async () => {
+  await csvExport({
+    headers: exportHeaders,
+    rows: exportRows.value,
+    title: "Transaction List",
+    fileName: "Transactions.csv",
+  });
+};
+
+// Export Excel
+const exportXLSX = async () => {
+  await excelExport({
+    headers: exportHeaders,
+    rows: exportRows.value,
+    title: "Transaction List",
+    fileName: "Transactions.xlsx",
+  });
+};
+
+// Export PDF
+const exportPDF = async () => {
+  await pdfExport({
+    headers: exportHeaders,
+    rows: exportRows.value,
+    title: "Transaction List",
+    fileName: "Transactions.pdf",
+  });
+};
+
 
 // ✅ Modal Handlers
 const openModal = (transaction = null) => {
@@ -492,15 +544,15 @@ onMounted(() => {
                     </div>
                 </div>
 
-                <button @click="exportToCSV"
+                <button @click="exportCSV"
                     class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
                     <i class="ri-file-text-line"></i> CSV
                 </button>
-                <button @click="exportToExcel"
+                <button @click="exportXLSX"
                     class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
                     <i class="ri-file-excel-2-line"></i> Excel
                 </button>
-                <button @click="exportToPDF"
+                <button @click="exportPDF"
                     class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
                     <i class="ri-file-pdf-2-line"></i> PDF
                 </button>

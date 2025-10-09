@@ -125,7 +125,6 @@ const deleteRecord = async (id) => {
   }
 }
 
-
 // Export CSV with custom header/footer
 const exportCSV = async () => {
   await csvExport({
@@ -151,8 +150,8 @@ const exportXLSX = async () => {
 // --- Export Assets PDF ---
 const exportPDF = () => {
   pdfExport({
-    headers: filteredHeaders.value,   // শুধু visible headers যাবে
-    rows: filteredAssets.value,       // dynamic filtered data
+    headers: filteredHeaders.value,
+    rows: filteredAssets.value,
     title: "Asset List",
     fileName: "Assets.pdf",
   });

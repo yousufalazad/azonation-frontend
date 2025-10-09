@@ -8,6 +8,9 @@ import autoTable from 'jspdf-autotable'
 import { authStore } from '../../../store/authStore'
 import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
+import { pdfExport } from "@/helpers/pdfExport.js";
+import { excelExport } from "@/helpers/excelExport.js";
+import { csvExport } from "@/helpers/csvExport.js";
 
 const router = useRouter()
 const auth = authStore
@@ -107,35 +110,66 @@ const applyQuickDateFilter = () => {
   }
 }
 
-const exportCSV = () => {
-  const header = filteredHeaders.value.map(h => h.text)
-  const rows = paginatedCommittees.value.map(e => filteredHeaders.value.map(h => e[h.value] ?? ''))
-  const ws = utils.aoa_to_sheet([header, ...rows])
-  const wb = utils.book_new()
-  utils.book_append_sheet(wb, ws, 'Events')
-  writeFileXLSX(wb, 'events.csv', { bookType: 'csv' })
-}
+// const exportCSV = () => {
+//   const header = filteredHeaders.value.map(h => h.text)
+//   const rows = paginatedCommittees.value.map(e => filteredHeaders.value.map(h => e[h.value] ?? ''))
+//   const ws = utils.aoa_to_sheet([header, ...rows])
+//   const wb = utils.book_new()
+//   utils.book_append_sheet(wb, ws, 'Events')
+//   writeFileXLSX(wb, 'events.csv', { bookType: 'csv' })
+// }
 
-const exportXLSX = () => {
-  const json = paginatedCommittees.value.map(e => {
-    const obj = {}
-    filteredHeaders.value.forEach(h => (obj[h.text] = e[h.value]))
-    return obj
-  })
-  const ws = utils.json_to_sheet(json)
-  const wb = utils.book_new()
-  utils.book_append_sheet(wb, ws, 'Events')
-  writeFileXLSX(wb, 'events.xlsx')
-}
+// const exportXLSX = () => {
+//   const json = paginatedCommittees.value.map(e => {
+//     const obj = {}
+//     filteredHeaders.value.forEach(h => (obj[h.text] = e[h.value]))
+//     return obj
+//   })
+//   const ws = utils.json_to_sheet(json)
+//   const wb = utils.book_new()
+//   utils.book_append_sheet(wb, ws, 'Events')
+//   writeFileXLSX(wb, 'events.xlsx')
+// }
 
+// const exportPDF = () => {
+//   const doc = new jsPDF()
+//   const hdr = filteredHeaders.value.map(h => h.text)
+//   const body = paginatedCommittees.value.map(e => hdr.map(txt => e[allHeaders.find(c => c.text === txt)?.value] ?? ''))
+//   autoTable(doc, { head: [hdr], body })
+//   doc.save('events.pdf')
+// }
+
+// Export CSV with custom header/footer
+const exportCSV = async () => {
+  await csvExport({
+    headers: filteredHeaders.value,
+    rows: paginatedCommittees.value,
+    title: "Event List",
+    fileName: "Events.csv",
+  });
+};
+
+
+// Export XLSX with custom header/footer
+const exportXLSX = async () => {
+  await excelExport({
+  headers: filteredHeaders.value,
+  rows: paginatedCommittees.value,
+  title: "Event List",
+  fileName: "Events.xlsx",
+});
+
+};
+
+// --- Export Events PDF ---
 const exportPDF = () => {
-  const doc = new jsPDF()
-  const hdr = filteredHeaders.value.map(h => h.text)
-  const body = paginatedCommittees.value.map(e => hdr.map(txt => e[allHeaders.find(c => c.text === txt)?.value] ?? ''))
-  autoTable(doc, { head: [hdr], body })
-  doc.save('events.pdf')
-}
-
+  pdfExport({
+    headers: filteredHeaders.value,
+    rows: paginatedCommittees.value,
+    title: "Event List",
+    fileName: "Events.pdf",
+  });
+};
 const getEvents = async () => {
   loading.value = true
   try {

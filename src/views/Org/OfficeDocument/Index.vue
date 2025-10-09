@@ -8,6 +8,9 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import 'vue3-easy-data-table/dist/style.css'
 import { FileText, FileSpreadsheet, FileDown } from 'lucide-vue-next'
+import { pdfExport } from "@/helpers/pdfExport.js";
+import { excelExport } from "@/helpers/excelExport.js";
+import { csvExport } from "@/helpers/csvExport.js";
 
 const auth = authStore
 const documentList = ref([])
@@ -127,34 +130,37 @@ const deleteRecord = async (id) => {
   }
 }
 
-const exportCSV = () => {
-  const header = filteredHeaders.value.map(h => h.text)
-  const rows = filteredDocuments.value.map(item => filteredHeaders.value.map(h => item[h.value] || ''))
-  const ws = utils.aoa_to_sheet([header, ...rows])
-  const wb = utils.book_new()
-  utils.book_append_sheet(wb, ws, 'Documents')
-  writeFileXLSX(wb, 'documents.csv', { bookType: 'csv' })
-}
+// Export CSV with custom header/footer
+const exportCSV = async () => {
+  await csvExport({
+    headers: filteredHeaders.value,
+    rows: filteredDocuments.value,
+    title: "Document List",
+    fileName: "Documents.csv",
+  });
+};
 
-const exportXLSX = () => {
-  const json = filteredDocuments.value.map(item => {
-    const obj = {}
-    filteredHeaders.value.forEach(h => obj[h.text] = item[h.value])
-    return obj
-  })
-  const ws = utils.json_to_sheet(json)
-  const wb = utils.book_new()
-  utils.book_append_sheet(wb, ws, 'Documents')
-  writeFileXLSX(wb, 'documents.xlsx')
-}
 
+// Export XLSX with custom header/footer
+const exportXLSX = async () => {
+  await excelExport({
+  headers: filteredHeaders.value,
+  rows: filteredDocuments.value,
+  title: "Document List",
+  fileName: "Documents.xlsx",
+});
+
+};
+
+// --- Export Documents PDF ---
 const exportPDF = () => {
-  const doc = new jsPDF()
-  const header = filteredHeaders.value.map(h => h.text)
-  const body = filteredDocuments.value.map(r => header.map(h => r[headers.find(hdr => hdr.text === h).value] || ''))
-  autoTable(doc, { head: [header], body })
-  doc.save('documents.pdf')
-}
+  pdfExport({
+    headers: filteredHeaders.value,
+    rows: filteredDocuments.value,
+    title: "Document List",
+    fileName: "Documents.pdf",
+  });
+};
 
 onMounted(async () => {
   await fetchPrivacySetups()

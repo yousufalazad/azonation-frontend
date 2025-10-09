@@ -5,6 +5,9 @@ import { ref, onMounted, computed, watch } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
 import { utils, writeFileXLSX } from 'xlsx';
+import { pdfExport } from "@/helpers/pdfExport.js";
+import { excelExport } from "@/helpers/excelExport.js";
+import { csvExport } from "@/helpers/csvExport.js";
 
 const auth = authStore;
 const userId = auth.user.id;
@@ -278,40 +281,80 @@ const deleteFounderMember = async (id) => {
     }
 };
 
-const exportToExcel = () => {
-    const table = document.getElementById('founder-table');
-    if (!table) return;
+// const exportXLSX = () => {
+//     const table = document.getElementById('founder-table');
+//     if (!table) return;
 
-    const worksheet = utils.table_to_sheet(table);
-    const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, 'Founders');
+//     const worksheet = utils.table_to_sheet(table);
+//     const workbook = utils.book_new();
+//     utils.book_append_sheet(workbook, worksheet, 'Founders');
 
-    writeFileXLSX(workbook, 'founders.xlsx');
+//     writeFileXLSX(workbook, 'founders.xlsx');
+// };
+
+// const exportPDF = async () => {
+//     const jsPDFModule = await import('jspdf');
+//     const autoTableModule = await import('jspdf-autotable');
+
+//     const doc = new jsPDFModule.jsPDF(); // ✅ use .jsPDF instead of .default
+//     autoTableModule.default(doc, { html: '#founder-table' }); // ✅ register the plugin
+//     doc.save('founders.pdf');
+// };
+
+// const exportCSV = () => {
+//     let csv = 'Name,Designation,Email,Mobile,Address\n';
+//     founderList.value.forEach(f => {
+//         const name = f.founders?.first_name || f.full_name || '';
+//         csv += `${name},${f.designation || ''},${f.email || ''},${f.mobile || ''},${f.address || ''}\n`;
+//     });
+//     const blob = new Blob([csv], { type: 'text/csv' });
+//     const url = window.URL.createObjectURL(blob);
+//     const link = document.createElement('a');
+//     link.href = url;
+//     link.setAttribute('download', 'founders.csv');
+//     document.body.appendChild(link);
+//     link.click();
+//     document.body.removeChild(link);
+// };
+const filteredHeaders = computed(() => [
+  { text: 'Name', value: 'full_name' },
+  { text: 'Designation', value: 'designation' },
+  { text: 'Email', value: 'email' },
+  { text: 'Mobile', value: 'mobile' },
+  { text: 'Address', value: 'address' },
+]);
+
+
+// Export CSV with custom header/footer
+const exportCSV = async () => {
+  await csvExport({
+    headers: filteredHeaders.value,
+    rows: filteredFounders.value,
+    title: "Funder List",
+    fileName: "Funders.csv",
+  });
 };
 
-const exportToPDF = async () => {
-    const jsPDFModule = await import('jspdf');
-    const autoTableModule = await import('jspdf-autotable');
 
-    const doc = new jsPDFModule.jsPDF(); // ✅ use .jsPDF instead of .default
-    autoTableModule.default(doc, { html: '#founder-table' }); // ✅ register the plugin
-    doc.save('founders.pdf');
+// Export XLSX with custom header/footer
+const exportXLSX = async () => {
+  await excelExport({
+  headers: filteredHeaders.value,
+  rows: filteredFounders.value,
+  title: "Funder List",
+  fileName: "Funders.xlsx",
+});
+
 };
 
-const exportToCSV = () => {
-    let csv = 'Name,Designation,Email,Mobile,Address\n';
-    founderList.value.forEach(f => {
-        const name = f.founders?.first_name || f.full_name || '';
-        csv += `${name},${f.designation || ''},${f.email || ''},${f.mobile || ''},${f.address || ''}\n`;
-    });
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'founders.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+// --- Export Funders PDF ---
+const exportPDF = () => {
+  pdfExport({
+    headers: filteredHeaders.value,
+    rows: filteredFounders.value,
+    title: "Funder List",
+    fileName: "Funders.pdf",
+  });
 };
 
 const onSearchFocus = () => {
@@ -511,11 +554,11 @@ onMounted(() => {
         <div class="flex justify-between items-center border-gray-200 mb-4">
             <h2 class="text-lg font-semibold text-gray-800">Founders</h2>
             <div class="flex flex-wrap gap-2">
-                <button @click="exportToCSV"
+                <button @click="exportCSV"
                     class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">CSV</button>
-                <button @click="exportToPDF"
+                <button @click="exportPDF"
                     class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">PDF</button>
-                <button @click="exportToExcel"
+                <button @click="exportXLSX"
                     class="px-4 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">Excel</button>
                 <input v-model="searchQuery" type="text" placeholder="Search..."
                     class="border px-3 py-1.5 rounded text-sm" />

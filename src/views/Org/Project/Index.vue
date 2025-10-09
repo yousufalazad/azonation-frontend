@@ -8,6 +8,9 @@ import autoTable from 'jspdf-autotable'
 import { authStore } from '../../../store/authStore'
 import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
+import { pdfExport } from "@/helpers/pdfExport.js";
+import { excelExport } from "@/helpers/excelExport.js";
+import { csvExport } from "@/helpers/csvExport.js";
 
 const router = useRouter()
 const auth = authStore
@@ -150,34 +153,37 @@ const deleteRecord = async id => {
   }
 }
 
-const exportCSV = () => {
-  const header = filteredHeaders.value.map(h => h.text)
-  const rows = filteredProjects.value.map(p => filteredHeaders.value.map(h => p[h.value] ?? ''))
-  const ws = utils.aoa_to_sheet([header, ...rows])
-  const wb = utils.book_new()
-  utils.book_append_sheet(wb, ws, 'Projects')
-  writeFileXLSX(wb, 'projects.csv', { bookType: 'csv' })
-}
+// Export CSV with custom header/footer
+const exportCSV = async () => {
+  await csvExport({
+    headers: filteredHeaders.value,
+    rows: filteredProjects.value,
+    title: "Project List",
+    fileName: "Projects.csv",
+  });
+};
 
-const exportXLSX = () => {
-  const json = filteredProjects.value.map(p => {
-    const obj = {}
-    filteredHeaders.value.forEach(h => obj[h.text] = p[h.value])
-    return obj
-  })
-  const ws = utils.json_to_sheet(json)
-  const wb = utils.book_new()
-  utils.book_append_sheet(wb, ws, 'Projects')
-  writeFileXLSX(wb, 'projects.xlsx')
-}
 
+// Export XLSX with custom header/footer
+const exportXLSX = async () => {
+  await excelExport({
+  headers: filteredHeaders.value,
+  rows: filteredProjects.value,
+  title: "Project List",
+  fileName: "Projects.xlsx",
+});
+
+};
+
+// --- Export Projects PDF ---
 const exportPDF = () => {
-  const doc = new jsPDF()
-  const headers = filteredHeaders.value.map(h => h.text)
-  const body = filteredProjects.value.map(p => headers.map(txt => p[allHeaders.find(c => c.text === txt)?.value] ?? ''))
-  autoTable(doc, { head: [headers], body })
-  doc.save('projects.pdf')
-}
+  pdfExport({
+    headers: filteredHeaders.value,
+    rows: filteredProjects.value,
+    title: "Project List",
+    fileName: "Projects.pdf",
+  });
+};
 
 onMounted(() => {
   getRecords()
