@@ -1,117 +1,317 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import Swal from 'sweetalert2';
-import DOMPurify from 'dompurify';
-import { authStore } from '../../../store/authStore';
+import { ref, computed, onMounted, watch } from "vue";
+import { useRouter } from "vue-router";
+import Swal from "sweetalert2";
+import DOMPurify from "dompurify";
+import { authStore } from "../../../store/authStore";
+import EasyDataTable from "vue3-easy-data-table";
+import { FileText, FileSpreadsheet, FileDown } from "lucide-vue-next";
+import { csvExport } from "@/helpers/csvExport.js";
+import { excelExport } from "@/helpers/excelExport.js";
+import { pdfExport } from "@/helpers/pdfExport.js";
+import "vue3-easy-data-table/dist/style.css";
+
+const router = useRouter();
 const auth = authStore;
 const recordList = ref([]);
-const router = useRouter();
+const loading = ref(false);
+const search = ref("");
+const quickFilter = ref("");
+const startDate = ref("");
+const endDate = ref("");
+const selectedProfile = ref(localStorage.getItem("recognition_profile") || "detailed");
+const visibleColumns = ref(
+  JSON.parse(localStorage.getItem("recognition_columns")) ||
+  ["title", "recognition_date", "privacy_name", "is_active", "actions"]
+);
 
-// Fetch records
+const currentPage = ref(1);
+const rowsPerPage = ref(10);
+
+const goToFirst = () => (currentPage.value = 1);
+const goToPrev = () => { if (currentPage.value > 1) currentPage.value--; };
+const goToNext = () => { if (currentPage.value < totalPages.value) currentPage.value++; };
+const goToLast = () => (currentPage.value = totalPages.value);
+
+watch(rowsPerPage, () => (currentPage.value = 1));
+
+// Fetch recognition records
 const getRecords = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/recognitions', {}, 'GET');
-        recordList.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching records:', error);
-        recordList.value = [];
-    }
+  loading.value = true;
+  try {
+    const response = await auth.fetchProtectedApi("/api/recognitions", {}, "GET");
+    recordList.value = response.status
+      ? response.data.map(r => ({
+          id: r.id,
+          title: r.title,
+          recognition_date: r.recognition_date,
+          privacy_name: r.privacy_name,
+          is_active: r.is_active === 1 ? "Active" : "Disabled",
+        }))
+      : [];
+  } catch (error) {
+    console.error("Error fetching recognitions:", error);
+    recordList.value = [];
+  } finally {
+    loading.value = false;
+  }
 };
 
-// Sanitize description
-const sanitize = (html) => {
-    return DOMPurify.sanitize(html, {
-        ALLOWED_TAGS: ['h1', 'h2', 'p', 'ul', 'li', 'strong', 'em', 'br'],
-    });
-};
+// Sanitize HTML safely
+const sanitize = (html) =>
+  DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ["h1", "h2", "p", "ul", "li", "strong", "em", "br"],
+  });
 
 // Delete record
 const deleteRecord = async (id) => {
-    try {
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'Do you want to delete this record?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, cancel!',
-        });
+  try {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to delete this record?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
 
-        if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/recognitions/${id}`, {}, 'DELETE');
-
-            if (response.status) {
-                Swal.fire('Deleted!', 'Record has been deleted.', 'success');
-                getRecords(); // Refresh the list
-            } else {
-                Swal.fire('Failed!', 'Failed to delete the record.', 'error');
-            }
-        }
-    } catch (error) {
-        console.error('Error deleting record:', error);
-        Swal.fire('Error!', 'Failed to delete the record.', 'error');
+    if (result.isConfirmed) {
+      const response = await auth.fetchProtectedApi(`/api/recognitions/${id}`, {}, "DELETE");
+      if (response.status) {
+        Swal.fire("Deleted!", "Record has been deleted.", "success");
+        getRecords();
+      } else {
+        Swal.fire("Failed!", "Failed to delete the record.", "error");
+      }
     }
+  } catch (error) {
+    console.error("Error deleting record:", error);
+    Swal.fire("Error!", "Failed to delete the record.", "error");
+  }
 };
 
+// Table headers
+const headers = [
+  { text: "Title", value: "title", sortable: true },
+  { text: "Recognition Date", value: "recognition_date", sortable: true },
+  { text: "Privacy", value: "privacy_name", sortable: true },
+  { text: "Is Active", value: "is_active", sortable: true },
+  { text: "Actions", value: "actions", sortable: false },
+];
 
-// On component mount
-onMounted(() => {
-    getRecords();
+const columnProfiles = {
+  minimal: ["title", "recognition_date", "actions"],
+  detailed: ["title", "recognition_date", "privacy_name", "is_active", "actions"],
+};
+
+const filteredHeaders = computed(() =>
+  headers.filter((h) => visibleColumns.value.includes(h.value))
+);
+
+watch([selectedProfile, visibleColumns], () => {
+  localStorage.setItem("recognition_profile", selectedProfile.value);
+  localStorage.setItem("recognition_columns", JSON.stringify(visibleColumns.value));
 });
+
+const applyProfile = () => {
+  visibleColumns.value = [...columnProfiles[selectedProfile.value]];
+};
+
+// Filtering logic
+const filteredRecords = computed(() =>
+  recordList.value.filter((record) => {
+    const matchSearch =
+      search.value === "" ||
+      record.title.toLowerCase().includes(search.value.toLowerCase());
+    const matchQuick =
+      quickFilter.value === "" || record.is_active === quickFilter.value;
+    const matchStart =
+      startDate.value === "" ||
+      (record.recognition_date && record.recognition_date >= startDate.value);
+    const matchEnd =
+      endDate.value === "" ||
+      (record.recognition_date && record.recognition_date <= endDate.value);
+    return matchSearch && matchQuick && matchStart && matchEnd;
+  })
+);
+
+const totalItems = computed(() => filteredRecords.value.length);
+const totalPages = computed(() =>
+  Math.ceil(totalItems.value / rowsPerPage.value)
+);
+const paginatedRecords = computed(() => {
+  const start = (currentPage.value - 1) * rowsPerPage.value;
+  return filteredRecords.value.slice(start, start + rowsPerPage.value);
+});
+
+// Export buttons
+const exportCSV = async () =>
+  csvExport({
+    headers: filteredHeaders.value,
+    rows: filteredRecords.value,
+    title: "Recognition List",
+    fileName: "Recognitions.csv",
+  });
+
+const exportXLSX = async () =>
+  excelExport({
+    headers: filteredHeaders.value,
+    rows: filteredRecords.value,
+    title: "Recognition List",
+    fileName: "Recognitions.xlsx",
+  });
+
+const exportPDF = async () =>
+  pdfExport({
+    headers: filteredHeaders.value,
+    rows: filteredRecords.value,
+    title: "Recognition List",
+    fileName: "Recognitions.pdf",
+  });
+
+onMounted(() => getRecords());
 </script>
 
 <template>
-    <div>
-        <!-- Header Section -->
-        <div class="flex justify-between items-center mb-5">
-            <h2 class="text-xl font-semibold">Recognition List</h2>
-            <button @click="$router.push({ name: 'create-recognition' })"
-                class="bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700">Add recognition
-            </button>
-        </div>
-
-        <!-- Table -->
-        <div class="overflow-x-auto">
-            <table class="min-w-full table-auto border-collapse border border-gray-300">
-                <thead>
-                    <tr class="bg-gray-100 text-left">
-                        <th class="border px-4 py-2 w-1/10">SL</th> 
-                        <th class="border px-4 py-2 w-1/6">Title</th> 
-                        <!-- <th class="border px-4 py-2 w-1/8">Description</th> -->
-                        <th class="border px-4 py-2 w-1/5">Recognition Date</th>
-                        <th class="border px-4 py-2 w-1/8">Privacy</th>
-                        <th class="border px-4 py-2 w-1/8">Is Active</th> 
-                        <th class="border px-4 py-2 w-1/3 text-right">Actions</th>
-                    </tr>
-                </thead>
-                
-                <tbody>
-                    <tr v-for="(record, index) in recordList" :key="record.id">
-                        <td class="border px-4 py-2">{{ index + 1 }}</td>
-                        <td class="border px-4 py-2">{{ record.title }}</td>
-                        <!-- <td class="border px-4 py-2" v-html="sanitize(record.description)"></td> -->
-                        <td class="border px-4 py-2">{{ record.recognition_date }}</td>
-                        <td class="border px-4 py-2">
-                            {{ record.privacy_name}}
-                        </td>
-                        <td class="border px-4 py-2">{{ record.is_active === 1 ? 'Active' : 'Disabled' }}</td>
-                        <td class="border px-4 py-2 space-x-2 flex justify-end">
-                            <button @click="$router.push({ name: 'edit-recognition', params: { id: record.id } })"
-                                class="bg-yellow-500 text-white px-4 py-1 rounded hover:bg-yellow-600">Edit </button>
-
-                            <button @click="$router.push({ name: 'view-recognition', params: { id: record.id } })"
-                                class="bg-green-500 text-white px-4 py-1 rounded hover:bg-green-600">View </button>
-
-                            <button class="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600"
-                                @click="deleteRecord(record.id)">
-                                Delete
-                            </button>
-
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+  <div class="p-4 md:p-6 space-y-6 bg-white shadow rounded-lg">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+      <h2 class="text-lg font-semibold text-gray-700">Recognition List</h2>
+      <div class="flex flex-wrap gap-2">
+        <button @click="exportCSV"
+          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
+          <FileText class="w-4 h-4" /> CSV
+        </button>
+        <button @click="exportXLSX"
+          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
+          <FileSpreadsheet class="w-4 h-4" /> Excel
+        </button>
+        <button @click="exportPDF"
+          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
+          <FileDown class="w-4 h-4" /> PDF
+        </button>
+        <button @click="$router.push({ name: 'create-recognition' })"
+          class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm">+ Add Recognition</button>
+      </div>
     </div>
+
+    <!-- Filters -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div>
+        <label class="text-sm text-gray-600">Search</label>
+        <input v-model="search" type="text" placeholder="Search title..."
+          class="w-full border rounded px-3 py-1.5 text-sm" />
+      </div>
+      <div>
+        <label class="text-sm text-gray-600">Is Active</label>
+        <select v-model="quickFilter" class="w-full border rounded px-3 py-1.5 text-sm">
+          <option value="">All</option>
+          <option value="Active">Active</option>
+          <option value="Disabled">Disabled</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-sm text-gray-600">Start Date</label>
+        <input type="date" v-model="startDate" class="w-full border rounded px-3 py-1.5 text-sm" />
+      </div>
+      <div>
+        <label class="text-sm text-gray-600">End Date</label>
+        <input type="date" v-model="endDate" class="w-full border rounded px-3 py-1.5 text-sm" />
+      </div>
+    </div>
+
+    <!-- Column Settings -->
+    <div class="bg-gray-50 border rounded p-4 flex flex-col md:flex-row flex-wrap gap-6">
+      <div class="flex flex-col">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Column View:</label>
+        <select v-model="selectedProfile" @change="applyProfile"
+          class="border rounded px-3 py-1.5 text-sm w-full md:w-48">
+          <option value="minimal">Minimal</option>
+          <option value="detailed">Detailed</option>
+        </select>
+      </div>
+      <div class="flex-1">
+        <label class="text-sm font-medium text-gray-700 mb-1 block">Visible Columns</label>
+        <div class="flex flex-wrap gap-4">
+          <div v-for="header in headers" :key="header.value" class="flex items-center gap-2 text-sm">
+            <input type="checkbox" v-model="visibleColumns" :value="header.value"
+              :id="header.value" class="accent-blue-600" />
+            <label :for="header.value" class="text-gray-700">{{ header.text }}</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <EasyDataTable :headers="filteredHeaders" :items="paginatedRecords" :search-value="search"
+        :loading="loading" show-index hide-footer :theme-color="'#2563eb'"
+        table-class="min-w-full text-sm" header-class="bg-gray-100" body-row-class="text-sm">
+
+        <template #header-actions>
+          <div class="text-right w-full pr-2">Actions</div>
+        </template>
+
+        <template #item-actions="{ id }">
+          <div class="flex justify-end flex-wrap gap-2">
+            <button @click="$router.push({ name: 'view-recognition', params: { id } })"
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
+              View
+            </button>
+            <button @click="$router.push({ name: 'edit-recognition', params: { id } })"
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
+              Edit
+            </button>
+            <button @click="deleteRecord(id)"
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
+              Delete
+            </button>
+          </div>
+        </template>
+
+        <template #item-is_active="{ is_active }">
+          <span class="px-2 py-0.5 rounded-full text-xs font-medium"
+            :class="is_active === 'Active'
+              ? 'bg-green-100 text-green-700'
+              : 'bg-red-100 text-red-700'">
+            {{ is_active }}
+          </span>
+        </template>
+      </EasyDataTable>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex flex-col md:flex-row justify-between items-center gap-3 px-2 py-3 bg-gray-50 rounded border">
+      <div class="text-sm text-gray-600 text-center md:text-left">
+        Items
+        {{ (currentPage - 1) * rowsPerPage + 1 }} -
+        {{ Math.min(currentPage * rowsPerPage, totalItems) }}
+        of {{ totalItems }} |
+        Page {{ currentPage }} of {{ totalPages }}
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center gap-3">
+        <div class="flex items-center gap-1">
+          <span class="text-sm text-gray-600">Items per page:</span>
+          <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-sm">
+            <option v-for="size in [5, 10, 50, 100, 250]" :key="size" :value="size">{{ size }}</option>
+          </select>
+        </div>
+        <div class="flex gap-1">
+          <button @click="goToFirst" :disabled="currentPage === 1"
+            class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">First</button>
+          <button @click="goToPrev" :disabled="currentPage === 1"
+            class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">Prev</button>
+          <button @click="goToNext" :disabled="currentPage === totalPages"
+            class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">Next</button>
+          <button @click="goToLast" :disabled="currentPage === totalPages"
+            class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">Last</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
