@@ -205,10 +205,7 @@ onMounted(() => {
                     <!-- <div v-for="(image, index) in data.images" :key="image.id">
             <img :src="image.image_url" alt="Preview" class="w-full h-full object-cover" />            
           </div> -->
-
-
-
-                    <!-- <div>
+            <!-- <div>
             <div v-if="images.length" class="flex gap-4">
               <div v-for="file in images" :key="file.id" class="w-16 h-16">
                 <img v-if="file.file?.preview" :src="file.file.preview" alt="Meeting Image"
@@ -263,7 +260,7 @@ onMounted(() => {
                     Add more document
                 </button>
             </div>
-            <div class="flex justify-center mt-6">
+            <div class="flex justify-end mt-6">
                 <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded">Update</button>
             </div>
         </form>

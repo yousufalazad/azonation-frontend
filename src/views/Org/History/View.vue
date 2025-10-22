@@ -38,7 +38,7 @@ onMounted(() => {
 
 
 <template>
-  <div class="max-w-7xl mx-auto w-10/12">
+  <div class="max-w-4xl mx-auto w-full mt-10 bg-white p-6 rounded-lg shadow">
     <section class="mb-5">
       <div class="flex justify-between items-center mb-6">
         <h5 class="text-xl font-semibold">View History</h5>

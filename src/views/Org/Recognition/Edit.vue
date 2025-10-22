@@ -268,7 +268,7 @@ onMounted(() => {
             </div>
 
             <!-- Submit Button -->
-            <div class="flex justify-center mt-6">
+            <div class="flex justify-end mt-6">
                 <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700">
                     Update
                 </button>

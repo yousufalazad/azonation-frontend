@@ -27,8 +27,9 @@ onMounted(() => {
     fetchEventDetails();
 });
 </script>
+
 <template>
-    <div class="container mx-auto max-w-7xl w-10/12 p-6 bg-white rounded-lg shadow-md mt-10">
+    <div class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow">
         <div class="flex justify-between items-center mb-6">
             <h5 class="text-xl font-semibold">View Event</h5>
             <div>

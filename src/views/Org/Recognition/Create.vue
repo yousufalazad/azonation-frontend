@@ -215,9 +215,12 @@ onMounted(() => {
       </div>
 
       <!-- Submit Button -->
-      <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium">
-        Submit
-      </button>
+      <div class="flex justify-end mt-6">
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium">
+          Submit
+        </button>
+      </div>
+
     </form>
   </div>
 </template>

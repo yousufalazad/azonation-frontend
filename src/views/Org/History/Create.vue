@@ -109,7 +109,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto w-10/12">
+    <div class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow">
     <section class="mb-5">
       <div class="flex justify-between items-center mb-6">
         <h5 class="text-xl font-semibold">Create History</h5>
@@ -132,8 +132,7 @@ onMounted(() => {
           <!-- History Field -->
           <div>
             <label for="history" class="block text-sm font-medium text-gray-700">History</label>
-            <textarea v-model="history" id="history" rows="4" class="w-full p-2 border border-gray-300 rounded-md"
-              required></textarea>
+            <textarea v-model="history" id="history" rows="4" class="w-full p-2 border border-gray-300 rounded-md" ></textarea>
           </div>
         </div>
 
@@ -213,7 +212,7 @@ onMounted(() => {
         </button>
 
         <!-- Submit Button -->
-        <div class="flex justify-center mt-6">
+        <div class="flex justify-end mt-6">
           <button type="submit"
             class="w-full md:w-auto bg-blue-600 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50">
             Submit
@@ -223,8 +222,3 @@ onMounted(() => {
     </section>
   </div>
 </template>
-
-
-<style scoped>
-/* Scoped CSS can be added here if needed */
-</style>

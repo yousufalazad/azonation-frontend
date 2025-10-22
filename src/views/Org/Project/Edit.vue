@@ -242,7 +242,7 @@ const submitForm = async () => {
 </script>
 
 <template>
-  <div>
+    <div class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 py-4 ">
       <!-- Title -->

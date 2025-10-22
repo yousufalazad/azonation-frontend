@@ -178,9 +178,8 @@ onMounted(() => {
     fetchDropdownData('/api/org-all-member-name', getOrgAllMemberName);
 });
 </script>
-
 <template>
-  <div class="container mx-auto w-11/12 lg:w-10/12 max-w-7xl p-6 bg-white rounded-lg shadow-md mt-10">
+    <div class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow">
     <!-- Header -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-3">
       <h5 class="text-xl font-semibold">Add New Asset</h5>

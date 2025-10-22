@@ -177,13 +177,13 @@ const submitForm = async () => {
 onMounted(fetchPrivacySetups);
 </script>
 <template>
-  <div class="container mx-auto max-w-7xl p-6 bg-white rounded-lg shadow-md mt-10">
+  <div class="container mx-auto max-w-7xl p-5 bg-white rounded-lg shadow-md mt-3">
     <!-- Page Header -->
     <div class="flex justify-between items-center mb-6">
       <h5 class="text-xl font-semibold">Add New Event Summary</h5>
-       <button @click="$router.push({ name: 'index-event' })"
-          class="bg-blue-500 text-white font-semibold py-2 px-2 rounded-md">Back Event List
-        </button>
+      <button @click="$router.push({ name: 'index-event' })"
+        class="bg-blue-500 text-white font-semibold py-2 px-2 rounded-md">Back Event List
+      </button>
     </div>
 
     <!-- Form -->
@@ -234,7 +234,8 @@ onMounted(fetchPrivacySetups);
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">Financial Overview</label>
-          <textarea v-model="financial_overview" class="w-full p-2 border border-gray-300 rounded-md" rows="3"></textarea>
+          <textarea v-model="financial_overview" class="w-full p-2 border border-gray-300 rounded-md"
+            rows="3"></textarea>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700">Next Steps</label>
@@ -328,14 +329,12 @@ onMounted(fetchPrivacySetups);
 
 
       <!-- Submit Button -->
-      <div class="text-center">
-        <button
-          type="submit"
-          class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 font-medium">
-          Submit
-        </button>
+      <div class="flex justify-end gap-4">
+        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"> Submit</button>
+        <!-- <button type="button" @click="resetForm"
+          class="px-6 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500">Reset</button> -->
       </div>
+
     </form>
   </div>
 </template>
-

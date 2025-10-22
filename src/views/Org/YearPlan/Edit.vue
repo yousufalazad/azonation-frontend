@@ -31,16 +31,16 @@ const documents = ref([{ id: Date.now(), file: null }]);
 const privacySetups = ref([]);
 // Fetch Dropdown Data
 const fetchPrivacySetups = async () => {
-  try {
-    const response = await auth.fetchProtectedApi('/api/privacy-setups');
-    if (response.status) {
-      privacySetups.value = response.data;
-    } else {
-      errorMessage.value = 'Error loading privacy setups.';
+    try {
+        const response = await auth.fetchProtectedApi('/api/privacy-setups');
+        if (response.status) {
+            privacySetups.value = response.data;
+        } else {
+            errorMessage.value = 'Error loading privacy setups.';
+        }
+    } catch (error) {
+        errorMessage.value = 'Failed to load privacy setups. Please try again later.';
     }
-  } catch (error) {
-    errorMessage.value = 'Failed to load privacy setups. Please try again later.';
-  }
 };
 
 // Initialize Quill editors
@@ -243,7 +243,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-10/12">
+    <div class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow">
         <section class="mb-5">
             <div class="flex justify-between items-center mb-6">
                 <h5 class="text-xl font-semibold">Update New Year Plan</h5>
@@ -273,17 +273,16 @@ onMounted(() => {
                 </div>
 
                 <!-- Goals and Activities (Full Width) -->
-                <div class="grid grid-cols-1 gap-4 mb-4">
-                    <div class="mb-6">
-                        <label for="goals-editor" class="block text-gray-700 font-semibold mb-2">Goals</label>
-                        <div id="goals-editor" class="w-full border border-gray-300 rounded-md p-3 min-h-[100px]"></div>
-                    </div>
-
-                    <div class="mb-6">
-                        <label for="activities-editor" class="block text-gray-700 font-semibold mb-2">Activities</label>
-                        <div id="activities-editor" class="w-full border border-gray-300 rounded-md p-3 min-h-[100px]"></div>
-                    </div>
+                <div class="mb-5">
+                    <label for="goals-editor" class="block text-sm font-medium mb-2">Goals</label>
+                    <div id="goals-editor" class="border rounded-md min-h-[150px] p-2"> </div>
                 </div>
+
+                <div class="mb-5">
+                    <label for="activities-editor" class="block text-sm font-medium mb-2">Activities</label>
+                    <div id="activities-editor" class="border rounded-md min-h-[150px] p-2"></div>
+                </div>
+
 
                 <!-- Budget and Start Date moved to a new row -->
                 <div class="grid grid-cols-2 gap-4 mb-4">
@@ -299,7 +298,7 @@ onMounted(() => {
                     <div class="mb-4">
                         <label for="start_date" class="block text-gray-700 font-semibold mb-2">Start Date</label>
                         <input v-model="start_date" type="date" id="start_date"
-                            class="w-full border border-gray-300 rounded-md py-2 px-4" required />
+                            class="w-full border border-gray-300 rounded-md py-2 px-4" />
                     </div>
                 </div>
 
@@ -309,15 +308,17 @@ onMounted(() => {
                     <div class="mb-4">
                         <label for="end_date" class="block text-gray-700 font-semibold mb-2">End Date</label>
                         <input v-model="end_date" type="date" id="end_date"
-                            class="w-full border border-gray-300 rounded-md py-2 px-4" required />
+                            class="w-full border border-gray-300 rounded-md py-2 px-4" />
                     </div>
 
                     <!-- Privacy Setup -->
                     <div class="mb-4">
-                        <label for="privacy_setup_id" class="block text-gray-700 font-semibold mb-2">Privacy Setup</label>
+                        <label for="privacy_setup_id" class="block text-gray-700 font-semibold mb-2">Privacy
+                            Setup</label>
                         <select v-model="privacy_setup_id" id="privacy_setup_id"
                             class="w-full border border-gray-300 rounded-md py-2 px-4" required>
-                            <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{ privacy.name }}</option>
+                            <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{
+                                privacy.name }}</option>
 
                             <!-- <option value="1">Only Me</option>
                             <option value="2">Organization</option>
@@ -343,12 +344,14 @@ onMounted(() => {
                         <label for="status" class="block text-gray-700 font-semibold mb-2">Status</label>
                         <select v-model="status" id="status" class="w-full border border-gray-300 rounded-md py-2 px-4"
                             required>
-                            <option value="1">Draft</option>
-                            <option value="2">Approved</option>
-                            <option value="3">Completed</option>
-                            <option value="4">Archived</option>
+                            <option value="draft">Draft</option>
+                            <option value="approved">Approved</option>
+                            <option value="completed">Completed</option>
+                            <option value="archived">Archived</option>
                         </select>
                     </div>
+
+
                 </div>
 
                 <!-- Images Upload -->
@@ -395,13 +398,18 @@ onMounted(() => {
                 </div>
 
                 <!-- Submit Buttons -->
-                <div class="mb-4 flex justify-end">
+                <div class="flex justify-end mt-6">
+                    <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700">
+                        Update
+                    </button>
+                </div>
+                <!-- <div class="mb-4 flex justify-end">
                     <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600">
                         Update Year Plan
                     </button>
                     <button type="button" @click="resetForm"
                         class="bg-gray-500 text-white py-2 px-4 rounded-md ml-2 hover:bg-gray-600">Reset</button>
-                </div>
+                </div> -->
 
             </form>
         </section>

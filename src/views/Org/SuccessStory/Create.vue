@@ -97,7 +97,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div>
+    <div class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow">
         <div class="flex justify-between items-center mb-6">
             <h5 class="text-xl font-semibold">Create Success Story</h5>
             <button @click="router.push({ name: 'success-story' })"
@@ -176,7 +176,12 @@ onMounted(() => {
                 </button>
             </div>
 
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md">Submit</button>
+            <!-- Submit Button -->
+            <div class="flex justify-end mt-6">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium">
+                    Submit
+                </button>
+            </div>
         </form>
     </div>
 </template>

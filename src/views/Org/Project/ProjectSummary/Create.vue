@@ -167,7 +167,7 @@ const submitForm = async () => {
 onMounted(fetchPrivacySetups);
 </script>
 <template>
-  <div class="container mx-auto max-w-7xl p-6 bg-white rounded-lg shadow-md mt-10">
+  <div class="container mx-auto max-w-7xl p-5 bg-white rounded-lg shadow-md mt-3">
     <!-- Page Header -->
     <div class="flex justify-between items-center mb-6">
       <h5 class="text-xl font-semibold">Add New Project Summary</h5>

@@ -177,18 +177,15 @@ onMounted(() => {
   fetchPrivacySetups();
 });
 </script>
-
 <template>
-    <div class="container mx-auto max-w-7xl p-6 bg-white rounded-lg shadow-md mt-10">
-
-
+    <div class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow">
         <div class="flex justify-between items-center mb-6">
             <h5 class="text-xl font-semibold">Edit Documents</h5>
             <div>
                 <button @click="$router.push({ name: 'view-document', params: { id: id } })"
                     class="bg-green-500 hover:bg-green-600 text-white p-2 m-2 rounded">View Document</button>
                 <button @click="router.push({ name: 'index-document' })"
-                    class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700">
+                    class="mt-3 bg-blue-500 text-white p-2 rounded-md hover:bg-blue-700">
                     Back to Document List
                 </button>
             </div>

@@ -155,8 +155,9 @@ onMounted(() => {
 });
 </script>
 
+
 <template>
-    <div class="container mx-auto max-w-7xl mx-auto w-10/12 p-6 bg-white rounded-lg shadow-md mt-10">
+    <div class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow">
         <div class="flex justify-between items-center mb-6">
             <h5 class="text-xl font-semibold">Add New Event</h5>
             <button @click="$router.push({ name: 'index-event' })"
@@ -298,7 +299,6 @@ onMounted(() => {
                     Add more document
                 </button>
             </div>
-
 
             <div class="flex justify-end gap-4">
                 <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Add
