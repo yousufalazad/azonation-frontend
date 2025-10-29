@@ -305,11 +305,11 @@ const exportCSV = async () => {
 // Export XLSX with custom header/footer
 const exportXLSX = async () => {
   await excelExport({
-  headers: headers.value,
-  rows: filteredMembers.value,
-  title: "Member List",
-  fileName: "Members.xlsx",
-});
+    headers: headers.value,
+    rows: filteredMembers.value,
+    title: "Member List",
+    fileName: "Members.xlsx",
+  });
 
 };
 
@@ -330,7 +330,7 @@ const exportDOCX = () => {
     rows: filteredMembers.value,
     title: "Member List",
     fileName: "Members.docx",
-      logoPath: "/storage/org/profile/image/20250924184601_map.JPG",
+    logoPath: "/storage/org/profile/image/20250924184601_map.JPG",
 
   });
 };
@@ -671,7 +671,7 @@ const terminationForm = reactive({
   terminated_at: dayjs().format('YYYY-MM-DD'),
   processed_at: dayjs().format('YYYY-MM-DD'),
   membership_termination_reason_id: '',
-  org_administrator_id: orgAdministrator.value.id ?? null,  // admin processing
+  org_administrator_id: orgAdministrator.value?.id ?? null,  // admin processing
   rejoin_eligible: true,
   file_path: null,                                         // File object
   membership_duration_days: null,
@@ -697,7 +697,7 @@ const fetchOrgAdministrators = async () => {
     const res = await auth.fetchProtectedApi('/api/org-administrators/primary', {}, 'GET')
 
     orgAdministrator.value = res?.status ? res.data : {};
-    terminationForm.org_administrator_id = orgAdministrator.value.id ?? null
+    terminationForm.org_administrator_id = orgAdministrator.value?.id ?? null
   } catch (e) {
     console.error(e)
     Swal.fire('An error occurred. Please try again.', '', 'error')
@@ -731,7 +731,7 @@ const openTerminationModal = (member) => {
   terminationForm.terminated_at = dayjs().format('YYYY-MM-DD')
   terminationForm.processed_at = dayjs().format('YYYY-MM-DD')
   terminationForm.membership_termination_reason_id = ''
-  terminationForm.org_administrator_id = orgAdministrator.value.id ?? null
+  terminationForm.org_administrator_id = orgAdministrator.value?.id ?? null
   terminationForm.rejoin_eligible = true
   terminationForm.file_path = null
   terminationForm.membership_duration_days = null
@@ -757,7 +757,7 @@ const closeTerminationModal = () => {
     terminated_at: dayjs().format('YYYY-MM-DD'),
     processed_at: dayjs().format('YYYY-MM-DD'),
     membership_termination_reason_id: '',
-    org_administrator_id: orgAdministrator.value.id ?? null,
+    org_administrator_id: orgAdministrator.value?.id ?? null,
     rejoin_eligible: true,
     file_path: null,
     membership_duration_days: null,
@@ -796,7 +796,7 @@ const submitTermination = async () => {
     fd.append('terminated_at', terminationForm.terminated_at ?? '')
     fd.append('processed_at', terminationForm.processed_at ?? '')
     fd.append('membership_termination_reason_id', terminationForm.membership_termination_reason_id ?? '')
-    fd.append('org_administrator_id', terminationForm.org_administrator_id ?? '')
+    fd.append('org_administrator_id', terminationForm.org_administrator_id ?? null)
 
     fd.append('rejoin_eligible', terminationForm.rejoin_eligible ? '1' : '0')
 
@@ -1434,8 +1434,11 @@ onMounted(async () => {
               <label class="block text-sm font-medium text-gray-700">Org Administrator</label>
               <input :value="terminationForm.org_administrator_id" type="text" hidden
                 class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600" />
-              <input :value="orgAdministrator.first_name + ' ' + orgAdministrator.last_name" type="text" readonly
+              <input :value="orgAdministrator?.first_name || orgAdministrator?.last_name
+                ? `${orgAdministrator?.first_name ?? ''} ${orgAdministrator?.last_name ?? ''}`.trim()
+                : '--'" type="text" readonly
                 class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0" />
+
             </div>
 
             <!-- rejoin_eligible -->

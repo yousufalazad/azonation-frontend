@@ -151,10 +151,19 @@ fetchAdministrators();
 </script>
 
 <template>
-    <div class="add-member max-w-7xl mx-auto p-8">
-        <button @click="openSearchModal" class="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700">
-            Add Organisation Administrator
-        </button>
+    <div class="add-member max-w-7xl mx-auto p-8 bg-white p-4 rounded shadow">
+
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <h2 class="text-lg sm:text-xl font-semibold text-gray-600">Organisation Administrator</h2>
+            <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                <button @click="openSearchModal"
+                    class="mb-4 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-700">
+                    + Add Organisation Administrator
+                </button>
+            </div>
+        </div>
+
+
 
         <!-- Search Modal -->
         <div v-if="showSearchModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -225,35 +234,36 @@ fetchAdministrators();
 
         <h2 class="mt-12 mb-4 text-lg text-gray-600 font-semibold">Current Administrator</h2>
         <div v-if="administrators.length" class="space-y-4">
-            <div v-for="admin in administrators" :key="admin.id" v-if="admin && admin.individual_user" class="flex items-center bg-white p-4 rounded shadow">
+            <div v-for="admin in administrators" class="flex items-center bg-white p-4 rounded shadow">
                 <img :src="admin.image_url || placeholderImage" alt="Profile"
                     class="w-12 h-12 rounded-full object-cover mr-4" />
                 <div class="flex-1">
-                    <p class="font-medium">{{ admin.individual_user?.first_name ?? '--' }} {{ admin.individual_user?.last_name ?? '--'}}</p>
-                    <p class="py-1 text-sm text-gray-400">Azon Id: {{ admin.individual_user?.azon_id }}</p>
+                    <p class="font-medium">{{ admin?.first_name ?? '--' }} {{ admin?.last_name ?? '--' }}</p>
+                    <p v-if="admin.individual_user.azon_id" class="py-1 text-sm text-gray-400">Azon Id: {{
+                        admin.individual_user?.azon_id }}</p>
                     <p class="py-2 text-xs text-gray-400">From: {{ admin.start_date }}</p>
                     <p class="py-1 text-xs text-gray-400">Admin note: {{ admin.admin_note }}</p>
                 </div>
                 <button @click="openEditModal(admin)"
-                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Edit</button>
+                    class="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Edit</button>
             </div>
         </div>
 
         <h2 class="mt-12 mb-4 text-lg text-gray-600 font-semibold">Former Administrators</h2>
         <div class="space-y-4">
-            <div v-for="admin in formerAdministrators" :key="admin.id" v-if="admin && admin.individual_user"
-                class="flex items-center bg-gray-50 p-4 rounded shadow">
+            <div v-for="admin in formerAdministrators" class="flex items-center bg-white p-4 rounded shadow">
                 <img :src="admin.image_url || placeholderImage" alt="Profile"
                     class="w-12 h-12 rounded-full object-cover mr-4" />
                 <div>
-                    <p class="font-medium">{{ admin.individual_user?.first_name ?? '--' }} {{ admin.individual_user?.last_name ?? '--'}}</p>
+                    <p class="font-medium">{{ admin?.first_name ?? '--' }} {{ admin?.last_name ?? '--' }}</p>
                     <p class="py-1 text-xs text-gray-400">Azon Id: {{ admin.individual_user?.azon_id }}</p>
-                    <p class="py-1 text-xs text-gray-400">From: {{ admin.start_date }}</p>
+                    <p v-if="admin.individual_user.azon_id" class="py-1 text-xs text-gray-400">From: {{ admin.start_date
+                        }}</p>
                     <p class="py-1 text-xs text-gray-400">To: {{ admin.end_date }}</p>
                     <p class="py-1 text-xs text-gray-400">Admin note: {{ admin.admin_note }}</p>
                 </div>
                 <button @click="openEditModal(admin)"
-                    class="ml-auto px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Edit</button>
+                    class="ml-auto px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Edit</button>
             </div>
         </div>
 
