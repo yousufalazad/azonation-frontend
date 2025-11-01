@@ -771,7 +771,37 @@ const closeTerminationModal = () => {
 // ✅ Submit (create) termination
 const submitTermination = async () => {
   try {
+    // ✅ Pre-check: membership type
+    if (!terminationForm.membership_type_before_termination) {
+      Swal.fire(
+        'Membership type before termination is required.',
+        '',
+        'warning'
+      )
+      return
+    }
 
+    // ✅ Pre-check: membership status
+    if (!terminationForm.membership_status_before_termination) {
+      Swal.fire(
+        'Membership status before termination is required.',
+        '',
+        'warning'
+      )
+      return
+    }
+
+    // ✅ Pre-check: organization administrator
+    if (!terminationForm.org_administrator_id) {
+      Swal.fire(
+        'Member termination is not allowed until an Organization Administrator has been assigned.',
+        '',
+        'warning'
+      )
+      return
+    }
+
+    // ✅ Confirmation dialog
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: 'This will permanently terminate the membership.',
@@ -782,11 +812,9 @@ const submitTermination = async () => {
       reverseButtons: true
     })
 
-    if (!result.isConfirmed) {
-      return // exit early if cancelled
-    }
+    if (!result.isConfirmed) return // exit if cancelled
 
-    // build FormData to support file upload
+    // ✅ Build FormData
     const fd = new FormData()
     fd.append('org_type_user_id', terminationForm.org_type_user_id ?? '')
     fd.append('individual_type_user_id', terminationForm.individual_type_user_id ?? '')
@@ -797,47 +825,25 @@ const submitTermination = async () => {
     fd.append('processed_at', terminationForm.processed_at ?? '')
     fd.append('membership_termination_reason_id', terminationForm.membership_termination_reason_id ?? '')
     fd.append('org_administrator_id', terminationForm.org_administrator_id ?? null)
-
     fd.append('rejoin_eligible', terminationForm.rejoin_eligible ? '1' : '0')
-
     if (terminationForm.file_path) fd.append('file_path', terminationForm.file_path)
-
-
-    //    if (file_attachments.value) {
-    //   formData.append('file_attachments', file_attachments.value);
-    // }
-
-    // Images
-    // images.value.forEach((fileData, index) => {
-    //   if (fileData.file) {
-    //     formData.append(`images[${index}]`, fileData.file.file);
-    //   }
-    // });
-
-    if (terminationForm.membership_duration_days !== null) {
+    if (terminationForm.membership_duration_days !== null)
       fd.append('membership_duration_days', String(terminationForm.membership_duration_days))
-    }
-    if (terminationForm.membership_status_before_termination) {
+    if (terminationForm.membership_status_before_termination)
       fd.append('membership_status_before_termination', terminationForm.membership_status_before_termination)
-    }
-    if (terminationForm.membership_type_before_termination) {
+    if (terminationForm.membership_type_before_termination)
       fd.append('membership_type_before_termination', terminationForm.membership_type_before_termination)
-    }
-    if (terminationForm.joined_at) {
+    if (terminationForm.joined_at)
       fd.append('joined_at', terminationForm.joined_at)
-    }
     fd.append('org_note', terminationForm.org_note ?? '')
 
-    // const res = await auth.fetchProtectedApi('/api/membership-terminations', fd, 'POST', {
-    //   // make sure your fetchProtectedApi passes content-type automatically for FormData
-    // })
+    // ✅ Submit
     const res = await auth.uploadProtectedApi('/api/membership-terminations', fd, 'POST', {
       headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    })
 
     if (res?.status) {
       closeTerminationModal()
-
       Swal.fire({
         icon: 'success',
         title: 'Membership terminated',
@@ -845,15 +851,19 @@ const submitTermination = async () => {
         timer: 1800,
         showConfirmButton: false
       })
-      deleteMember(terminationForm.id)  // also delete member record
+      deleteMember(terminationForm.id)
     } else {
       Swal.fire('An error occurred. Please try again.', '', 'error')
     }
+
   } catch (e) {
     console.error(e)
     Swal.fire('An error occurred. Please try again.', '', 'error')
   }
 }
+
+
+
 
 // ✅ Delete Member
 const deleteMember = async (memberId) => {
