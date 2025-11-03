@@ -12,6 +12,7 @@ import DialingCode from "../views/SuperAdmin/MasterSetting/DialingCode.vue";
 import AttendanceType from "../views/SuperAdmin/MasterSetting/AttendanceType.vue";
 import ConductType from "../views/SuperAdmin/MasterSetting/ConductType.vue";
 import MembershipType from "../views/SuperAdmin/MasterSetting/MembershipType.vue";
+import MembershipStatuses from "../views/SuperAdmin/MasterSetting/MembershipStatuses.vue";
 import MembershipRenewalCycle from "../views/SuperAdmin/MasterSetting/MembershipRenewalCycle.vue";
 import Designation from "../views/SuperAdmin/MasterSetting/Designation.vue";
 import Language from "../views/SuperAdmin/MasterSetting/Language.vue";
@@ -176,6 +177,12 @@ const superadminRoutes = [
                 component: MembershipType,
                 meta: { requiresAuth: true },
             },
+            {
+                    path: "membership-statuses",
+                    name: "membership-statuses",
+                    component: MembershipStatuses,
+                    meta: { requiresAuth: true },
+                  },
             {
                 path: "membership-renewal-cycle",
                 name: "membership-renewal-cycle",

@@ -87,7 +87,11 @@ const getPrivacySetups = async () => {
   try {
     const response = await auth.fetchProtectedApi('/api/privacy-setups', {}, 'GET');
     privacySetupList.value = response.status ? response.data : [];
-  } catch (error) {
+    // Assign first item's ID if the list is not empty
+    if (privacySetupList.value.length > 0) {
+      privacy_setup_id.value = privacySetupList.value[0].id;
+    } 
+   } catch (error) {
     console.error('Error fetching privacy setups:', error);
     privacySetupList.value = [];
   }

@@ -330,51 +330,51 @@ const balance = computed(() => {
 // }
 
 const exportHeaders = [
-  { text: "Date", value: "date" },
-  { text: "Title", value: "transaction_title" },
-  { text: "Fund", value: "fund" },
-  { text: "Type", value: "type" },
-  { text: "Amount", value: "amount" },
+    { text: "Date", value: "date" },
+    { text: "Title", value: "transaction_title" },
+    { text: "Fund", value: "fund" },
+    { text: "Type", value: "type" },
+    { text: "Amount", value: "amount" },
 ];
 
 const exportRows = computed(() => {
-  return filteredTransactions.value.map(t => ({
-    date: t.date || "",
-    transaction_title: t.transaction_title || "",
-    fund: t.funds?.name || "",
-    type: t.type || "",
-    amount: t.amount || "",
-  }));
+    return filteredTransactions.value.map(t => ({
+        date: t.date || "",
+        transaction_title: t.transaction_title || "",
+        fund: t.funds?.name || "",
+        type: t.type || "",
+        amount: t.amount || "",
+    }));
 });
 
 // Export CSV
 const exportCSV = async () => {
-  await csvExport({
-    headers: exportHeaders,
-    rows: exportRows.value,
-    title: "Transaction List",
-    fileName: "Transactions.csv",
-  });
+    await csvExport({
+        headers: exportHeaders,
+        rows: exportRows.value,
+        title: "Transaction List",
+        fileName: "Transactions.csv",
+    });
 };
 
 // Export Excel
 const exportXLSX = async () => {
-  await excelExport({
-    headers: exportHeaders,
-    rows: exportRows.value,
-    title: "Transaction List",
-    fileName: "Transactions.xlsx",
-  });
+    await excelExport({
+        headers: exportHeaders,
+        rows: exportRows.value,
+        title: "Transaction List",
+        fileName: "Transactions.xlsx",
+    });
 };
 
 // Export PDF
 const exportPDF = async () => {
-  await pdfExport({
-    headers: exportHeaders,
-    rows: exportRows.value,
-    title: "Transaction List",
-    fileName: "Transactions.pdf",
-  });
+    await pdfExport({
+        headers: exportHeaders,
+        rows: exportRows.value,
+        title: "Transaction List",
+        fileName: "Transactions.pdf",
+    });
 };
 
 
@@ -679,7 +679,7 @@ onMounted(() => {
                         <td class="px-3 py-2">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
                         <td v-if="visibleColumns.includes('date')" class="px-3 py-2">{{ transaction.date }}</td>
                         <td v-if="visibleColumns.includes('title')" class="px-3 py-2">{{ transaction.transaction_title
-                        }}</td>
+                            }}</td>
                         <td v-if="visibleColumns.includes('fund')" class="px-3 py-2">{{ transaction.funds?.name }}</td>
                         <td v-if="visibleColumns.includes('income')" class="px-3 py-2 text-green-600 font-medium">
                             <span v-if="transaction.type === 'income'">{{ transaction.amount }}</span>
@@ -718,7 +718,8 @@ onMounted(() => {
                 <div class="flex items-center gap-2">
                     <label class="text-sm">Items per page:</label>
                     <select v-model="itemsPerPage" class="border rounded px-2 py-1 text-sm">
-                        <option v-for="size in [5, 10, 20, 50, 100, 250, 500, 1000]" :key="size" :value="size">{{ size }}
+                        <option v-for="size in [5, 10, 20, 50, 100, 250, 500, 1000]" :key="size" :value="size">{{ size
+                            }}
                         </option>
                     </select>
                 </div>
@@ -755,60 +756,75 @@ onMounted(() => {
         </div>
 
         <!-- ✅ View Modal -->
-        <div v-if="viewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-            <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-3xl relative overflow-y-auto max-h-[90vh]">
+        <div v-if="viewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-8 relative overflow-y-auto max-h-[90vh] animate-fade-in">
+                <!-- Close Button -->
                 <button @click="viewModal = false"
-                    class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">✕</button>
-                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Transaction Details</h2>
+                    class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition-colors duration-200"
+                    title="Close">
+                    ✕
+                </button>
 
-                <div class="space-y-4 text-base text-gray-700">
-                    <div class="flex justify-between">
-                        <span class="text-gray-500 font-medium">Date:</span>
-                        <span>{{ selectedTransaction.date }}</span>
+                <!-- Header -->
+                <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-3">
+                    Transaction Details
+                </h2>
+
+                <!-- Details Section -->
+                <div class="space-y-4 text-gray-700">
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-500 font-medium">Date</span>
+                        <span class="font-semibold">{{ selectedTransaction.date }}</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-500 font-medium">Title:</span>
-                        <span>{{ selectedTransaction.transaction_title }}</span>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-500 font-medium">Title</span>
+                        <span class="font-semibold">{{ selectedTransaction.transaction_title }}</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-500 font-medium">Type:</span>
-                        <span>{{ selectedTransaction.type }}</span>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-500 font-medium">Type</span>
+                        <span class="capitalize font-semibold">{{ selectedTransaction.type }}</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-500 font-medium">Fund:</span>
-                        <span>{{ selectedTransaction.funds?.name || 'N/A' }}</span>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-500 font-medium">Fund</span>
+                        <span class="font-semibold">{{ selectedTransaction.funds?.name || 'N/A' }}</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-500 font-medium">Amount:</span>
-                        <span>{{ selectedTransaction.amount }}</span>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-500 font-medium">Amount</span>
+                        <span class="font-semibold text-green-600">{{ selectedTransaction.amount }}</span>
                     </div>
-                    <div>
-                        <span class="text-gray-500 font-medium">Description:</span>
-                        <p class="mt-1 text-gray-800 whitespace-pre-line">
+
+                    <div class="pt-3">
+                        <span class="text-gray-500 font-medium">Description</span>
+                        <p
+                            class="mt-2 text-gray-800 leading-relaxed whitespace-pre-line bg-gray-50 p-3 rounded-md border">
                             {{ selectedTransaction.description }}
                         </p>
                     </div>
 
-                    <!-- ✅ Attached Images -->
+                    <!-- Attached Images -->
                     <div v-if="selectedTransaction.images?.length" class="border-t mt-6 pt-4">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-2">Attached Images</h3>
-                        <div class="flex flex-wrap gap-2">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">Attached Images</h3>
+                        <div class="flex flex-wrap gap-3">
                             <img v-for="img in selectedTransaction.images" :key="img.id" :src="img.image_url"
-                                class="h-20 w-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
+                                alt="Attachment"
+                                class="h-24 w-24 object-cover rounded-xl border border-gray-200 shadow-sm hover:scale-105 transition-transform cursor-pointer" />
                         </div>
                     </div>
 
-                    <!-- ✅ Attached Documents -->
+                    <!-- Attached Documents -->
                     <div v-if="selectedTransaction.documents?.length" class="border-t mt-6 pt-4">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-2">Attached Documents</h3>
-                        <ul class="list-disc list-inside space-y-1 text-blue-600 text-base">
-                            <li v-for="doc in selectedTransaction.documents" :key="doc.id">
-                                <a :href="doc.document_url" target="_blank" class="hover:underline">{{ doc.file_name
-                                    }}</a>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">Attached Documents</h3>
+                        <ul class="space-y-2 text-blue-600">
+                            <li v-for="doc in selectedTransaction.documents" :key="doc.id"
+                                class="flex items-center gap-2 hover:text-blue-800 transition-colors">
+                                📄
+                                <a :href="doc.document_url" target="_blank" class="hover:underline truncate max-w-[90%]"
+                                    :title="doc.file_name">
+                                    {{ doc.file_name }}
+                                </a>
                             </li>
                         </ul>
                     </div>
-
                 </div>
             </div>
         </div>

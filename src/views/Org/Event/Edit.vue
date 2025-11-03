@@ -139,8 +139,12 @@ const submitForm = async () => {
     formData.append('name', name.value);
     formData.append('short_description', short_description.value);
     formData.append('description', description.value);
-    formData.append('date', date.value);
-    formData.append('time', time.value);
+    if (date.value) {
+        formData.append('date', date.value);
+    }
+    if (time.value) {
+        formData.append('time', time.value);
+    }
     formData.append('venue_name', venue_name.value);
     formData.append('venue_address', venue_address.value);
     formData.append('requirements', requirements.value);

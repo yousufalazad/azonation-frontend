@@ -690,6 +690,7 @@ const fetchTerminationReasons = async () => {
   } catch (e) {
     console.error(e)
     Swal.fire('An error occurred. Please try again.', '', 'error')
+
   }
 }
 const fetchOrgAdministrators = async () => {
@@ -768,7 +769,7 @@ const closeTerminationModal = () => {
   })
 }
 
-// ✅ Submit (create) termination
+// Submit (create) termination
 const submitTermination = async () => {
   try {
     // ✅ Pre-check: membership type
@@ -790,7 +791,7 @@ const submitTermination = async () => {
       )
       return
     }
-
+    
     // ✅ Pre-check: organization administrator
     if (!terminationForm.org_administrator_id) {
       Swal.fire(
@@ -861,7 +862,6 @@ const submitTermination = async () => {
     Swal.fire('An error occurred. Please try again.', '', 'error')
   }
 }
-
 
 
 
@@ -960,24 +960,19 @@ onMounted(async () => {
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           <FileText class="w-4 h-4" /> Word
         </button>
-
-        <button @click="$router.push({ name: 'membership-statuses' })"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
-          Membership Statuses
-        </button>
-        <button @click="$router.push({ name: 'org-membership-types' })"
+        <!-- <button @click="$router.push({ name: 'org-membership-types' })"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           Org Membership Types
-        </button>
+        </button> -->
 
-        <button @click="$router.push({ name: 'former-members' })"
+        <button @click="$router.push({ name: 'terminated-members' })"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
-          Former Member
+          Terminated Member
         </button>
         <button @click="$router.push({ name: 'independent-member' })"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           Unlink Member
-        </button>
+        </button> 
         <button @click="$router.push({ name: 'create-member' })"
           class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm">+ Add Member</button>
       </div>

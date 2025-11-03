@@ -100,12 +100,20 @@ const removeFile = (fileList, index) => {
 
 // Submit the edited form
 const submitForm = async () => {
-   
+
     const formData = new FormData();
     formData.append('title', title.value);
     formData.append('plan', plan.value);
-    formData.append('start_date', start_date.value);
-    formData.append('end_date', end_date.value);
+    // formData.append('start_date', start_date.value);
+    // formData.append('end_date', end_date.value);
+
+    if (start_date.value) {
+        formData.append('start_date', start_date.value);
+    }
+    if (end_date.value) {
+        formData.append('end_date', end_date.value);
+    }
+
     formData.append('privacy_setup_id', privacy_setup_id.value);
     formData.append('status', status.value);
 
@@ -169,9 +177,10 @@ onMounted(() => {
                 <input v-model="title" type="text" id="title" class="w-full p-2 border rounded"
                     placeholder="Enter title" required />
             </div>
+
             <div class="mb-4">
-                <label for="plan-editor" class="block font-semibold mb-2">Plan</label>
-                <div id="plan-editor" class="w-full h-40 border rounded"></div>
+                <label class="block font-medium mb-1">Plan</label>
+                <div id="plan-editor" class="min-h-[200px] border rounded p-2 bg-white"></div>
             </div>
             <div class="mb-4">
                 <label for="start_date" class="block font-semibold mb-2">Start Date</label>
@@ -182,14 +191,14 @@ onMounted(() => {
                 <input v-model="end_date" type="date" id="end_date" class="w-full p-2 border rounded" />
             </div>
             <!-- Privacy Field -->
-        <div>
-          <label for="privacy_setup_id" class="block text-sm font-medium mb-1">Privacy</label>
-          <select v-model="privacy_setup_id" id="privacy_setup_id" class="w-full border px-4 py-2 rounded-md">
-            <option v-for="privacy in privacySetupList" :key="privacy.id" :value="privacy.id">
-              {{ privacy.name }}
-            </option>
-          </select>
-        </div>
+            <div>
+                <label for="privacy_setup_id" class="block text-sm font-medium mb-1">Privacy</label>
+                <select v-model="privacy_setup_id" id="privacy_setup_id" class="w-full border px-4 py-2 rounded-md">
+                    <option v-for="privacy in privacySetupList" :key="privacy.id" :value="privacy.id">
+                        {{ privacy.name }}
+                    </option>
+                </select>
+            </div>
             <div class="mb-4">
                 <label for="status" class="block font-semibold mb-2">Status</label>
                 <select v-model="status" id="status" class="w-full p-2 border rounded">
@@ -205,7 +214,7 @@ onMounted(() => {
                     <!-- <div v-for="(image, index) in data.images" :key="image.id">
             <img :src="image.image_url" alt="Preview" class="w-full h-full object-cover" />            
           </div> -->
-            <!-- <div>
+                    <!-- <div>
             <div v-if="images.length" class="flex gap-4">
               <div v-for="file in images" :key="file.id" class="w-16 h-16">
                 <img v-if="file.file?.preview" :src="file.file.preview" alt="Meeting Image"

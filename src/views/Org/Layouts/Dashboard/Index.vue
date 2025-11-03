@@ -586,7 +586,7 @@ onMounted(() => {
         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto sm:ml-auto">
 
-          <!-- Full List + Former Members aligned right -->
+          <!-- Full List + Terminated Members aligned right -->
           <div class="flex flex-row gap-2 justify-end w-full sm:w-auto">
             <router-link :to="{ name: 'index-member' }">
               <button class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
@@ -594,9 +594,9 @@ onMounted(() => {
               </button>
             </router-link>
 
-            <router-link :to="{ path: '/org-dashboard/former-members' }">
+            <router-link :to="{ path: '/org-dashboard/terminated-members' }">
               <button class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
-                Former Members
+                Terminated Members
               </button>
             </router-link>
           </div>

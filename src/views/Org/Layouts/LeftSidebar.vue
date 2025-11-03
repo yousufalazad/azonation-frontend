@@ -46,8 +46,54 @@ const isActive = (path) => route.path === path;
     <!-- Static Links -->
     <template v-for="link in [
       { name: 'Home', path: '/org-dashboard/index', icon: HomeIcon },
-      { name: 'Members', path: '/org-dashboard/index-member', icon: UsersIcon },
-      { name: 'Unlink Member', path: '/org-dashboard/unlink-member', icon: UserIcon },
+    ]" :key="link.path">
+      <router-link :to="link.path" @click="handleLinkClick" :class="[
+        'flex items-center gap-3 px-4 py-2 rounded-md transition-all duration-200 whitespace-nowrap',
+        isActive(link.path) ? 'bg-gray-200 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'
+      ]" :title="!props.isSidebarExpanded ? link.name : ''">
+        <component :is="link.icon" class="h-5 w-5" />
+        <span v-if="props.isSidebarExpanded">{{ link.name }}</span>
+      </router-link>
+    </template>
+
+    <div>
+      <button @click="toggleSection('membership')"
+        class="w-full text-left px-4 py-2 flex items-center gap-3 rounded-md text-gray-700 hover:bg-gray-100 transition"
+        :title="!props.isSidebarExpanded ? 'Profile' : ''">
+        <UserCircleIcon class="h-5 w-5" />
+        <span v-if="props.isSidebarExpanded">Membership</span>
+        <svg class="ml-auto h-4 w-4 transition-transform" :class="{ 'rotate-180': isSectionOpen('profile') }"
+          fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+        </svg>
+      </button>
+      <transition name="fade-slide">
+        <div v-if="isSectionOpen('membership') && props.isSidebarExpanded" class="ml-7 space-y-1">
+          <!-- { name: 'Members', path: '/org-dashboard/index-member', icon: UsersIcon },
+          { name: 'Unlink Member', path: '/org-dashboard/unlink-member', icon: UserIcon }, -->
+
+          <router-link to="/org-dashboard/index-member" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Members</router-link>
+          <router-link to="/org-dashboard/unlink-member" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Unlink Member</router-link>
+
+          <router-link to="/org-dashboard/org-membership-types" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Membership Types</router-link>
+
+          <router-link to="/org-dashboard/my-account/org-membership-renewal-cycle" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Membership Renewal Cycle</router-link>
+          <router-link to="/org-dashboard/my-account/org-membership-renewal-price" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Membership Renewal Price</router-link>
+          <router-link to="/org-dashboard/my-account/org-membership-renewal" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Membership Renewal</router-link>
+
+          <router-link to="/org-dashboard/index-member" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Member Renewal Status</router-link>
+        </div>
+      </transition>
+    </div>
+
+    <template v-for="link in [
       { name: 'Committees', path: '/org-dashboard/committees', icon: BriefcaseIcon },
       { name: 'Meetings', path: '/org-dashboard/meetings', icon: CalendarIcon },
       { name: 'Events', path: '/org-dashboard/events', icon: ClipboardListIcon },
@@ -65,7 +111,6 @@ const isActive = (path) => route.path === path;
         <span v-if="props.isSidebarExpanded">{{ link.name }}</span>
       </router-link>
     </template>
-
     <!-- Expandable: Profile -->
     <div>
       <button @click="toggleSection('profile')"
@@ -94,14 +139,6 @@ const isActive = (path) => route.path === path;
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">History</router-link>
           <router-link to="/org-dashboard/year-plan" @click="handleLinkClick"
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Year Plan</router-link>
-
-          <router-link to="/org-dashboard/my-account/org-membership-renewal-cycle" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Org Membership Renewal Cycle</router-link>
-          <router-link to="/org-dashboard/my-account/org-membership-renewal-price" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Org Membership Renewal Price</router-link>
-          <router-link to="/org-dashboard/my-account/org-membership-renewal" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Org Membership Renewal</router-link>
-
         </div>
       </transition>
     </div>

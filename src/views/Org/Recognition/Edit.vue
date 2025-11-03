@@ -115,7 +115,7 @@ const removeFile = (fileList, index) => {
 
 const submitForm = async () => {
     // Validate required fields
-    if (!title.value || !description.value || !recognition_date.value || !privacy_setup_id.value) {
+    if (!title.value || !recognition_date.value || !privacy_setup_id.value) {
         Swal.fire('Error!', 'Please fill out all required fields.', 'error');
         return;
     }

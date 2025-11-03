@@ -132,6 +132,30 @@ onMounted(fetchPrivacySetups);
                     placeholder="Enter title" required />
             </div>
 
+
+            <!-- Description -->
+            <div class="mb-4">
+                <label for="description" class="block text-gray-700 font-semibold mb-2">Description</label>
+                <textarea v-model="description" id="description"
+                    class="w-full border border-gray-300 rounded-md py-2 px-4"
+                    placeholder="Enter description"></textarea>
+            </div>
+
+            <!-- Privacy Setup -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">Privacy Setup</label>
+                <select v-model="privacySetupId" class="w-full border border-gray-300 rounded-md py-2 px-4">
+                    <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{ privacy.name }}</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">Is Active</label>
+                <select v-model="isActive" class="w-full border border-gray-300 rounded-md py-2 px-4">
+                    <option value="1">Yse</option>
+                    <option value="0">No</option>
+                </select>
+            </div>
+
             <!-- Images Upload -->
             <div class="mb-4">
                 <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
@@ -172,29 +196,6 @@ onMounted(fetchPrivacySetups);
                     @click="() => addMoreFiles(documents)">
                     Add more document
                 </button>
-            </div>
-
-            <!-- Description -->
-            <div class="mb-4">
-                <label for="description" class="block text-gray-700 font-semibold mb-2">Description</label>
-                <textarea v-model="description" id="description"
-                    class="w-full border border-gray-300 rounded-md py-2 px-4"
-                    placeholder="Enter description"></textarea>
-            </div>
-
-            <!-- Privacy Setup -->
-            <div class="mb-4">
-                <label class="block text-gray-700 font-semibold mb-2">Privacy Setup</label>
-                <select v-model="privacySetupId" class="w-full border border-gray-300 rounded-md py-2 px-4">
-                    <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{ privacy.name }}</option>
-                </select>
-            </div>
-            <div class="mb-4">
-                <label class="block text-gray-700 font-semibold mb-2">Is Active</label>
-                <select v-model="isActive" class="w-full border border-gray-300 rounded-md py-2 px-4">
-                    <option value="1">Yse</option>
-                    <option value="0">No</option>
-                </select>
             </div>
             <!-- Buttons -->
             <div class="flex justify-end gap-4">

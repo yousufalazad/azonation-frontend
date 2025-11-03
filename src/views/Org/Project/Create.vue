@@ -130,7 +130,7 @@ const removeFile = (fileList, index) => {
 
 // Submit form (create event)
 const submitForm = async () => {
-    if (!title.value || !venue_name.value) {
+    if (!title.value) {
         Swal.fire('Error!', 'Please fill in all required fields.', 'error');
         return;
     }
