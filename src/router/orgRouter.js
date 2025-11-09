@@ -22,7 +22,8 @@ import OrgMembershipRenewal from "../views/Org/Financial/Renewal/OrgMembershipRe
 import CreateMember from "../views/Org/Member/Create.vue";
 import IndexMember from "../views/Org/Member/Index.vue";
 import FamilyMember from "../views/Org/Member/FamilyMember.vue";
-
+// terminated-members
+import TerminatedMember from "../views/Org/Member/TerminatedMember.vue";
 import OrgMembershipTypes from "../views/Org/Member/OrgMembershipTypes.vue";
 
 //Founder
@@ -193,7 +194,12 @@ const orgRoutes = [
         component: IndexMember,
         meta: { requiresAuth: true },
       },
-      
+       {
+        path: "terminated-members",
+        name: "terminated-members",
+        component: TerminatedMember,
+        meta: { requiresAuth: true },
+      },
       {
         path: "org-membership-types",
         name: "org-membership-types",

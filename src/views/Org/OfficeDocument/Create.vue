@@ -16,17 +16,17 @@ const privacySetupId = ref(1);
 const isActive = ref(1);
 const privacySetups = ref([]);
 const fetchPrivacySetups = async () => {
-  try {    
-    const response = await auth.fetchProtectedApi(`/api/privacy-setups`, {}, 'GET');
-    if (response.status) {
-      privacySetups.value = response.data;
-    } else {
-      Swal.fire('Error!', 'Failed to fetch privacySetups.', 'error');
+    try {
+        const response = await auth.fetchProtectedApi(`/api/privacy-setups`, {}, 'GET');
+        if (response.status) {
+            privacySetups.value = response.data;
+        } else {
+            Swal.fire('Error!', 'Failed to fetch privacySetups.', 'error');
+        }
+    } catch (error) {
+        console.error('Error fetching privacySetups:', error);
+        Swal.fire('Error!', 'An error occurred. Please try again.', 'error');
     }
-  } catch (error) {
-    console.error('Error fetching privacySetups:', error);
-    Swal.fire('Error!', 'An error occurred. Please try again.', 'error');
-  }
 };
 const resetForm = () => {
     title.value = '';
@@ -145,7 +145,8 @@ onMounted(fetchPrivacySetups);
             <div class="mb-4">
                 <label class="block text-gray-700 font-semibold mb-2">Privacy Setup</label>
                 <select v-model="privacySetupId" class="w-full border border-gray-300 rounded-md py-2 px-4">
-                    <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{ privacy.name }}</option>
+                    <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{ privacy.name }}
+                    </option>
                 </select>
             </div>
             <div class="mb-4">
@@ -201,8 +202,6 @@ onMounted(fetchPrivacySetups);
             <div class="flex justify-end gap-4">
                 <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Add
                     Record</button>
-                <button type="button" @click="resetForm"
-                    class="px-6 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500">Reset</button>
             </div>
         </form>
     </div>

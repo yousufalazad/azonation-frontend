@@ -118,12 +118,13 @@ const headers = computed(() =>
 
 
 // ✅ Fetch member list
-const fetchMemberList = async () => {
+const XX_fetchMemberList = async () => {
   loading.value = true
   try {
     const response = await auth.fetchProtectedApi('/api/org-terminated-members/', {}, 'GET')
     memberList.value = response.status ? response.data.map(m => ({
       ...m,
+      
       full_name: `${m.individual.first_name || ''} ${m.individual.last_name || ''}`.trim(),
       image_url: m.image_url ?? placeholderImage // Force fallback URL at data source
     })) : []
@@ -133,6 +134,38 @@ const fetchMemberList = async () => {
     loading.value = false
   }
 }
+
+const fetchMemberList = async () => {
+  loading.value = true
+  try {
+    const response = await auth.fetchProtectedApi('/api/org-terminated-members/', {}, 'GET')
+    memberList.value = response.status
+      ? response.data.map(m => {
+          // Parse more_info safely
+          let parsedMoreInfo = {}
+          try {
+            parsedMoreInfo = typeof m.more_info === 'string' ? JSON.parse(m.more_info) : (m.more_info || {})
+          } catch {
+            parsedMoreInfo = {}
+          }
+
+          return {
+            ...m,
+            full_name: `${m.individual.first_name || ''} ${m.individual.last_name || ''}`.trim(),
+            image_url: m.image_url ?? placeholderImage,
+            existing_membership_id: parsedMoreInfo.existing_membership_id || '--', // ✅ Extracted field
+            more_info_date: parsedMoreInfo.date || '--', // Optional: keep for later use
+          }
+        })
+      : []
+  } catch (error) {
+    console.error('Error fetching members:', error)
+    memberList.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
 
 // ✅ Fetch membership types
 const fetchMembershipType = async () => {
@@ -403,7 +436,6 @@ onMounted(() => {
         
       </div>
     </div>
-
     <!-- Filters -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <div>

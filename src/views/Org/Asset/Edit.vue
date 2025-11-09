@@ -402,8 +402,10 @@ onMounted(() => {
             <div class="flex justify-end gap-4">
                 <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Update
                     Asset</button>
-                <button type="button" @click="resetForm"
-                    class="px-6 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500">Reset</button>
+                <button type="button" @click="$router.push({ name: 'index-asset' })"
+                    class="px-6 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500">
+                    Back
+                </button>
             </div>
         </form>
     </div>

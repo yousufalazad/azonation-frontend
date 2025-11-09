@@ -183,7 +183,7 @@ const addFounder = async (individualTypeUserId) => {
                     'success'
                 );
                 getFounders();
-
+                closeSearchModal();
                 // window.location.reload();
             } else {
                 Swal.fire(

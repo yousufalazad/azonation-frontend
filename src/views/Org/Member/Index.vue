@@ -729,6 +729,7 @@ const openTerminationModal = (member) => {
   terminationForm.terminated_member_mobile = member?.individual?.phone_number?.phone_number ?? '016'
 
   // Defaults
+  terminationForm.existing_membership_id = member?.existing_membership_id ?? ''
   terminationForm.terminated_at = dayjs().format('YYYY-MM-DD')
   terminationForm.processed_at = dayjs().format('YYYY-MM-DD')
   terminationForm.membership_termination_reason_id = ''
@@ -792,6 +793,16 @@ const submitTermination = async () => {
       return
     }
     
+    // ✅ Pre-check: membership status
+    if (!terminationForm.membership_termination_reason_id) {
+      Swal.fire(
+        'Membership termination reason before termination is required.',
+        '',
+        'warning'
+      )
+      return
+    }
+    
     // ✅ Pre-check: organization administrator
     if (!terminationForm.org_administrator_id) {
       Swal.fire(
@@ -817,6 +828,7 @@ const submitTermination = async () => {
 
     // ✅ Build FormData
     const fd = new FormData()
+    fd.append('existing_membership_id', terminationForm.existing_membership_id ?? '')
     fd.append('org_type_user_id', terminationForm.org_type_user_id ?? '')
     fd.append('individual_type_user_id', terminationForm.individual_type_user_id ?? '')
     fd.append('terminated_member_name', terminationForm.terminated_member_name ?? '')
@@ -1351,10 +1363,8 @@ onMounted(async () => {
             <!-- terminated_member_email -->
             <div>
               <!-- terminated_member_name -->
-              <input v-model="terminationForm.terminated_member_name" type="text"
-                class="w-full mt-1 border border-gray-100 bg-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-0"
-                hidden />
-
+              <input v-model="terminationForm.terminated_member_name" type="text" hidden />
+              <input v-model="terminationForm.existing_membership_id" type="text" hidden />
               <label class="block text-sm font-medium text-gray-700">Email</label>
               <input v-model="terminationForm.terminated_member_email" type="email"
                 class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0"

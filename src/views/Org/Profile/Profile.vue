@@ -289,7 +289,6 @@ const updateOrgPhoneNumber = async () => {
             phone_type: phone_type.value,
             status: statusPhone.value,
         };
-
         const res = phoneId.value
             ? await auth.fetchProtectedApi(`/api/phone-numbers/${phoneId.value}`, payload, 'PUT')
             : await auth.fetchProtectedApi(`/api/phone-numbers/`, payload, 'POST');
