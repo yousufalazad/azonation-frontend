@@ -45,6 +45,10 @@ const sort = (column) => {
 // Column Visibility
 const visibleColumns = ref({
   image: true,
+  existing_membership_id: true,
+  membership_type_id: true,
+  membership_status_id: true,
+  membership_start_date: true,
   first_name: true,
   last_name: true,
   email: true,
@@ -59,6 +63,10 @@ const visibleColumns = ref({
 // Form
 const form = ref({
   id: null,
+  existing_membership_id: '',
+  membership_type_id: '',
+  membership_status_id: '',
+  membership_start_date: '',
   first_name: '',
   last_name: '',
   email: '',
@@ -72,16 +80,41 @@ const form = ref({
 // Fetch members
 const fetchMembers = async () => {
   try {
-    const res = await auth.uploadProtectedApi('/api/independent-members', {}, 'GET');
+    const res = await auth.uploadProtectedApi('/api/unlink-members', {}, 'GET');
     members.value = res.status ? res.data : [];
   } catch (err) {
     console.error(err);
   }
 };
 
-onMounted(fetchMembers);
+// onMounted(fetchMembers);
+// Initial fetch
+onMounted(() => {
+  fetchMembers();
+  fetchMembershipType();
+  fetchMembershipSatatuses();
+});
 
-// ✅ Filtered Members
+const membershipTypes = ref([])
+// ✅ Fetch membership types
+const fetchMembershipType = async () => {
+  try {
+    const response = await auth.fetchProtectedApi('/api/org-membership-types', {}, 'GET')
+    membershipTypes.value = response.status ? response.data : []
+  } catch (error) {
+    console.error('Error fetching membership types:', error)
+  }
+}
+
+const membershipStatuses = ref([])
+const fetchMembershipSatatuses = async () => {
+  try {
+    const response = await auth.fetchProtectedApi('/api/membership-statuses', {}, 'GET')
+    membershipStatuses.value = response.status ? response.data : []
+  } catch (error) {
+    console.error('Error fetching membership types:', error)
+  }
+}
 const filteredMembers = computed(() => {
   if (!search.value) return members.value;
   const keyword = search.value.toLowerCase();
@@ -91,7 +124,6 @@ const filteredMembers = computed(() => {
   );
 });
 
-// ✅ Sorted Members
 const sortedMembers = computed(() => {
   if (!sortBy.value) return filteredMembers.value;
 
@@ -117,6 +149,10 @@ const openModal = (member = null) => {
   form.value = member
     ? {
       id: member.id,
+      existing_membership_id: member.existing_membership_id,
+      membership_type_id: member.membership_type_id,
+      membership_status_id: member.membership_status_id,
+      membership_start_date: member.membership_start_date,
       first_name: member.first_name,
       last_name: member.last_name,
       email: member.email,
@@ -128,6 +164,10 @@ const openModal = (member = null) => {
     }
     : {
       id: null,
+      existing_membership_id: '',
+      membership_type_id: '',
+      membership_status_id: '',
+      membership_start_date: '',
       first_name: '',
       last_name: '',
       email: '',
@@ -146,6 +186,10 @@ const closeModal = () => {
   isModalOpen.value = false;
   form.value = {
     id: null,
+    existing_membership_id: '',
+    membership_type_id: '',
+    membership_status_id: '',
+    membership_start_date: '',
     first_name: '',
     last_name: '',
     email: '',
@@ -168,6 +212,10 @@ const handleImage = (e) => {
 
 const saveMember = async () => {
   const formData = new FormData();
+  formData.append('existing_membership_id', form.value.existing_membership_id ?? '');
+  formData.append('membership_type_id', form.value.membership_type_id ?? '');
+  formData.append('membership_status_id', form.value.membership_status_id ?? '');
+  formData.append('membership_start_date', form.value.membership_start_date ?? '');
   formData.append('first_name', form.value.first_name ?? '');
   formData.append('last_name', form.value.last_name ?? '');
   formData.append('email', form.value.email ?? '');
@@ -181,8 +229,8 @@ const saveMember = async () => {
 
   try {
     const endpoint = isEditMode.value
-      ? `/api/independent-members/${form.value.id}`
-      : '/api/independent-members';
+      ? `/api/unlink-members/${form.value.id}`
+      : '/api/unlink-members';
     const method = isEditMode.value ? 'POST' : 'POST';
 
     if (isEditMode.value) formData.append('_method', 'PUT');
@@ -214,7 +262,7 @@ const deleteMember = async (id) => {
   });
   if (result.isConfirmed) {
     try {
-      const res = await auth.uploadProtectedApi(`/api/independent-members/${id}`, {}, 'DELETE');
+      const res = await auth.uploadProtectedApi(`/api/unlink-members/${id}`, {}, 'DELETE');
       if (res.status) {
         Swal.fire('Deleted', 'Member deleted.', 'success');
         fetchMembers();
@@ -516,70 +564,51 @@ const exportPDF = () => {
     </div>
 
     <!-- Responsive Pagination -->
-<div
-  v-if="filteredMembers.length > 0"
-  class="border rounded bg-gray-50 p-4 mt-4 space-y-4 md:space-y-0 md:flex md:items-center md:justify-between"
->
-  <!-- Item summary -->
-  <div class="text-sm text-center md:text-left text-gray-600">
-    {{ itemSummary }} | Page {{ currentPage }} of {{ totalPages }}
-  </div>
+    <div v-if="filteredMembers.length > 0"
+      class="border rounded bg-gray-50 p-4 mt-4 space-y-4 md:space-y-0 md:flex md:items-center md:justify-between">
+      <!-- Item summary -->
+      <div class="text-sm text-center md:text-left text-gray-600">
+        {{ itemSummary }} | Page {{ currentPage }} of {{ totalPages }}
+      </div>
 
-  <!-- Items per page selector -->
-  <div class="flex items-center justify-center md:justify-start gap-2 text-sm">
-    <label for="itemsPerPage" class="whitespace-nowrap">Items per page:</label>
-    <select
-      id="itemsPerPage"
-      v-model="itemsPerPage"
-      class="border rounded px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-    >
-      <option :value="5">5</option>
-      <option :value="10">10</option>
-      <option :value="20">20</option>
-      <option :value="50">50</option>
-      <option :value="100">100</option>
-      <option :value="250">250</option>
-      <option :value="500">500</option>
-      <option :value="1000">1000</option>
-    </select>
-  </div>
+      <!-- Items per page selector -->
+      <div class="flex items-center justify-center md:justify-start gap-2 text-sm">
+        <label for="itemsPerPage" class="whitespace-nowrap">Items per page:</label>
+        <select id="itemsPerPage" v-model="itemsPerPage"
+          class="border rounded px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option :value="5">5</option>
+          <option :value="10">10</option>
+          <option :value="20">20</option>
+          <option :value="50">50</option>
+          <option :value="100">100</option>
+          <option :value="250">250</option>
+          <option :value="500">500</option>
+          <option :value="1000">1000</option>
+        </select>
+      </div>
 
-  <!-- Navigation buttons -->
-  <div class="flex flex-wrap justify-center md:justify-end gap-2 text-sm">
-    <button
-      @click="currentPage = 1"
-      :disabled="currentPage === 1"
-      class="px-4 py-2 border rounded transition"
-      :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'"
-    >
-      First
-    </button>
-    <button
-      @click="currentPage--"
-      :disabled="currentPage === 1"
-      class="px-4 py-2 border rounded transition"
-      :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'"
-    >
-      Prev
-    </button>
-    <button
-      @click="currentPage++"
-      :disabled="currentPage === totalPages"
-      class="px-4 py-2 border rounded transition"
-      :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'"
-    >
-      Next
-    </button>
-    <button
-      @click="currentPage = totalPages"
-      :disabled="currentPage === totalPages"
-      class="px-4 py-2 border rounded transition"
-      :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'"
-    >
-      Last
-    </button>
-  </div>
-</div>
+      <!-- Navigation buttons -->
+      <div class="flex flex-wrap justify-center md:justify-end gap-2 text-sm">
+        <button @click="currentPage = 1" :disabled="currentPage === 1" class="px-4 py-2 border rounded transition"
+          :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+          First
+        </button>
+        <button @click="currentPage--" :disabled="currentPage === 1" class="px-4 py-2 border rounded transition"
+          :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+          Prev
+        </button>
+        <button @click="currentPage++" :disabled="currentPage === totalPages"
+          class="px-4 py-2 border rounded transition"
+          :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+          Next
+        </button>
+        <button @click="currentPage = totalPages" :disabled="currentPage === totalPages"
+          class="px-4 py-2 border rounded transition"
+          :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
+          Last
+        </button>
+      </div>
+    </div>
 
 
     <!-- Add/Edit Modal -->
@@ -589,7 +618,42 @@ const exportPDF = () => {
         <h2 class="text-xl font-bold mb-4">
           {{ isEditMode ? 'Edit' : 'Add' }} Member
         </h2>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Organisation Membership Id</label>
+            <input v-model="form.existing_membership_id" type="text"
+              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+          </div>
+
+          <div>
+            <label for="membership_type_id" class="block text-sm font-medium text-gray-700">Membership type</label>
+            <select v-model="form.membership_type_id" id="membership_type_id"
+              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+              <option value="" disabled>Select membership type</option>
+              <option v-for="membershipType in membershipTypes" :key="membershipType.membership_type_id"
+                :value="membershipType.membership_type_id">
+                {{ membershipType.membership_type.name }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label for="membership_status_id" class="block text-sm font-medium text-gray-700">Membership status</label>
+            <select v-model="form.membership_status_id" id="membership_status_id"
+              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
+              <option value="" disabled>Select membership status</option>
+              <option v-for="membershipStatus in membershipStatuses" :key="membershipStatus.id"
+                :value="membershipStatus.id">
+                {{ membershipStatus.name }}
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Membership Start Date</label>
+            <input v-model="form.membership_start_date" type="date"
+              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+          </div>
           <div>
             <label class="block mb-1">First Name</label>
             <input v-model="form.first_name" type="text" class="w-full border rounded p-2" />
