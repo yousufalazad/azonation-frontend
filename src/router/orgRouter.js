@@ -3,7 +3,6 @@ import OrgDashboardIndex from "@/views/Org/Layouts/Dashboard/Index.vue";
 import HeaderNotifications from "../views/Org/Layouts/HeaderNotification.vue";
 import Notifications from "../views/Org/Notification/Index.vue";
 
-
 // Org Profile
 import MyAccount from "../views/Org/Profile/MyAccount.vue";
 import Profile from "../views/Org/Profile/Profile.vue";
@@ -98,7 +97,7 @@ import EditProjectSummary from "../views/Org/Project/ProjectSummary/Edit.vue";
 import ViewProjectSummary from "../views/Org/Project/ProjectSummary/View.vue";
 
 //Recognition
-import Recognition from "../views/Org/Recognition/Index.vue"
+import Recognition from "../views/Org/Recognition/Index.vue";
 import CreateRecognition from "../views/Org/Recognition/Create.vue";
 import EditRecognition from "../views/Org/Recognition/Edit.vue";
 import ViewRecognition from "../views/Org/Recognition/View.vue";
@@ -120,14 +119,13 @@ import EditSuccessStory from "../views/Org/SuccessStory/Edit.vue";
 import ViewSuccessStory from "../views/Org/SuccessStory/View.vue";
 
 //Year plan
-import YearPlan from "../views/Org/YearPlan/Index.vue"
-import CreateYearPlan from "../views/Org/YearPlan/Create.vue"
-import EditYearPlan from "../views/Org/YearPlan/Edit.vue"
-import ViewYearPlan from "../views/Org/YearPlan/View.vue"
+import YearPlan from "../views/Org/YearPlan/Index.vue";
+import CreateYearPlan from "../views/Org/YearPlan/Create.vue";
+import EditYearPlan from "../views/Org/YearPlan/Edit.vue";
+import ViewYearPlan from "../views/Org/YearPlan/View.vue";
 
 //Referral
 import Referral from "../views/Org/Referral/Referral.vue";
-
 
 //Billing
 import Package from "../views/Org/Financial/Package.vue";
@@ -141,7 +139,6 @@ import ViewInvoice from "../views/Org/Financial/Invoice/View.vue";
 import OrgReceiptIndex from "../views/Org/Financial/Receipt/Index.vue";
 // import UnlinkMember from "../views/Org/Member/UnlinkMember.vue";
 
-
 const orgRoutes = [
   {
     path: "/org-dashboard",
@@ -149,7 +146,7 @@ const orgRoutes = [
     component: OrgDashboardLayout,
     meta: {
       requiresAuth: true,
-      type: 'organisation',
+      type: "organisation",
     },
     children: [
       {
@@ -158,7 +155,7 @@ const orgRoutes = [
         component: OrgDashboardIndex,
         meta: { requiresAuth: true },
       },
-       {
+      {
         path: "header-notifications",
         name: "header-notifications",
         component: HeaderNotifications,
@@ -194,16 +191,34 @@ const orgRoutes = [
         component: IndexMember,
         meta: { requiresAuth: true },
       },
-       {
-        path: "terminated-members",
-        name: "terminated-members",
+      {
+        path: "terminated-member",
+        name: "terminated-member",
         component: TerminatedMember,
         meta: { requiresAuth: true },
       },
       {
-        path: "org-membership-types",
-        name: "org-membership-types",
+        path: "org-membership-type",
+        name: "org-membership-type",
         component: OrgMembershipTypes,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "org-membership-renewal-cycle",
+        name: "org-membership-renewal-cycle",
+        component: OrgMembershipRenewalCycle,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "org-membership-renewal-price",
+        name: "org-membership-renewal-price",
+        component: OrgMembershipRenewalPrice,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "org-membership-renewal",
+        name: "org-membership-renewal",
+        component: OrgMembershipRenewal,
         meta: { requiresAuth: true },
       },
       {
@@ -237,24 +252,24 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: 'asset/create',
-        name: 'create-asset',
+        path: "asset/create",
+        name: "create-asset",
         component: CreateAsset,
         meta: { requiresAuth: true },
       },
       {
-        path: 'asset/edit/:id',
-        name: 'edit-asset',
+        path: "asset/edit/:id",
+        name: "edit-asset",
         component: EditAsset,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'asset/view/:id',
-        name: 'view-asset',
+        path: "asset/view/:id",
+        name: "view-asset",
         component: ViewAsset,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
         path: "committees",
@@ -276,37 +291,37 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: 'meeting/guest/attendance/:id',
-        name: 'meeting-guest-attendance',
+        path: "meeting/guest/attendance/:id",
+        name: "meeting-guest-attendance",
         component: MeetingGuestAttendance,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'events',
-        name: 'index-event',
+        path: "events",
+        name: "index-event",
         component: IndexEvent,
         meta: { requiresAuth: true },
       },
       {
-        path: 'event/create',
-        name: 'create-event',
+        path: "event/create",
+        name: "create-event",
         component: CreateEvent,
         meta: { requiresAuth: true },
       },
       {
-        path: 'event/edit/:id',
-        name: 'edit-event',
+        path: "event/edit/:id",
+        name: "edit-event",
         component: EditEvent,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'event/view/:id',
-        name: 'view-event',
+        path: "event/view/:id",
+        name: "view-event",
         component: ViewEvent,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
         path: "upcoming-events",
@@ -315,44 +330,44 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: 'event-summary',
+        path: "event-summary",
         name: "index-event-summary",
         component: IndexEventSummary,
         meta: { requiresAuth: true },
       },
       {
-        path: 'event-summary/create/:eventId',
+        path: "event-summary/create/:eventId",
         name: "create-event-summary",
         component: CreateEventSummary,
         meta: { requiresAuth: true },
       },
       {
-        path: 'event-summary/edit/:id',
-        name: 'edit-event-summary',
+        path: "event-summary/edit/:id",
+        name: "edit-event-summary",
         component: EditEventSummary,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'event-summary/view/:id',
-        name: 'view-event-summary',
+        path: "event-summary/view/:id",
+        name: "view-event-summary",
         component: ViewEventSummary,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'event/attendances/:id',
-        name: 'event-attendances',
+        path: "event/attendances/:id",
+        name: "event-attendances",
         component: EventAttendances,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'event/guest/attendance/:id',
-        name: 'event-guest-attendance',
+        path: "event/guest/attendance/:id",
+        name: "event-guest-attendance",
         component: EventGuestAttendance,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
         path: "history",
@@ -361,84 +376,84 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: 'history/create',
-        name: 'create-history',
+        path: "history/create",
+        name: "create-history",
         component: CreateHistory,
         meta: { requiresAuth: true },
       },
       {
-        path: 'history/edit/:id',
-        name: 'edit-history',
+        path: "history/edit/:id",
+        name: "edit-history",
         component: EditHistory,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'history/view/:id',
-        name: 'view-history',
+        path: "history/view/:id",
+        name: "view-history",
         component: ViewHistory,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
 
       {
-        path: 'meetings',
+        path: "meetings",
         name: "index-meeting",
         component: IndexMeeting,
         meta: { requiresAuth: true },
       },
       {
-        path: 'meeting/create',
+        path: "meeting/create",
         name: "create-meeting",
         component: CreateMeeting,
         meta: { requiresAuth: true },
       },
       {
-        path: 'meeting/edit/:id',
-        name: 'edit-meeting',
+        path: "meeting/edit/:id",
+        name: "edit-meeting",
         component: EditMeeting,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'meeting/view/:id',
-        name: 'view-meeting',
+        path: "meeting/view/:id",
+        name: "view-meeting",
         component: ViewMeeting,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'meeting-minutes',
+        path: "meeting-minutes",
         name: "index-meeting-minutes",
         component: IndexMeetingMinutes,
         meta: { requiresAuth: true },
       },
       {
-        path: 'meeting-minutes/create/:meetingId',
+        path: "meeting-minutes/create/:meetingId",
         name: "create-meeting-minutes",
         component: CreateMeetingMinutes,
         meta: { requiresAuth: true },
       },
       {
-        path: 'meeting-minutes/edit/:id',
-        name: 'edit-meeting-minutes',
+        path: "meeting-minutes/edit/:id",
+        name: "edit-meeting-minutes",
         component: EditMeetingMinutes,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'meeting-minutes/view/:id',
-        name: 'view-meeting-minutes',
+        path: "meeting-minutes/view/:id",
+        name: "view-meeting-minutes",
         component: ViewMeetingMinutes,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'meeting/attendances/:id',
-        name: 'meeting-attendances',
+        path: "meeting/attendances/:id",
+        name: "meeting-attendances",
         component: MeetingAttendances,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
         path: "office-document",
@@ -447,20 +462,20 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: 'document/create',
-        name: 'create-document',
+        path: "document/create",
+        name: "create-document",
         component: CreateDocument,
         meta: { requiresAuth: true },
       },
       {
-        path: 'document/edit/:id',
-        name: 'edit-document',
+        path: "document/edit/:id",
+        name: "edit-document",
         component: EditDocument,
         meta: { requiresAuth: true },
       },
       {
-        path: 'document/view/:id',
-        name: 'view-document',
+        path: "document/view/:id",
+        name: "view-document",
         component: ViewDocument,
         meta: { requiresAuth: true },
       },
@@ -471,64 +486,64 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: 'project/create',
-        name: 'create-project',
+        path: "project/create",
+        name: "create-project",
         component: CreateProject,
         meta: { requiresAuth: true },
       },
       {
-        path: 'project/edit/:id',
-        name: 'edit-project',
+        path: "project/edit/:id",
+        name: "edit-project",
         component: EditProject,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'project/view/:id',
-        name: 'view-project',
+        path: "project/view/:id",
+        name: "view-project",
         component: ViewProject,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'project/attendances/:id',
-        name: 'project-attendances',
+        path: "project/attendances/:id",
+        name: "project-attendances",
         component: ProjectAttendances,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'project/guest/attendance/:id',
-        name: 'project-guest-attendance',
+        path: "project/guest/attendance/:id",
+        name: "project-guest-attendance",
         component: ProjectGuestAttendance,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'project-summary',
+        path: "project-summary",
         name: "index-project-summary",
         component: IndexProjectSummary,
         meta: { requiresAuth: true },
       },
       {
-        path: 'project-summary/create/:projectId',
+        path: "project-summary/create/:projectId",
         name: "create-project-summary",
         component: CreateProjectSummary,
         meta: { requiresAuth: true },
       },
       {
-        path: 'project-summary/edit/:summaryId',
-        name: 'edit-project-summary',
+        path: "project-summary/edit/:summaryId",
+        name: "edit-project-summary",
         component: EditProjectSummary,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'project-summary/view/:summaryId',
-        name: 'view-project-summary',
+        path: "project-summary/view/:summaryId",
+        name: "view-project-summary",
         component: ViewProjectSummary,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
         path: "recognition",
@@ -537,24 +552,24 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: 'recognition/create',
-        name: 'create-recognition',
+        path: "recognition/create",
+        name: "create-recognition",
         component: CreateRecognition,
         meta: { requiresAuth: true },
       },
       {
-        path: 'recognition/edit/:id',
-        name: 'edit-recognition',
+        path: "recognition/edit/:id",
+        name: "edit-recognition",
         component: EditRecognition,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'recognition/view/:id',
-        name: 'view-recognition',
+        path: "recognition/view/:id",
+        name: "view-recognition",
         component: ViewRecognition,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
         path: "org-report",
@@ -575,24 +590,24 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: 'strategic-plan/create',
-        name: 'create-strategic-plan',
+        path: "strategic-plan/create",
+        name: "create-strategic-plan",
         component: CreateStrategicPlan,
         meta: { requiresAuth: true },
       },
       {
-        path: 'strategic-plan/edit/:id',
-        name: 'edit-strategic-plan',
+        path: "strategic-plan/edit/:id",
+        name: "edit-strategic-plan",
         component: EditStrategicPlan,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'strategic-plan/view/:id',
-        name: 'view-strategic-plan',
+        path: "strategic-plan/view/:id",
+        name: "view-strategic-plan",
         component: ViewStrategicPlan,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
         path: "success-story",
@@ -601,24 +616,24 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: 'success-story/create',
-        name: 'create-success-story',
+        path: "success-story/create",
+        name: "create-success-story",
         component: CreateSuccessStory,
         meta: { requiresAuth: true },
       },
       {
-        path: 'success-story/edit/:id',
-        name: 'edit-success-story',
+        path: "success-story/edit/:id",
+        name: "edit-success-story",
         component: EditSuccessStory,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'success-story/view/:id',
-        name: 'view-success-story',
+        path: "success-story/view/:id",
+        name: "view-success-story",
         component: ViewSuccessStory,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
         path: "year-plan",
@@ -627,24 +642,24 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: 'year-plan/create',
-        name: 'create-year-plan',
+        path: "year-plan/create",
+        name: "create-year-plan",
         component: CreateYearPlan,
         meta: { requiresAuth: true },
       },
       {
-        path: 'year-plan/edit/:id',
-        name: 'edit-year-plan',
+        path: "year-plan/edit/:id",
+        name: "edit-year-plan",
         component: EditYearPlan,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
-        path: 'year-plan/view/:id',
-        name: 'view-year-plan',
+        path: "year-plan/view/:id",
+        name: "view-year-plan",
         component: ViewYearPlan,
         meta: { requiresAuth: true },
-        props: true
+        props: true,
       },
       {
         path: "my-account",
@@ -706,24 +721,7 @@ const orgRoutes = [
             component: ViewBilling,
             meta: { requiresAuth: true },
           },
-          {
-            path: "org-membership-renewal-cycle",
-            name: "org-membership-renewal-cycle",
-            component: OrgMembershipRenewalCycle,
-            meta: { requiresAuth: true },
-          },
-          {
-            path: "org-membership-renewal-price",
-            name: "org-membership-renewal-price",
-            component: OrgMembershipRenewalPrice,
-            meta: { requiresAuth: true },
-          },
-          {
-            path: "org-membership-renewal",
-            name: "org-membership-renewal",
-            component: OrgMembershipRenewal,
-            meta: { requiresAuth: true },
-          },
+
           {
             path: "invoices",
             name: "invoices",
@@ -747,11 +745,10 @@ const orgRoutes = [
             name: "referral",
             component: Referral,
             meta: { requiresAuth: false },
-          }      
+          },
         ],
       },
-
     ],
-  }
+  },
 ];
 export default orgRoutes;

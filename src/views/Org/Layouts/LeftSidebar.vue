@@ -76,19 +76,33 @@ const isActive = (path) => route.path === path;
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Members</router-link>
           <router-link to="/org-dashboard/unlink-member" @click="handleLinkClick"
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Unlink Member</router-link>
+          
+          
+          <router-link :to="{ name: 'terminated-member' }" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
+            Terminated Member
+          </router-link>
 
-          <router-link to="/org-dashboard/org-membership-types" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Membership Types</router-link>
-
-          <router-link to="/org-dashboard/my-account/org-membership-renewal-cycle" @click="handleLinkClick"
+          <router-link :to="{ name: 'org-membership-renewal' }" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
+            Membership Renewal
+          </router-link>
+          <!-- <router-link to="/org-dashboard/index-member" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Member Renewal Status</router-link> -->
+          <router-link to="/org-dashboard/org-membership-renewal-cycle" @click="handleLinkClick"
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Membership Renewal Cycle</router-link>
-          <router-link to="/org-dashboard/my-account/org-membership-renewal-price" @click="handleLinkClick"
+          <router-link to="/org-dashboard/org-membership-renewal-price" @click="handleLinkClick"
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Membership Renewal Price</router-link>
-          <router-link to="/org-dashboard/my-account/org-membership-renewal" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Membership Renewal</router-link>
+                   
+          <router-link :to="{ name: 'org-membership-type' }" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
+           Membership Type
+          </router-link>
 
-          <router-link to="/org-dashboard/index-member" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Member Renewal Status</router-link>
+          <router-link :to="{ name: 'administrator' }" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
+            Org Administrator
+          </router-link>
         </div>
       </transition>
     </div>

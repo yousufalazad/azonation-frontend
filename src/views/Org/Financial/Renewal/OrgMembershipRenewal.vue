@@ -460,12 +460,20 @@ onMounted(async () => {
       </div>
 
       <div>
-        <label class="text-sm text-gray-600">Status</label>
+        <label class="text-sm text-gray-600">Renewal Status</label>
         <select v-model="statusFilter" class="w-full border rounded px-3 py-1.5 text-sm">
           <option value="">All</option>
+          <option value="completed">Renewed</option>
+          <option value="">Not Renewed Yet</option>
           <option value="pending">Pending</option>
-          <option value="completed">Completed</option>
           <option value="failed">Failed</option>
+          <option value="processing">Processing</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="requires_action">Requires Action</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="in_review">In Review</option>
+          <option value="on_hold">On Hold</option>
+          
         </select>
       </div>
 

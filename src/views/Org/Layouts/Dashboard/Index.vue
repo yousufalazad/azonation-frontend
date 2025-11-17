@@ -594,9 +594,9 @@ onMounted(() => {
               </button>
             </router-link>
 
-            <router-link :to="{ path: '/org-dashboard/terminated-members' }">
+            <router-link :to="{ name: 'terminated-member' }">
               <button class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
-                Terminated Members
+                Terminated Member
               </button>
             </router-link>
           </div>
