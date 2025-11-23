@@ -25,16 +25,17 @@ const endDate = ref('')
 const selectedProfile = ref(localStorage.getItem('yearplan_profile') || 'detailed')
 const visibleColumns = ref(
   JSON.parse(localStorage.getItem('yearplan_columns')) ||
-  ['start_year', 'end_year', 'budget', 'start_date', 'end_date', 'actions']
+  ['title', 'start_year', 'end_year', 'budget', 'start_date', 'end_date', 'actions']
 )
 
 /* ---------------- column profiles & headers ---------------- */
 const columnProfiles = {
-  minimal: ['start_year', 'end_year', 'actions'],
-  detailed: ['start_year', 'end_year', 'budget', 'start_date', 'end_date', 'actions']
+  minimal: ['title', 'start_year', 'end_year', 'actions'],
+  detailed: ['title', 'start_year', 'end_year', 'budget', 'start_date', 'end_date', 'actions']
 }
 
 const headers = [
+  { text: 'Title', value: 'title', sortable: true },
   { text: 'Start Year', value: 'start_year', sortable: true },
   { text: 'End Year', value: 'end_year', sortable: true },
   { text: 'Budget', value: 'budget', sortable: true },
@@ -65,6 +66,7 @@ const getRecords = async () => {
       // normalize if necessary
       recordList.value = res.data.map(r => ({
         id: r.id,
+        title: r.title,
         start_year: r.start_year,
         end_year: r.end_year,
         budget: r.budget,
@@ -257,7 +259,9 @@ onMounted(() => {
         <template #header-actions>
           <div class="text-right w-full pr-2">Actions</div>
         </template>
-
+        <template #item-title="{ title }">
+          <div>{{ title }}</div>
+        </template>
         <template #item-start_date="{ start_date }">
           <div>{{ start_date }}</div>
         </template>

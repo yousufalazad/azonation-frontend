@@ -10,6 +10,7 @@ const auth = authStore;
 const router = useRouter();
 const route = useRoute();
 const userId = auth.user.id;
+const title = ref('');
 const start_year = ref('');
 const end_year = ref('');
 const goals = ref('');
@@ -82,6 +83,7 @@ const initializeQuill = () => {
 
 // Reset form fields
 const resetForm = () => {
+    title.value = '';
     start_year.value = '';
     end_year.value = '';
     goalsQuill.value.root.innerHTML = '';
@@ -126,6 +128,7 @@ const submitForm = async () => {
     // Prepare the form data
     const formData = new FormData();
     formData.append('user_id', userId);
+    formData.append('title', title.value);
     formData.append('start_year', start_year.value);
     formData.append('end_year', end_year.value);
     formData.append('goals', goals.value);
@@ -202,7 +205,13 @@ onMounted(() => {
             </div>
             <form @submit.prevent="submitForm">
                 <div class="grid grid-cols-2 gap-4 mb-4">
-
+                    <!-- Title -->
+                    <div class="mb-4">
+                        <label  for="title" class="block text-gray-700 font-semibold mb-2 required">Title</label>
+                        <input v-model="title" type="text" id="title"
+                            class="w-full border border-gray-300 rounded-md py-2 px-4" placeholder="Enter title"
+                            required />
+                    </div>
                     <!-- Start Year -->
                     <div class="mb-4">
                         <label for="start_year" class="block text-gray-700 font-semibold mb-2">Start Year</label>

@@ -2,11 +2,13 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { authStore } from '../../../store/authStore';
 import Swal from 'sweetalert2';
+import EasyDataTable from 'vue3-easy-data-table'
+import 'vue3-easy-data-table/dist/style.css'
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
-import { exportToCSV, exportToExcel, exportToPDF } from '../../../global/exportUtils';
 import { pdfExport } from "@/helpers/pdfExport.js";
 import { excelExport } from "@/helpers/excelExport.js";
 import { csvExport } from "@/helpers/csvExport.js";
+import { docxExport } from '@/helpers/docxExport'
 
 const auth = authStore;
 
@@ -375,12 +377,21 @@ watch(columnView, (newVal) => {
 });
 
 // --- Export CSV ---
+const doExportDOCX = async () => {
+  docxExport({
+    headers: exportHeaders.value,
+    rows: exportRows.value,
+    title: 'Unlinked Members List',
+    fileName: 'Unlinked_Members.docx'
+  })
+}
+// --- Export CSV ---
 const exportCSV = async () => {
   await csvExport({
     headers: exportHeaders.value,
     rows: exportRows.value,
-    title: "Independent Members List",
-    fileName: "Independent_Members.csv",
+    title: "Unlinked Members List",
+    fileName: "Unlinked_Members.csv",
   });
 };
 
@@ -390,7 +401,7 @@ const exportXLSX = async () => {
     headers: exportHeaders.value,
     rows: exportRows.value,
     title: "Independent Members List",
-    fileName: "Independent_Members.xlsx",
+    fileName: "Unlinked_Members.xlsx",
   });
 };
 
@@ -399,8 +410,8 @@ const exportPDF = () => {
   pdfExport({
     headers: exportHeaders.value,
     rows: exportRows.value,
-    title: "Independent Members List",
-    fileName: "Independent_Members.pdf",
+    title: "Unlinked Members List",
+    fileName: "Unlinked_Members.pdf",
   });
 };
 
@@ -432,9 +443,13 @@ const exportPDF = () => {
           class="px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-100">Excel</button>
         <button @click="exportPDF"
           class="px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-100">PDF</button>
+        <button @click="doExportDOCX"
+          class="px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-100">Word</button>
+
         <button @click="openModal()" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">
           + Add
         </button>
+
       </div>
     </div>
 
@@ -616,7 +631,8 @@ const exportPDF = () => {
       <!-- <div class="bg-white p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto"> -->
       <div class="bg-white p-4 sm:p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <h2 class="text-xl font-bold mb-4">
-          {{ isEditMode ? 'Edit' : 'Add' }} Member
+        <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2">Unlinked Member Details</h2>
+          {{ isEditMode ? 'Edit' : 'Add' }} Unlinked Member
         </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -703,7 +719,7 @@ const exportPDF = () => {
     <div v-if="viewModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <!-- <div class="bg-white p-6 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl"> -->
       <div class="bg-white p-4 sm:p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2">Member Details</h2>
+        <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2">Unlinked Member Details</h2>
 
         <div class="space-y-4">
           <table class="w-full text-sm text-left text-gray-700">
@@ -717,11 +733,11 @@ const exportPDF = () => {
                   <span v-else class="text-gray-500">No image available</span>
                 </td>
               </tr>
-              <tr>
+              <!-- <tr>
                 <th class="py-2 pr-2 font-medium text-gray-600 w-40">ID</th>
                 <th class="py-2 pr-2 font-medium text-gray-600 w-3">:</th>
                 <td class="py-2 text-gray-800">{{ selectedMember.id }}</td>
-              </tr>
+              </tr> -->
               <tr>
                 <th class="py-2 pr-2 font-medium text-gray-600 w-40">Name</th>
                 <th class="py-2 pr-2 font-medium text-gray-600 w-3">:</th>

@@ -11,7 +11,7 @@ const sanitizedActivities = ref('');
 
 const fetchRecordDetails = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/view-year-plan/${recordId.value}`, {}, 'GET');
+        const response = await auth.fetchProtectedApi(`/api/year-plans/${recordId.value}`, {}, 'GET');
         if (response.status) {
             recordDetails.value = response.data;
             sanitizedGoals.value = DOMPurify.sanitize(recordDetails.value.goals);
@@ -44,7 +44,11 @@ onMounted(() => {
                     Back to Year Plan List
                 </button>
             </div>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <h3 class="text-gray-700 font-semibold">Title</h3>
+                    <p class="text-gray-800">{{ recordDetails.title }}</p>
+                </div>
                 <div>
                     <h3 class="text-gray-700 font-semibold">Start Year</h3>
                     <p class="text-gray-800">{{ recordDetails.start_year }}</p>
