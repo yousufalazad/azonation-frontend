@@ -773,6 +773,11 @@ onMounted(() => {
                 <!-- Details Section -->
                 <div class="space-y-4 text-gray-700">
                     <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-500 font-medium">Transaction ID</span>
+                        <span class="font-semibold">{{ selectedTransaction.transaction_code }}</span>
+                    </div>
+
+                    <div class="flex justify-between border-b pb-2">
                         <span class="text-gray-500 font-medium">Date</span>
                         <span class="font-semibold">{{ selectedTransaction.date }}</span>
                     </div>

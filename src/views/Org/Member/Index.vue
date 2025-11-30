@@ -44,54 +44,6 @@ const approved_at = ref("")
 const sponsored_user_id = ref("")
 const compact_view = ref(false)
 
-
-// const exportToWord = async () => {
-//   const tableRows = [
-//     new TableRow({
-//       children: [
-//         'Name',
-//         'Membership Type',
-//         'Membership ID',
-//         'Joining Date',
-//         'Membership Age'
-//       ].map(header => new TableCell({
-//         width: { size: 20, type: WidthType.PERCENTAGE },
-//         children: [new Paragraph({ text: header, bold: true })]
-//       }))
-//     }),
-//     ...filteredMembers.value.map(m => new TableRow({
-//       children: [
-//         m.full_name || '--',
-//         m.membership_type?.name || '--',
-//         m.existing_membership_id || '--',
-//         m.membership_start_date ? dayjs(m.membership_start_date).format('YYYY-MM-DD') : '--',
-//         calculateMembershipAge(m.membership_start_date)
-//       ].map(text => new TableCell({
-//         width: { size: 20, type: WidthType.PERCENTAGE },
-//         children: [new Paragraph(text)]
-//       }))
-//     }))
-//   ];
-
-//   const doc = new Document({
-//     sections: [{
-//       properties: {},
-//       children: [
-//         new Paragraph({
-//           text: "Members",
-//           heading: "Heading1",
-//         }),
-//         new Table({
-//           rows: tableRows
-//         })
-//       ],
-//     }],
-//   });
-
-//   const blob = await Packer.toBlob(doc);
-//   saveAs(blob, "OrgMembers.docx");
-// };
-
 // ✅ Column Profile Logic
 const columnProfiles = {
   minimal: ['full_name', 'membership_type.name', 'existing_membership_id'],
@@ -200,9 +152,6 @@ const formattedStatus = computed(() => {
     .replace(/\b\w/g, c => c.toUpperCase()) // capitalise each word
 })
 
-
-
-
 // ✅ Membership age calculator
 const calculateMembershipAge = (startDate) => {
   if (!startDate) return ''
@@ -302,7 +251,6 @@ const exportCSV = async () => {
   });
 };
 
-
 // Export XLSX with custom header/footer
 const exportXLSX = async () => {
   await excelExport({
@@ -324,7 +272,6 @@ const exportPDF = () => {
   });
 };
 
-
 const exportDOCX = () => {
   docxExport({
     headers: headers.value,
@@ -335,8 +282,6 @@ const exportDOCX = () => {
 
   });
 };
-
-
 
 const logoPath = ref(null);
 const baseURL = auth.apiBase;
@@ -442,7 +387,6 @@ const fetchLogo = async () => {
   logoPath.value = makePlaceholderPng(ORG_INITIALS, 80);
 };
 
-
 // ✅ Modal handlers
 const viewMemberDetail = (member) => {
   selectedMember.value = member
@@ -538,8 +482,6 @@ const goToNext = () => {
   if (currentPage.value < totalPages.value) currentPage.value++
 }
 const goToLast = () => currentPage.value = totalPages.value
-
-
 
 const terminationModal = ref(false)
 const terminationMember = ref(null)
@@ -676,7 +618,7 @@ const submitTermination = async () => {
       )
       return
     }
-    
+
     // ✅ Pre-check: membership status
     if (!terminationForm.membership_termination_reason_id) {
       Swal.fire(
@@ -686,7 +628,7 @@ const submitTermination = async () => {
       )
       return
     }
-    
+
     // ✅ Pre-check: organization administrator
     if (!terminationForm.org_administrator_id) {
       Swal.fire(
@@ -759,8 +701,6 @@ const submitTermination = async () => {
   }
 }
 
-
-
 // ✅ Delete Member
 const deleteMember = async (memberId) => {
   try {
@@ -807,7 +747,6 @@ const deleteMember = async (memberId) => {
   }
 }
 
-
 // ✅ Open edit modal after adding member
 const openEditById = (id) => {
   if (!id) return
@@ -816,6 +755,16 @@ const openEditById = (id) => {
   selectedMember.value = m
   editMember()
 }
+
+const filteredDropdownMembers = computed(() => {
+  if (!selectedMember.value?.individual_type_user_id) {
+    return memberList.value
+  }
+
+  return memberList.value.filter(
+    m => m.individual.id !== selectedMember.value.individual_type_user_id
+  )
+})
 
 // ✅ Lifecycle
 onMounted(async () => {
@@ -830,7 +779,6 @@ onMounted(async () => {
   if (editId) openEditById(editId)        // ⬅️ no extra fetch; use memberList
 })
 </script>
-
 
 <template>
   <div class="p-6 bg-white rounded-lg shadow space-y-6">
@@ -868,7 +816,7 @@ onMounted(async () => {
         <button @click="$router.push({ name: 'independent-member' })"
           class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
           Unlink Member
-        </button> 
+        </button>
         <button @click="$router.push({ name: 'create-member' })"
           class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm">+ Add Member</button>
       </div>
@@ -1032,7 +980,6 @@ onMounted(async () => {
       </div>
     </div>
 
-
     <!-- ✅ Modals -->
     <!-- View Modal -->
     <div v-if="viewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -1184,7 +1131,8 @@ onMounted(async () => {
             <select v-model="sponsored_user_id" id="sponsored_user_id"
               class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
               <option value="" disabled>Select Reference/Sponsored Member</option>
-              <option v-for="orgMember in memberList" :key="orgMember.individual.id" :value="orgMember.individual.id">
+              <option v-for="orgMember in filteredDropdownMembers" :key="orgMember.individual.id"
+                :value="orgMember.individual.id">
                 {{ orgMember.full_name }}
               </option>
             </select>
@@ -1195,7 +1143,8 @@ onMounted(async () => {
             <select v-model="approved_by" id="approved_by "
               class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
               <option value="" disabled>Select Approved by</option>
-              <option v-for="orgMember in memberList" :key="orgMember.individual.id" :value="orgMember.individual.id">
+              <option v-for="orgMember in filteredDropdownMembers" :key="orgMember.individual.id"
+                :value="orgMember.individual.id">
                 {{ orgMember.full_name }}
               </option>
             </select>
@@ -1205,7 +1154,6 @@ onMounted(async () => {
             <input v-model="approved_at" type="date"
               class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
           </div>
-
           <div class="mt-6 flex justify-end gap-3">
             <button type="submit"
               class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg">Save</button>

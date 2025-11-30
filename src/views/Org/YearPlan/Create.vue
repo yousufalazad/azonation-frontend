@@ -204,28 +204,28 @@ onMounted(() => {
                 </button>
             </div>
             <form @submit.prevent="submitForm">
-                <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-1 gap-4 mb-4">
                     <!-- Title -->
                     <div class="mb-4">
-                        <label  for="title" class="block text-gray-700 font-semibold mb-2 required">Title</label>
+                        <label for="title" class="block text-gray-700 font-semibold mb-2 required">Title</label>
                         <input v-model="title" type="text" id="title"
                             class="w-full border border-gray-300 rounded-md py-2 px-4" placeholder="Enter title"
                             required />
                     </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
                     <!-- Start Year -->
                     <div class="mb-4">
                         <label for="start_year" class="block text-gray-700 font-semibold mb-2">Start Year</label>
                         <input v-model="start_year" type="text" id="start_year"
-                            class="w-full border border-gray-300 rounded-md py-2 px-4" placeholder="Enter start year"
-                             />
+                            class="w-full border border-gray-300 rounded-md py-2 px-4" placeholder="Enter start year" />
                     </div>
 
                     <!-- End Year -->
                     <div class="mb-4">
                         <label for="end_year" class="block text-gray-700 font-semibold mb-2">End Year</label>
                         <input v-model="end_year" type="text" id="end_year"
-                            class="w-full border border-gray-300 rounded-md py-2 px-4" placeholder="Enter end year"
-                             />
+                            class="w-full border border-gray-300 rounded-md py-2 px-4" placeholder="Enter end year" />
                     </div>
                 </div>
                 <!-- <div class="grid mb-4"> -->
@@ -248,8 +248,7 @@ onMounted(() => {
                     <div class="mb-4">
                         <label for="budget" class="block text-gray-700 font-semibold mb-2">Budget</label>
                         <input v-model="budget" type="number" min="0" id="budget"
-                            class="w-full border border-gray-300 rounded-md py-2 px-4" placeholder="Enter budget"
-                             />
+                            class="w-full border border-gray-300 rounded-md py-2 px-4" placeholder="Enter budget" />
                     </div>
 
                     <!-- Start Date -->
@@ -272,7 +271,7 @@ onMounted(() => {
                             Setup</label>
 
                         <select v-model="privacy_setup_id" id="privacy_setup_id"
-                            class="w-full border border-gray-300 rounded-md py-2 px-4" >
+                            class="w-full border border-gray-300 rounded-md py-2 px-4">
                             <option v-for="privacy in privacySetups" :key="privacy.id" :value="privacy.id">{{
                                 privacy.name }}</option>
                         </select>
@@ -282,7 +281,7 @@ onMounted(() => {
                     <div class="mb-4">
                         <label for="published" class="block text-gray-700 font-semibold mb-2">Published</label>
                         <select v-model="published" id="published"
-                            class="w-full border border-gray-300 rounded-md py-2 px-4" >
+                            class="w-full border border-gray-300 rounded-md py-2 px-4">
                             <option value="1">Published</option>
                             <option value="0">Unpublished</option>
                         </select>
@@ -291,8 +290,7 @@ onMounted(() => {
                     <!-- Status -->
                     <div class="mb-4">
                         <label for="status" class="block text-gray-700 font-semibold mb-2">Status</label>
-                        <select v-model="status" id="status" class="w-full border border-gray-300 rounded-md py-2 px-4"
-                            >
+                        <select v-model="status" id="status" class="w-full border border-gray-300 rounded-md py-2 px-4">
                             <option value="draft">Draft</option>
                             <option value="approved">Approved</option>
                             <option value="completed">Completed</option>
