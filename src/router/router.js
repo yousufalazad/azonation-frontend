@@ -12,7 +12,7 @@ import ForgotPassword from "@/views/Auth/ForgotPassword.vue";
 import VerifyCode from "@/views/Auth/VerifyCode.vue";
 import ResetPassword from "@/views/Auth/ResetPassword.vue";
 
-// Add these
+// Sign-up and signin via OAuth from Google
 import OauthComplete from "@/views/Auth/OauthComplete.vue";
 import OauthSignedIn from "@/views/Auth/OauthSignedIn.vue"; // optional sink
 
