@@ -499,7 +499,7 @@ const fetchCurrencyPreference = async () => {
   try {
     const res = await auth.fetchProtectedApi('/api/accounts-transaction-currencies', {}, 'GET');
     const payload = res?.data;
-    transactionCurrencySymbol.value = payload?.currency?.symbol ?? '';
+    transactionCurrencySymbol.value = payload?.currency?.currency_code ?? ''; // currency_symbol
   } catch (err) {
     console.error('Failed to fetch user currency preference', err);
     transactionCurrencySymbol.value = '';

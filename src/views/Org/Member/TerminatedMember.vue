@@ -6,13 +6,8 @@ import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
-import { utils, writeFileXLSX } from 'xlsx'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
 import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
-import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType } from "docx";
-import { saveAs } from "file-saver";
 import { pdfExport } from "@/helpers/pdfExport.js";
 import { excelExport } from "@/helpers/excelExport.js";
 import { csvExport } from "@/helpers/csvExport.js";
@@ -91,7 +86,8 @@ const fetchMemberList = async () => {
 
         return {
           ...m,
-          full_name: `${m.individual.first_name || ''} ${m.individual.last_name || ''}`.trim(),
+          // full_name: `${m.individual.first_name || ''} ${m.individual.last_name || ''}`.trim(),
+          full_name: m.terminated_member_name,
           image_url: m.image_url ?? placeholderImage,
           existing_membership_id: parsedMoreInfo.existing_membership_id || '--', // ✅ Extracted field
           more_info_date: parsedMoreInfo.date || '--', // Optional: keep for later use
@@ -467,7 +463,9 @@ onMounted(() => {
             class="h-24 w-24 rounded-full object-cover" />
           <div class="flex-1">
             <h2 class="text-2xl font-semibold text-gray-800">
-              {{ selectedMember?.individual?.first_name ?? '--' }} {{ selectedMember?.individual?.last_name ?? '--' }}
+              <!-- {{ selectedMember?.individual?.first_name ?? '--' }} {{ selectedMember?.individual?.last_name ?? '--' }} -->
+              {{ selectedMember.terminated_member_name ?? '--' }}
+
             </h2>
             <p class="text-sm text-gray-500">Membership Id: {{ selectedMember?.existing_membership_id }}</p>
           </div>
@@ -513,13 +511,18 @@ onMounted(() => {
                 : 'Not provided' }}
             </span>
           </div>
-
+          <div class="flex justify-between" v-if="selectedMember?.membership_duration_days">
+            <span class="font-medium text-gray-600">Membership Duration:</span>
+            <span>
+              {{ selectedMember.membership_duration_days + ' days' }}
+            </span>
+          </div>
           <div class="flex justify-between">
             <span class="font-medium text-gray-600">Termination Reason:</span>
             <span>
               {{selectedMember?.membership_termination_reason_id
                 ? membershipTerminationReasons.find(m => m.id === selectedMember.membership_termination_reason_id).reason
-                : 'Not Reason Provided' }}
+                : 'Not Reason Provided'}}
             </span>
           </div>
 
@@ -527,10 +530,10 @@ onMounted(() => {
 
         <!-- Actions -->
         <div class="mt-8 flex justify-end gap-3">
-          <button @click="editMember"
+          <!-- <button @click="editMember"
             class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-5 py-2 rounded-lg">Edit</button>
           <button @click="deleteMember(selectedMember.id)"
-            class="bg-red-600 hover:bg-red-700 text-white text-sm px-5 py-2 rounded-lg">Delete</button>
+            class="bg-red-600 hover:bg-red-700 text-white text-sm px-5 py-2 rounded-lg">Delete</button> -->
           <button @click="closeViewModal"
             class="bg-gray-200 hover:bg-gray-300 text-sm px-5 py-2 rounded-lg">Close</button>
         </div>

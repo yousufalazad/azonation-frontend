@@ -1,9 +1,10 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
-import { authStore } from '../../../store/authStore';
+import { ref, onMounted, computed, watch, reactive } from 'vue'
+import { authStore } from '../../../store/authStore'
 import Swal from 'sweetalert2';
-import EasyDataTable from 'vue3-easy-data-table'
-import 'vue3-easy-data-table/dist/style.css'
+import dayjs from 'dayjs';
+import EasyDataTable from 'vue3-easy-data-table';
+import 'vue3-easy-data-table/dist/style.css';
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
 import { pdfExport } from "@/helpers/pdfExport.js";
 import { excelExport } from "@/helpers/excelExport.js";
@@ -88,14 +89,6 @@ const fetchMembers = async () => {
     console.error(err);
   }
 };
-
-// onMounted(fetchMembers);
-// Initial fetch
-onMounted(() => {
-  fetchMembers();
-  fetchMembershipType();
-  fetchMembershipSatatuses();
-});
 
 const membershipTypes = ref([])
 // ✅ Fetch membership types
@@ -253,20 +246,20 @@ const saveMember = async () => {
 
 const deleteMember = async (id) => {
   closeViewModal();
-  const result = await Swal.fire({
-    title: 'Are you sure?',
-    text: 'This will permanently delete the member.',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Yes, delete it!',
-  });
-  if (result.isConfirmed) {
+  // const result = await Swal.fire({
+  //   title: 'Are you sure?',
+  //   text: 'This will permanently delete the member.',
+  //   icon: 'warning',
+  //   showCancelButton: true,
+  //   confirmButtonColor: '#d33',
+  //   cancelButtonColor: '#3085d6',
+  //   confirmButtonText: 'Yes, delete it!',
+  // });
+  // if (result.isConfirmed) {
     try {
       const res = await auth.uploadProtectedApi(`/api/unlink-members/${id}`, {}, 'DELETE');
       if (res.status) {
-        Swal.fire('Deleted', 'Member deleted.', 'success');
+        // Swal.fire('Terminated', 'Member terminated.', 'success');
         fetchMembers();
       } else {
         Swal.fire('Error', 'Could not delete member.', 'error');
@@ -274,7 +267,7 @@ const deleteMember = async (id) => {
     } catch {
       Swal.fire('Error', 'An error occurred. Please try again.', 'error');
     }
-  }
+  // }
 };
 
 const openViewModal = (member) => {
@@ -305,7 +298,6 @@ const itemSummary = computed(() => {
   const total = filteredMembers.value.length;
   return `Items ${start}-${end} of ${total}`;
 });
-
 
 const minimalColumns = ['image', 'full_name', 'mobile', 'is_active', 'action'];
 const detailedColumns = ['image', 'full_name', 'email', 'mobile', 'address', 'note', 'is_active', 'action'];
@@ -415,6 +407,235 @@ const exportPDF = () => {
   });
 };
 
+
+
+const terminationModal = ref(false)
+const terminationMember = ref(null)
+const terminationReasons = ref([])
+const orgAdministrator = ref('')
+
+const terminationForm = reactive({
+  org_type_user_id: auth.user?.id ?? null,                 // org user
+  individual_type_user_id: null,                           // member's user id
+  terminated_member_name: '',
+  terminated_member_email: '',
+  terminated_member_mobile: '',
+  terminated_at: dayjs().format('YYYY-MM-DD'),
+  processed_at: dayjs().format('YYYY-MM-DD'),
+  membership_termination_reason_id: '',
+  org_administrator_id: orgAdministrator.value?.id ?? null,  // admin processing
+  rejoin_eligible: true,
+  file_path: null,                                         // File object
+  membership_duration_days: null,
+  membership_status_before_termination: null,              // 'active' | 'suspended' | 'probation'
+  membership_type_before_termination: null,
+  joined_at: dayjs().format('YYYY-MM-DD'),
+  org_note: ''
+})
+
+// ✅ Fetch termination reasons
+const fetchTerminationReasons = async () => {
+  try {
+    const res = await auth.fetchProtectedApi('/api/membership-termination-reasons', {}, 'GET')
+
+    terminationReasons.value = res?.status ? res.data : [];
+  } catch (e) {
+    console.error(e)
+    Swal.fire('An error occurred. Please try again.', '', 'error')
+
+  }
+}
+const fetchOrgAdministrators = async () => {
+  try {
+    const res = await auth.fetchProtectedApi('/api/org-administrators/primary', {}, 'GET')
+
+    orgAdministrator.value = res?.status ? res.data : {};
+    terminationForm.org_administrator_id = orgAdministrator.value?.id ?? null
+  } catch (e) {
+    console.error(e)
+    Swal.fire('An error occurred. Please try again.', '', 'error')
+  }
+}
+
+// ✅ Duration auto-calc: terminated_at - membership_start_date
+const computeTerminationDuration = () => {
+  const start = terminationMember.value?.membership_start_date
+  const end = terminationForm.terminated_at
+  if (start && end) {
+    terminationForm.membership_duration_days = dayjs(end).diff(dayjs(start), 'day')
+  } else {
+    terminationForm.membership_duration_days = null
+  }
+}
+watch(() => terminationForm.terminated_at, computeTerminationDuration)
+
+// ✅ Open / Close modal
+const openTerminationModal = (member) => {
+  console.log('Opening termination modal for member:', member);
+  terminationMember.value = member
+  terminationForm.org_type_user_id = auth.user?.id ?? null
+  terminationForm.individual_type_user_id = member.id ?? null
+  terminationForm.id = member.id ?? null
+  const first = member?.first_name ?? ''
+  const last = member?.last_name ?? ''
+  terminationForm.terminated_member_name = `${first} ${last}`.trim() || ''
+  terminationForm.terminated_member_email = member.email ?? ''
+  terminationForm.terminated_member_mobile = member.mobile ?? ''
+
+  // Defaults
+  terminationForm.existing_membership_id = member.existing_membership_id ?? ''
+  terminationForm.terminated_at = dayjs().format('YYYY-MM-DD')
+  terminationForm.processed_at = dayjs().format('YYYY-MM-DD')
+  terminationForm.membership_termination_reason_id = ''
+  terminationForm.org_administrator_id = orgAdministrator.value?.id ?? null
+  terminationForm.rejoin_eligible = true
+  terminationForm.file_path = null
+  terminationForm.membership_duration_days = null
+  terminationForm.membership_status_before_termination = member?.membership_status?.name ?? null
+  terminationForm.membership_type_before_termination = member?.membership_type?.name ?? null
+  terminationForm.joined_at = member?.membership_start_date ?? dayjs().format('YYYY-MM-DD')
+  terminationForm.org_note = ''
+
+  computeTerminationDuration()
+  terminationModal.value = true
+}
+
+const closeTerminationModal = () => {
+  terminationModal.value = false
+  terminationMember.value = null
+  // reset core fields (keep object reference intact)
+  Object.assign(terminationForm, {
+    org_type_user_id: auth.user?.id ?? null,
+    individual_type_user_id: null,
+    terminated_member_name: '',
+    terminated_member_email: '',
+    terminated_member_mobile: '',
+    terminated_at: dayjs().format('YYYY-MM-DD'),
+    processed_at: dayjs().format('YYYY-MM-DD'),
+    membership_termination_reason_id: '',
+    org_administrator_id: orgAdministrator.value?.id ?? null,
+    rejoin_eligible: true,
+    file_path: null,
+    membership_duration_days: null,
+    membership_status_before_termination: null,
+    membership_type_before_termination: null,
+    joined_at: dayjs().format('YYYY-MM-DD'),
+    org_note: ''
+  })
+}
+
+// Submit (create) termination
+const submitTermination = async () => {
+  try {
+    // ✅ Pre-check: membership type
+    if (!terminationForm.membership_type_before_termination) {
+      Swal.fire(
+        'Membership type before termination is required.',
+        '',
+        'warning'
+      )
+      return
+    }
+
+    // ✅ Pre-check: membership status
+    if (!terminationForm.membership_status_before_termination) {
+      Swal.fire(
+        'Membership status before termination is required.',
+        '',
+        'warning'
+      )
+      return
+    }
+
+    // ✅ Pre-check: membership status
+    if (!terminationForm.membership_termination_reason_id) {
+      Swal.fire(
+        'Membership termination reason before termination is required.',
+        '',
+        'warning'
+      )
+      return
+    }
+
+    // ✅ Pre-check: organization administrator
+    if (!terminationForm.org_administrator_id) {
+      Swal.fire(
+        'Member termination is not allowed until an Organization Administrator has been assigned.',
+        '',
+        'warning'
+      )
+      return
+    }
+
+    // ✅ Confirmation dialog
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This will permanently terminate the membership and delete member data.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, terminate it!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    })
+
+    if (!result.isConfirmed) return // exit if cancelled
+
+    // ✅ Build FormData
+    const fd = new FormData()
+    fd.append('existing_membership_id', terminationForm.existing_membership_id ?? '')
+    fd.append('org_type_user_id', terminationForm.org_type_user_id ?? '')
+    fd.append('individual_type_user_id', terminationForm.individual_type_user_id ?? '')
+    fd.append('terminated_member_name', terminationForm.terminated_member_name ?? '')
+    fd.append('terminated_member_email', terminationForm.terminated_member_email ?? '')
+    fd.append('terminated_member_mobile', terminationForm.terminated_member_mobile ?? '')
+    fd.append('terminated_at', terminationForm.terminated_at ?? '')
+    fd.append('processed_at', terminationForm.processed_at ?? '')
+    fd.append('membership_termination_reason_id', terminationForm.membership_termination_reason_id ?? '')
+    fd.append('org_administrator_id', terminationForm.org_administrator_id ?? null)
+    fd.append('rejoin_eligible', terminationForm.rejoin_eligible ? '1' : '0')
+    if (terminationForm.file_path) fd.append('file_path', terminationForm.file_path)
+    if (terminationForm.membership_duration_days !== null)
+      fd.append('membership_duration_days', String(terminationForm.membership_duration_days))
+    if (terminationForm.membership_status_before_termination)
+      fd.append('membership_status_before_termination', terminationForm.membership_status_before_termination)
+    if (terminationForm.membership_type_before_termination)
+      fd.append('membership_type_before_termination', terminationForm.membership_type_before_termination)
+    if (terminationForm.joined_at)
+      fd.append('joined_at', terminationForm.joined_at)
+    fd.append('org_note', terminationForm.org_note ?? '')
+
+    // ✅ Submit
+    const res = await auth.uploadProtectedApi('/api/membership-terminations', fd, 'POST', {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+
+    if (res?.status) {
+      closeTerminationModal()
+      Swal.fire({
+        icon: 'success',
+        title: 'Membership terminated',
+        text: 'The termination has been recorded.',
+        timer: 2500,
+        showConfirmButton: true,
+      })
+      deleteMember(terminationForm.id)
+    } else {
+      Swal.fire('An error occurred. Please try again.', '', 'error')
+    }
+
+  } catch (e) {
+    console.error(e)
+    Swal.fire('An error occurred. Please try again.', '', 'error')
+  }
+}
+
+onMounted(async () => {
+  await fetchMembers()
+  fetchMembershipType()
+  fetchMembershipSatatuses()
+  fetchTerminationReasons()
+  fetchOrgAdministrators()
+})
 
 </script>
 
@@ -785,15 +1006,164 @@ const exportPDF = () => {
             class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium px-4 py-2 rounded-lg transition">
             <i class="fas fa-edit mr-1"></i> Edit
           </button>
-          <button @click="deleteMember(selectedMember.id)"
+          <!-- <button @click="deleteMember(selectedMember.id)"
             class="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg transition">
             <i class="fas fa-trash mr-1"></i> Delete
+          </button> -->
+          <button @click="openTerminationModal(selectedMember)"
+            class="bg-red-600 hover:bg-red-700 text-white text-sm px-5 py-2 rounded-lg">
+            Terminate
           </button>
           <button @click="closeViewModal"
             class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition">
             <i class="fas fa-times mr-1"></i> Close
           </button>
         </div>
+      </div>
+    </div>
+
+
+    <!-- Membership Termination Modal -->
+    <div v-if="terminationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div class="bg-white rounded-2xl shadow-lg w-full max-w-3xl p-6 relative overflow-y-auto max-h-[90vh]">
+        <!-- Header -->
+        <div class="flex justify-between items-center border-b pb-4 mb-6">
+          <h2 class="text-xl font-semibold text-gray-800">Terminate Membership</h2>
+          <button @click="closeTerminationModal" class="text-gray-500 hover:text-gray-700">&times;</button>
+        </div>
+
+        <!-- Member summary -->
+        <div class="mb-6 flex items-center gap-4">
+          <img :src="terminationMember?.image_url ?? placeholderImage" class="h-16 w-16 rounded-full object-cover" />
+          <div>
+            <div class="text-lg font-semibold text-gray-800">
+
+              {{terminationForm.terminated_member_name ?? '--' }}
+            </div>
+            <div class="text-sm text-gray-500">
+              Membership ID: {{terminationForm.existing_membership_id ?? '--' }}
+            </div>
+          </div>
+        </div>
+
+        <form @submit.prevent="submitTermination" class="space-y-5">
+          <!-- Grid fields -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- terminated_member_email -->
+            <div>
+              <!-- terminated_member_name -->
+              <input v-model="terminationForm.terminated_member_name" type="text" hidden />
+              <input v-model="terminationForm.existing_membership_id" type="text" hidden />
+              <label class="block text-sm font-medium text-gray-700">Email</label>
+              <input v-model="terminationForm.terminated_member_email" type="email"
+                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0"
+                readonly />
+            </div>
+
+            <!-- terminated_member_mobile -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Mobile</label>
+              <input v-model="terminationForm.terminated_member_mobile" type="text"
+                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0"
+                readonly />
+            </div>
+
+            <!-- membership_duration_days (readonly) -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Membership Duration (days)</label>
+              <input :value="terminationForm.membership_duration_days ?? ''" type="text" readonly
+                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0" />
+            </div>
+            <!-- joined_at -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Joined At</label>
+              <input v-model="terminationForm.joined_at" type="date"
+                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0"
+                readonly />
+            </div>
+
+            <!-- membership_type_before_termination -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Membership Type Before Termination</label>
+              <input :value="terminationForm.membership_type_before_termination" type="text" readonly
+                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0" />
+            </div>
+            <!-- membership_status_before_termination -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Membership Status Before Termination</label>
+              <input :value="terminationForm.membership_status_before_termination" type="text" readonly
+                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0" />
+            </div>
+
+            <!-- membership_termination_reason_id -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700">Termination Reason</label>
+              <select v-model="terminationForm.membership_termination_reason_id"
+                class="w-full mt-1 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm">
+                <option value="" disabled>Select a reason</option>
+                <option v-for="r in terminationReasons" :key="r.id" :value="r.id">{{ r.reason }}</option>
+              </select>
+            </div>
+
+            <!-- terminated_at -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Terminated At</label>
+              <input v-model="terminationForm.terminated_at" type="date" @change="computeTerminationDuration"
+                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
+
+            <!-- processed_at -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Processed At</label>
+              <input v-model="terminationForm.processed_at" type="date"
+                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
+            <!-- file_path -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700">Supporting Document (optional)</label>
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                @change="e => terminationForm.file_path = e.target.files?.[0] ?? null" />
+            </div>
+            <!-- org_note -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700">Organisation Note</label>
+              <textarea v-model="terminationForm.org_note" rows="3"
+                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                placeholder="Reason for leaving the organisation"></textarea>
+            </div>
+
+            <!-- org_administrator_id  (readonly display) -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Org Administrator</label>
+              <input :value="terminationForm.org_administrator_id" type="text" hidden
+                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600" />
+              <input :value="orgAdministrator?.first_name || orgAdministrator?.last_name
+                ? `${orgAdministrator?.first_name ?? ''} ${orgAdministrator?.last_name ?? ''}`.trim()
+                : '--'" type="text" readonly
+                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0" />
+
+            </div>
+
+            <!-- rejoin_eligible -->
+            <div class="flex items-center gap-2 mt-6">
+              <input id="rejoin_eligible" type="checkbox" v-model="terminationForm.rejoin_eligible"
+                class="accent-blue-600" />
+              <label for="rejoin_eligible" class="text-sm text-gray-700">Eligible to rejoin in future</label>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex justify-end gap-3">
+            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-lg">
+              Confirm Termination
+            </button>
+            <button type="button" @click="closeTerminationModal"
+              class="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded-lg">
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
