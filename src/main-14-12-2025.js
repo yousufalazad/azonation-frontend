@@ -9,12 +9,9 @@ import EasyDataTable from 'vue3-easy-data-table'
 
 import { getHeaderClass } from '@/global/custom'
 
+
 // 👇 Import all icons from lucide-vue-next
 import * as icons from "lucide-vue-next";
-
-import { CurrencyService } from "@/helpers/currency";
-CurrencyService.showSymbol = false; // switch this to false if you want currency code 👈 switch this to true if you want currency symbol
-await CurrencyService.load();
 
 const app = createApp(App);
 
@@ -22,7 +19,6 @@ app.component('EasyDataTable', EasyDataTable);
 // Add globally
 app.config.globalProperties.$getHeaderClass = getHeaderClass
 
-app.config.globalProperties.$formatCurrency = CurrencyService.format.bind(CurrencyService);// ✅ Router + mount
 // 👇 Register all Lucide icons globally
 for (const [name, component] of Object.entries(icons)) {
   app.component(name, component);

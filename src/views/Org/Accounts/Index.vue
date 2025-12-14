@@ -511,7 +511,6 @@ const submitForm = async () => {
     }
 };
 
-
 // ✅ Lifecycle
 onMounted(() => {
     fetchCurrencies()
@@ -627,10 +626,7 @@ onMounted(() => {
         ]">
             Current Balance:
             <span class="font-semibold">
-                <!-- {{ selectedCurrencyData?.currency_symbol || '' }}  -->
-                {{ selectedCurrencyData?.currency_code || '' }}
-                {{ balance >= 0 ? '+' : '' }}{{ balance }}
-
+                {{ $formatCurrency(balance) }}
             </span>
         </div>
 
@@ -756,8 +752,10 @@ onMounted(() => {
         </div>
 
         <!-- ✅ View Modal -->
-        <div v-if="viewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-8 relative overflow-y-auto max-h-[90vh] animate-fade-in">
+        <div v-if="viewModal"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
+            <div
+                class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-8 relative overflow-y-auto max-h-[90vh] animate-fade-in">
                 <!-- Close Button -->
                 <button @click="viewModal = false"
                     class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition-colors duration-200"
@@ -851,8 +849,7 @@ onMounted(() => {
                     </div>
                     <div>
                         <label class="block mb-1 text-sm">Title</label>
-                        <input type="text" v-model="transaction_title" class="w-full border rounded px-3 py-1.5 text-sm"
-                            required />
+                        <input type="text" v-model="transaction_title" class="w-full border rounded px-3 py-1.5 text-sm" required />
                     </div>
                     <div>
                         <label class="block mb-1 text-sm">Description</label>
@@ -882,17 +879,26 @@ onMounted(() => {
                     <!-- Image Upload -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Upload Images</label>
+
                         <div class="space-y-3">
-                            <div v-for="(file, index) in modalImages" :key="file.id" class="flex items-center gap-4">
+                            <div v-for="(file, index) in modalImages" :key="file.id"
+                                class="flex flex-col sm:flex-row sm:items-center gap-4">
                                 <input type="file" accept="image/*"
                                     @change="event => handleFileChange(event, modalImages, index)"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2" />
-                                <div v-if="file.file && file.file.preview" class="w-16 h-16 rounded overflow-hidden">
-                                    <img :src="file.file.preview" class="w-full h-full object-cover" />
+                                    class="w-full sm:w-auto border border-gray-300 rounded-md px-3 py-2" />
+
+                                <div v-if="file.file && file.file.preview" class="flex items-center gap-3">
+                                    <div class="w-16 h-16 rounded overflow-hidden border">
+                                        <img :src="file.file.preview" class="w-full h-full object-cover" />
+                                    </div>
+
+                                    <button type="button" @click="removeFile(modalImages, index)"
+                                        class="bg-red-500 hover:bg-red-600 text-white font-semibold text-sm px-2 py-1 rounded">
+                                        X
+                                    </button>
                                 </div>
-                                <button type="button" @click="removeFile(modalImages, index)"
-                                    class="text-red-600 hover:underline text-sm">Remove</button>
                             </div>
+
                             <button type="button" @click="() => addMoreFiles(modalImages)"
                                 class="text-blue-600 hover:underline text-sm">
                                 + Add more image
@@ -903,15 +909,26 @@ onMounted(() => {
                     <!-- Document Upload -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Upload Documents</label>
+
                         <div class="space-y-3">
-                            <div v-for="(file, index) in modalDocuments" :key="file.id" class="flex items-center gap-4">
+                            <div v-for="(file, index) in modalDocuments" :key="file.id"
+                                class="flex flex-col sm:flex-row sm:items-center gap-4">
                                 <input type="file" accept=".pdf,.doc,.docx"
                                     @change="event => handleFileChange(event, modalDocuments, index)"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2" />
-                                <span v-if="file.file" class="text-sm truncate w-32">{{ file.file.name }}</span>
-                                <button type="button" @click="removeFile(modalDocuments, index)"
-                                    class="text-red-600 hover:underline text-sm">Remove</button>
+                                    class="w-full sm:w-auto border border-gray-300 rounded-md px-3 py-2" />
+
+                                <div v-if="file.file" class="flex items-center gap-3">
+                                    <span class="text-sm truncate w-full sm:w-32">
+                                        {{ file.file.name }}
+                                    </span>
+
+                                    <button type="button" @click="removeFile(modalDocuments, index)"
+                                        class="bg-red-500 hover:bg-red-600 text-white font-semibold text-sm px-2 py-1 rounded">
+                                        X
+                                    </button>
+                                </div>
                             </div>
+
                             <button type="button" @click="() => addMoreFiles(modalDocuments)"
                                 class="text-blue-600 hover:underline text-sm">
                                 + Add more document

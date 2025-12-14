@@ -32,17 +32,23 @@ onMounted(() => {
 
 <template>
   <div class="container mx-auto max-w-7xl w-10/12 p-6 bg-white rounded-lg shadow-md mt-10">
-    <div class="flex justify-between items-center mb-6">
-      <h5 class="text-xl font-semibold">Meeting Details</h5>
-      <div>
-        <button @click="router.push({ name: 'edit-meeting', params: { selectedRecordId } })" class="btn-primary mr-2">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+      <h5 class="text-xl font-semibold text-center sm:text-left">
+        Meeting Details
+      </h5>
+
+      <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+        <button @click="router.push({ name: 'edit-meeting', params: { selectedRecordId } })"
+          class="btn-primary mr-2 w-full sm:w-auto">
           Meeting Edit
         </button>
-        <button @click="router.push({ name: 'index-meeting' })" class="btn-primary">
+
+        <button @click="router.push({ name: 'index-meeting' })" class="btn-primary w-full sm:w-auto">
           Back to Meeting List
         </button>
       </div>
     </div>
+
 
     <div class="overflow-x-auto">
       <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">

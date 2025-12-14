@@ -27,20 +27,26 @@ onMounted(fetchProjectDetails);
 </script>
 
 <template>
-    <div class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow">
+  <div class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow">
     <!-- Header -->
-    <div class="flex justify-between items-center mb-8">
-      <h2 class="text-2xl font-bold text-gray-800">View Project</h2>
-      <div>
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+      <h2 class="text-2xl font-bold text-gray-800 text-center sm:text-left">
+        View Project
+      </h2>
+
+      <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
         <button @click="$router.push({ name: 'edit-project', params: { id: projectId } })"
-          class="bg-green-500 hover:bg-green-600 text-white p-2 m-2 rounded">Project Edit </button>
+          class="bg-green-500 hover:bg-green-600 text-white p-2 m-2 rounded w-full sm:w-auto">
+          Project Edit
+        </button>
 
         <button @click="$router.push({ name: 'index-project' })"
-          class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
+          class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300 w-full sm:w-auto">
           Back to Project List
         </button>
       </div>
     </div>
+
 
     <!-- Table -->
     <table class="table-auto w-full border-collapse border border-gray-300 text-sm">

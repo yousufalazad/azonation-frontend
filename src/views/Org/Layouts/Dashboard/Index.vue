@@ -551,11 +551,23 @@ onMounted(() => {
           </router-link>
         </div>
 
-        <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
+        <!-- <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
           <h5 class="text-sm text-gray-500 font-medium mb-1">Balance</h5>
           <p class="text-2xl font-bold text-gray-500">
                 {{  transactionCurrencySymbol   || '' }}
                 {{ balance >= 0 ? '+' : '' }}{{ balance }}</p>
+          <router-link to="/org-dashboard/accounts">
+            <button class="text-blue-500 text-sm hover:underline mt-2 inline-block">
+              See all transactions
+            </button>
+          </router-link>
+        </div> -->
+
+        <div class="bg-white shadow rounded-xl p-6 hover:shadow-lg transition">
+          <h5 class="text-sm text-gray-500 font-medium mb-1">Balance</h5>
+          <p class="text-2xl font-bold text-gray-500">
+            {{ $formatCurrency(balance) }}
+          </p>
           <router-link to="/org-dashboard/accounts">
             <button class="text-blue-500 text-sm hover:underline mt-2 inline-block">
               See all transactions

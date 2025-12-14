@@ -360,20 +360,28 @@ onMounted(() => {
             <!-- Images Upload -->
             <div class="mb-4">
                 <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
+
                 <div class="space-y-3">
-                    <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
-                        <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept="image/*"
-                            @change="event => handleFileChange(event, images, index)" />
+                    <div v-for="(file, index) in images" :key="file.id"
+                        class="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <input type="file" class="w-full sm:w-auto border border-gray-300 rounded-md py-2 px-4"
+                            accept="image/*" @change="event => handleFileChange(event, images, index)" />
 
-                        <div v-if="file.file && file.file.preview" class="w-16 h-16 border rounded-md overflow-hidden">
-                            <img :src="file.file.preview" alt="Preview" class="w-full h-full object-cover" />
+                        <div v-if="file.file && file.file.preview" class="flex items-center gap-3">
+                            <div class="w-16 h-16 border rounded-md overflow-hidden">
+                                <img :src="file.file.preview" alt="Preview" class="w-full h-full object-cover" />
+                            </div>
+
+                            <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
+                                @click="removeFile(images, index)">
+                                X
+                            </button>
                         </div>
-
-                        <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-                            @click="removeFile(images, index)">X</button>
                     </div>
                 </div>
-                <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+
+                <button type="button"
+                    class="mt-3 w-full sm:w-auto bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
                     @click="() => addMoreFiles(images)">
                     Add more image
                 </button>
@@ -382,22 +390,33 @@ onMounted(() => {
             <!-- Documents Upload -->
             <div class="mb-4">
                 <label class="block text-gray-700 font-semibold mb-2">Upload Documents</label>
+
                 <div class="space-y-3">
-                    <div v-for="(file, index) in documents" :key="file.id" class="flex items-center gap-4">
-                        <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept=".pdf,.doc,.docx"
-                            @change="event => handleFileChange(event, documents, index)" />
+                    <div v-for="(file, index) in documents" :key="file.id"
+                        class="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <input type="file" class="w-full sm:w-auto border border-gray-300 rounded-md py-2 px-4"
+                            accept=".pdf,.doc,.docx" @change="event => handleFileChange(event, documents, index)" />
 
-                        <span v-if="file.file" class="truncate w-32">{{ file.file.name }}</span>
+                        <div v-if="file.file" class="flex items-center gap-3">
+                            <span class="truncate w-full sm:w-32">
+                                {{ file.file.name }}
+                            </span>
 
-                        <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-                            @click="removeFile(documents, index)">X</button>
+                            <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
+                                @click="removeFile(documents, index)">
+                                X
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+
+                <button type="button"
+                    class="mt-3 w-full sm:w-auto bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
                     @click="() => addMoreFiles(documents)">
                     Add more document
                 </button>
             </div>
+
 
             <div class="flex justify-end gap-4">
                 <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Update

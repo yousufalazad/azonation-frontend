@@ -90,8 +90,8 @@ const getPrivacySetups = async () => {
     // Assign first item's ID if the list is not empty
     if (privacySetupList.value.length > 0) {
       privacy_setup_id.value = privacySetupList.value[0].id;
-    } 
-   } catch (error) {
+    }
+  } catch (error) {
     console.error('Error fetching privacy setups:', error);
     privacySetupList.value = [];
   }
@@ -295,12 +295,16 @@ onMounted(() => {
 
 <template>
   <div class="container mx-auto max-w-5xl p-6 bg-white shadow-md rounded-lg mt-10">
-    <div class="flex justify-between items-center border-b pb-4 mb-6">
-      <h1 class="text-2xl font-semibold text-gray-800">Create New Meeting</h1>
-      <button @click="router.push({ name: 'index-meeting' })" class="btn-primary">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border-b pb-4 mb-6">
+      <h1 class="text-2xl font-semibold text-gray-800 text-center sm:text-left">
+        Create New Meeting
+      </h1>
+
+      <button @click="router.push({ name: 'index-meeting' })" class="btn-primary w-full sm:w-auto">
         Back to Meetings
       </button>
     </div>
+
 
     <form @submit.prevent="submitForm" class="space-y-6">
       <!-- Row 1: Name and Short Name -->
@@ -454,43 +458,63 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Images Upload -->
       <div class="mb-4">
         <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
+
         <div class="space-y-3">
-          <div v-for="(file, index) in images" :key="file.id" class="flex items-center gap-4">
-            <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept="image/*"
+          <div v-for="(file, index) in images" :key="file.id" class="flex flex-col md:flex-row md:items-center gap-3">
+            <!-- File Input -->
+            <input type="file" accept="image/*" class="w-full md:w-auto border border-gray-300 rounded-md py-2 px-3"
               @change="event => handleFileChange(event, images, index)" />
 
+            <!-- Preview -->
             <div v-if="file.file && file.file.preview" class="w-16 h-16 border rounded-md overflow-hidden">
-              <img :src="file.file.preview" alt="Preview" class="w-full h-full object-cover" />
+              <img :src="file.file.preview" class="w-full h-full object-cover" alt="Preview" />
             </div>
 
-            <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-              @click="removeFile(images, index)">X</button>
+            <!-- Remove Button -->
+            <button type="button"
+              class="self-start md:self-auto bg-red-500 text-white px-3 py-1 text-sm rounded hover:bg-red-600"
+              @click="removeFile(images, index)">
+              Remove
+            </button>
           </div>
         </div>
-        <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+
+        <button type="button"
+          class="mt-3 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 w-full md:w-auto"
           @click="() => addMoreFiles(images)">
           Add more image
         </button>
       </div>
 
-      <!-- Documents Upload -->
       <div class="mb-4">
         <label class="block text-gray-700 font-semibold mb-2">Upload Documents</label>
+
         <div class="space-y-3">
-          <div v-for="(file, index) in documents" :key="file.id" class="flex items-center gap-4">
-            <input type="file" class="border border-gray-300 rounded-md py-2 px-4" accept=".pdf,.doc,.docx"
+          <div v-for="(file, index) in documents" :key="file.id"
+            class="flex flex-col md:flex-row md:items-center gap-3">
+            <!-- File Input -->
+            <input type="file" accept=".pdf,.doc,.docx"
+              class="w-full md:w-auto border border-gray-300 rounded-md py-2 px-3"
               @change="event => handleFileChange(event, documents, index)" />
 
-            <span v-if="file.file" class="truncate w-32">{{ file.file.name }}</span>
+            <!-- File Name -->
+            <span v-if="file.file" class="text-sm text-gray-600 truncate md:w-40">
+              {{ file.file.name }}
+            </span>
 
-            <button type="button" class="bg-red-500 text-white px-2 py-1 text-sm hover:bg-red-600"
-              @click="removeFile(documents, index)">X</button>
+            <!-- Remove Button -->
+            <button type="button"
+              class="self-start md:self-auto bg-red-500 text-white px-3 py-1 text-sm rounded hover:bg-red-600"
+              @click="removeFile(documents, index)">
+              Remove
+            </button>
           </div>
         </div>
-        <button type="button" class="mt-3 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+
+        <button type="button"
+          class="mt-3 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 w-full md:w-auto"
           @click="() => addMoreFiles(documents)">
           Add more document
         </button>

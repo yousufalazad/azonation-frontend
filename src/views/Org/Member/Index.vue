@@ -39,6 +39,8 @@ const editModal = ref(false)
 const individual_type_user_id = ref("")
 const membership_type_id = ref("")
 const membership_status_id = ref("")
+const new_membership_type_started_from = ref("")
+const new_membership_status_started_from = ref("")
 const approved_by = ref("")
 const approved_at = ref("")
 const sponsored_user_id = ref("")
@@ -386,17 +388,22 @@ const fetchLogo = async () => {
   // fallback to TRUE PNG
   logoPath.value = makePlaceholderPng(ORG_INITIALS, 80);
 };
-
 // ✅ Modal handlers
 const viewMemberDetail = (member) => {
   selectedMember.value = member
   viewModal.value = true
+}
+const closeViewModal = () => {
+  selectedMember.value = null
+  viewModal.value = false
 }
 
 const editMember = () => {
   if (selectedMember.value) {
     membership_type_id.value = selectedMember.value.membership_type_id
     membership_status_id.value = selectedMember.value.membership_status_id
+    new_membership_type_started_from.value = ""
+    new_membership_status_started_from.value = ""
     approved_by.value = selectedMember.value.approved_by
     approved_at.value = selectedMember.value.approved_at
     sponsored_user_id.value = selectedMember.value.sponsored_user_id
@@ -404,15 +411,12 @@ const editMember = () => {
   }
 }
 
-const closeViewModal = () => {
-  selectedMember.value = null
-  viewModal.value = false
-}
-
 const closeEditModal = () => {
   selectedMember.value = null
   membership_type_id.value = ""
+  new_membership_type_started_from.value = ""
   membership_status_id.value = ""
+  new_membership_status_started_from.value = ""
   approved_by.value = ""
   approved_at.value = ""
   sponsored_user_id.value = ""
@@ -430,11 +434,14 @@ const updateMember = async () => {
       existing_membership_id: selectedMember.value?.existing_membership_id,
       membership_start_date: selectedMember.value?.membership_start_date,
       membership_type_id: membership_type_id.value,
+      new_membership_type_started_from: selectedMember.value?.new_membership_type_started_from,
+      new_membership_status_started_from: selectedMember.value?.new_membership_status_started_from,
       membership_status_id: membership_status_id.value,
       approved_by: approved_by.value,
       approved_at: approved_at.value,
       sponsored_user_id: sponsored_user_id.value,
     }
+    console.log(payload);
     const response = await auth.fetchProtectedApi(`/api/org-members/${memberId}`, payload, 'PUT')
 
     if (response.status) {
@@ -1109,6 +1116,11 @@ onMounted(async () => {
             </select>
           </div>
           <div>
+            <label class="block text-sm font-medium text-gray-700">New Membership type started from</label>
+            <input v-model="selectedMember.new_membership_type_started_from" type="date"
+              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+          </div>
+          <div>
             <label for="membership_status_id" class="block text-sm font-medium text-gray-700">Membership status</label>
             <select v-model="membership_status_id" id="membership_status_id"
               class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
@@ -1118,6 +1130,11 @@ onMounted(async () => {
                 {{ membershipStatus.name }}
               </option>
             </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">New Membership status started from</label>
+            <input v-model="selectedMember.new_membership_status_started_from" type="date"
+              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Membership Start Date</label>

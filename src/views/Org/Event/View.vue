@@ -30,18 +30,24 @@ onMounted(() => {
 
 <template>
     <div class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow">
-        <div class="flex justify-between items-center mb-6">
-            <h5 class="text-xl font-semibold">View Event</h5>
-            <div>
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+            <h5 class="text-xl font-semibold text-center sm:text-left">
+                View Event
+            </h5>
+
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
                 <button @click="$router.push({ name: 'edit-event', params: { id: record.id } })"
-                    class="bg-yellow-500 hover:bg-yellow-600 text-white p-2 m-2 rounded">Event Edit </button>
+                    class="bg-yellow-500 hover:bg-yellow-600 text-white p-2 m-2 rounded w-full sm:w-auto">
+                    Event Edit
+                </button>
 
                 <button @click="$router.push({ name: 'index-event' })"
-                    class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300 w-full sm:w-auto">
                     Back to Event List
                 </button>
             </div>
         </div>
+
 
         <!-- Event Details Table -->
         <div class="overflow-x-auto">
