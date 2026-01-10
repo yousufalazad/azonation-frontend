@@ -106,6 +106,7 @@ const saveOrUpdateCurrency = async () => {
         if (response.status) {
             Swal.fire('Success', 'Currency saved successfully', 'success')
             selectedCurrencyId.value = response.data.id
+            await CurrencyService.load();
         } else {
             Swal.fire('Failed', response.message || 'Failed to save currency', 'error')
         }
@@ -511,8 +512,12 @@ const submitForm = async () => {
     }
 };
 
-// ✅ Lifecycle
-onMounted(() => {
+import { CurrencyService } from "@/helpers/currency";
+const formatCurrency = (a) => CurrencyService.format(a);
+
+onMounted(async () => {
+    CurrencyService.showSymbol = false; // true = $ or false = USD
+    await CurrencyService.load();
     fetchCurrencies()
     fetchCurrencyPreference()
     getFunds()
@@ -626,7 +631,7 @@ onMounted(() => {
         ]">
             Current Balance:
             <span class="font-semibold">
-                {{ $formatCurrency(balance) }}
+                {{ formatCurrency(balance) }}
             </span>
         </div>
 
@@ -675,7 +680,7 @@ onMounted(() => {
                         <td class="px-3 py-2">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
                         <td v-if="visibleColumns.includes('date')" class="px-3 py-2">{{ transaction.date }}</td>
                         <td v-if="visibleColumns.includes('title')" class="px-3 py-2">{{ transaction.transaction_title
-                            }}</td>
+                        }}</td>
                         <td v-if="visibleColumns.includes('fund')" class="px-3 py-2">{{ transaction.funds?.name }}</td>
                         <td v-if="visibleColumns.includes('income')" class="px-3 py-2 text-green-600 font-medium">
                             <span v-if="transaction.type === 'income'">{{ transaction.amount }}</span>
@@ -715,7 +720,7 @@ onMounted(() => {
                     <label class="text-sm">Items per page:</label>
                     <select v-model="itemsPerPage" class="border rounded px-2 py-1 text-sm">
                         <option v-for="size in [5, 10, 20, 50, 100, 250, 500, 1000]" :key="size" :value="size">{{ size
-                            }}
+                        }}
                         </option>
                     </select>
                 </div>
@@ -793,7 +798,7 @@ onMounted(() => {
                     </div>
                     <div class="flex justify-between border-b pb-2">
                         <span class="text-gray-500 font-medium">Amount</span>
-                        <span class="font-semibold text-green-600">{{ selectedTransaction.amount }}</span>
+                        <span class="font-semibold text-green-600">{{ formatCurrency(selectedTransaction.amount) }}</span>
                     </div>
 
                     <div class="pt-3">
@@ -849,7 +854,8 @@ onMounted(() => {
                     </div>
                     <div>
                         <label class="block mb-1 text-sm">Title</label>
-                        <input type="text" v-model="transaction_title" class="w-full border rounded px-3 py-1.5 text-sm" required />
+                        <input type="text" v-model="transaction_title" class="w-full border rounded px-3 py-1.5 text-sm"
+                            required />
                     </div>
                     <div>
                         <label class="block mb-1 text-sm">Description</label>
