@@ -741,6 +741,30 @@ const orgRoutes = [
             meta: { requiresAuth: true },
           },
           {
+            path: "org-membership-type",
+            name: "org-membership-type",
+            component: OrgMembershipTypes,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: "org-membership-renewal-cycle",
+            name: "org-membership-renewal-cycle",
+            component: OrgMembershipRenewalCycle,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: "org-membership-renewal-price",
+            name: "org-membership-renewal-price",
+            component: OrgMembershipRenewalPrice,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: "org-membership-renewal",
+            name: "org-membership-renewal",
+            component: OrgMembershipRenewal,
+            meta: { requiresAuth: true },
+          },
+          {
             path: "referral",
             name: "referral",
             component: Referral,
