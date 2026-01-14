@@ -62,7 +62,6 @@ const city = ref('');
 const state_or_region = ref('');
 const postal_code = ref('');
 const userCountry = ref('');
-const modalVisibleAddress = ref(false);
 const isEditMode = ref(false);
 
 // Org Phone Number
@@ -169,36 +168,7 @@ const updateUsername = async () => {
     }
 };
 
-const fetchOrgAddress = async () => {
-    try {
-        const res = await auth.fetchProtectedApi("/api/addresses/", {}, 'GET');
 
-        // allow both object and array shapes
-        const data = res?.data;
-        const addr = Array.isArray(data) ? data[0] : data;
-
-        if (res.status && addr) {
-            addressId.value = addr.id ?? null;
-            address_user_id.value = addr.user_id ?? null;
-            address_line_one.value = addr.address_line_one ?? '';
-            address_line_two.value = addr.address_line_two ?? '';
-            city.value = addr.city ?? '';
-            state_or_region.value = addr.state_or_region ?? '';
-            postal_code.value = addr.postal_code ?? '';
-            // choose mode automatically
-            isEditMode.value = !addressId.value; // true => Create, false => Update
-        } else {
-            // No address yet — treat as empty, allow Create
-            addressId.value = null;
-            isEditMode.value = true;
-        }
-    } catch (e) {
-        console.error("Error fetching organization address:", e);
-        // Keep the form empty and allow Create instead of popping an error
-        addressId.value = null;
-        isEditMode.value = true;
-    }
-};
 
 const createAddress = async () => {
     try {
@@ -250,10 +220,186 @@ const updateAddress = async () => {
     }
 };
 
+// const fetchOrgAddress = async () => {
+//     try {
+//         const res = await auth.fetchProtectedApi(`/api/addresses/`, {}, 'GET');
+//         const data = res?.data;
+//         const address = Array.isArray(data) ? data[0] : data;
+
+//         if (res.status && address) {
+//             addressId.value = address.id ?? null;
+//             address_line_one.value = address.address_line_one ?? '';
+//             address_line_two.value = address.address_line_two ?? '';
+//             city.value = address.city ?? '';
+//             state_or_region.value = address.state_or_region ?? '';
+//             postal_code.value = address.postal_code ?? '';
+//             address_user_id.value = address.user_id ?? null;
+//             isEditMode.value = !!addressId.value; // true => Edit, false => Add
+//         } else {
+//             addressId.value = null;
+//             isEditMode.value = false; // Add
+//         }
+//     } catch (e) {
+//         console.error("Error fetching organization address:", e);
+//         addressId.value = null;
+//         isEditMode.value = false;
+//     }
+// };
+const fetchOrgAddress = async () => {
+    try {
+        const res = await auth.fetchProtectedApi(`/api/addresses/`, {}, 'GET')
+        const data = res?.data
+        const address = Array.isArray(data) ? data[0] : data
+
+        if (res.status && address) {
+            addressId.value = address.id ?? null
+            isEditMode.value = true
+
+            // ✅ form data save
+            addressForm.value = {
+                line1: address.address_line_one ?? '',
+                line2: address.address_line_two ?? '',
+                city: address.city ?? '',
+                region: address.state_or_region ?? '',
+                postcode: address.postal_code ?? '',
+            }
+        } else {
+            isEditMode.value = false
+        }
+    } catch (e) {
+        isEditMode.value = false
+    }
+}
+
+
+const fieldMap = {
+    line1: 'address_line_one',
+    line2: 'address_line_two',
+    city: 'city',
+    region: 'state_or_region',
+    postcode: 'postal_code',
+}
+
+const saveAddress = async () => {
+    try {
+        // 1️⃣ Apply uppercase rules
+        addressFormat.value.uppercase.forEach(field => {
+            if (addressForm.value[field]) {
+                addressForm.value[field] =
+                    addressForm.value[field].toUpperCase()
+            }
+        })
+
+        // 2️⃣ Build components object
+        const components = {}
+        Object.keys(fieldMap).forEach(key => {
+            components[key] = addressForm.value[key] || null
+        })
+
+        // 3️⃣ Build API payload
+        const payload = {
+            components, // ✅ REQUIRED
+        }
+
+        // (optional) still send flat fields if needed elsewhere
+        Object.keys(fieldMap).forEach(key => {
+            payload[fieldMap[key]] = addressForm.value[key] || null
+        })
+
+        // 4️⃣ Create or Update
+        const isUpdate = !!addressId.value
+        alert(addressId.value);
+        const url = isUpdate
+            ? `/api/addresses/${addressId.value}`
+            : `/api/addresses`
+
+        const method = isUpdate ? 'PUT' : 'POST'
+
+        // 5️⃣ API call
+        const res = await auth.fetchProtectedApi(url, payload, method)
+
+        if (res.status) {
+            Swal.fire(
+                'Success',
+                isUpdate
+                    ? 'Address updated successfully'
+                    : 'Address created successfully',
+                'success'
+            )
+
+            closeAddressModal()
+            await fetchOrgAddress()
+        } else {
+            Swal.fire('Error', res.message || 'Failed to save address', 'error')
+        }
+    } catch (e) {
+        console.error('Error saving address:', e)
+        Swal.fire('Error', 'Failed to save address', 'error')
+    }
+}
+//for Address
+const modalVisibleAddress = ref(false)
+const addressFormat = ref(null)
+const addressForm = ref({})
+const loadingFormat = ref(false)
+
+// const openAddressModal = async () => {
+//     modalVisibleAddress.value = true
+//     loadingFormat.value = true
+//     try {
+//         const res = await auth.fetchProtectedApi("/api/addresses/address-format", {}, 'GET')
+//         addressFormat.value = res.format
+//         // Initialize form fields dynamically
+//         addressForm.value = {}
+//         res.format.fields.forEach(field => {
+//             addressForm.value[field] = ''
+//         })
+//     } catch (e) {
+//         console.error('Failed to load address format')
+//     } finally {
+//         loadingFormat.value = false
+//     }
+// }
+
+const openAddressModal = async () => {
+    modalVisibleAddress.value = true
+    loadingFormat.value = true
+    try {
+        const res = await auth.fetchProtectedApi("/api/addresses/address-format", {}, 'GET')
+        console.log(res, 'all');
+        console.log(res.countryId), 'country id';
+        console.log(res.group, 'group');
+        console.log(res.group_alias, 'group alias');
+        console.log(res.format, 'format');
+
+
+        addressFormat.value = res.format
+        // 🟢 Create mode → empty
+        if (!isEditMode.value) {
+            addressForm.value = {}
+            res.format.fields.forEach(field => {
+                addressForm.value[field] = ''
+            })
+        }
+        // 🟢 Edit mode → fetchOrgAddress() already filled form
+    } catch (e) {
+        console.error('Failed to load address format')
+    } finally {
+        loadingFormat.value = false
+    }
+}
+
+const closeAddressModal = () => {
+    modalVisibleAddress.value = false;
+};
+
+
+
+
+// Suggest: 1 = Mobile, 2 = Work, 3 = Home, 4 = Other
 const phoneTypeLabel = (v) => ({ 1: 'Mobile', 2: 'Work', 3: 'Home', 4: 'Other' }[Number(v)] || 'Other');
 // Suggest: 0 = Private, 1 = Public (or match your backend exactly)
 const statusLabel = (v) => ({ 0: 'Private', 1: 'Public', 2: 'Connected Organisation', 3: 'Members Only' }[Number(v)] || 'Other');
-
 
 const fetchOrgPhoneNumber = async () => {
     try {
@@ -280,7 +426,6 @@ const fetchOrgPhoneNumber = async () => {
     }
 };
 
-
 const updateOrgPhoneNumber = async () => {
     try {
         const payload = {
@@ -305,7 +450,6 @@ const updateOrgPhoneNumber = async () => {
         Swal.fire('Error', 'Failed to save Phone Number', 'error');
     }
 };
-
 
 const fetchDialingCode = async () => {
     try {
@@ -362,34 +506,12 @@ const fetchOrgCountry = async () => {
     }
 };
 
-
 const handleImageUpload = (event) => {
     selectedImage.value = event.target.files[0];
 };
 
 
-//for Address
-// const openAddressModal = () => {
 
-//     if (address_user_id.value === null) {
-//         //console.log('true', address_user_id);
-//         isEditMode.value = true; // createAddress() will work 
-//     } else {
-//         //console.log('false', address_user_id);
-//         isEditMode.value = false; // updateAddress() will work
-//     }
-//     //console.log('bahire', address_user_id)
-//     modalVisibleAddress.value = true;
-// };
-
-const openAddressModal = () => {
-    // Mode is already inferred in fetchOrgAddress()
-    modalVisibleAddress.value = true;
-};
-
-const closeAddressModal = () => {
-    modalVisibleAddress.value = false;
-};
 
 //for Phone Number
 const openPhoneModal = () => {
@@ -593,14 +715,15 @@ onMounted(() => {
                 <div class="flex items-start justify-between pb-4">
                     <div>
                         <p class="text-gray-900 mt-1 leading-relaxed">
-                            <span v-if="address_line_one">{{ address_line_one }}, </span>
-                            <span v-if="address_line_two">{{ address_line_two }}, </span>
-                            <span v-if="city">{{ city }}, </span>
-                            <span v-if="state_or_region">{{ state_or_region }}, </span>
-                            <span v-if="postal_code">{{ postal_code }}, </span>
+                            <span v-if="addressForm.line1">{{ addressForm.line1 }}, </span>
+                            <span v-if="addressForm.line2">{{ addressForm.line2 }}, </span>
+                            <span v-if="addressForm.city">{{ addressForm.city }}, </span>
+                            <span v-if="addressForm.region">{{ addressForm.region }}, </span>
+                            <span v-if="addressForm.postcode">{{ addressForm.postcode }}, </span>
                             <span v-if="userCountry">{{ userCountry }}</span>
                         </p>
                     </div>
+
                     <button @click="openAddressModal()"
                         class="text-sm text-blue-600 hover:underline whitespace-nowrap ml-4">
                         Edit
@@ -609,89 +732,57 @@ onMounted(() => {
 
                 <!-- Address Modal -->
                 <div v-if="modalVisibleAddress"
-                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4 sm:px-0">
-                    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
-                        <!-- Modal Title -->
-                        <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">
-                            {{ isEditMode ? 'Create Address' : 'Edit Address' }}
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+
+                    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+
+                        <h2 class="text-xl font-semibold text-center mb-6">
+                            {{ isEditMode ? 'Edit Address' : 'Create Address' }}
                         </h2>
 
-                        <!-- Form Fields -->
-                        <div class="space-y-5">
-                            <!-- Address Line One -->
-                            <div>
-                                <label for="address_line_one" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Address Line One
-                                </label>
-                                <input v-model="address_line_one" type="text" id="address_line_one" class="w-full border border-gray-300 rounded-lg p-2.5 shadow-sm
-                          focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" required />
-                                <p v-if="auth.errors?.address_line_one" class="text-red-500 text-xs mt-2">
-                                    {{ auth.errors?.address_line_one[0] }}
-                                </p>
-                            </div>
+                        <div v-if="loadingFormat" class="text-center py-10">
+                            Loading address format...
+                        </div>
 
-                            <!-- Address Line Two -->
-                            <div>
-                                <label for="address_line_two" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Address Line Two
-                                </label>
-                                <input v-model="address_line_two" type="text" id="address_line_two" class="w-full border border-gray-300 rounded-lg p-2.5 shadow-sm
-                          focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" />
-                                <p v-if="auth.errors?.address_line_two" class="text-red-500 text-xs mt-2">
-                                    {{ auth.errors?.address_line_two[0] }}
-                                </p>
-                            </div>
+                        <div v-else class="space-y-5">
 
-                            <!-- City -->
-                            <div>
-                                <label for="city" class="block text-sm font-medium text-gray-700 mb-1">City</label>
-                                <input v-model="city" type="text" id="city" class="w-full border border-gray-300 rounded-lg p-2.5 shadow-sm
-                          focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" />
-                                <p v-if="auth.errors?.city" class="text-red-500 text-xs mt-2">{{ auth.errors?.city[0] }}
-                                </p>
-                            </div>
-
-                            <!-- State or Region -->
-                            <div>
-                                <label for="state_or_region" class="block text-sm font-medium text-gray-700 mb-1">
-                                    State or Region
+                            <div v-for="field in addressFormat.fields" :key="field">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ addressFormat.labels[field] }}
+                                    <span v-if="addressFormat.required.includes(field)" class="text-red-500">*</span>
                                 </label>
-                                <input v-model="state_or_region" type="text" id="state_or_region" class="w-full border border-gray-300 rounded-lg p-2.5 shadow-sm
-                          focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" />
-                                <p v-if="auth.errors?.state_or_region" class="text-red-500 text-xs mt-2">
-                                    {{ auth.errors?.state_or_region[0] }}
-                                </p>
-                            </div>
 
-                            <!-- Postal Code -->
-                            <div>
-                                <label for="postal_code" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Postal Code
-                                </label>
-                                <input v-model="postal_code" type="text" id="postal_code" autocomplete="postal-code"
-                                    inputmode="text" class="w-full border border-gray-300 rounded-lg p-2.5 shadow-sm
-           focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" />
-                                <p v-if="auth.errors?.postal_code" class="text-red-500 text-xs mt-2">
-                                    {{ auth.errors?.postal_code[0] }}
+                                <input v-model="addressForm[field]" type="text"
+                                    :required="addressFormat.required.includes(field)" class="w-full border border-gray-300 rounded-lg p-2.5 shadow-sm
+                           focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" />
+
+                                <p v-if="auth.errors?.[field]" class="text-red-500 text-xs mt-2">
+                                    {{ auth.errors[field][0] }}
                                 </p>
                             </div>
 
                         </div>
 
-                        <!-- Action Buttons -->
-                        <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-6">
-                            <button @click="closeAddressModal"
-                                class="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg shadow transition">
+                        <!-- Buttons -->
+                        <div class="flex justify-end gap-3 mt-6">
+                            <button @click="modalVisibleAddress = false"
+                                class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg">
                                 Close
                             </button>
-                            <button @click="isEditMode ? createAddress() : updateAddress()"
-                                class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow transition">
+                            <!-- <button @click="submitAddress"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg">
                                 {{ isEditMode ? 'Submit' : 'Update' }}
+                            </button> -->
+
+                            <button @click="saveAddress">
+                                {{ addressId ? 'Update' : 'Submit' }}
                             </button>
+
                         </div>
 
                     </div>
                 </div>
+
             </div>
         </section>
 

@@ -12,6 +12,7 @@ import Settings from "../views/Org/Profile/Settings.vue";
 
 //Administrator
 import Administrator from "@/views/Org/Profile/Administrator.vue";
+import UserNotifications from "../views/Org/Notification/UserNotifications.vue";
 
 //Org Member
 import UnlinkMember from "../views/Org/Member/UnlinkMember.vue";
@@ -738,6 +739,12 @@ const orgRoutes = [
             path: "org-receipt-index",
             name: "org-receipt-index",
             component: OrgReceiptIndex,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: "user-notifications",
+            name: "user-notifications",
+            component: UserNotifications,
             meta: { requiresAuth: true },
           },
           {
