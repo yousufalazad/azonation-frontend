@@ -114,7 +114,9 @@ const isActive = (path) => route.path === path;
       { name: 'Projects', path: '/org-dashboard/projects', icon: FolderIcon },
       { name: 'Assets', path: '/org-dashboard/asset-management', icon: FileTextIcon },
       { name: 'Documents', path: '/org-dashboard/office-document', icon: FileTextIcon },
-      { name: 'Accounts', path: '/org-dashboard/accounts', icon: DollarSignIcon },
+      // { name: 'Accounts', path: '/org-dashboard/accounts', icon: DollarSignIcon },
+      { name: 'Fund Management', path: '/org-dashboard/fund-management', icon: FileTextIcon },
+
 
     ]" :key="link.path">
       <router-link :to="link.path" @click="handleLinkClick" :class="[

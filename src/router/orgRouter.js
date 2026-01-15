@@ -32,6 +32,8 @@ import Founders from "../views/Org/Founder/Index.vue";
 //Accounts
 import Accounts from "../views/Org/Accounts/Index.vue";
 import AccountsFunds from "../views/Org/Accounts/Fund.vue";
+import Fund from "../views/Org/FundManagement/Fund.vue";
+import FundManagement from "../views/Org/FundManagement/Index.vue";
 
 //Asset Management
 import AssetManagement from "../views/Org/Asset/Index.vue";
@@ -244,6 +246,20 @@ const orgRoutes = [
         path: "accounts-fund",
         name: "accounts-fund",
         component: AccountsFunds,
+        meta: { requiresAuth: true },
+      },
+      // Fund
+      {
+        path: "fund",
+        name: "fund",
+        component: Fund,
+        meta: { requiresAuth: true },
+      },
+      // FundManagement
+      {
+        path: "fund-management",
+        name: "fund-management",
+        component: FundManagement,
         meta: { requiresAuth: true },
       },
       {
