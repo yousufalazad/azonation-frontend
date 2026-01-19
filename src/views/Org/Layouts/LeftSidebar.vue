@@ -55,7 +55,7 @@ const isActive = (path) => route.path === path;
         <span v-if="props.isSidebarExpanded">{{ link.name }}</span>
       </router-link>
     </template>
-
+    <!-- Expandable: Membership -->
     <div>
       <button @click="toggleSection('membership')"
         class="w-full text-left px-4 py-2 flex items-center gap-3 rounded-md text-gray-700 hover:bg-gray-100 transition"
@@ -69,30 +69,36 @@ const isActive = (path) => route.path === path;
       </button>
       <transition name="fade-slide">
         <div v-if="isSectionOpen('membership') && props.isSidebarExpanded" class="ml-7 space-y-1">
-          <!-- { name: 'Members', path: '/org-dashboard/index-member', icon: UsersIcon },
-          { name: 'Unlink Member', path: '/org-dashboard/unlink-member', icon: UserIcon }, -->
+         <router-link :to="{ name: 'index-member' }" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
+            Members
+          </router-link>
 
-          <router-link to="/org-dashboard/index-member" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Members</router-link>
-          <router-link to="/org-dashboard/unlink-member" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Unlink Member</router-link>
-          
-          
+          <router-link :to="{ name: 'unlink-member' }" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
+            Unlink Member
+          </router-link>
+
           <router-link :to="{ name: 'terminated-member' }" @click="handleLinkClick"
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
             Terminated Member
           </router-link>
 
+          
           <router-link :to="{ name: 'org-membership-renewal' }" @click="handleLinkClick"
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
-            Membership Renewal
+             Membership Renewal
           </router-link>
-          <!-- <router-link to="/org-dashboard/index-member" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Member Renewal Status</router-link> -->
-          <router-link to="/org-dashboard/org-membership-renewal-cycle" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Membership Renewal Cycle</router-link>
-          <router-link to="/org-dashboard/org-membership-renewal-price" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Membership Renewal Price</router-link>
+
+          <router-link :to="{ name: 'org-membership-renewal-cycle' }" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
+             Membership Renewal Cycle
+          </router-link>
+
+          <router-link :to="{ name: 'org-membership-renewal-price' }" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
+             Membership Renewal Price
+          </router-link>
                    
           <router-link :to="{ name: 'org-membership-type' }" @click="handleLinkClick"
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
@@ -106,7 +112,6 @@ const isActive = (path) => route.path === path;
         </div>
       </transition>
     </div>
-
     <template v-for="link in [
       { name: 'Committees', path: '/org-dashboard/committees', icon: BriefcaseIcon },
       { name: 'Meetings', path: '/org-dashboard/meetings', icon: CalendarIcon },
@@ -141,20 +146,39 @@ const isActive = (path) => route.path === path;
       </button>
       <transition name="fade-slide">
         <div v-if="isSectionOpen('profile') && props.isSidebarExpanded" class="ml-7 space-y-1">
+     
           <router-link to="/org-dashboard/my-account/profile" @click="handleLinkClick"
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Profile</router-link>
-          <router-link to="/org-dashboard/founders" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Founders</router-link>
-          <router-link to="/org-dashboard/strategic-plan" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Strategic Plan</router-link>
-          <router-link to="/org-dashboard/recognition" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Recognition</router-link>
-          <router-link to="/org-dashboard/success-story" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Success Story</router-link>
-          <router-link to="/org-dashboard/history" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">History</router-link>
-          <router-link to="/org-dashboard/year-plan" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Year Plan</router-link>
+
+          <router-link :to="{ name: 'founders' }" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
+            Founders
+          </router-link>
+
+          <router-link :to="{ name: 'strategic-plan' }" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
+            Strategic Plan
+          </router-link>
+
+          <router-link :to="{ name: 'recognition' }" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
+            Recognition
+          </router-link>
+
+          <router-link :to="{ name: 'success-story' }" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
+            Success Story
+          </router-link>
+
+          <router-link :to="{ name: 'history' }" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
+            History
+          </router-link>
+
+          <router-link :to="{ name: 'year-plan' }" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
+            Year Plan
+          </router-link>
         </div>
       </transition>
     </div>

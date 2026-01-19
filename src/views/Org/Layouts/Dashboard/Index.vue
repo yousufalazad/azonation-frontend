@@ -80,9 +80,10 @@ const totalOrgMemberCount = async () => {
   }
 };
 
+
 const getTransactions = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/transactions', {}, 'GET');
+    const response = await auth.fetchProtectedApi('/api/fund-transactions', {}, 'GET');
     if (response.status) {
       const transactions = response.data;
       transactionList.value = transactions;
