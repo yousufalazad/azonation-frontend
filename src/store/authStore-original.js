@@ -5,14 +5,10 @@ import Swal from "sweetalert2";
 import functions from "../global/cookie";
 
 const authStore = reactive({
-  // 🔁 Change this per environment if needed
-  apiBase:
-    window.location.hostname === "localhost"
-      ? "http://localhost:8000"
-      : "https://app.azonation.com",
-
+  // apiBase: "https://app.azonation.com",
+  apiBase: "http://localhost:8000",
   isAuthenticated: functions.getCookie("auth") == 1,
-
+  // user: functions.getCookie("user") === "undefined" ? {} : JSON.parse(functions.getCookie("user")),
   user: (() => {
     const cookie = functions.getCookie("user");
     try {
@@ -25,28 +21,6 @@ const authStore = reactive({
 
   errors: null,
 
-  /* ============================
-     🔧 URL NORMALIZER (FIX)
-     ============================ */
-  normalizePath(path) {
-    if (!path) return "";
-
-    // Remove base URL if backend already sent it
-    if (path.startsWith(this.apiBase)) {
-      path = path.replace(this.apiBase, "");
-    }
-
-    // Ensure leading slash
-    if (!path.startsWith("/")) {
-      path = "/" + path;
-    }
-
-    return path;
-  },
-
-  /* ============================
-     🌍 PUBLIC API
-     ============================ */
   async fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
     try {
       const response = await axios({
@@ -67,16 +41,11 @@ const authStore = reactive({
       return {
         status: false,
         errors:
-          error.response?.data?.errors ||
-          error.response?.data ||
-          error.message,
+          error.response?.data?.errors || error.response?.data || error.message,
       };
     }
   },
 
-  /* ============================
-     🔐 PROTECTED API
-     ============================ */
   async fetchProtectedApi(endPoint = "", params = {}, requestType = "GET") {
     const token = this.getUserToken();
 
@@ -101,16 +70,11 @@ const authStore = reactive({
       return {
         status: false,
         errors:
-          error.response?.data?.errors ||
-          error.response?.data ||
-          error.message,
+          error.response?.data?.errors || error.response?.data || error.message,
       };
     }
   },
 
-  /* ============================
-     📤 FILE UPLOAD
-     ============================ */
   async uploadProtectedApi(endPoint = "", params = {}, requestType = "POST") {
     const token = this.getUserToken();
 
@@ -122,7 +86,7 @@ const authStore = reactive({
           Accept: "application/json",
           Authorization: `Bearer ${token}`,
         },
-        data: params,
+        data: params, // Should be FormData
       });
       return response.data;
     } catch (error) {
@@ -130,16 +94,11 @@ const authStore = reactive({
       return {
         status: false,
         errors:
-          error.response?.data?.errors ||
-          error.response?.data ||
-          error.message,
+          error.response?.data?.errors || error.response?.data || error.message,
       };
     }
   },
 
-  /* ============================
-     🔑 AUTHENTICATION
-     ============================ */
   async authenticate(username, password, remember_token) {
     try {
       const response = await this.fetchPublicApi(
@@ -151,19 +110,27 @@ const authStore = reactive({
       if (response.status === "success") {
         this.isAuthenticated = true;
         this.user = response.data;
-
         functions.setCookie("auth", 1);
         functions.setCookie("user", JSON.stringify(response.data));
+        // functions.saveUserToCookie(response.data);
 
         switch (response.data.type) {
           case "individual":
             router.push({ name: "individual-dashboard-index" });
+            // router
+            //   .push({ name: "individual-dashboard-index" })
+            //   .then(() => location.reload());
             break;
           case "organisation":
             router.push({ name: "org-dashboard-index" });
+            // router
+            //   .push({ name: "org-dashboard-index" })
+            //   .then(() => location.reload());
             break;
           case "superadmin":
-            router.push({ name: "superadmin-dashboard-index" });
+            router
+              .push({ name: "superadmin-dashboard-index" })
+              //.then(() => location.reload());
             break;
           default:
             router.push({ name: "login" });
@@ -177,6 +144,7 @@ const authStore = reactive({
           showConfirmButton: false,
         });
       } else {
+        this.errors = response.errors || "Invalid login credentials.";
         Swal.fire({
           icon: "error",
           title: "Login failed",
@@ -193,9 +161,6 @@ const authStore = reactive({
     }
   },
 
-  /* ============================
-     🚪 LOGOUT
-     ============================ */
   logout() {
     Swal.fire({
       title: "Are you sure?",
@@ -208,13 +173,10 @@ const authStore = reactive({
       if (result.isConfirmed) {
         try {
           await this.fetchProtectedApi("/api/logout", {}, "POST");
-
           this.isAuthenticated = false;
           this.user = {};
-
           functions.deleteCookie("auth");
           functions.deleteCookie("user");
-
           router.push({ name: "login" });
 
           Swal.fire({
@@ -236,10 +198,8 @@ const authStore = reactive({
     });
   },
 
-  /* ============================
-     🧾 HELPERS
-     ============================ */
   getUserToken() {
+    // return this.user?.accessToken;
     return (
       this.user?.accessToken ||
       this.user?.token ||
