@@ -4,58 +4,15 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import functions from "../global/cookie";
 
-const api = axios.create({
-  baseURL:
+const authStore = reactive({
+  // 🔁 Change this per environment if needed
+  apiBase:
     window.location.hostname === "localhost"
       ? "http://localhost:8000"
       : "https://app.azonation.com",
-  withCredentials: true,
-});
 
-api.interceptors.request.use(
-  (config) => {
-    const token =
-      authStore.user?.accessToken ||
-      authStore.user?.token ||
-      authStore.user?.plainTextToken ||
-      authStore.user?.access_token;
+  isAuthenticated: functions.getCookie("auth") == 1,
 
-    const activeOrg = localStorage.getItem("active_org");
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    if (activeOrg) {
-      config.headers["X-Organization-Id"] = activeOrg;
-    }
-
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      authStore.isAuthenticated = false;
-      authStore.user = {};
-      authStore.permissions = [];
-
-      functions.deleteCookie("auth");
-      functions.deleteCookie("user");
-      localStorage.removeItem("active_org");
-
-      router.push({ name: "login" });
-    }
-    return Promise.reject(error);
-  }
-);
-
-const authStore = reactive({
-isAuthenticated: functions.getCookie("auth") == 1,
   user: (() => {
     const cookie = functions.getCookie("user");
     try {
@@ -66,40 +23,35 @@ isAuthenticated: functions.getCookie("auth") == 1,
     }
   })(),
 
-  /* ============================ */
-  /* NEW: permissions holder */
-  permissions: (() => {
-    const cookie = functions.getCookie("user");
-    try {
-      const u = cookie ? JSON.parse(cookie) : {};
-      return u?.permissions || [];
-    } catch {
-      return [];
-    }
-  })(),
-
-
   errors: null,
 
-  apiBase: api.defaults.baseURL,
-  /* ============================ */
+  /* ============================
+     🔧 URL NORMALIZER (FIX)
+     ============================ */
   normalizePath(path) {
     if (!path) return "";
+
+    // Remove base URL if backend already sent it
     if (path.startsWith(this.apiBase)) {
       path = path.replace(this.apiBase, "");
     }
+
+    // Ensure leading slash
     if (!path.startsWith("/")) {
       path = "/" + path;
     }
+
     return path;
   },
 
-  /* ============================ */
+  /* ============================
+     🌍 PUBLIC API
+     ============================ */
   async fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
     try {
-      const response = await api({
+      const response = await axios({
         method: requestType.toUpperCase(),
-        url: endPoint,
+        url: this.apiBase + endPoint,
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -115,23 +67,27 @@ isAuthenticated: functions.getCookie("auth") == 1,
       return {
         status: false,
         errors:
-          error.response?.data?.errors || error.response?.data || error.message,
+          error.response?.data?.errors ||
+          error.response?.data ||
+          error.message,
       };
     }
   },
 
-  /* ============================ */
+  /* ============================
+     🔐 PROTECTED API
+     ============================ */
   async fetchProtectedApi(endPoint = "", params = {}, requestType = "GET") {
-    // const token = this.getUserToken();
+    const token = this.getUserToken();
 
     try {
-      const response = await api({
+      const response = await axios({
         method: requestType.toUpperCase(),
-        url: endPoint,
+        url: this.apiBase + endPoint,
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         withCredentials: true,
         data: ["POST", "PUT"].includes(requestType.toUpperCase())
@@ -145,22 +101,26 @@ isAuthenticated: functions.getCookie("auth") == 1,
       return {
         status: false,
         errors:
-          error.response?.data?.errors || error.response?.data || error.message,
+          error.response?.data?.errors ||
+          error.response?.data ||
+          error.message,
       };
     }
   },
 
-  /* ============================ */
+  /* ============================
+     📤 FILE UPLOAD
+     ============================ */
   async uploadProtectedApi(endPoint = "", params = {}, requestType = "POST") {
-    // const token = this.getUserToken();
+    const token = this.getUserToken();
 
     try {
-      const response = await api({
+      const response = await axios({
         method: requestType.toUpperCase(),
-        url: endPoint,
+        url: this.apiBase + endPoint,
         headers: {
           Accept: "application/json",
-          // Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         data: params,
       });
@@ -170,26 +130,27 @@ isAuthenticated: functions.getCookie("auth") == 1,
       return {
         status: false,
         errors:
-          error.response?.data?.errors || error.response?.data || error.message,
+          error.response?.data?.errors ||
+          error.response?.data ||
+          error.message,
       };
     }
   },
 
-  /* ============================ */
+  /* ============================
+     🔑 AUTHENTICATION
+     ============================ */
   async authenticate(username, password, remember_token) {
     try {
       const response = await this.fetchPublicApi(
         "/api/login",
         { email: username, password, remember_token },
-        "POST",
+        "POST"
       );
 
       if (response.status === "success") {
         this.isAuthenticated = true;
         this.user = response.data;
-
-        /* NEW: save permissions */
-        this.permissions = response.data.permissions || [];
 
         functions.setCookie("auth", 1);
         functions.setCookie("user", JSON.stringify(response.data));
@@ -232,7 +193,9 @@ isAuthenticated: functions.getCookie("auth") == 1,
     }
   },
 
-  /* ============================ */
+  /* ============================
+     🚪 LOGOUT
+     ============================ */
   logout() {
     Swal.fire({
       title: "Are you sure?",
@@ -248,7 +211,6 @@ isAuthenticated: functions.getCookie("auth") == 1,
 
           this.isAuthenticated = false;
           this.user = {};
-          this.permissions = [];
 
           functions.deleteCookie("auth");
           functions.deleteCookie("user");
@@ -274,7 +236,9 @@ isAuthenticated: functions.getCookie("auth") == 1,
     });
   },
 
-  /* ============================ */
+  /* ============================
+     🧾 HELPERS
+     ============================ */
   getUserToken() {
     return (
       this.user?.accessToken ||
@@ -287,13 +251,6 @@ isAuthenticated: functions.getCookie("auth") == 1,
   getUserType() {
     return this.user?.type;
   },
-
-  /* ============================ */
-  /* NEW: permission helper */
-  hasPermission(permission) {
-  return Array.isArray(this.permissions) && this.permissions.includes(permission);
-},
-
 });
 
 export { authStore };

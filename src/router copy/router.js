@@ -27,10 +27,11 @@ import PrivacyPolicy from "@/views/Common/PrivacyPolicy.vue";
 import TermsOfService from "@/views/Common/TermsOfService.vue";
 import AboutUs from "@/views/Common/AboutUs.vue";
 import ContactUs from "@/views/Common/ContactUs.vue";
-import Unauthorized from "@/views/Common/Unauthorized.vue";
 
 /* ===========================================================
    TOP LOADER REGISTER
+   App.vue will call `setTopLoader(loaderRef)`
+   Router will call loaderRef.start() / loaderRef.finish()
 =========================================================== */
 let topLoaderRef = null;
 export function setTopLoader(loader) {
@@ -44,28 +45,12 @@ const baseRoutes = [
   { path: "/", name: "login", component: Login },
   { path: "/signup", name: "signup", component: Signup },
   { path: "/verify-code", name: "verify-code", component: VerifyCode },
-  {
-    path: "/forgot-password",
-    name: "forgot-password",
-    component: ForgotPassword,
-  },
+  { path: "/forgot-password", name: "forgot-password", component: ForgotPassword },
   { path: "/reset-password", name: "reset-password", component: ResetPassword },
 
   // OAuth
-  {
-    path: "/oauth/complete",
-    name: "oauth-complete",
-    component: OauthComplete,
-    meta: { requiresAuth: false },
-  },
-  {
-    path: "/oauth/signed-in",
-    name: "oauth-signed-in",
-    component: OauthSignedIn,
-    meta: { requiresAuth: false },
-  },
-  // unauthorized
-  { path: "/unauthorized", name: "unauthorized", component: Unauthorized },
+  { path: "/oauth/complete", name: "oauth-complete", component: OauthComplete, meta: { requiresAuth: false } },
+  { path: "/oauth/signed-in", name: "oauth-signed-in", component: OauthSignedIn, meta: { requiresAuth: false } },
 
   // Public pages
   { path: "/individual", name: "individual", component: Individual },
@@ -76,14 +61,12 @@ const baseRoutes = [
   // Legal
   { path: "/cookies", name: "cookies", component: Cookies },
   { path: "/privacy-policy", name: "privacy-policy", component: PrivacyPolicy },
-  {
-    path: "/terms-of-service",
-    name: "terms-of-service",
-    component: TermsOfService,
-  },
+  { path: "/terms-of-service", name: "terms-of-service", component: TermsOfService },
   { path: "/about-us", name: "about-us", component: AboutUs },
   { path: "/contact-us", name: "contact-us", component: ContactUs },
 
+  // { path: "/:pathMatch(.*)*", name: "not-found", component: NotFound, meta: { requiresAuth: false } },
+  
   // 404
   { path: "/:pathMatch(.*)*", name: "not-found", component: NotFound },
 ];
@@ -107,46 +90,27 @@ const router = createRouter({
    ROUTER GUARD + TOP LOADER CONTROL
 =========================================================== */
 router.beforeEach(async (to, from, next) => {
-  try {
-    topLoaderRef?.start?.();
-  } catch (e) {}
+  // Start loader
+  try { topLoaderRef?.start?.(); } catch (e) {}
 
   try {
     const { authStore } = await import("../store/authStore");
 
-    // Not logged in
     if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-      try {
-        topLoaderRef?.finish?.();
-      } catch (e) {}
+      try { topLoaderRef?.finish?.(); } catch (e) {}
       return next({ name: "login" });
     }
 
-    // Wrong user type
-    if (
-      to.meta.requiresAuth &&
-      to.meta.type &&
-      to.meta.type !== authStore.getUserType()
-    ) {
-      try {
-        topLoaderRef?.finish?.();
-      } catch (e) {}
+    if (to.meta.requiresAuth && to.meta.type !== authStore.getUserType()) {
+      try { topLoaderRef?.finish?.(); } catch (e) {}
       return next("/");
-    }
-   
-    /* ================= PERMISSION CHECK ================= */
-    if (to.meta.permission && !authStore.hasPermission(to.meta.permission)) {
-      try {
-        topLoaderRef?.finish?.();
-      } catch (e) {}
-      return next({ name: "unauthorized" });
     }
 
     return next();
+
   } catch (err) {
-    try {
-      topLoaderRef?.finish?.();
-    } catch (e) {}
+    // Safe fallback
+    try { topLoaderRef?.finish?.(); } catch (e) {}
     return next();
   }
 });
@@ -156,9 +120,7 @@ router.beforeEach(async (to, from, next) => {
 =========================================================== */
 router.afterEach(() => {
   setTimeout(() => {
-    try {
-      topLoaderRef?.finish?.();
-    } catch (e) {}
+    try { topLoaderRef?.finish?.(); } catch (e) {}
   }, 250);
 });
 

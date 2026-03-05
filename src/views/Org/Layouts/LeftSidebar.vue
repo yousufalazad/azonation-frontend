@@ -114,7 +114,7 @@ const isActive = (path) => route.path === path;
     </div>
     <template v-for="link in [
       { name: 'Committees', path: '/org-dashboard/committees', icon: BriefcaseIcon },
-      { name: 'Meetings', path: '/org-dashboard/meetings', icon: CalendarIcon },
+      { permission: 'meeting.read', name: 'Meetings', path: '/org-dashboard/meetings', icon: CalendarIcon },
       { name: 'Events', path: '/org-dashboard/events', icon: ClipboardListIcon },
       { name: 'Projects', path: '/org-dashboard/projects', icon: FolderIcon },
       { name: 'Assets', path: '/org-dashboard/asset-management', icon: FileTextIcon },

@@ -14,28 +14,6 @@
             <span v-else class="hidden">SuperAdmin Dashboard</span>
           </router-link> -->
           
-          <!-- Org Reporting -->
-          <div>
-            <button @click="toggleSection('org-reporting')"
-              class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
-              <span v-if="isSidebarExpanded">Roles Permissions</span>
-              <svg v-if="isSectionOpen('org-reporting')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-              </svg>
-            </button>
-            <div v-if="isSectionOpen('org-reporting') && isSidebarExpanded" class="space-y-1">
-
-              <router-link to="/superadmin-dashboard/roles" class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Roles</router-link>
-              <router-link to="/superadmin-dashboard/permissions" class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Permissions</router-link>
-              <router-link to="/superadmin-dashboard/user-role-assign" class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">User Role Assign</router-link>
-            </div>
-          </div>
-
           <!-- Financial section -->
           <div>
             <button @click="toggleSection('financial')"
@@ -110,6 +88,8 @@
 
               <router-link to="/superadmin-dashboard/subscription-list"
                 class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Subscription</router-link>
+
+              
             </div>
           </div>
 
