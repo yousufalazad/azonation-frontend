@@ -5,18 +5,13 @@ import Swal from "sweetalert2";
 import functions from "../global/cookie";
 
 const api = axios.create({
-
-  baseURL: "http://localhost:8000",
-
-    // window.location.hostname === "localhost"
-    //   ? "http://localhost:8000"
-    //   : "https://app.azonation.com",
+  baseURL:
+    window.location.hostname === "localhost"
+      ? "http://localhost:8000"
+      : "https://app.azonation.com",
   withCredentials: true,
 });
 
-// ============================
-// REQUEST INTERCEPTOR
-// ============================
 api.interceptors.request.use(
   (config) => {
     const token =
@@ -25,35 +20,29 @@ api.interceptors.request.use(
       authStore.user?.plainTextToken ||
       authStore.user?.access_token;
 
-    const activeOrg =
-      authStore.currentOrgId || localStorage.getItem("active_org");
+    const activeOrg = localStorage.getItem("active_org");
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // ✅ FIXED HEADER NAME
     if (activeOrg) {
-      config.headers["X-Org-Id"] = activeOrg;
+      config.headers["X-Organization-Id"] = activeOrg;
     }
 
     return config;
   },
-  (error) => Promise.reject(error),
+  (error) => Promise.reject(error)
 );
 
-// ============================
-// RESPONSE INTERCEPTOR
-// ============================
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // 🔴 401 → logout
     if (error.response?.status === 401) {
       authStore.isAuthenticated = false;
       authStore.user = {};
-      authStore.orgAccess = [];
-      authStore.currentOrgId = null;
+      authStore.permissions = [];
 
       functions.deleteCookie("auth");
       functions.deleteCookie("user");
@@ -61,28 +50,12 @@ api.interceptors.response.use(
 
       router.push({ name: "login" });
     }
-
-    // 🔴 403 → permission error
-    if (error.response?.status === 403) {
-      Swal.fire({
-        icon: "error",
-        title: "Access Denied",
-        text:
-          error.response?.data?.message ||
-          "You don't have permission to perform this action.",
-      });
-    }
-
     return Promise.reject(error);
-  },
+  }
 );
 
-// ============================
-// AUTH STORE
-// ============================
 const authStore = reactive({
-  isAuthenticated: functions.getCookie("auth") == 1,
-
+isAuthenticated: functions.getCookie("auth") == 1,
   user: (() => {
     const cookie = functions.getCookie("user");
     try {
@@ -93,24 +66,23 @@ const authStore = reactive({
     }
   })(),
 
-  // 🔥 org-wise roles + permissions
-  orgAccess: (() => {
+  /* ============================ */
+  /* NEW: permissions holder */
+  permissions: (() => {
     const cookie = functions.getCookie("user");
     try {
       const u = cookie ? JSON.parse(cookie) : {};
-      return u?.org_access || [];
+      return u?.permissions || [];
     } catch {
       return [];
     }
   })(),
 
-  currentOrgId: localStorage.getItem("active_org") || null,
 
   errors: null,
+
   apiBase: api.defaults.baseURL,
-  // 🔥 NEW: loading state for org switching
-  isSwitchingOrg: false,
-  // ============================
+  /* ============================ */
   normalizePath(path) {
     if (!path) return "";
     if (path.startsWith(this.apiBase)) {
@@ -122,7 +94,7 @@ const authStore = reactive({
     return path;
   },
 
-  // ============================
+  /* ============================ */
   async fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
     try {
       const response = await api({
@@ -148,8 +120,10 @@ const authStore = reactive({
     }
   },
 
-  // ============================
+  /* ============================ */
   async fetchProtectedApi(endPoint = "", params = {}, requestType = "GET") {
+    // const token = this.getUserToken();
+
     try {
       const response = await api({
         method: requestType.toUpperCase(),
@@ -157,6 +131,7 @@ const authStore = reactive({
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          // Authorization: `Bearer ${token}`,
         },
         withCredentials: true,
         data: ["POST", "PUT"].includes(requestType.toUpperCase())
@@ -175,14 +150,17 @@ const authStore = reactive({
     }
   },
 
-  // ============================
+  /* ============================ */
   async uploadProtectedApi(endPoint = "", params = {}, requestType = "POST") {
+    // const token = this.getUserToken();
+
     try {
       const response = await api({
         method: requestType.toUpperCase(),
         url: endPoint,
         headers: {
           Accept: "application/json",
+          // Authorization: `Bearer ${token}`,
         },
         data: params,
       });
@@ -197,7 +175,7 @@ const authStore = reactive({
     }
   },
 
-  // ============================
+  /* ============================ */
   async authenticate(username, password, remember_token) {
     try {
       const response = await this.fetchPublicApi(
@@ -210,13 +188,8 @@ const authStore = reactive({
         this.isAuthenticated = true;
         this.user = response.data;
 
-        // 🔥 org access
-        this.orgAccess = response.data.org_access || [];
-
-        if (this.orgAccess.length > 0) {
-          this.currentOrgId = this.orgAccess[0].org_type_user_id;
-          localStorage.setItem("active_org", this.currentOrgId);
-        }
+        /* NEW: save permissions */
+        this.permissions = response.data.permissions || [];
 
         functions.setCookie("auth", 1);
         functions.setCookie("user", JSON.stringify(response.data));
@@ -259,7 +232,7 @@ const authStore = reactive({
     }
   },
 
-  // ============================
+  /* ============================ */
   logout() {
     Swal.fire({
       title: "Are you sure?",
@@ -275,12 +248,10 @@ const authStore = reactive({
 
           this.isAuthenticated = false;
           this.user = {};
-          this.orgAccess = [];
-          this.currentOrgId = null;
+          this.permissions = [];
 
           functions.deleteCookie("auth");
           functions.deleteCookie("user");
-          localStorage.removeItem("active_org");
 
           router.push({ name: "login" });
 
@@ -303,7 +274,7 @@ const authStore = reactive({
     });
   },
 
-  // ============================
+  /* ============================ */
   getUserToken() {
     return (
       this.user?.accessToken ||
@@ -317,73 +288,12 @@ const authStore = reactive({
     return this.user?.type;
   },
 
-  // ============================
-  // 🔥 ORG SWITCH
-  async switchOrg(orgId) {
-    const exists = this.orgAccess.find((o) => o.org_type_user_id == orgId);
-    if (!exists) return console.error("Invalid organization");
-
-    try {
-      // 🔥 Start loading
-      this.isSwitchingOrg = true;
-
-      // API call to validate + get fresh permissions
-      const res = await this.fetchProtectedApi("/api/org/switch");
-
-      if (res.status) {
-        const updatedOrg = res.data;
-
-        // update store
-        const index = this.orgAccess.findIndex(
-          (o) => o.org_type_user_id == orgId,
-        );
-        if (index !== -1) this.orgAccess[index] = updatedOrg;
-
-        this.currentOrgId = orgId;
-        localStorage.setItem("active_org", orgId);
-
-        // refresh current route (no reload)
-        router.replace({ path: router.currentRoute.value.fullPath });
-      } else {
-        throw new Error(res.message);
-      }
-    } catch (err) {
-      console.error("Org switch failed:", err);
-      Swal.fire({
-        icon: "error",
-        title: "Switch Failed",
-        text: "Unable to switch organization",
-      });
-    } finally {
-      // 🔥 Stop loading
-      this.isSwitchingOrg = false;
-    }
-  },
-
-  // ============================
-  // 🔥 GET CURRENT ORG PERMISSIONS
-  getPermissions() {
-    const org = this.orgAccess.find(
-      (o) => o.org_type_user_id == this.currentOrgId,
-    );
-    return org?.permissions || [];
-  },
-
-  // ============================
-  // 🔥 CHECK PERMISSION
+  /* ============================ */
+  /* NEW: permission helper */
   hasPermission(permission) {
-    if (this.user?.type === "superadmin") return true;
-    return this.getPermissions().includes(permission);
-  },
+  return Array.isArray(this.permissions) && this.permissions.includes(permission);
+},
 
-  // ============================
-  // 🔥 CHECK ROLE
-  hasRole(role) {
-    const org = this.orgAccess.find(
-      (o) => o.org_type_user_id == this.currentOrgId,
-    );
-    return org ? org.roles?.includes(role) : false;
-  },
 });
 
 export { authStore };
