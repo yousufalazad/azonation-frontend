@@ -109,20 +109,50 @@ onBeforeUnmount(() => {
 
     <!-- Right Section -->
     <div class="flex items-center gap-4">
+
+      <!-- Custom Select Wrapper -->
+      <div class="relative">
+        <!-- <select v-model="auth.currentOrgId" @change="auth.switchOrg(auth.currentOrgId)"
+          class="appearance-none bg-white border border-gray-300 text-gray-700 text-sm rounded-lg px-4 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+          <option disabled value="">Select Organization</option>
+          <option v-for="org in auth.orgAccess" :key="org.org_type_user_id" :value="org.org_type_user_id">
+            Org {{ org.org_type_user_id }}
+          </option>
+        </select> -->
+
+        <select v-model="auth.currentOrgId" @change="auth.switchOrg(auth.currentOrgId)" :disabled="auth.isSwitchingOrg"
+                  class="appearance-none bg-white border border-gray-300 text-gray-700 text-sm rounded-lg px-4 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+          <option v-for="org in auth.orgAccess" :key="org.org_type_user_id" :value="org.org_type_user_id">
+            Org {{ org.org_type_user_id }}
+          </option>
+        </select>
+        <!-- optional loading spinner -->
+        <span v-if="auth.isSwitchingOrg">Switching org...</span>
+
+        <!-- Custom Dropdown Icon -->
+        <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </div>
+
       <Notification />
 
+      <!-- Profile Section (unchanged) -->
       <div class="relative">
         <button ref="profileButton" @click="toggleProfileDropdown" class="flex items-center focus:outline-none">
-          <img :src="logoPath ? `${baseURL}${logoPath}` : placeholderImage" alt="Profile"
+          <img :src="logoPath ? logoPath : placeholderImage" alt="Profile"
             class="w-10 h-10 rounded-full object-cover border border-gray-300" />
         </button>
 
         <transition name="fade">
           <div v-if="isProfileDropdownOpen" ref="profileMenu"
             class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-50">
+
             <div class="flex justify-center p-4 border-b">
-              <img :src="logoPath ? `${baseURL}${logoPath}` : placeholderImage" alt="Profile"
-                class="rounded-lg max-h-[90px] max-w-[200px] w-auto h-auto object-contain" />
+              <img :src="logoPath ? logoPath : placeholderImage" alt="Profile"
+                class="rounded-lg max-h-[90px] max-w-[200px] object-contain" />
             </div>
 
             <div class="p-4 border-b">
@@ -139,12 +169,14 @@ onBeforeUnmount(() => {
                   My Account
                 </router-link>
               </li>
+
               <li>
                 <router-link :to="{ name: 'individual-security' }" class="block px-4 py-2 hover:bg-gray-100"
                   @click.native="onDropdownLinkClick">
                   Security
                 </router-link>
               </li>
+
               <li class="border-t mt-2">
                 <button @click="auth.logout()"
                   class="w-full text-left px-4 py-2 text-blue-600 hover:bg-gray-100 font-semibold">
@@ -152,9 +184,11 @@ onBeforeUnmount(() => {
                 </button>
               </li>
             </ul>
+
           </div>
         </transition>
       </div>
+
     </div>
   </header>
 </template>

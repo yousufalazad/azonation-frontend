@@ -32,7 +32,7 @@
 
               <router-link to="/superadmin-dashboard/roles" class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Roles</router-link>
               <router-link to="/superadmin-dashboard/permissions" class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Permissions</router-link>
-              <router-link to="/superadmin-dashboard/user-role-assign" class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">User Role Assign</router-link>
+              <router-link to="/superadmin-dashboard/superadmin-user-role-assign" class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">User Role Assign</router-link>
             </div>
           </div>
 

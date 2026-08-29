@@ -18,6 +18,8 @@ import {
 const openSections = ref([]);
 const route = useRoute();
 const isActiveRoute = (name) => route.name === name;
+import { authStore } from '../../../store/authStore';
+const auth = authStore;
 
 const props = defineProps({
   isSidebarExpanded: Boolean,
@@ -43,18 +45,20 @@ const isActive = (path) => route.path === path;
     <template v-for="link in [
       { name: 'Home', routeName: 'individual-dashboard-index', icon: HomeIcon },
       { name: 'Organisations', routeName: 'connected-organisations', icon: UsersIcon },
-      { name: 'Committees', routeName: 'individual-committees', icon: BriefcaseIcon },
-      { name: 'Meetings', routeName: 'individual-meetings', icon: CalendarIcon },
-      { name: 'Events', routeName: 'individual-events', icon: ClipboardListIcon },
-      { name: 'Projects', routeName: 'individual-projects', icon: FolderIcon },
-      { name: 'Assets', routeName: 'individual-assets', icon: FileTextIcon },
-      { name: 'Attendances', routeName: 'individual-attendances', icon: CheckCircleIcon },
-      // { name: 'Settings', routeName: 'individual-settings', icon: SettingsIcon }
+      { permission: 'committee.read', name: 'Committees', routeName: 'individual-committees', icon: BriefcaseIcon },
+      { permission: 'meeting.read', name: 'Meetings',  routeName: 'individual-meetings', icon: CalendarIcon },
+      { permission: 'event.read', name: 'Events', routeName: 'individual-events', icon: ClipboardListIcon },
+      { permission: 'project.read', name: 'Projects', routeName: 'individual-projects', icon: FolderIcon },
+      { permission: 'asset.read', name: 'Assets', routeName: 'individual-assets', icon: FileTextIcon },
+      { permission: 'attendance.read', name: 'Attendances', routeName: 'individual-attendances', icon: CheckCircleIcon },
+      // { permission: 'settings.read', name: 'Settings', routeName: 'individual-settings', icon: SettingsIcon }
     ]" :key="link.routeName">
-      <router-link :to="{ name: link.routeName }" :class="[
+      <router-link v-if="!link.permission || auth.hasPermission(link.permission)" :to="{ name: link.routeName }" :class="[
         'flex items-center gap-3 px-4 py-2 rounded-md transition-all duration-200 whitespace-nowrap',
         isActiveRoute(link.routeName) ? 'bg-gray-200 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'
       ]" :title="!props.isSidebarExpanded ? link.name : ''">
+
+      
         <component :is="link.icon" class="h-5 w-5" />
         <span v-if="props.isSidebarExpanded">{{ link.name }}</span>
       </router-link>

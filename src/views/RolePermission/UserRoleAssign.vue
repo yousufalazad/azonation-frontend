@@ -2,6 +2,7 @@
 import { ref, onMounted, computed, reactive, watch } from 'vue'
 import Swal from 'sweetalert2'
 import { authStore } from '@/store/authStore'
+import SearchableSelect from '@/views/Common/SearchableSelect.vue'
 
 const auth = authStore
 
@@ -20,8 +21,15 @@ const roles = ref([])
 const roleName = ref('')
 const roleId = ref(null)
 const org_type_user_name = ref('')
-const org_type_user_id = ref(null)
 const roleEditMode = ref(false)
+
+const org_type_user_id = ref(null)
+const org_role_title_id = ref(null)
+/* ================= ROLE TITLES STATE ================= */
+const roleTitles = ref([])
+const roleTitleName = ref('')
+const roleTitleId = ref(null)
+const roleTitleEditMode = ref(false)
 
 /* ================= ASSIGN PERMISSIONS STATE ================= */
 const selectedRoleId = ref(null)
@@ -30,6 +38,7 @@ const selectedPermissions = ref([])
 /* ================= USERS & ASSIGN ROLES STATE ================= */
 const users = ref([])
 const organisation_users = ref([])
+const organisation_members = ref([])
 
 const selectedUserId = ref(null)
 const selectedUserRoles = ref([])
@@ -37,13 +46,18 @@ const selectedUserRoles = ref([])
 /* ================= GET DATA ================= */
 const getPermissions = async () => permissions.value = await auth.fetchProtectedApi('/api/permissions')
 const getRoles = async () => roles.value = await auth.fetchProtectedApi('/api/roles')
-const getUsers = async () => users.value = await auth.fetchProtectedApi('/api/users?type=individual')  	
+const getRoleTitles = async () => roleTitles.value = await auth.fetchProtectedApi('/api/org-role-titles')
+const getUsers = async () => users.value = await auth.fetchProtectedApi('/api/users?type=individual')
 
 const getOrganisationUsers = async () => organisation_users.value = await auth.fetchProtectedApi('/api/users?type=organisation')
+// const getMembers = async () => organisation_members.value = await auth.fetchProtectedApi(`/api/org-members/list/${org_type_user_id.value}`)
+const getMembers = async () => organisation_members.value = await auth.fetchProtectedApi(`/api/org-members-users/${org_type_user_id.value}`)
+
 
 const getAllData = async () => {
     await getPermissions()
     await getRoles()
+    await getRoleTitles()
     await getUsers()
     await getOrganisationUsers()
 }
@@ -138,6 +152,50 @@ const deleteRole = async (id) => {
         } catch (e) { console.log(e); Swal.fire('Error', 'Delete failed', 'error') }
     }
 }
+/* ================= ROLE Title FUNCTIONS ================= */
+const resetRoleTitleForm = () => { roleTitleId.value = null; roleTitleName.value = ''; org_type_user_id.value = null; org_type_user_name.value = ''; org_type_user_name.value = ''; roleTitleEditMode.value = false }
+const editRoleTitle = (r) => { roleTitleId.value = r.id; roleTitleName.value = r.name; org_type_user_id.value = r.org_type_user_id; org_type_user_name.value = r.org_type_user_name; roleTitleEditMode.value = true }
+
+const saveRoleTitle = async () => {
+    if (!roleTitleName.value.trim()) return Swal.fire('Error', 'Role title required', 'error')
+    const payload = { name: roleTitleName.value, org_type_user_id: org_type_user_id.value }
+    const apiUrl = roleTitleEditMode.value ? `/api/org-role-titles/${roleTitleId.value}` : '/api/org-role-titles'
+    const method = roleTitleEditMode.value ? 'PUT' : 'POST'
+
+    const res = await Swal.fire({
+        title: 'Confirm?',
+        text: `Do you want to ${roleTitleId.value ? 'update' : 'create'} this role title?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, save!'
+    })
+    if (res.isConfirmed) {
+        try {
+            const r = await auth.fetchProtectedApi(apiUrl, payload, method)
+            Swal.fire('Success', r.message || 'Saved', 'success')
+            resetRoleTitleForm()
+            getRoleTitles()
+        } catch (e) { console.log(e); Swal.fire('Error', 'Failed', 'error') }
+    }
+}
+
+const deleteRoleTitle = async (id) => {
+    const res = await Swal.fire({
+        title: 'Delete Role Title?',
+        text: 'This may affect users assigned to this role title!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete!'
+    })
+    if (res.isConfirmed) {
+        try {
+            await auth.fetchProtectedApi(`/api/org-role-titles/${id}`, {}, 'DELETE')
+            Swal.fire('Deleted', 'Role title removed', 'success')
+            getRoleTitles()
+        } catch (e) { console.log(e); Swal.fire('Error', 'Delete failed', 'error') }
+    }
+}
+
 
 /* ================= ASSIGN PERMISSIONS TO ROLE ================= */
 const permissionParents = computed(() => {
@@ -164,6 +222,7 @@ const toggleChildren = (parent) => {
     })
 }
 const editRolePermissions = (role) => {
+    if (!role) return
     selectedRoleId.value = role.id
     selectedPermissions.value = role.permissions?.map(p => p.name) || []
 }
@@ -184,13 +243,16 @@ const saveAssign = async () => {
             Swal.fire('Success', r.message || 'Permissions updated', 'success')
             selectedRoleId.value = null
             selectedPermissions.value = []
-            getAllData()
+            // getAllData()
+            getMembers()
         } catch (e) { console.log(e); Swal.fire('Error', 'Failed', 'error') }
     }
 }
 
 /* ================= ASSIGN ROLES TO USER ================= */
 const editUserRoles = (user) => {
+    if (!user) return
+    console.log('Editing roles for user:', user);
     selectedUserId.value = user.id
     selectedUserRoles.value = user.roles?.map(r => r.name) || []
 }
@@ -208,7 +270,7 @@ const saveUserRoles = async () => {
 
     if (res.isConfirmed) {
         try {
-            const payload = { roles: selectedUserRoles.value }
+            const payload = { org_type_user_id: org_type_user_id.value, roles: selectedUserRoles.value, org_role_title_id: org_role_title_id.value }
             const r = await auth.fetchProtectedApi(`/api/users/${selectedUserId.value}/roles`, payload, 'PUT')
             Swal.fire('Success', r.message || 'Roles assigned', 'success')
 
@@ -231,20 +293,6 @@ const filteredUsers = computed(() => {
         `${u.first_name} ${u.last_name}`.toLowerCase().includes(userSearch.value.toLowerCase())
     )
 })
-
-watch(selectedUserId, (newUserId) => {
-    if (!newUserId) {
-        selectedUserRoles.value = []
-        return
-    }
-
-    const user = users.value.find(u => u.id === newUserId)
-
-    selectedUserRoles.value = user?.roles
-        ? user.roles.map(r => r.name)
-        : []
-})
-
 const filteredOrganisationUsers = computed(() => {
     if (!userSearch.value.trim()) return organisation_users.value
     return organisation_users.value.filter(u =>
@@ -252,6 +300,87 @@ const filteredOrganisationUsers = computed(() => {
     )
 })
 
+const memberSearch = ref('')
+const filteredMembers = computed(() => {
+    if (!memberSearch.value.trim()) return organisation_members.value
+    return organisation_members.value.filter(u =>
+        `${u.first_name} ${u.last_name}`.toLowerCase().includes(memberSearch.value.toLowerCase())
+    )
+})
+
+const roleTitlesSearch = ref('')
+const filteredRoleTitles = computed(() => {
+    if (!roleTitlesSearch.value.trim()) return roleTitles.value
+    return roleTitles.value.filter(r =>
+        r.name.toLowerCase().includes(roleTitlesSearch.value.toLowerCase())
+    )
+})
+
+/* ================= SEARCHABLE SELECT OPTIONS ================= */
+// Organisation options (used on Roles tab, Roles Title tab, and User Assign Role tab).
+// Built from filteredOrganisationUsers so the existing search inputs still narrow the list.
+const organisationOptions = computed(() =>
+    filteredOrganisationUsers.value.map(u => ({
+        value: u.id,
+        label: u.org_name
+    }))
+)
+
+// Role options (used on the Assign Permissions tab)
+const roleOptions = computed(() =>
+    roles.value.map(r => ({
+        value: r.id,
+        label: r.name
+    }))
+)
+
+// Member options (used on the User Assign Role tab)
+const memberOptions = computed(() =>
+    filteredMembers.value.map(u => ({
+        value: u.id,
+        label: `${u.first_name} ${u.last_name}`
+    }))
+)
+
+// Role title options (used on the User Assign Role tab)
+const roleTitleOptions = computed(() =>
+    filteredRoleTitles.value.map(r => ({
+        value: r.id,
+        label: `${r.name} (${filteredOrganisationUsers.value.find(u => u.id === r.org_type_user_id)?.org_name || 'N/A'})`
+    }))
+)
+
+/* ================= WATCHERS ================= */
+// Replaces the old @change="getMembers" on the organisation SearchableSelect (User Assign Role tab)
+watch(org_type_user_id, (newOrgId) => {
+    if (newOrgId) getMembers()
+})
+
+// Replaces the old @change="editRolePermissions(...)" on the role SearchableSelect (Assign tab)
+watch(selectedRoleId, (newRoleId) => {
+    if (!newRoleId) {
+        selectedPermissions.value = []
+        return
+    }
+    const role = roles.value.find(r => r.id === newRoleId)
+    editRolePermissions(role)
+})
+
+// Replaces the old @change="editUserRoles(...)" on the member SearchableSelect (User Assign Role tab)
+watch(selectedUserId, (newUserId) => {
+    console.log('Selected user ID changed:', newUserId)
+    if (!newUserId) {
+        selectedUserRoles.value = []
+        return
+    }
+
+    const user = organisation_members.value.find(u => u.id === newUserId)
+    console.log('Selected user:', user)
+    selectedUserRoles.value = user?.roles
+        ? user.roles.map(r => r.name)
+        : []
+    console.log('User roles set to:', selectedUserRoles.value)
+})
 
 </script>
 
@@ -265,6 +394,8 @@ const filteredOrganisationUsers = computed(() => {
                 @click="setTab('permissions')" class="py-2 px-4 font-semibold transition">Permissions</button>
             <button :class="{ 'border-b-2 border-blue-600 text-blue-600': activeTab === 'roles' }"
                 @click="setTab('roles')" class="py-2 px-4 font-semibold transition">Roles</button>
+            <button :class="{ 'border-b-2 border-blue-600 text-blue-600': activeTab === 'roles_title' }"
+                @click="setTab('roles_title')" class="py-2 px-4 font-semibold transition">Roles Title</button>
             <button :class="{ 'border-b-2 border-blue-600 text-blue-600': activeTab === 'assign' }"
                 @click="setTab('assign')" class="py-2 px-4 font-semibold transition">Assign</button>
             <button :class="{ 'border-b-2 border-blue-600 text-blue-600': activeTab === 'userRoles' }"
@@ -317,15 +448,11 @@ const filteredOrganisationUsers = computed(() => {
             <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
                 <input v-model="roleName" placeholder="Role Name"
                     class="border rounded-lg px-4 py-2 w-full sm:w-64 focus:ring-2 focus:ring-indigo-500">
-                <div class="mb-4">
-                    <input type="text" v-model="userSearch" placeholder="Search user..."
-                        class="border rounded px-3 py-2 w-full max-w-sm focus:ring-2 focus:ring-blue-500 mb-2">
-                    <select v-model="org_type_user_id" class="border rounded px-3 py-2 w-full max-w-sm">
-                        <option value="" disabled>Select user</option>
-                        <option v-for="user in filteredOrganisationUsers" :key="user.id" :value="user.id">
-                            {{ user.org_name }}
-                        </option>
-                    </select>
+                <div class=" w-full max-w-sm">
+                    <!-- <input type="text" v-model="userSearch" placeholder="Search user..."
+                        class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 mb-2"> -->
+                    <SearchableSelect v-model="org_type_user_id" :options="organisationOptions"
+                        placeholder="Select Organisation" />
                 </div>
                 <button @click="saveRole"
                     class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition">
@@ -350,9 +477,9 @@ const filteredOrganisationUsers = computed(() => {
                         <tr v-for="r in roles" :key="r.id" class="border-t hover:bg-gray-50">
                             <td class="p-3">{{ r.name }}</td>
                             <td class="p-3">
-                                {{ filteredOrganisationUsers.find(u => u.id === r.org_type_user_id)?.org_name || 'N/A' }}
+                                {{filteredOrganisationUsers.find(u => u.id === r.org_type_user_id)?.org_name || 'N/A'
+                                }}
                             </td>
-                            
 
                             <td class="p-3 text-right space-x-2">
                                 <button @click="editRole(r)"
@@ -369,16 +496,60 @@ const filteredOrganisationUsers = computed(() => {
             </div>
         </div>
 
+        <!-- ROLES TITLE TAB -->
+        <div v-if="activeTab === 'roles_title'" class="mt-4">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+                <input v-model="roleTitleName" placeholder="Role Title Name"
+                    class="border rounded-lg px-4 py-2 w-full sm:w-64 focus:ring-2 focus:ring-indigo-500">
+                <div class="w-full max-w-sm">
+                    <SearchableSelect v-model="org_type_user_id" :options="organisationOptions"
+                        placeholder="Select Organisation" />
+                </div>
+                <button @click="saveRoleTitle"
+                    class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition">
+                    {{ roleTitleEditMode ? 'Update' : 'Create' }}
+                </button>
+                <button v-if="roleTitleEditMode" @click="resetRoleTitleForm"
+                    class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition">
+                    Cancel
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full border rounded-lg">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="p-3 text-left text-gray-700">Role Title Name</th>
+                            <th class="p-3 text-left text-gray-700">Organisation</th>
+                            <th class="p-3 text-right text-gray-700">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="r in roleTitles" :key="r.id" class="border-t hover:bg-gray-50">
+                            <td class="p-3">{{ r.name }}</td>
+                            <td class="p-3">
+                                {{filteredOrganisationUsers.find(u => u.id === r.org_type_user_id)?.org_name || 'N/A' }}
+                            </td>
+
+                            <td class="p-3 text-right space-x-2">
+                                <button @click="editRoleTitle(r)"
+                                    class="px-3 py-1 bg-yellow-400 rounded hover:bg-yellow-500 transition">Edit</button>
+                                <button @click="deleteRoleTitle(r.id)"
+                                    class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition">Delete</button>
+                            </td>
+                        </tr>
+                        <tr v-if="roles.length === 0">
+                            <td colspan="2" class="p-3 text-center text-gray-500">No role titles found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- ASSIGN PERMISSIONS TAB -->
         <div v-if="activeTab === 'assign'" class="mt-4">
-            <div class="mb-4">
-                <label class="block mb-2 font-semibold">Select Role:</label>
-                <select v-model="selectedRoleId"
-                    class="border rounded px-3 py-2 w-full max-w-sm focus:ring-2 focus:ring-blue-500"
-                    @change="editRolePermissions(roles.find(r => r.id === selectedRoleId))">
-                    <option value="" disabled>Select role</option>
-                    <option v-for="r in roles" :key="r.id" :value="r.id">{{ r.name }}</option>
-                </select>
+            <div class="mb-4 w-full max-w-sm">
+                <SearchableSelect v-model="selectedRoleId" :options="roleOptions" placeholder="Select Role" />
             </div>
 
             <div v-if="selectedRoleId" class="overflow-x-auto">
@@ -424,17 +595,28 @@ const filteredOrganisationUsers = computed(() => {
 
         <!-- ASSIGN USER ROLES TAB -->
         <div v-if="activeTab === 'userRoles'" class="mt-4">
-            <!-- User Dropdown with Search -->
-            <div class="mb-4">
-                <input type="text" v-model="userSearch" placeholder="Search user..."
-                    class="border rounded px-3 py-2 w-full max-w-sm focus:ring-2 focus:ring-blue-500 mb-2">
 
-                <select v-model="selectedUserId" class="border rounded px-3 py-2 w-full max-w-sm">
-                    <option value="" disabled>Select user</option>
-                    <option v-for="user in filteredUsers" :key="user.id" :value="user.id">
-                        {{ user.first_name }} {{ user.last_name }}
-                    </option>
-                </select>
+            <!-- Organisation SearchableSelect -->
+            <div class="mb-4 w-full max-w-sm">
+                <!-- <input type="text" v-model="userSearch" placeholder="Search organisation..."
+                    class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 mb-2"> -->
+                <SearchableSelect v-model="org_type_user_id" :options="organisationOptions"
+                    placeholder="Select Organisation" />
+            </div>
+
+            <!-- Member SearchableSelect -->
+            <div class="mb-4 w-full max-w-sm">
+                <!-- <input type="text" v-model="memberSearch" placeholder="Search member..."
+                    class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 mb-2"> -->
+                <SearchableSelect v-model="selectedUserId" :options="memberOptions" placeholder="Select Member" />
+            </div>
+
+            <!-- Role Title SearchableSelect -->
+            <div class="mb-4 w-full max-w-sm">
+                <!-- <input type="text" v-model="roleTitlesSearch" placeholder="Search role title..."
+                    class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 mb-2"> -->
+                <SearchableSelect v-model="org_role_title_id" :options="roleTitleOptions"
+                    placeholder="Select Role Title" />
             </div>
 
             <!-- Show Roles checkboxes for selected user -->

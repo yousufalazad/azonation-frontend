@@ -4,7 +4,7 @@
       <h2 class="text-lg font-bold mb-4 left-color-shade py-2">Logo</h2>
       <div class="mb-4 flex justify-between pb-9">
           <div v-if="logoPath">
-              <img :src="`${baseURL}${logoPath}`" alt="Logo" class="rounded-lg h-[150px] ml-5">
+              <img :src="logoPath" alt="Logo" class="rounded-lg h-[150px] ml-5">
           </div>
           <div>
               <label for="logo" class="block text-sm font-medium text-gray-700 mb-4">Upload new logo</label>

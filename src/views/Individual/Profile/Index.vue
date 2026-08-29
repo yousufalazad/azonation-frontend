@@ -503,7 +503,7 @@ onMounted(() => {
 
                     <!-- Image Display -->
                     <div class="flex justify-center md:justify-start">
-                        <img v-if="logoPath" :src="`${baseURL}${logoPath}`" alt="Logo"
+                        <img v-if="logoPath" :src="logoPath" alt="Logo"
                             class="rounded-lg w-full max-w-[250px]">
                         <img v-else src="../../../assets/Logo/Your-logo-here.png" alt="Logo"
                             class="rounded-lg w-full max-w-[250px]">

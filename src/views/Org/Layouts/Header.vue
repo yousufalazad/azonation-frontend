@@ -86,7 +86,7 @@ onBeforeUnmount(() => {
       <!-- Profile Dropdown -->
       <div class="relative">
         <button ref="profileButton" @click="toggleProfileDropdown" class="flex items-center focus:outline-none">
-          <img :src="logoPath ? `${baseURL}${logoPath}` : placeholderImage" alt="Org Logo"
+          <img :src="logoPath ? logoPath : placeholderImage" alt="Org Logo"
             class="w-10 h-10 rounded-full object-cover border border-gray-300" />
         </button>
 
@@ -97,7 +97,7 @@ onBeforeUnmount(() => {
 
             <!-- Logo -->
             <div class="flex justify-center p-4 border-b">
-              <img :src="logoPath ? `${baseURL}${logoPath}` : placeholderImage" alt="Org Logo"
+              <img :src="logoPath ? logoPath : placeholderImage" alt="Org Logo"
                 class="rounded-lg max-h-[90px] max-w-[200px] w-auto h-auto" />
             </div>
 

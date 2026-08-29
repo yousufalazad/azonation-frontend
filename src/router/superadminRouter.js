@@ -136,8 +136,8 @@ const superadminRoutes = [
         // meta: { requiresAuth: true, permission: "manage_permissions" },
       },
       {
-        path: "user-role-assign",
-        name: "user-role-assign",
+        path: "superadmin-user-role-assign",
+        name: "superadmin-user-role-assign",
         component: UserRoleAssign,
         meta: { requiresAuth: true},
         // meta: { requiresAuth: true, permission: "assign_roles" },

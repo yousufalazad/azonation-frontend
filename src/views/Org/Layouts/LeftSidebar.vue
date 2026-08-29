@@ -69,40 +69,37 @@ const isActive = (path) => route.path === path;
       </button>
       <transition name="fade-slide">
         <div v-if="isSectionOpen('membership') && props.isSidebarExpanded" class="ml-7 space-y-1">
-         <router-link :to="{ name: 'index-member' }" @click="handleLinkClick"
+          <router-link :to="{ name: 'index-member' }" @click="handleLinkClick"
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
             Members
           </router-link>
 
-          <router-link :to="{ name: 'unlink-member' }" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
-            Unlink Member
-          </router-link>
+
 
           <router-link :to="{ name: 'terminated-member' }" @click="handleLinkClick"
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
             Terminated Member
           </router-link>
 
-          
+
           <router-link :to="{ name: 'org-membership-renewal' }" @click="handleLinkClick"
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
-             Membership Renewal
+            Membership Renewal
           </router-link>
 
           <router-link :to="{ name: 'org-membership-renewal-cycle' }" @click="handleLinkClick"
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
-             Membership Renewal Cycle
+            Membership Renewal Cycle
           </router-link>
 
           <router-link :to="{ name: 'org-membership-renewal-price' }" @click="handleLinkClick"
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
-             Membership Renewal Price
+            Membership Renewal Price
           </router-link>
-                   
+
           <router-link :to="{ name: 'org-membership-type' }" @click="handleLinkClick"
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
-           Membership Type
+            Membership Type
           </router-link>
 
           <router-link :to="{ name: 'administrator' }" @click="handleLinkClick"
@@ -146,7 +143,7 @@ const isActive = (path) => route.path === path;
       </button>
       <transition name="fade-slide">
         <div v-if="isSectionOpen('profile') && props.isSidebarExpanded" class="ml-7 space-y-1">
-     
+
           <router-link to="/org-dashboard/my-account/profile" @click="handleLinkClick"
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Profile</router-link>
 
@@ -203,6 +200,11 @@ const isActive = (path) => route.path === path;
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Expense</router-link>
         </div>
       </transition>
+    </div>
+
+    <div class="space-y-1">
+      <router-link to="/org-dashboard/user-role-assign"
+        class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">User Role Assign</router-link>
     </div>
   </nav>
 </template>

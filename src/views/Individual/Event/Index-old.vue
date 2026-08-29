@@ -1,36 +1,23 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { authStore } from '@/store/authStore';
 import { useRouter } from 'vue-router';
-import Swal from 'sweetalert2';
 
 const auth = authStore;
 const router = useRouter();
 const isLoading = ref(true);
-const allEvents = ref([]);
-
-const canCreate = computed(() => auth.hasPermission('event.create'));
-
-const canManage = (event) =>
-  event.org_id === auth.currentOrgId && auth.hasPermission('event.update');
-
-const canRemove = (event) =>
-  event.org_id === auth.currentOrgId && auth.hasPermission('event.delete');
-
-const activeOrgName = computed(() => {
-  const org = auth.orgAccess.find(o => o.org_type_user_id === auth.currentOrgId);
-  return org?.org_name || 'Unknown';
-});
+const allEvents = ref([]); // Flattened event list
 
 const fetchEventsData = async () => {
   try {
     const response = await auth.fetchProtectedApi('/api/individual/events', {}, 'GET');
     if (response.status) {
       const orgEvents = response.data || [];
+
+      // Flatten all events with organisation name included
       allEvents.value = orgEvents.flatMap(org =>
         (org.events || []).map(event => ({
           ...event,
-          org_id: org.org_type_user_id, // ⚠️ confirm this key matches your API response
           org_name: org.org_name || 'Unknown Organisation',
         }))
       );
@@ -42,61 +29,19 @@ const fetchEventsData = async () => {
   }
 };
 
-const goToCreateEvent = () => router.push({ name: 'create-individual-event' });
-const goToEditEvent = (id) => router.push({ name: 'edit-individual-event', params: { id } });
-
-const deleteRecord = async (eventId) => {
-  const confirmed = await Swal.fire({
-    title: 'Are you sure?',
-    text: 'This action cannot be undone!',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Yes, delete it!'
-  });
-
-  if (!confirmed.isConfirmed) return;
-
-  try {
-    const response = await auth.fetchProtectedApi(`/api/events/${eventId}`, {}, 'DELETE');
-    if (response.status) {
-      allEvents.value = allEvents.value.filter(e => e.id !== eventId);
-      Swal.fire('Deleted!', 'Event has been deleted.', 'success');
-    } else {
-      Swal.fire('Error!', 'Failed to delete event.', 'error');
-    }
-  } catch (e) {
-    console.error(e);
-    Swal.fire('Error!', 'Failed to delete event.', 'error');
-  }
-};
-
 onMounted(() => {
   fetchEventsData();
 });
 </script>
-
 <template>
   <div class="space-y-8">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-800">Upcoming Events</h1>
-        <p v-if="canCreate" class="text-xs text-gray-500 mt-1">
-          Creating for: <span class="font-medium">{{ activeOrgName }}</span>
-        </p>
-      </div>
-      <div class="flex flex-wrap gap-2">
-        <button v-if="canCreate" @click="goToCreateEvent"
-          class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
-          Add Event
-        </button>
-        <button @click="$router.push({ name: 'past-individual-events' })"
-          class="bg-gray-500 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
-          Past Event List
-        </button>
-      </div>
+      <h1 class="text-2xl font-bold text-gray-800">Upcoming Events</h1>
+      <button @click="$router.push({ name: 'past-individual-events' })"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
+        Past Event List
+      </button>
     </div>
 
     <!-- Loading -->
@@ -142,11 +87,6 @@ onMounted(() => {
               </tr>
             </tbody>
           </table>
-
-          <div v-if="canManage(event) || canRemove(event)" class="flex justify-end gap-3 mt-3 pt-2 border-t">
-            <button v-if="canManage(event)" @click="goToEditEvent(event.id)" class="text-yellow-600 text-xs font-medium">Edit</button>
-            <button v-if="canRemove(event)" @click="deleteRecord(event.id)" class="text-red-600 text-xs font-medium">Delete</button>
-          </div>
         </div>
       </div>
 
@@ -160,7 +100,6 @@ onMounted(() => {
               <th class="px-4 py-3 text-left">Event Name</th>
               <th class="px-4 py-3 text-left">Event Date</th>
               <th class="px-4 py-3 text-left">Time</th>
-              <th class="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -171,11 +110,6 @@ onMounted(() => {
               <td class="px-4 py-3">{{ event.name || '—' }}</td>
               <td class="px-4 py-3">{{ event.date || '—' }}</td>
               <td class="px-4 py-3">{{ event.time || '—' }}</td>
-              <td class="px-4 py-3 text-right">
-                <span v-if="!canManage(event) && !canRemove(event)" class="text-gray-400 text-xs">—</span>
-                <button v-if="canManage(event)" @click="goToEditEvent(event.id)" class="text-yellow-600 mr-3 hover:underline">Edit</button>
-                <button v-if="canRemove(event)" @click="deleteRecord(event.id)" class="text-red-600 hover:underline">Delete</button>
-              </td>
             </tr>
           </tbody>
         </table>

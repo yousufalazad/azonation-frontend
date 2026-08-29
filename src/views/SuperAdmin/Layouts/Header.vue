@@ -178,7 +178,7 @@
          
           <button @click="toggleProfileDropdown" ref="profileButton" class="flex items-center space-x-2">
             <div v-if="logoPath">
-              <img :src="`${baseURL}${logoPath}`" alt="Logo" class="w-10 h-10 rounded-full object-covers">
+              <img :src="logoPath ? logoPath : placeholderImage" alt="Logo" class="w-10 h-10 rounded-full object-covers">
             </div>
           </button>
   
@@ -188,7 +188,7 @@
             <!-- Profile images -->
             <div class="p-4 border-b">
               <div class="flex items-left space-x-2">
-                <img :src="`${baseURL}${logoPath}`" alt="Logo"
+                 <img :src="logoPath ? logoPath : placeholderImage" alt="Logo"
                   class="rounded-lg max-h-[90px] max-w-[200px] w-auto h-auto">
               </div>
             </div>
