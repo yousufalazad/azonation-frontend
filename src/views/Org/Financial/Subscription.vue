@@ -38,22 +38,45 @@ const currency = ref([]);
 |--------------------------------------------------------------------------
 | Country & Package Price Data
 |--------------------------------------------------------------------------
-|
-| Country and package prices are intentionally kept separate from
-| managementPackages.
-|
 */
 
 const countries = ref([]);
 const packagePrices = ref([]);
 
 const selectedCountryId = ref(null);
-
 const selectedManagementSubscription = ref(null);
 
 const isLoadingCountries = ref(false);
 const isLoadingPackagePrices = ref(false);
 
+/*
+|--------------------------------------------------------------------------
+| Country Wise Region & Currency
+|--------------------------------------------------------------------------
+|
+| API:
+| GET /api/country-regions/country/{country_id}
+|
+| Response:
+|
+| {
+|     status: true,
+|     data: [
+|         {
+|             region_id: 1,
+|             region_name: "BD",
+|             currency_id: 1,
+|             currency_name: "BDT",
+|             currency_code: "BDT",
+|             currency_symbol: "৳"
+|         }
+|     ]
+| }
+|
+|--------------------------------------------------------------------------
+*/
+
+const countryWiseRegionWithCurrency = ref([]);
 
 /*
 |--------------------------------------------------------------------------
@@ -83,7 +106,6 @@ const getSubscriptions = async () => {
     }
 };
 
-
 /*
 |--------------------------------------------------------------------------
 | Get Management Packages
@@ -112,7 +134,6 @@ const getManagementPackages = async () => {
     }
 };
 
-
 /*
 |--------------------------------------------------------------------------
 | Edit Subscription
@@ -129,7 +150,6 @@ const editSubscription = (subscription) => {
     isModalOpen.value = true;
 };
 
-
 /*
 |--------------------------------------------------------------------------
 | Close Edit Modal
@@ -140,7 +160,6 @@ const closeModal = () => {
     isModalOpen.value = false;
 };
 
-
 /*
 |--------------------------------------------------------------------------
 | Update Subscription
@@ -148,17 +167,20 @@ const closeModal = () => {
 */
 
 const updateSubscription = async () => {
+    // alert('ok');
     const payload = {
         user_id: user_id.value,
-        package_id: package_id.value,
+        management_package_id: package_id.value,
         end_date: end_date.value,
-        status: status.value,
+        is_active: status.value,
         start_date: new Date().toISOString().slice(0, 10),
     };
+    
+    // console.log('Updating subscription with payload:', payload);
 
     try {
         const response = await auth.fetchProtectedApi(
-            `/api/subscription/${subscription_id.value}`,
+            `/api/management-subscriptions/${subscription_id.value}`,
             payload,
             'PUT'
         );
@@ -173,6 +195,7 @@ const updateSubscription = async () => {
             );
 
             closeModal();
+
         } else {
             console.error(
                 'Error updating subscription:',
@@ -199,7 +222,6 @@ const updateSubscription = async () => {
         );
     }
 };
-
 
 /*
 |--------------------------------------------------------------------------
@@ -231,7 +253,6 @@ const fetchUserPriceRate = async () => {
     }
 };
 
-
 /*
 |--------------------------------------------------------------------------
 | Existing Currency API
@@ -262,28 +283,9 @@ const fetchCurrency = async () => {
     }
 };
 
-
 /*
 |--------------------------------------------------------------------------
-| COUNTRY API
-|--------------------------------------------------------------------------
-|
-| TODO:
-| Update ONLY this endpoint and response mapping according to your
-| actual Country API.
-|
-| Expected example:
-|
-| [
-|   {
-|      id: 1,
-|      name: "Bangladesh",
-|      currency_code: "BDT",
-|      currency_symbol: "৳"
-|   },
-|   ...
-| ]
-|
+| Country API
 |--------------------------------------------------------------------------
 */
 
@@ -291,10 +293,6 @@ const getCountries = async () => {
     isLoadingCountries.value = true;
 
     try {
-        /*
-         * TODO:
-         * Replace this endpoint with your actual country API.
-         */
         const response = await auth.fetchProtectedApi(
             '/api/countries',
             {},
@@ -317,85 +315,22 @@ const getCountries = async () => {
         );
 
         countries.value = [];
+
     } finally {
         isLoadingCountries.value = false;
     }
 };
 
-
 /*
 |--------------------------------------------------------------------------
-| PACKAGE PRICE API
-|--------------------------------------------------------------------------
-|
-| TODO:
-| Update ONLY this endpoint and response mapping according to your
-| actual Package Price API.
-|
-| Expected example:
-|
-| [
-|   {
-|      id: 1,
-|      package_id: 1,
-|      country_id: 1,
-|      price: 0
-|   },
-|   {
-|      id: 2,
-|      package_id: 2,
-|      country_id: 1,
-|      price: 500
-|   }
-| ]
-|
+| Package Price API
 |--------------------------------------------------------------------------
 */
 
-const X_getPackagePrices = async () => {
-    isLoadingPackagePrices.value = true;
-
-    try {
-        /*
-         * TODO:
-         * Replace this endpoint with your actual package-price API.
-         */
-        const response = await auth.fetchProtectedApi(
-            '/api/management-package-prices',
-            {},
-            'GET'
-        );
-
-        if (response.status) {
-            packagePrices.value =
-                response.data ??
-                response.packagePrices ??
-                response.package_prices ??
-                [];
-        } else {
-            packagePrices.value = [];
-        }
-
-    } catch (error) {
-        console.error(
-            'Error fetching package prices:',
-            error
-        );
-
-        packagePrices.value = [];
-    } finally {
-        isLoadingPackagePrices.value = false;
-    }
-};
 const getPackagePrices = async () => {
     isLoadingPackagePrices.value = true;
 
     try {
-        /*
-         * TODO:
-         * Replace this endpoint with your actual package-price API.
-         */
-
         const response = await auth.fetchProtectedApi(
             '/api/management-subscriptions/management-package-prices',
             {},
@@ -403,7 +338,11 @@ const getPackagePrices = async () => {
         );
 
         if (response.status) {
-            packagePrices.value = response.package_prices ?? [];
+            packagePrices.value =
+                response.package_prices ??
+                response.data ??
+                [];
+
         } else {
             packagePrices.value = [];
         }
@@ -415,6 +354,7 @@ const getPackagePrices = async () => {
         );
 
         packagePrices.value = [];
+
     } finally {
         isLoadingPackagePrices.value = false;
     }
@@ -422,12 +362,201 @@ const getPackagePrices = async () => {
 
 /*
 |--------------------------------------------------------------------------
-| Package Feature Configuration
+| Country Wise Region With Currency
+|--------------------------------------------------------------------------
+*/
+
+const onCountryChange = async () => {
+    const countryId = selectedCountryId.value;
+
+    // console.log('Selected Country ID:', countryId);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reset previous region/currency data
+    |--------------------------------------------------------------------------
+    */
+
+    countryWiseRegionWithCurrency.value = [];
+
+    if (!countryId) {
+        console.warn('No country selected');
+        return;
+    }
+
+    try {
+        const response = await auth.fetchProtectedApi(
+            `/api/country-regions/country/${countryId}`,
+            {},
+            'GET'
+        );
+
+        if (response.status === true) {
+
+            countryWiseRegionWithCurrency.value =
+                response.data ?? [];
+
+            console.log(
+                'Country region data:',
+                countryWiseRegionWithCurrency.value
+            );
+
+        } else {
+
+            countryWiseRegionWithCurrency.value = [];
+
+            console.error(
+                'Failed to fetch country region data:',
+                response?.message ??
+                response?.data?.message ??
+                'Unknown error'
+            );
+        }
+
+    } catch (error) {
+
+        countryWiseRegionWithCurrency.value = [];
+
+        console.error(
+            'Error fetching country region data:',
+            error
+        );
+
+        console.error(
+            'Server Error:',
+            error?.response?.data
+        );
+    }
+};
+
+/*
+|--------------------------------------------------------------------------
+| Selected Country
+|--------------------------------------------------------------------------
+*/
+
+const selectedCountry = computed(() => {
+    if (!selectedCountryId.value) {
+        return null;
+    }
+
+    return (
+        countries.value.find(
+            country =>
+                Number(country.id) ===
+                Number(selectedCountryId.value)
+        ) ?? null
+    );
+});
+
+/*
+|--------------------------------------------------------------------------
+| Selected Country Name
+|--------------------------------------------------------------------------
+*/
+
+const selectedCountryName = computed(() => {
+    return selectedCountry.value?.name ?? '';
+});
+
+/*
+|--------------------------------------------------------------------------
+| Selected Region
 |--------------------------------------------------------------------------
 |
-| Feature names are controlled here.
-| Feature values ALWAYS come from managementPackages API.
+| Normally one region is returned for a country.
 |
+| If multiple regions are returned, first region is used
+| unless later you add region selection.
+|--------------------------------------------------------------------------
+*/
+
+const selectedCountryRegion = computed(() => {
+
+    if (!countryWiseRegionWithCurrency.value.length) {
+        return null;
+    }
+
+    return countryWiseRegionWithCurrency.value[0] ?? null;
+});
+
+/*
+|--------------------------------------------------------------------------
+| Selected Region ID
+|--------------------------------------------------------------------------
+*/
+
+const selectedRegionId = computed(() => {
+
+    return (
+        selectedCountryRegion.value?.region_id ??
+        selectedCountryRegion.value?.country_region_id ??
+        null
+    );
+});
+
+/*
+|--------------------------------------------------------------------------
+| Selected Region Name
+|--------------------------------------------------------------------------
+*/
+
+const selectedRegionName = computed(() => {
+
+    return (
+        selectedCountryRegion.value?.region_name ??
+        ''
+    );
+});
+
+/*
+|--------------------------------------------------------------------------
+| Selected Currency Code
+|--------------------------------------------------------------------------
+|
+| Now currency comes from Country Region API.
+|--------------------------------------------------------------------------
+*/
+
+const selectedCurrencyCode = computed(() => {
+
+    return (
+        selectedCountryRegion.value?.currency_code ??
+        ''
+    );
+});
+
+/*
+|--------------------------------------------------------------------------
+| Selected Currency Name
+|--------------------------------------------------------------------------
+*/
+
+const selectedCurrencyName = computed(() => {
+
+    return (
+        selectedCountryRegion.value?.currency_name ??
+        ''
+    );
+});
+
+/*
+|--------------------------------------------------------------------------
+| Selected Currency Symbol
+|--------------------------------------------------------------------------
+*/
+
+const selectedCurrencySymbol = computed(() => {
+
+    return (
+        selectedCountryRegion.value?.currency_symbol ??
+        ''
+    );
+});
+
+/*
+|--------------------------------------------------------------------------
+| Package Feature Configuration
 |--------------------------------------------------------------------------
 */
 
@@ -549,7 +678,6 @@ const packageFeatures = [
     },
 ];
 
-
 /*
 |--------------------------------------------------------------------------
 | Open Upgrade / Downgrade Modal
@@ -557,11 +685,10 @@ const packageFeatures = [
 */
 
 const openUpgradeDowngradeModal = async (subscription) => {
-    selectedManagementSubscription.value = subscription;
 
-    /*
-     * Existing subscription country, if available.
-     */
+    selectedManagementSubscription.value =
+        subscription;
+
     selectedCountryId.value =
         subscription?.country_id ??
         subscription?.countryId ??
@@ -570,20 +697,31 @@ const openUpgradeDowngradeModal = async (subscription) => {
     showUpgradeDowngradeModal.value = true;
 
     /*
-     * Make sure country and price data are available.
-     */
+    |--------------------------------------------------------------------------
+    | Load Countries
+    |--------------------------------------------------------------------------
+    */
+
     if (!countries.value.length) {
         await getCountries();
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Load Package Prices
+    |--------------------------------------------------------------------------
+    */
 
     if (!packagePrices.value.length) {
         await getPackagePrices();
     }
 
     /*
-     * If subscription has no country,
-     * automatically select the first available country.
-     */
+    |--------------------------------------------------------------------------
+    | Select First Country If Nothing Selected
+    |--------------------------------------------------------------------------
+    */
+
     if (
         !selectedCountryId.value &&
         countries.value.length
@@ -591,8 +729,17 @@ const openUpgradeDowngradeModal = async (subscription) => {
         selectedCountryId.value =
             countries.value[0].id;
     }
-};
 
+    /*
+    |--------------------------------------------------------------------------
+    | Load Country Region + Currency
+    |--------------------------------------------------------------------------
+    */
+
+    if (selectedCountryId.value) {
+        await onCountryChange();
+    }
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -601,124 +748,101 @@ const openUpgradeDowngradeModal = async (subscription) => {
 */
 
 const closeUpgradeDowngradeModal = () => {
+
     showUpgradeDowngradeModal.value = false;
-    selectedManagementSubscription.value = null;
+
+    selectedManagementSubscription.value =
+        null;
+
+    selectedCountryId.value = null;
+
+    countryWiseRegionWithCurrency.value = [];
 };
 
-
 /*
 |--------------------------------------------------------------------------
-| Selected Country
-|--------------------------------------------------------------------------
-*/
-
-const selectedCountry = computed(() => {
-    if (!selectedCountryId.value) {
-        return null;
-    }
-
-    return (
-        countries.value.find(
-            country =>
-                Number(country.id) ===
-                Number(selectedCountryId.value)
-        ) ?? null
-    );
-});
-
-
-/*
-|--------------------------------------------------------------------------
-| Country Name
-|--------------------------------------------------------------------------
-*/
-
-const selectedCountryName = computed(() => {
-    return selectedCountry.value?.name ?? '';
-});
-
-
-/*
-|--------------------------------------------------------------------------
-| Country Currency
+| Find Package Price Record
 |--------------------------------------------------------------------------
 |
-| Supports different possible API field names.
-|--------------------------------------------------------------------------
-*/
-
-const selectedCurrencyCode = computed(() => {
-    const country = selectedCountry.value;
-
-    if (!country) {
-        return '';
-    }
-
-    return (
-        country.currency_code ??
-        country.currency ??
-        country.currencyCode ??
-        ''
-    );
-});
-
-
-const selectedCurrencySymbol = computed(() => {
-    const country = selectedCountry.value;
-
-    if (!country) {
-        return '';
-    }
-
-    return (
-        country.currency_symbol ??
-        country.currencySymbol ??
-        ''
-    );
-});
-
-
-/*
-|--------------------------------------------------------------------------
-| Country Change
-|--------------------------------------------------------------------------
-*/
-
-const onCountryChange = () => {
-    /*
-     * Nothing else is required here.
-     *
-     * Because getPackagePrice() depends on selectedCountryId,
-     * Vue automatically updates every package price.
-     *
-     * Package feature values do NOT change.
-     */
-};
-
-
-/*
-|--------------------------------------------------------------------------
-| Find Package Price
+| IMPORTANT:
+|
+| Previous code:
+|
+| Number(item.region_id) === 1
+|
+| was hard-coded.
+|
+| Now selectedRegionId.value is used.
 |--------------------------------------------------------------------------
 */
 
 const getPackagePriceRecord = (pkg) => {
-    if (!pkg || !selectedCountryId.value) {
+
+    if (
+        !pkg ||
+        !selectedCountryId.value ||
+        !selectedRegionId.value
+    ) {
         return null;
     }
 
     return (
         packagePrices.value.find(
-            item =>
-                Number(item.management_package_id) === Number(pkg.id)
-                 &&
-                Number(item.region_id) === 1
-                // Number(item.region_id) === Number(selectedCountryId.value)
+            item => {
 
+                const packageId =
+                    item.management_package_id ??
+                    item.package_id;
+
+                const regionId =
+                    item.region_id ??
+                    item.country_region_id;
+
+                const countryId =
+                    item.country_id;
+
+                /*
+                |--------------------------------------------------------------------------
+                | Match Package
+                |--------------------------------------------------------------------------
+                */
+
+                const packageMatches =
+                    Number(packageId) ===
+                    Number(pkg.id);
+
+                /*
+                |--------------------------------------------------------------------------
+                | Match Region
+                |--------------------------------------------------------------------------
+                */
+
+                const regionMatches =
+                    Number(regionId) ===
+                    Number(selectedRegionId.value);
+
+                /*
+                |--------------------------------------------------------------------------
+                | If package price API has country_id,
+                | also match country.
+                |--------------------------------------------------------------------------
+                */
+
+                const countryMatches =
+                    countryId === undefined ||
+                    countryId === null ||
+                    Number(countryId) ===
+                    Number(selectedCountryId.value);
+
+                return (
+                    packageMatches &&
+                    regionMatches &&
+                    countryMatches
+                );
+            }
         ) ?? null
     );
 };
-
 
 /*
 |--------------------------------------------------------------------------
@@ -727,7 +851,9 @@ const getPackagePriceRecord = (pkg) => {
 */
 
 const getPackagePrice = (pkg) => {
-    const priceRecord = getPackagePriceRecord(pkg);
+
+    const priceRecord =
+        getPackagePriceRecord(pkg);
 
     if (!priceRecord) {
         return null;
@@ -741,7 +867,6 @@ const getPackagePrice = (pkg) => {
     );
 };
 
-
 /*
 |--------------------------------------------------------------------------
 | Price Availability
@@ -749,9 +874,11 @@ const getPackagePrice = (pkg) => {
 */
 
 const hasPackagePrice = (pkg) => {
-    return getPackagePriceRecord(pkg) !== null;
-};
 
+    return (
+        getPackagePriceRecord(pkg) !== null
+    );
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -760,7 +887,11 @@ const hasPackagePrice = (pkg) => {
 */
 
 const formatPrice = (price) => {
-    if (price === null || price === undefined) {
+
+    if (
+        price === null ||
+        price === undefined
+    ) {
         return '';
     }
 
@@ -770,7 +901,6 @@ const formatPrice = (price) => {
     }).format(Number(price));
 };
 
-
 /*
 |--------------------------------------------------------------------------
 | Format Feature Value
@@ -778,7 +908,9 @@ const formatPrice = (price) => {
 */
 
 const formatFeatureValue = (pkg, feature) => {
-    const value = pkg?.[feature.key];
+
+    const value =
+        pkg?.[feature.key];
 
     if (
         value === null ||
@@ -795,7 +927,6 @@ const formatFeatureValue = (pkg, feature) => {
     return value;
 };
 
-
 /*
 |--------------------------------------------------------------------------
 | Current Package
@@ -803,29 +934,29 @@ const formatFeatureValue = (pkg, feature) => {
 */
 
 const isCurrentPackage = (pkg) => {
-    if (!selectedManagementSubscription.value) {
+
+    if (
+        !selectedManagementSubscription.value
+    ) {
         return false;
     }
 
     return (
         Number(
-            selectedManagementSubscription.value.package_id
+            selectedManagementSubscription.value
+                .package_id
         ) === Number(pkg.id)
     );
 };
-
 
 /*
 |--------------------------------------------------------------------------
 | Package Order
 |--------------------------------------------------------------------------
-|
-| Prefer sort_order if your package API provides it.
-| Otherwise fallback to package ID.
-|--------------------------------------------------------------------------
 */
 
 const getPackageOrder = (pkg) => {
+
     return Number(
         pkg?.sort_order ??
         pkg?.sortOrder ??
@@ -835,7 +966,6 @@ const getPackageOrder = (pkg) => {
     );
 };
 
-
 /*
 |--------------------------------------------------------------------------
 | Current Package Object
@@ -843,7 +973,10 @@ const getPackageOrder = (pkg) => {
 */
 
 const currentPackage = computed(() => {
-    if (!selectedManagementSubscription.value) {
+
+    if (
+        !selectedManagementSubscription.value
+    ) {
         return null;
     }
 
@@ -852,12 +985,12 @@ const currentPackage = computed(() => {
             pkg =>
                 Number(pkg.id) ===
                 Number(
-                    selectedManagementSubscription.value.package_id
+                    selectedManagementSubscription.value
+                        .package_id
                 )
         ) ?? null
     );
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -866,7 +999,10 @@ const currentPackage = computed(() => {
 */
 
 const getPackageAction = (pkg) => {
-    if (!selectedManagementSubscription.value) {
+
+    if (
+        !selectedManagementSubscription.value
+    ) {
         return 'Choose';
     }
 
@@ -874,7 +1010,8 @@ const getPackageAction = (pkg) => {
         return 'Current Plan';
     }
 
-    const currentPkg = currentPackage.value;
+    const currentPkg =
+        currentPackage.value;
 
     if (!currentPkg) {
         return 'Choose';
@@ -897,7 +1034,6 @@ const getPackageAction = (pkg) => {
     return 'Choose';
 };
 
-
 /*
 |--------------------------------------------------------------------------
 | Can Select Package
@@ -905,14 +1041,15 @@ const getPackageAction = (pkg) => {
 */
 
 const canSelectPackage = (pkg) => {
+
     if (isCurrentPackage(pkg)) {
         return false;
     }
 
-    /*
-     * Don't allow choosing a package if price is unavailable
-     * for selected country.
-     */
+    if (!selectedRegionId.value) {
+        return false;
+    }
+
     if (!hasPackagePrice(pkg)) {
         return false;
     }
@@ -920,114 +1057,220 @@ const canSelectPackage = (pkg) => {
     return true;
 };
 
-
 /*
 |--------------------------------------------------------------------------
 | Change Package
 |--------------------------------------------------------------------------
-|
-| This currently only selects/confirms the package.
-| Add your actual upgrade/downgrade API here later.
-|--------------------------------------------------------------------------
 */
+
 
 const changePackage = async (pkg) => {
     if (!canSelectPackage(pkg)) {
         return;
     }
 
-    const action = getPackageAction(pkg);
+    const subscription =
+        selectedManagementSubscription.value;
 
+    if (!subscription?.id) {
+        await Swal.fire({
+            title: 'Error',
+            text: 'Subscription information was not found.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+            target: document.body,
+            heightAuto: false,
+            didOpen: () => {
+                const container = Swal.getContainer();
+
+                if (container) {
+                    container.style.setProperty(
+                        'z-index',
+                        '999999',
+                        'important'
+                    );
+                }
+            },
+        });
+
+        return;
+    }
+
+    const action = getPackageAction(pkg);
     const price = getPackagePrice(pkg);
 
-    const currencyCode =
-        selectedCurrencyCode.value ||
+    const currencyText =
         selectedCurrencySymbol.value ||
+        selectedCurrencyCode.value ||
         '';
 
+    /*
+     * ---------------------------------------------------------
+     * IMPORTANT:
+     * Hide Upgrade/Downgrade modal before SweetAlert opens.
+     * This guarantees SweetAlert is above the modal.
+     * ---------------------------------------------------------
+     */
+    const wasUpgradeDowngradeModalOpen =
+        showUpgradeDowngradeModal.value;
+
+    showUpgradeDowngradeModal.value = false;
+
+    /*
+     * ---------------------------------------------------------
+     * Confirmation Modal
+     * ---------------------------------------------------------
+     */
     const result = await Swal.fire({
         title: `${action} Package?`,
-        html: `
-            <div class="text-left">
-                <p class="mb-2">
-                    <strong>Package:</strong>
-                    ${pkg.name}
-                </p>
 
-                <p class="mb-2">
+        html: `
+            <div style="
+                text-align: left;
+                line-height: 1.8;
+                font-size: 15px;
+            ">
+                <div style="margin-bottom: 8px;">
+                    <strong>Package:</strong>
+                    ${pkg.name ?? 'N/A'}
+                </div>
+
+                <div style="margin-bottom: 8px;">
                     <strong>Country:</strong>
                     ${selectedCountryName.value || 'N/A'}
-                </p>
+                </div>
 
-                <p>
+                <div style="margin-bottom: 8px;">
+                    <strong>Region:</strong>
+                    ${selectedRegionName.value || 'N/A'}
+                </div>
+
+                <div style="margin-bottom: 8px;">
+                    <strong>Currency:</strong>
+                    ${
+                        selectedCurrencyCode.value ||
+                        selectedCurrencyName.value ||
+                        'N/A'
+                    }
+                </div>
+
+                <div>
                     <strong>Price:</strong>
-                    ${currencyCode}
-                    ${formatPrice(price)}
+                    ${currencyText}${formatPrice(price)}
                     / month
-                </p>
+                </div>
             </div>
         `,
+
         icon: 'question',
+
         showCancelButton: true,
+
         confirmButtonText: `Yes, ${action}`,
+
         cancelButtonText: 'Cancel',
+
         reverseButtons: true,
+
+        allowOutsideClick: false,
+
+        allowEscapeKey: false,
+
+        target: document.body,
+
+        heightAuto: false,
+
+        focusConfirm: true,
+
+        /*
+         * SweetAlert container-এর z-index
+         */
+        didOpen: () => {
+            const container = Swal.getContainer();
+
+            if (container) {
+                container.style.setProperty(
+                    'z-index',
+                    '999999',
+                    'important'
+                );
+            }
+
+            const popup = Swal.getPopup();
+
+            if (popup) {
+                popup.style.setProperty(
+                    'z-index',
+                    '1000000',
+                    'important'
+                );
+            }
+        },
     });
 
+    /*
+     * ---------------------------------------------------------
+     * Cancel করলে Upgrade/Downgrade modal আবার দেখাবে
+     * ---------------------------------------------------------
+     */
     if (!result.isConfirmed) {
+        if (wasUpgradeDowngradeModalOpen) {
+            showUpgradeDowngradeModal.value = true;
+        }
+
         return;
     }
 
     /*
-     * ==============================================================
-     * TODO:
-     * Replace this section with your actual Upgrade/Downgrade API.
-     * ==============================================================
-     *
-     * Example payload:
-     *
-     * const payload = {
-     *     subscription_id:
-     *         selectedManagementSubscription.value.id,
-     *
-     *     user_id:
-     *         selectedManagementSubscription.value.user_id,
-     *
-     *     package_id: pkg.id,
-     *
-     *     country_id: selectedCountryId.value,
-     *
-     *     price: price,
-     * };
-     *
-     * await auth.fetchProtectedApi(
-     *     '/api/management-subscriptions/change-package',
-     *     payload,
-     *     'PUT'
-     * );
+     * ---------------------------------------------------------
+     * Selected package data
+     * ---------------------------------------------------------
      */
+    subscription_id.value = subscription.id;
 
-    console.log('Selected Package:', pkg);
-    console.log('Action:', action);
-    console.log('Country ID:', selectedCountryId.value);
-    console.log('Country:', selectedCountryName.value);
-    console.log('Price:', price);
+    user_id.value = subscription.user_id ?? subscription.user?.id ?? '';
 
-    Swal.fire({
-        title: 'Package Selected',
-        text: `${pkg.name} has been selected for ${selectedCountryName.value}.`,
-        icon: 'success',
-        confirmButtonText: 'OK',
-    });
+    package_id.value = pkg.id;
+
+    end_date.value = subscription.end_date ?? '';
+
+    status.value = subscription.is_active ?? true;
+
+    // console.log('Changing package:', {
+    //     subscription_id: subscription_id.value,
+    //     user_id: user_id.value,
+    //     old_package_id: subscription.package_id,
+    //     new_package_id: package_id.value,
+    //     country_id: selectedCountryId.value,
+    //     country: selectedCountryName.value,
+    //     region_id: selectedRegionId.value,
+    //     region: selectedRegionName.value,
+    //     currency: selectedCurrencyCode.value,
+    //     price,
+    //     action,
+    // });
 
     /*
-     * Uncomment when your actual API is ready:
-     *
-     * await getSubscriptions();
-     * closeUpgradeDowngradeModal();
+     * ---------------------------------------------------------
+     * Actual API Update
+     * ---------------------------------------------------------
      */
-};
+    const updated = await updateSubscription();
 
+    /*
+     * ---------------------------------------------------------
+     * Update successful
+     * ---------------------------------------------------------
+     */
+    if (updated) {
+        closeUpgradeDowngradeModal();
+    } else {
+        /*
+         * API failed হলে main modal আবার দেখাবে
+         */
+        showUpgradeDowngradeModal.value = true;
+    }
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -1036,12 +1279,12 @@ const changePackage = async (pkg) => {
 */
 
 const isPackageDataLoading = computed(() => {
+
     return (
         isLoadingCountries.value ||
         isLoadingPackagePrices.value
     );
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -1050,6 +1293,7 @@ const isPackageDataLoading = computed(() => {
 */
 
 onMounted(async () => {
+
     await Promise.all([
         getManagementPackages(),
         getSubscriptions(),
@@ -1060,7 +1304,6 @@ onMounted(async () => {
     ]);
 });
 </script>
-
 
 <template>
     <div>
@@ -1086,27 +1329,19 @@ onMounted(async () => {
 
                     <tr>
 
-                        <th
-                            class="px-4 py-3 text-left font-medium text-gray-700"
-                        >
+                        <th class="px-4 py-3 text-left font-medium text-gray-700">
                             Package Name
                         </th>
 
-                        <th
-                            class="px-4 py-3 text-left font-medium text-gray-700"
-                        >
+                        <th class="px-4 py-3 text-left font-medium text-gray-700">
                             Started From
                         </th>
 
-                        <th
-                            class="px-4 py-3 text-left font-medium text-gray-700"
-                        >
+                        <th class="px-4 py-3 text-left font-medium text-gray-700">
                             Subscription Status
                         </th>
 
-                        <th
-                            class="px-4 py-3 text-left font-medium text-gray-700"
-                        >
+                        <th class="px-4 py-3 text-left font-medium text-gray-700">
                             Upgrade / Downgrade
                         </th>
 
@@ -1124,28 +1359,31 @@ onMounted(async () => {
                     >
 
                         <!-- Package -->
-                        <td
-                            class="border-t px-4 py-3 text-gray-600"
-                        >
+
+                        <td class="border-t px-4 py-3 text-gray-600">
+
                             {{
                                 managementSubscription
                                     .management_package
                                     ?.name ?? 'N/A'
                             }}
+
                         </td>
 
 
                         <!-- Start Date -->
-                        <td
-                            class="border-t px-4 py-3 text-gray-600"
-                        >
+
+                        <td class="border-t px-4 py-3 text-gray-600">
+
                             {{
                                 managementSubscription.start_date
                             }}
+
                         </td>
 
 
                         <!-- Status -->
+
                         <td class="border-t px-4 py-3">
 
                             <span
@@ -1156,20 +1394,21 @@ onMounted(async () => {
                                 "
                                 class="inline-block rounded-full px-3 py-1 text-sm"
                             >
+
                                 {{
-                                    managementSubscription.subscription_status
+                                    managementSubscription.is_active
                                         ? 'Active'
                                         : 'Inactive'
                                 }}
+
                             </span>
 
                         </td>
 
 
                         <!-- Upgrade / Downgrade -->
-                        <td
-                            class="border-t px-4 py-3 text-gray-600"
-                        >
+
+                        <td class="border-t px-4 py-3 text-gray-600">
 
                             <button
                                 type="button"
@@ -1189,9 +1428,8 @@ onMounted(async () => {
 
 
                     <!-- Empty -->
-                    <tr
-                        v-if="!managementSubscriptions.length"
-                    >
+
+                    <tr v-if="!managementSubscriptions.length">
 
                         <td
                             colspan="4"
@@ -1207,7 +1445,6 @@ onMounted(async () => {
             </table>
 
         </div>
-
 
 
         <!-- ========================================================= -->
@@ -1234,21 +1471,19 @@ onMounted(async () => {
 
                     <div>
 
-                        <h3
-                            class="text-xl font-bold text-gray-800"
-                        >
+                        <h3 class="text-xl font-bold text-gray-800">
                             Upgrade / Downgrade Package
                         </h3>
 
-                        <p
-                            class="mt-1 text-sm text-gray-500"
-                        >
+                        <p class="mt-1 text-sm text-gray-500">
                             Compare package features and choose
                             the plan that best suits your organization.
                         </p>
 
                     </div>
 
+
+                    <!-- Close -->
 
                     <button
                         type="button"
@@ -1273,6 +1508,8 @@ onMounted(async () => {
                         class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
                     >
 
+                        <!-- Country Information -->
+
                         <div>
 
                             <label
@@ -1281,9 +1518,7 @@ onMounted(async () => {
                                 Select Country
                             </label>
 
-                            <p
-                                class="text-xs text-gray-500"
-                            >
+                            <p class="text-xs text-gray-500">
                                 Package price will automatically
                                 update according to the selected country.
                             </p>
@@ -1291,9 +1526,9 @@ onMounted(async () => {
                         </div>
 
 
-                        <div
-                            class="w-full md:w-80"
-                        >
+                        <!-- Country Select -->
+
+                        <div class="w-full md:w-80">
 
                             <select
                                 v-model="selectedCountryId"
@@ -1302,14 +1537,14 @@ onMounted(async () => {
                                 @change="onCountryChange"
                             >
 
-                                <option
-                                    :value="null"
-                                >
+                                <option :value="null">
+
                                     {{
                                         isLoadingCountries
                                             ? 'Loading countries...'
                                             : 'Select Country'
                                     }}
+
                                 </option>
 
 
@@ -1322,6 +1557,113 @@ onMounted(async () => {
                                 </option>
 
                             </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ================================================= -->
+                    <!-- SELECTED COUNTRY / REGION / CURRENCY INFO -->
+                    <!-- ================================================= -->
+
+                    <div
+                        v-if="selectedCountryId"
+                        class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3"
+                    >
+
+                        <!-- Country -->
+
+                        <div
+                            class="rounded-lg border border-gray-200 bg-white px-4 py-3"
+                        >
+
+                            <div class="text-xs font-medium uppercase tracking-wide text-gray-400">
+                                Country
+                            </div>
+
+                            <div class="mt-1 text-sm font-semibold text-gray-800">
+                                {{ selectedCountryName || 'N/A' }}
+                            </div>
+
+                        </div>
+
+
+                        <!-- Region -->
+
+                        <div
+                            class="rounded-lg border border-gray-200 bg-white px-4 py-3"
+                        >
+
+                            <div class="text-xs font-medium uppercase tracking-wide text-gray-400">
+                                Region
+                            </div>
+
+                            <div class="mt-1 text-sm font-semibold text-gray-800">
+
+                                <template v-if="selectedRegionId">
+
+                                    {{ selectedRegionName || 'N/A' }}
+
+                                </template>
+
+                                <template v-else>
+
+                                    <span class="text-gray-400">
+                                        Loading...
+                                    </span>
+
+                                </template>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Currency -->
+
+                        <div
+                            class="rounded-lg border border-gray-200 bg-white px-4 py-3"
+                        >
+
+                            <div class="text-xs font-medium uppercase tracking-wide text-gray-400">
+                                Currency
+                            </div>
+
+                            <div class="mt-1 text-sm font-semibold text-gray-800">
+
+                                <template v-if="selectedCurrencyCode">
+
+                                    <span>
+                                        {{
+                                            selectedCurrencySymbol
+                                        }}
+                                    </span>
+
+                                    <span class="ml-1">
+                                        {{
+                                            selectedCurrencyCode
+                                        }}
+                                    </span>
+
+                                    <span
+                                        v-if="selectedCurrencyName"
+                                        class="ml-1 text-xs font-normal text-gray-500"
+                                    >
+                                        ({{ selectedCurrencyName }})
+                                    </span>
+
+                                </template>
+
+                                <template v-else>
+
+                                    <span class="text-gray-400">
+                                        Loading...
+                                    </span>
+
+                                </template>
+
+                            </div>
 
                         </div>
 
@@ -1343,12 +1685,39 @@ onMounted(async () => {
 
                         <div
                             class="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-primary"
-                        ></div>
-
-                        <p
-                            class="text-sm text-gray-500"
                         >
+                        </div>
+
+                        <p class="text-sm text-gray-500">
                             Loading package pricing...
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- COUNTRY REGION LOADING -->
+                <!-- ================================================= -->
+
+                <div
+                    v-else-if="
+                        selectedCountryId &&
+                        !selectedRegionId
+                    "
+                    class="flex min-h-[250px] items-center justify-center"
+                >
+
+                    <div class="text-center">
+
+                        <div
+                            class="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-primary"
+                        >
+                        </div>
+
+                        <p class="text-sm text-gray-500">
+                            Loading country region and currency...
                         </p>
 
                     </div>
@@ -1386,15 +1755,11 @@ onMounted(async () => {
                                 class="sticky left-0 z-30 border-b border-r bg-gray-50 px-5 py-6"
                             >
 
-                                <div
-                                    class="text-sm font-bold text-gray-700"
-                                >
+                                <div class="text-sm font-bold text-gray-700">
                                     Package Features
                                 </div>
 
-                                <div
-                                    class="mt-1 text-xs text-gray-500"
-                                >
+                                <div class="mt-1 text-xs text-gray-500">
                                     Compare all features
                                 </div>
 
@@ -1416,6 +1781,7 @@ onMounted(async () => {
                             >
 
                                 <!-- Current Badge -->
+
                                 <div
                                     v-if="isCurrentPackage(pkg)"
                                     class="absolute right-3 top-3"
@@ -1431,6 +1797,7 @@ onMounted(async () => {
 
 
                                 <!-- Package Name -->
+
                                 <h4
                                     class="pt-1 text-xl font-bold text-gray-800"
                                 >
@@ -1439,6 +1806,7 @@ onMounted(async () => {
 
 
                                 <!-- Description -->
+
                                 <p
                                     v-if="pkg.description"
                                     class="mx-auto mt-1 max-w-[190px] text-xs leading-5 text-gray-500"
@@ -1451,14 +1819,11 @@ onMounted(async () => {
                                 <!-- PRICE -->
                                 <!-- ================================= -->
 
-                                <div
-                                    class="mt-5 min-h-[70px]"
-                                >
+                                <div class="mt-5 min-h-[70px]">
 
                                     <!-- Country Not Selected -->
-                                    <template
-                                        v-if="!selectedCountryId"
-                                    >
+
+                                    <template v-if="!selectedCountryId">
 
                                         <div
                                             class="text-sm font-medium text-gray-400"
@@ -1469,7 +1834,23 @@ onMounted(async () => {
                                     </template>
 
 
+                                    <!-- Region Loading -->
+
+                                    <template
+                                        v-else-if="!selectedRegionId"
+                                    >
+
+                                        <div
+                                            class="text-sm font-medium text-gray-400"
+                                        >
+                                            Loading region...
+                                        </div>
+
+                                    </template>
+
+
                                     <!-- Price Available -->
+
                                     <template
                                         v-else-if="hasPackagePrice(pkg)"
                                     >
@@ -1499,6 +1880,7 @@ onMounted(async () => {
 
                                         </div>
 
+
                                         <div
                                             class="mt-1 text-xs text-gray-500"
                                         >
@@ -1509,21 +1891,19 @@ onMounted(async () => {
 
 
                                     <!-- Price Not Available -->
-                                    <template
-                                        v-else
-                                    >
+
+                                    <template v-else>
 
                                         <div
                                             class="text-sm font-semibold text-red-500"
                                         >
-                                        <!-- {{packagePrices}} -->
                                             Price unavailable
                                         </div>
 
                                         <div
                                             class="mt-1 text-xs text-gray-400"
                                         >
-                                            No rate for this country
+                                            No rate for this region
                                         </div>
 
                                     </template>
@@ -1563,6 +1943,7 @@ onMounted(async () => {
                             >
 
                                 <!-- Feature Name -->
+
                                 <div
                                     class="sticky left-0 z-10 flex min-h-[52px] items-center border-b border-r bg-white px-5 py-3.5 text-sm text-gray-700"
                                 >
@@ -1575,6 +1956,7 @@ onMounted(async () => {
 
 
                                 <!-- Package Feature Value -->
+
                                 <div
                                     v-for="pkg in managementPackages"
                                     :key="`${pkg.id}-${feature.key}`"
@@ -1586,8 +1968,11 @@ onMounted(async () => {
                                 >
 
                                     <!-- Boolean -->
+
                                     <template
-                                        v-if="feature.type === 'boolean'"
+                                        v-if="
+                                            feature.type === 'boolean'
+                                        "
                                     >
 
                                         <span
@@ -1612,9 +1997,8 @@ onMounted(async () => {
 
 
                                     <!-- Number / Storage -->
-                                    <template
-                                        v-else
-                                    >
+
+                                    <template v-else>
 
                                         <span
                                             class="text-sm font-medium text-gray-700"
@@ -1672,6 +2056,7 @@ onMounted(async () => {
                             >
 
                                 <!-- Current -->
+
                                 <button
                                     v-if="isCurrentPackage(pkg)"
                                     type="button"
@@ -1682,9 +2067,27 @@ onMounted(async () => {
                                 </button>
 
 
-                                <!-- Price unavailable -->
+                                <!-- Country / Region Not Selected -->
+
                                 <button
-                                    v-else-if="!hasPackagePrice(pkg)"
+                                    v-else-if="
+                                        !selectedCountryId ||
+                                        !selectedRegionId
+                                    "
+                                    type="button"
+                                    disabled
+                                    class="w-full cursor-not-allowed rounded-lg bg-gray-100 px-4 py-3 text-sm font-semibold text-gray-400"
+                                >
+                                    Select Country
+                                </button>
+
+
+                                <!-- Price unavailable -->
+
+                                <button
+                                    v-else-if="
+                                        !hasPackagePrice(pkg)
+                                    "
                                     type="button"
                                     disabled
                                     class="w-full cursor-not-allowed rounded-lg bg-gray-100 px-4 py-3 text-sm font-semibold text-gray-400"
@@ -1694,6 +2097,7 @@ onMounted(async () => {
 
 
                                 <!-- Upgrade -->
+
                                 <button
                                     v-else-if="
                                         getPackageAction(pkg) ===
@@ -1708,6 +2112,7 @@ onMounted(async () => {
 
 
                                 <!-- Downgrade -->
+
                                 <button
                                     v-else-if="
                                         getPackageAction(pkg) ===
@@ -1722,10 +2127,11 @@ onMounted(async () => {
 
 
                                 <!-- Choose -->
+
                                 <button
                                     v-else
                                     type="button"
-                                    class="w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+                                    class="w-full rounded-lg btn btn-primary bg-primary px-4 py-3 text-sm font-semibold text-dark transition hover:opacity-90"
                                     @click="changePackage(pkg)"
                                 >
                                     Choose
@@ -1749,15 +2155,11 @@ onMounted(async () => {
 
                         <div class="text-center">
 
-                            <div
-                                class="text-gray-400"
-                            >
+                            <div class="text-gray-400">
                                 No packages available.
                             </div>
 
-                            <p
-                                class="mt-1 text-sm text-gray-400"
-                            >
+                            <p class="mt-1 text-sm text-gray-400">
                                 Please try again later.
                             </p>
 
@@ -1776,25 +2178,62 @@ onMounted(async () => {
                     class="flex shrink-0 items-center justify-between border-t bg-gray-50 px-6 py-4"
                 >
 
-                    <div
-                        class="text-xs text-gray-500"
-                    >
+                    <div class="text-xs text-gray-500">
 
                         <template v-if="selectedCountryId">
 
                             Prices shown for
+
                             <strong>
                                 {{ selectedCountryName }}
                             </strong>
 
+                            <template v-if="selectedRegionName">
+
+                                <span class="mx-1">
+                                    /
+                                </span>
+
+                                Region:
+
+                                <strong>
+                                    {{ selectedRegionName }}
+                                </strong>
+
+                            </template>
+
+                            <template v-if="selectedCurrencyCode">
+
+                                <span class="mx-1">
+                                    /
+                                </span>
+
+                                Currency:
+
+                                <strong>
+                                    {{
+                                        selectedCurrencySymbol
+                                    }}
+                                    {{
+                                        selectedCurrencyCode
+                                    }}
+                                </strong>
+
+                            </template>
+
                         </template>
 
+
                         <template v-else>
+
                             Select a country to view package prices.
+
                         </template>
 
                     </div>
 
+
+                    <!-- Close -->
 
                     <button
                         type="button"
@@ -1811,6 +2250,8 @@ onMounted(async () => {
         </div>
 
 
+
+        
 
         <!-- ========================================================= -->
         <!-- EDIT SUBSCRIPTION MODAL -->
@@ -1844,6 +2285,7 @@ onMounted(async () => {
                 >
 
                     <!-- User ID -->
+
                     <div class="mb-4">
 
                         <label
@@ -1863,6 +2305,7 @@ onMounted(async () => {
 
 
                     <!-- Package ID -->
+
                     <div class="mb-4">
 
                         <label
@@ -1882,6 +2325,7 @@ onMounted(async () => {
 
 
                     <!-- End Date -->
+
                     <div class="mb-4">
 
                         <label
@@ -1900,9 +2344,8 @@ onMounted(async () => {
 
 
                     <!-- Status -->
-                    <div
-                        class="mb-4 flex items-center"
-                    >
+
+                    <div class="mb-4 flex items-center">
 
                         <input
                             type="checkbox"
@@ -1920,9 +2363,8 @@ onMounted(async () => {
 
 
                     <!-- Buttons -->
-                    <div
-                        class="flex justify-end space-x-2"
-                    >
+
+                    <div class="flex justify-end space-x-2">
 
                         <button
                             type="button"
@@ -1948,16 +2390,13 @@ onMounted(async () => {
         </div>
 
 
-
         <!-- ========================================================= -->
         <!-- EXISTING DAILY PRICING SECTION -->
         <!-- ========================================================= -->
 
         <section class="mt-12">
 
-            <h2
-                class="mb-4 text-2xl font-semibold"
-            >
+            <h2 class="mb-4 text-2xl font-semibold">
                 Pricing
             </h2>
 
@@ -1999,9 +2438,8 @@ onMounted(async () => {
                                 class="px-4 py-3 text-left text-gray-600"
                             >
 
-                                <span
-                                    class="font-bold"
-                                >
+                                <span class="font-bold">
+
                                     {{
                                         Array.isArray(currency)
                                             ? currency[0]?.currency_code
@@ -2009,13 +2447,12 @@ onMounted(async () => {
                                     }}
 
                                     {{ userPriceRate }}
+
                                 </span>
 
                                 <br />
 
-                                <span
-                                    class="text-sm"
-                                >
+                                <span class="text-sm">
                                     Per member per day
                                 </span>
 
