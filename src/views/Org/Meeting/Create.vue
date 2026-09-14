@@ -20,7 +20,7 @@ const timezone = ref('');
 const meeting_mode = ref('');
 const duration = ref('');
 const priority = ref('');
-const address = ref('');
+const venue = ref('');
 const meeting_location = ref('');
 
 // Online & Video Links
@@ -111,7 +111,7 @@ const resetForm = () => {
   meeting_mode.value = '';
   duration.value = '';
   priority.value = '';
-  address.value = '';
+  venue.value = '';
   meeting_location.value = '';
 
   // Online & Video Links
@@ -207,7 +207,7 @@ const submitForm = async () => {
   formData.append('meeting_mode', meeting_mode.value);
   formData.append('duration', duration.value);
   formData.append('priority', priority.value);
-  formData.append('address', address.value);
+  formData.append('venue', venue.value);
   formData.append('meeting_location', meeting_location.value);
 
   // Online & Video Links
@@ -390,10 +390,10 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Row 6: Address -->
+      <!-- Row 6: venue -->
       <div>
-        <label class="block text-sm font-medium text-gray-600">Address</label>
-        <textarea v-model="address" class="input h-24" placeholder="Enter meeting address"></textarea>
+        <label class="block text-sm font-medium text-gray-600">Venue</label>
+        <textarea v-model="venue" class="input h-24" placeholder="Enter meeting venue"></textarea>
       </div>
 
       <!-- Row 7: Description, Agenda -->

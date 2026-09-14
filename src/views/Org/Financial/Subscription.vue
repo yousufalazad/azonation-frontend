@@ -165,8 +165,49 @@ const closeModal = () => {
 | Update Subscription
 |--------------------------------------------------------------------------
 */
-
 const updateSubscription = async () => {
+    const payload = {
+        user_id: user_id.value,
+        management_package_id: package_id.value,
+        end_date: end_date.value,
+        is_active: status.value,
+        start_date: new Date().toISOString().slice(0, 10),
+    };
+
+    try {
+        const response = await auth.fetchProtectedApi(
+            `/api/management-subscriptions/${subscription_id.value}`,
+            payload,
+            'PUT'
+        );
+
+        if (response.status) {
+            await getSubscriptions();
+
+            // ADDED: apply the fresh permissions returned by the backend
+            // for this org, immediately, no logout/login required
+            auth.updateOrgAccess(response.org_access);
+
+            Swal.fire('Success', 'Subscription updated successfully!', 'success');
+
+            closeModal();
+
+            return true; // ADDED: so changePackage()'s `if (updated)` branch works correctly
+
+        } else {
+            console.error('Error updating subscription:', response);
+            Swal.fire('Error', 'Failed to update subscription!', 'error');
+            return false; // ADDED
+        }
+
+    } catch (error) {
+        console.error('Error updating subscription:', error);
+        Swal.fire('Error', 'An error occurred while updating subscription!', 'error');
+        return false; // ADDED
+    }
+};
+
+const X_updateSubscription = async () => {
     // alert('ok');
     const payload = {
         user_id: user_id.value,
@@ -1069,8 +1110,7 @@ const changePackage = async (pkg) => {
         return;
     }
 
-    const subscription =
-        selectedManagementSubscription.value;
+    const subscription = selectedManagementSubscription.value;
 
     if (!subscription?.id) {
         await Swal.fire({
@@ -1264,6 +1304,8 @@ const changePackage = async (pkg) => {
      */
     if (updated) {
         closeUpgradeDowngradeModal();
+
+
     } else {
         /*
          * API failed হলে main modal আবার দেখাবে

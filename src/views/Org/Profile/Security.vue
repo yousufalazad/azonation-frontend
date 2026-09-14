@@ -8,7 +8,7 @@ import Swal from "sweetalert2";
 const auth = authStore;
 const userId = auth.user.id;
 const email = auth.user.email;
-const statusPhone = ref(1); // Placeholder: Replace with your actual logic
+const statusEmail = ref(1); // Placeholder: Replace with your actual logic
 
 const modalVisibleUserEmail = ref(false);
 const newEmail = ref('');
@@ -249,21 +249,20 @@ const closeEmailModal = () => {
 
 <template>
     <!-- User Email Section -->
-    <section class="mb-8">
+    <!-- <section class="mb-8">
       <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex justify-between items-center">
           <div>
             <h3 class="text-lg font-semibold text-gray-800">Email</h3>
             <p class="text-sm text-gray-600 mt-1">
               {{ email }}
-              <span class="ml-4 text-xs text-gray-500">Status: {{ getStatusMessage(statusPhone) }}</span>
+              <span class="ml-4 text-xs text-gray-500">Status: {{ getStatusMessage(statusEmail) }}</span>
             </p>
           </div>
           <button @click="openEmailModal()" class="text-sm text-blue-600 hover:underline">Edit</button>
         </div>
       </div>
   
-      <!-- Edit Email Modal -->
       <div v-if="modalVisibleUserEmail" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
           <h2 class="text-xl font-semibold text-center text-gray-800 mb-4">Edit Email</h2>
@@ -280,7 +279,7 @@ const closeEmailModal = () => {
           </div>
         </div>
       </div>
-    </section>
+    </section> -->
   
     <!-- Change Password Section -->
     <section>

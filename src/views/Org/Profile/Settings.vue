@@ -379,7 +379,7 @@ onMounted(async () => {
 
     <section>
         <div class="bg-white shadow rounded-lg p-6 mt-5">
-            <router-link to="/org-dashboard/my-account/administrator" @click="handleMenuClick"
+            <router-link to="/org-dashboard/administrator" @click="handleMenuClick"
                 class="block py-2 text-gray-600 hover:bg-gray-100 rounded-md">
                 Administrator
             </router-link>

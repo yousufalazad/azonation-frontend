@@ -49,15 +49,7 @@ const toggleSidebar = () => {
             Profile
           </router-link>
         </li>
-        <li>
-          <router-link
-            to="/org-dashboard/my-account/administrator"
-            @click="handleMenuClick"
-            class="block py-2 text-gray-600 hover:bg-gray-100 rounded-md"
-          >
-            Administrator
-          </router-link>
-        </li>
+        
         <li>
           <router-link
             to="/org-dashboard/my-account/security"
@@ -103,6 +95,15 @@ const toggleSidebar = () => {
             Receipt
           </router-link>
         </li>
+        <!-- <li>
+          <router-link
+            to="/org-dashboard/my-account/administrator"
+            @click="handleMenuClick"
+            class="block py-2 text-gray-600 hover:bg-gray-100 rounded-md"
+          >
+            Administrator
+          </router-link>
+        </li>
         <li>
           <router-link
             to="/org-dashboard/my-account/settings"
@@ -111,7 +112,7 @@ const toggleSidebar = () => {
           >
             Settings
           </router-link>
-        </li>
+        </li> -->
         <li>
           <router-link
             to="/org-dashboard/my-account/referral"

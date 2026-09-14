@@ -103,7 +103,29 @@ const authStore = reactive({
       return [];
     }
   })(),
+// ============================
+// 🔥 ADDED: update permissions for the org that was just modified
+// (e.g. after a subscription/package change). Independent of switchOrg,
+// which is only for org-member users switching between orgs.
+// ============================
+updateOrgAccess(orgEntry) {
+  if (!orgEntry) return;
 
+  const index = this.orgAccess.findIndex(
+    (o) => o.org_type_user_id == orgEntry.org_type_user_id
+  );
+
+  if (index !== -1) {
+    this.orgAccess[index] = orgEntry;
+  } else {
+    this.orgAccess.push(orgEntry);
+  }
+
+  // persist so a page refresh doesn't revert to the old cookie data
+  const updatedUser = { ...this.user, org_access: this.orgAccess };
+    this.user = updatedUser;
+    functions.setCookie("user", JSON.stringify(updatedUser));
+  },
   currentOrgId: localStorage.getItem("active_org") || null,
 
   errors: null,

@@ -111,15 +111,8 @@ onBeforeUnmount(() => {
     <div class="flex items-center gap-4">
 
       <!-- Custom Select Wrapper -->
-      <div class="relative">
-        <!-- <select v-model="auth.currentOrgId" @change="auth.switchOrg(auth.currentOrgId)"
-          class="appearance-none bg-white border border-gray-300 text-gray-700 text-sm rounded-lg px-4 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
-          <option disabled value="">Select Organization</option>
-          <option v-for="org in auth.orgAccess" :key="org.org_type_user_id" :value="org.org_type_user_id">
-            Org {{ org.org_type_user_id }}
-          </option>
-        </select> -->
-
+      <div v-if="auth.orgAccess.length > 0" class="relative">
+      
         <select v-model="auth.currentOrgId" @change="auth.switchOrg(auth.currentOrgId)" :disabled="auth.isSwitchingOrg"
                   class="appearance-none bg-white border border-gray-300 text-gray-700 text-sm rounded-lg px-4 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
           <option v-for="org in auth.orgAccess" :key="org.org_type_user_id" :value="org.org_type_user_id">
@@ -127,7 +120,7 @@ onBeforeUnmount(() => {
           </option>
         </select>
         <!-- optional loading spinner -->
-        <span v-if="auth.isSwitchingOrg">Switching org...</span>
+          <!--<span v-if="auth.isSwitchingOrg">Switching org...</span> -->
 
         <!-- Custom Dropdown Icon -->
         <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">

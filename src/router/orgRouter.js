@@ -163,7 +163,7 @@ const orgRoutes = [
         path: "user-role-assign",
         name: "user-role-assign",
         component: UserRoleAssign,
-        meta: { requiresAuth: true},
+        meta: { requiresAuth: true },
         // meta: { requiresAuth: true, permission: "assign_roles" },
       },
       {
@@ -184,12 +184,12 @@ const orgRoutes = [
         component: fundamentalInfo,
         meta: { requiresAuth: true },
       },
-      // {
-      //   path: "unlink-member",
-      //   name: "unlink-member",
-      //   component: UnlinkMember,
-      //   meta: { requiresAuth: true, permission: "unlink-member.read" },
-      // },
+      {
+        path: "unlink-member",
+        name: "unlink-member",
+        component: UnlinkMember,
+        meta: { requiresAuth: true, permission: "unlink-member.read" },
+      },
       {
         path: "create-member",
         name: "create-member",
@@ -218,13 +218,19 @@ const orgRoutes = [
         path: "org-membership-renewal-cycle",
         name: "org-membership-renewal-cycle",
         component: OrgMembershipRenewalCycle,
-        meta: { requiresAuth: true, permission: "org-membership-renewal-cycle.read" },
+        meta: {
+          requiresAuth: true,
+          permission: "org-membership-renewal-cycle.read",
+        },
       },
       {
         path: "org-membership-renewal-price",
         name: "org-membership-renewal-price",
         component: OrgMembershipRenewalPrice,
-        meta: { requiresAuth: true, permission: "org-membership-renewal-price.read" },
+        meta: {
+          requiresAuth: true,
+          permission: "org-membership-renewal-price.read",
+        },
       },
       {
         path: "org-membership-renewal",
@@ -466,7 +472,10 @@ const orgRoutes = [
         path: "meeting/guest/attendance/:id",
         name: "meeting-guest-attendance",
         component: MeetingGuestAttendance,
-        meta: { requiresAuth: true, permission: "meeting-guest-attendance.read" },
+        meta: {
+          requiresAuth: true,
+          permission: "meeting-guest-attendance.read",
+        },
         props: true,
       },
       {
@@ -530,7 +539,10 @@ const orgRoutes = [
         path: "project/guest/attendance/:id",
         name: "project-guest-attendance",
         component: ProjectGuestAttendance,
-        meta: { requiresAuth: true, permission: "project-guest-attendance.read" },
+        meta: {
+          requiresAuth: true,
+          permission: "project-guest-attendance.read",
+        },
         props: true,
       },
       {
@@ -675,6 +687,51 @@ const orgRoutes = [
         meta: { requiresAuth: true },
         props: true,
       },
+       {
+            path: "org-membership-type",
+            name: "org-membership-type",
+            component: OrgMembershipTypes,
+            meta: {
+              requiresAuth: true,
+              permission: "org-membership-type.read",
+            },
+          },
+      {
+            path: "org-membership-renewal-cycle",
+            name: "org-membership-renewal-cycle",
+            component: OrgMembershipRenewalCycle,
+            meta: {
+              requiresAuth: true,
+              permission: "org-membership-renewal-cycle.read",
+            },
+          },
+          {
+            path: "org-membership-renewal-price",
+            name: "org-membership-renewal-price",
+            component: OrgMembershipRenewalPrice,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: "org-membership-renewal",
+            name: "org-membership-renewal",
+            component: OrgMembershipRenewal,
+            meta: {
+              requiresAuth: true,
+              permission: "org-membership-renewal.read",
+            },
+          },
+      {
+        path: "administrator",
+        name: "administrator",
+        component: Administrator,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "settings",
+        name: "settings",
+        component: Settings,
+        meta: { requiresAuth: true },
+      },
       {
         path: "my-account",
         name: "my-account",
@@ -687,24 +744,24 @@ const orgRoutes = [
             component: Profile,
             meta: { requiresAuth: true },
           },
-          {
-            path: "administrator",
-            name: "administrator",
-            component: Administrator,
-            meta: { requiresAuth: true },
-          },
+          // {
+          //   path: "administrator",
+          //   name: "administrator",
+          //   component: Administrator,
+          //   meta: { requiresAuth: true },
+          // },
           {
             path: "security",
             name: "security",
             component: Security,
             meta: { requiresAuth: true },
           },
-          {
-            path: "settings",
-            name: "settings",
-            component: Settings,
-            meta: { requiresAuth: true },
-          },
+          // {
+          //   path: "settings",
+          //   name: "settings",
+          //   component: Settings,
+          //   meta: { requiresAuth: true },
+          // },
           {
             path: "package",
             name: "package",
@@ -759,31 +816,7 @@ const orgRoutes = [
             name: "user-notifications",
             component: UserNotifications,
             meta: { requiresAuth: true },
-          },
-          {
-            path: "org-membership-type",
-            name: "org-membership-type",
-            component: OrgMembershipTypes,
-            meta: { requiresAuth: true, permission: "org-membership-type.read" },
-          },
-          {
-            path: "org-membership-renewal-cycle",
-            name: "org-membership-renewal-cycle",
-            component: OrgMembershipRenewalCycle,
-            meta: { requiresAuth: true, permission: "org-membership-renewal-cycle.read" },
-          },
-          {
-            path: "org-membership-renewal-price",
-            name: "org-membership-renewal-price",
-            component: OrgMembershipRenewalPrice,
-            meta: { requiresAuth: true },
-          },
-          {
-            path: "org-membership-renewal",
-            name: "org-membership-renewal",
-            component: OrgMembershipRenewal,
-            meta: { requiresAuth: true, permission: "org-membership-renewal.read" },
-          },
+          },          
           {
             path: "referral",
             name: "referral",

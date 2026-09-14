@@ -219,7 +219,7 @@ onMounted(() => {
         <button @click="exportCSV" class="border px-3 py-1.5 text-xs sm:text-sm rounded text-gray-700 hover:bg-gray-100">CSV</button>
         <button @click="exportXLSX" class="border px-3 py-1.5 text-xs sm:text-sm rounded text-gray-700 hover:bg-gray-100">Excel</button>
         <button @click="exportPDF" class="border px-3 py-1.5 text-xs sm:text-sm rounded text-gray-700 hover:bg-gray-100">PDF</button>
-        <button @click="goToCreateMeeting" class="bg-blue-600 text-white px-4 py-2 rounded text-xs sm:text-sm">Create Meeting</button>
+        <button v-if="auth.hasPermission('meeting.create')" @click="goToCreateMeeting" class="bg-blue-600 text-white px-4 py-2 rounded text-xs sm:text-sm">Create Meeting</button>
       </div>
     </div>
 

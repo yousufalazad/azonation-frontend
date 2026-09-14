@@ -59,10 +59,10 @@ const isActive = (path) => route.path === path;
     <div>
       <button @click="toggleSection('membership')"
         class="w-full text-left px-4 py-2 flex items-center gap-3 rounded-md text-gray-700 hover:bg-gray-100 transition"
-        :title="!props.isSidebarExpanded ? 'Profile' : ''">
+        :title="!props.isSidebarExpanded ? 'Membership' : ''">
         <UserCircleIcon class="h-5 w-5" />
         <span v-if="props.isSidebarExpanded">Membership</span>
-        <svg class="ml-auto h-4 w-4 transition-transform" :class="{ 'rotate-180': isSectionOpen('profile') }"
+        <svg class="ml-auto h-4 w-4 transition-transform" :class="{ 'rotate-180': isSectionOpen('membership') }"
           fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
         </svg>
@@ -74,6 +74,10 @@ const isActive = (path) => route.path === path;
             Members
           </router-link>
 
+          <router-link :to="{ name: 'unlink-member' }" @click="handleLinkClick"
+            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
+            Unlink Member
+          </router-link>
 
 
           <router-link :to="{ name: 'terminated-member' }" @click="handleLinkClick"
@@ -102,10 +106,6 @@ const isActive = (path) => route.path === path;
             Membership Type
           </router-link>
 
-          <router-link :to="{ name: 'administrator' }" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
-            Org Administrator
-          </router-link>
         </div>
       </transition>
     </div>
@@ -129,23 +129,20 @@ const isActive = (path) => route.path === path;
         <span v-if="props.isSidebarExpanded">{{ link.name }}</span>
       </router-link>
     </template>
-    <!-- Expandable: Profile -->
+    <!-- Expandable: Organisation -->
     <div>
-      <button @click="toggleSection('profile')"
+      <button @click="toggleSection('organisation')"
         class="w-full text-left px-4 py-2 flex items-center gap-3 rounded-md text-gray-700 hover:bg-gray-100 transition"
-        :title="!props.isSidebarExpanded ? 'Profile' : ''">
+        :title="!props.isSidebarExpanded ? 'Organisation' : ''">
         <UserCircleIcon class="h-5 w-5" />
-        <span v-if="props.isSidebarExpanded">Profile</span>
-        <svg class="ml-auto h-4 w-4 transition-transform" :class="{ 'rotate-180': isSectionOpen('profile') }"
+        <span v-if="props.isSidebarExpanded">About Org</span>
+        <svg class="ml-auto h-4 w-4 transition-transform" :class="{ 'rotate-180': isSectionOpen('organisation') }"
           fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
         </svg>
       </button>
       <transition name="fade-slide">
-        <div v-if="isSectionOpen('profile') && props.isSidebarExpanded" class="ml-7 space-y-1">
-
-          <router-link to="/org-dashboard/my-account/profile" @click="handleLinkClick"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Profile</router-link>
+        <div v-if="isSectionOpen('organisation') && props.isSidebarExpanded" class="ml-7 space-y-1">
 
           <router-link :to="{ name: 'founders' }" @click="handleLinkClick"
             class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
@@ -202,9 +199,24 @@ const isActive = (path) => route.path === path;
       </transition>
     </div>
 
-    <div class="space-y-1">
-      <router-link to="/org-dashboard/user-role-assign"
-        class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">User Role Assign</router-link>
+    <div>
+      <button @click="toggleSection('Settings')"
+        class="w-full text-left px-4 py-2 flex items-center gap-3 rounded-md text-gray-700 hover:bg-gray-100 transition"
+        :title="!props.isSidebarExpanded ? 'Settings' : ''">
+        <BarChartIcon class="h-5 w-5" />
+        <span v-if="props.isSidebarExpanded">Settings</span>
+        <svg class="ml-auto h-4 w-4 transition-transform" :class="{ 'rotate-180': isSectionOpen('Settings') }"
+          fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+        </svg>
+      </button>
+      <transition name="fade-slide">
+        <div v-if="isSectionOpen('Settings') && props.isSidebarExpanded" class="ml-7 space-y-1">
+          <router-link to="/org-dashboard/administrator" class="block py-2 text-gray-600 hover:bg-gray-100 rounded-md" > Administrator </router-link>
+          <router-link to="/org-dashboard/user-role-assign" class="block py-2 text-gray-600 hover:bg-gray-100 rounded-md">Admin Role</router-link>
+          <router-link  to="/org-dashboard/settings" class="block py-2 text-gray-600 hover:bg-gray-100 rounded-md" >Org Settings  </router-link>
+        </div>
+      </transition>
     </div>
   </nav>
 </template>
