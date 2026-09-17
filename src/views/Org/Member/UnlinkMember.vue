@@ -852,7 +852,6 @@ onMounted(async () => {
       <!-- <div class="bg-white p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto"> -->
       <div class="bg-white p-4 sm:p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <h2 class="text-xl font-bold mb-4">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2">Unlinked Member Details</h2>
           {{ isEditMode ? 'Edit' : 'Add' }} Unlinked Member
         </h2>
 
