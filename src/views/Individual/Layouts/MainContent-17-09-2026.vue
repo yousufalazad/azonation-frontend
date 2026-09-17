@@ -26,13 +26,18 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
     ></div>
 
     <!-- Sidebar -->
-    <aside :class="[
-      'fixed top-16 left-0 h-[calc(100vh-64px)] w-64 bg-white shadow-md z-40',
-      'transform transition-transform duration-300 ease-in-out',
-      props.isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
-      'lg:translate-x-0 lg:static lg:h-[calc(100vh-64px)]',
-      props.isSidebarExpanded ? 'lg:w-64' : 'lg:w-20'
-    ]">
+    <aside
+      :class="[
+        // mobile: hidden by default, slide-in when open
+        'transition-all duration-300 ease-in-out bg-white shadow-md z-40',
+        props.isMobileMenuOpen
+          ? 'fixed top-16 left-0 h-[calc(100vh-64px)] w-64 block lg:hidden'
+          : 'hidden lg:block',
+        // desktop: fixed + collapsible width
+        'lg:fixed lg:top-16 lg:left-0 lg:h-[calc(100vh-64px)]',
+        props.isSidebarExpanded ? 'lg:w-64' : 'lg:w-20'
+      ]"
+    >
       <LeftSidebar :isSidebarExpanded="props.isSidebarExpanded" />
     </aside>
 

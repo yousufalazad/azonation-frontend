@@ -1,11 +1,13 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { onMounted, watch } from 'vue';
+import { ref } from 'vue';
 import Header from './Header.vue';
 import MainContent from './MainContent.vue';
+import { useResponsiveSidebar } from '@/composables/useResponsiveSidebar';
 
 const SIDEBAR_KEY = 'azonation_org_sidebar';
 
-const isMobileMenuOpen = ref(false);
+const { isMobileMenuOpen } = useResponsiveSidebar();
 const isSidebarExpanded = ref(true);
 
 // Load sidebar state from localStorage on mount

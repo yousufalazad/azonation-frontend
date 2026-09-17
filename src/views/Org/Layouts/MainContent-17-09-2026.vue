@@ -19,12 +19,10 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
 <template>
   <div class="flex bg-gray-100 min-h-screen">
     <!-- Backdrop for Mobile -->
-    <div
-      v-if="props.isMobileMenuOpen"
-      @click="emit('close-mobile-menu')"
-      class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
-    ></div>
+    <div v-if="props.isMobileMenuOpen" @click="emit('close-mobile-menu')"
+      class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"></div>
 
+    <!-- Sidebar -->
     <!-- Sidebar -->
     <aside :class="[
       'fixed top-16 left-0 h-[calc(100vh-64px)] w-64 bg-white shadow-md z-40',
@@ -33,25 +31,34 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
       'lg:translate-x-0 lg:static lg:h-[calc(100vh-64px)]',
       props.isSidebarExpanded ? 'lg:w-64' : 'lg:w-20'
     ]">
-      <LeftSidebar :isSidebarExpanded="props.isSidebarExpanded" />
+      <LeftSidebar :isSidebarExpanded="props.isSidebarExpanded" @close-mobile-menu="emit('close-mobile-menu')" />
     </aside>
 
+
     <!-- Main Content -->
-    <main
-      :class="[
-        'flex-1 flex flex-col transition-all duration-300 ease-in-out pt-16',
-        props.isSidebarExpanded ? 'lg:ml-64' : 'lg:ml-20'
-      ]"
-    >
+    <main :class="[
+      'flex-1 flex flex-col transition-all duration-300 ease-in-out pt-16 overflow-x-auto', // ← added overflow-x-auto
+      props.isSidebarExpanded ? 'lg:ml-64' : 'lg:ml-20'
+    ]">
       <div class="flex-1 overflow-y-auto py-6 px-4 sm:px-6 lg:px-8 pb-28">
         <router-view />
       </div>
     </main>
+
   </div>
 </template>
 
 <style scoped>
-aside::-webkit-scrollbar { width: 4px; }
-aside::-webkit-scrollbar-thumb { background-color: darkgray; border-radius: 10px; }
-aside::-webkit-scrollbar-track { background: lightgray; }
+aside::-webkit-scrollbar {
+  width: 4px;
+}
+
+aside::-webkit-scrollbar-thumb {
+  background-color: darkgray;
+  border-radius: 10px;
+}
+
+aside::-webkit-scrollbar-track {
+  background: lightgray;
+}
 </style>

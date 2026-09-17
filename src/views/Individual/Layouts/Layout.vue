@@ -1,15 +1,16 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue';
-import { useRoute } from 'vue-router'; // ⬅️ add
+import { useRoute } from 'vue-router';
 import Header from './Header.vue';
 import MainContent from './MainContent.vue';
+import { useResponsiveSidebar } from '@/composables/useResponsiveSidebar';
 
 const SIDEBAR_KEY = 'azonation_individual_sidebar';
 
 const isSidebarExpanded = ref(true);
-const isMobileMenuOpen = ref(false);
+const { isMobileMenuOpen } = useResponsiveSidebar();
 
-const route = useRoute(); // ⬅️ add
+const route = useRoute();
 
 onMounted(() => {
   const saved = localStorage.getItem(SIDEBAR_KEY);
@@ -33,7 +34,7 @@ const closeMobileMenu = () => {
   isMobileMenuOpen.value = false;
 };
 
-// ⬅️ NEW: automatically close the mobile menu on navigation
+// automatically close the mobile menu on navigation
 watch(
   () => route.fullPath,
   () => {
@@ -46,7 +47,7 @@ watch(
   <div class="min-h-screen flex flex-col bg-gray-100">
     <Header
       @toggle-sidebar="toggleSidebar"
-     @toggle-mobile-sidebar="toggleMobileMenu"
+      @toggle-mobile-sidebar="toggleMobileMenu"
       @close-mobile-sidebar="closeMobileMenu"
     />
     <MainContent

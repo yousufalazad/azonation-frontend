@@ -4,13 +4,26 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import functions from "../global/cookie";
 
+// const api = axios.create({
+
+//   //baseURL: "http://localhost:8000",
+
+//     window.location.hostname === "localhost"
+//       ? "http://localhost:8000"
+//       : "https://app.azonation.com",
+//   withCredentials: true,
+// });
+
+// const api = axios.create({
+//   baseURL: import.meta.env.VITE_API_BASE ||
+//     (window.location.hostname === "localhost"
+//       ? "http://localhost:8000"
+//       : "https://app.azonation.com"),
+//   withCredentials: true,
+// });
+
 const api = axios.create({
-
-  baseURL: "http://localhost:8000",
-
-    // window.location.hostname === "localhost"
-    //   ? "http://localhost:8000"
-    //   : "https://app.azonation.com",
+  baseURL: import.meta.env.VITE_API_BASE || "http://localhost:8000",
   withCredentials: true,
 });
 
