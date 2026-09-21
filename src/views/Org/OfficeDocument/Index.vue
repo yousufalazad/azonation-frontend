@@ -1,134 +1,167 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import Swal from 'sweetalert2'
-import { authStore } from '../../../store/authStore'
-import EasyDataTable from 'vue3-easy-data-table'
-import { utils, writeFileXLSX } from 'xlsx'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
-import 'vue3-easy-data-table/dist/style.css'
-import { FileText, FileSpreadsheet, FileDown } from 'lucide-vue-next'
+import { ref, computed, onMounted, watch } from "vue";
+import Swal from "sweetalert2";
+import { authStore } from "../../../store/authStore";
+import EasyDataTable from "vue3-easy-data-table";
+import { utils, writeFileXLSX } from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import "vue3-easy-data-table/dist/style.css";
+import { FileText, FileSpreadsheet, FileDown } from "lucide-vue-next";
 import { pdfExport } from "@/helpers/pdfExport.js";
 import { excelExport } from "@/helpers/excelExport.js";
 import { csvExport } from "@/helpers/csvExport.js";
+const showFilters = ref(false);
 
-const auth = authStore
-const documentList = ref([])
-const search = ref('')
-const quickFilter = ref('')
-const loading = ref(false)
+const auth = authStore;
+const documentList = ref([]);
+const search = ref("");
+const quickFilter = ref("");
+const loading = ref(false);
 
-const selectedProfile = ref(localStorage.getItem('document_profile') || 'detailed')
-const visibleColumns = ref(JSON.parse(localStorage.getItem('document_columns')) || ['title', 'description', 'privacy', 'is_active', 'actions'])
+const selectedProfile = ref(
+  localStorage.getItem("document_profile") || "detailed",
+);
+const visibleColumns = ref(
+  JSON.parse(localStorage.getItem("document_columns")) || [
+    "title",
+    "description",
+    "privacy",
+    "is_active",
+    "actions",
+  ],
+);
 
 const columnProfiles = {
-  minimal: ['title', 'privacy', 'actions'],
-  detailed: ['title', 'description', 'privacy', 'is_active', 'actions']
-}
+  minimal: ["title", "privacy", "actions"],
+  detailed: ["title", "description", "privacy", "is_active", "actions"],
+};
 
 const headers = [
-  { text: 'Title', value: 'title', sortable: true },
-  { text: 'Description', value: 'description', sortable: true },
-  { text: 'Privacy', value: 'privacy', sortable: true },
-  { text: 'Is Active', value: 'is_active', sortable: true },
-  { text: 'Actions', value: 'actions' }
-]
+  { text: "Title", value: "title", sortable: true },
+  { text: "Description", value: "description", sortable: true },
+  { text: "Privacy", value: "privacy", sortable: true },
+  { text: "Is Active", value: "is_active", sortable: true },
+  { text: "Actions", value: "actions" },
+];
 
 const filteredHeaders = computed(() =>
-  headers.filter(h => visibleColumns.value.includes(h.value))
-)
+  headers.filter((h) => visibleColumns.value.includes(h.value)),
+);
 
 watch([selectedProfile, visibleColumns], () => {
-  localStorage.setItem('document_profile', selectedProfile.value)
-  localStorage.setItem('document_columns', JSON.stringify(visibleColumns.value))
-})
+  localStorage.setItem("document_profile", selectedProfile.value);
+  localStorage.setItem(
+    "document_columns",
+    JSON.stringify(visibleColumns.value),
+  );
+});
 
 const applyProfile = () => {
-  visibleColumns.value = [...columnProfiles[selectedProfile.value]]
-}
+  visibleColumns.value = [...columnProfiles[selectedProfile.value]];
+};
 
-const privacySetups = ref([])
+const privacySetups = ref([]);
 
 const fetchPrivacySetups = async () => {
   try {
-    const response = await auth.fetchProtectedApi('/api/privacy-setups', {}, 'GET')
+    const response = await auth.fetchProtectedApi(
+      "/api/privacy-setups",
+      {},
+      "GET",
+    );
     if (response.status) {
-      privacySetups.value = response.data
+      privacySetups.value = response.data;
     }
   } catch (error) {
-    console.error('Error fetching privacy setups:', error)
+    console.error("Error fetching privacy setups:", error);
   }
-}
+};
 
 const getDocuments = async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    const response = await auth.fetchProtectedApi('/api/office-documents', {}, 'GET')
+    const response = await auth.fetchProtectedApi(
+      "/api/office-documents",
+      {},
+      "GET",
+    );
     if (response.status) {
-      documentList.value = response.data.map(d => ({
+      documentList.value = response.data.map((d) => ({
         id: d.id,
         title: d.title,
         description: d.description,
-        privacy: privacySetups.value.find(p => p.id === d.privacy_setup_id)?.name || 'Unknown',
-        is_active: d.is_active === 1 ? 'Yes' : 'No'
-      }))
+        privacy:
+          privacySetups.value.find((p) => p.id === d.privacy_setup_id)?.name ||
+          "Unknown",
+        is_active: d.is_active === 1 ? "Yes" : "No",
+      }));
     } else {
-      documentList.value = []
+      documentList.value = [];
     }
   } catch (error) {
-    console.error('Error fetching documents:', error)
-    documentList.value = []
+    console.error("Error fetching documents:", error);
+    documentList.value = [];
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
-const rowsPerPage = ref(10)
-const currentPage = ref(1)
-const totalItems = computed(() => filteredDocuments.value.length)
-const totalPages = computed(() => Math.ceil(totalItems.value / rowsPerPage.value))
+const rowsPerPage = ref(10);
+const currentPage = ref(1);
+const totalItems = computed(() => filteredDocuments.value.length);
+const totalPages = computed(() =>
+  Math.ceil(totalItems.value / rowsPerPage.value),
+);
 
 const filteredDocuments = computed(() => {
-  return documentList.value.filter(record => {
-    const matchSearch = search.value === '' || record.title.toLowerCase().includes(search.value.toLowerCase())
-    const matchQuick = quickFilter.value === '' || record.is_active === quickFilter.value
-    return matchSearch && matchQuick
-  })
-})
+  return documentList.value.filter((record) => {
+    const matchSearch =
+      search.value === "" ||
+      record.title.toLowerCase().includes(search.value.toLowerCase());
+    const matchQuick =
+      quickFilter.value === "" || record.is_active === quickFilter.value;
+    return matchSearch && matchQuick;
+  });
+});
 
 const paginatedDocuments = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage.value
-  const end = start + rowsPerPage.value
-  return filteredDocuments.value.slice(start, end)
-})
+  const start = (currentPage.value - 1) * rowsPerPage.value;
+  const end = start + rowsPerPage.value;
+  return filteredDocuments.value.slice(start, end);
+});
 
 const goToPage = (page) => {
-  if (page >= 1 && page <= totalPages.value) currentPage.value = page
-}
-const goToFirst = () => goToPage(1)
-const goToPrev = () => goToPage(currentPage.value - 1)
-const goToNext = () => goToPage(currentPage.value + 1)
-const goToLast = () => goToPage(totalPages.value)
+  if (page >= 1 && page <= totalPages.value) currentPage.value = page;
+};
+const goToFirst = () => goToPage(1);
+const goToPrev = () => goToPage(currentPage.value - 1);
+const goToNext = () => goToPage(currentPage.value + 1);
+const goToLast = () => goToPage(totalPages.value);
 
 const deleteRecord = async (id) => {
   const result = await Swal.fire({
-    title: 'Are you sure?',
-    text: 'Do you want to delete this document?',
-    icon: 'warning',
+    title: "Are you sure?",
+    text: "Do you want to delete this document?",
+    icon: "warning",
     showCancelButton: true,
-    confirmButtonText: 'Yes, delete it!',
-    cancelButtonText: 'Cancel'
-  })
+    confirmButtonText: "Yes, delete it!",
+    cancelButtonText: "Cancel",
+  });
   if (result.isConfirmed) {
-    const res = await auth.fetchProtectedApi(`/api/office-documents/${id}`, {}, 'DELETE')
+    const res = await auth.fetchProtectedApi(
+      `/api/office-documents/${id}`,
+      {},
+      "DELETE",
+    );
     if (res.status) {
-      Swal.fire('Deleted!', 'Document has been deleted.', 'success')
-      getDocuments()
+      Swal.fire("Deleted!", "Document has been deleted.", "success");
+      getDocuments();
     } else {
-      Swal.fire('Failed!', 'Failed to delete document.', 'error')
+      Swal.fire("Failed!", "Failed to delete document.", "error");
     }
   }
-}
+};
 
 // Export CSV with custom header/footer
 const exportCSV = async () => {
@@ -140,16 +173,14 @@ const exportCSV = async () => {
   });
 };
 
-
 // Export XLSX with custom header/footer
 const exportXLSX = async () => {
   await excelExport({
-  headers: filteredHeaders.value,
-  rows: filteredDocuments.value,
-  title: "Document List",
-  fileName: "Documents.xlsx",
-});
-
+    headers: filteredHeaders.value,
+    rows: filteredDocuments.value,
+    title: "Document List",
+    fileName: "Documents.xlsx",
+  });
 };
 
 // --- Export Documents PDF ---
@@ -163,67 +194,151 @@ const exportPDF = () => {
 };
 
 onMounted(async () => {
-  await fetchPrivacySetups()
-  await getDocuments()
-})
+  await fetchPrivacySetups();
+  await getDocuments();
+});
 </script>
 
 <template>
   <div class="p-6 space-y-6 bg-white shadow rounded-lg">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+    <div
+      class="flex flex-col sm:flex-row justify-between sm:items-center gap-3"
+    >
       <h2 class="text-lg font-semibold text-gray-700">Office Documents</h2>
       <div class="flex flex-wrap gap-2">
-        <button @click="exportCSV"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
+        <button
+          @click="exportCSV"
+          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100"
+        >
           <FileText class="w-4 h-4" /> CSV
         </button>
-        <button @click="exportXLSX"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
+        <button
+          @click="exportXLSX"
+          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100"
+        >
           <FileSpreadsheet class="w-4 h-4" /> Excel
         </button>
-        <button @click="exportPDF"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
+        <button
+          @click="exportPDF"
+          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100"
+        >
           <FileDown class="w-4 h-4" /> PDF
         </button>
-        <button @click="$router.push({ name: 'create-document' })"
-          class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm">+ Add Document</button>
+        <button
+          @click="$router.push({ name: 'create-document' })"
+          class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm"
+        >
+          + Add Document
+        </button>
       </div>
     </div>
 
-    <!-- Filters -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div>
-        <label class="text-sm text-gray-600">Search</label>
-        <input v-model="search" type="text" placeholder="Search..." class="w-full border rounded px-3 py-1.5 text-sm" />
-      </div>
-      <div>
-        <label class="text-sm text-gray-600">Is Active</label>
-        <select v-model="quickFilter" class="w-full border rounded px-3 py-1.5 text-sm">
-          <option value="">All</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-    </div>
+    <!-- Mobile-only toggle -->
+    <button
+      @click="showFilters = !showFilters"
+      type="button"
+      class="sm:hidden w-full flex items-center justify-between border rounded-lg px-4 py-2.5 my-5 bg-gray-50 text-sm font-medium text-gray-700"
+    >
+      <span class="flex items-center gap-2">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-4 h-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M3 4h18M6 8h12M9 12h6M11 16h2"
+          />
+        </svg>
+        Filters
+      </span>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-4 h-4 transition-transform duration-200"
+        :class="showFilters ? 'rotate-180' : ''"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M19 9l-7 7-7-7"
+        />
+      </svg>
+    </button>
 
-    <!-- Column Settings -->
-    <div class="bg-gray-50 border rounded p-4 flex flex-col lg:flex-row flex-wrap gap-6 items-start">
-      <!-- Column Profile Selector -->
-      <div class="flex flex-col w-full sm:w-auto">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Column View:</label>
-        <select v-model="selectedProfile" @change="applyProfile" class="border rounded px-3 py-1.5 text-sm w-full sm:w-48">
-          <option value="minimal">Minimal</option>
-          <option value="detailed">Detailed</option>
-        </select>
+    <!-- Collapsible on mobile, always visible from sm: up -->
+    <div :class="showFilters ? 'block' : 'hidden'" class="sm:block space-y-4">
+      <!-- Filters -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label class="text-sm text-gray-600">Search</label>
+          <input
+            v-model="search"
+            type="text"
+            placeholder="Search..."
+            class="w-full border rounded px-3 py-1.5 text-sm"
+          />
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Is Active</label>
+          <select
+            v-model="quickFilter"
+            class="w-full border rounded px-3 py-1.5 text-sm"
+          >
+            <option value="">All</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
       </div>
-      <div class="flex-1">
-        <label class="text-sm font-medium text-gray-700 mb-1 block">Visible Columns</label>
-        <div class="flex flex-wrap gap-4">
-          <div v-for="header in headers" :key="header.value" class="flex items-center gap-2 text-sm">
-            <input type="checkbox" v-model="visibleColumns" :value="header.value" :id="header.value"
-              class="accent-blue-600" />
-            <label :for="header.value" class="text-gray-700">{{ header.text }}</label>
+
+      <!-- Column Settings -->
+      <div
+        class="bg-gray-50 border rounded p-4 flex flex-col lg:flex-row flex-wrap gap-6 items-start"
+      >
+        <!-- Column Profile Selector -->
+        <div class="flex flex-col w-full sm:w-auto">
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Column View:</label
+          >
+          <select
+            v-model="selectedProfile"
+            @change="applyProfile"
+            class="border rounded px-3 py-1.5 text-sm w-full sm:w-48"
+          >
+            <option value="minimal">Minimal</option>
+            <option value="detailed">Detailed</option>
+          </select>
+        </div>
+        <div class="flex-1">
+          <label class="text-sm font-medium text-gray-700 mb-1 block"
+            >Visible Columns</label
+          >
+          <div class="flex flex-wrap gap-4">
+            <div
+              v-for="header in headers"
+              :key="header.value"
+              class="flex items-center gap-2 text-sm"
+            >
+              <input
+                type="checkbox"
+                v-model="visibleColumns"
+                :value="header.value"
+                :id="header.value"
+                class="accent-blue-600"
+              />
+              <label :for="header.value" class="text-gray-700">{{
+                header.text
+              }}</label>
+            </div>
           </div>
         </div>
       </div>
@@ -231,33 +346,52 @@ onMounted(async () => {
 
     <!-- Table (responsive scroll) -->
     <div class="overflow-x-auto">
-      <EasyDataTable :headers="filteredHeaders" :items="paginatedDocuments" :loading="loading"
-        show-index hide-footer :theme-color="'#2563eb'">
+      <EasyDataTable
+        :headers="filteredHeaders"
+        :items="paginatedDocuments"
+        :loading="loading"
+        show-index
+        hide-footer
+        :theme-color="'#2563eb'"
+      >
         <!-- Header Alignment Fix -->
         <template #header-actions>
-          <div class="text-right w-full pr-2">
-            Actions
-          </div>
+          <div class="text-right w-full pr-2">Actions</div>
         </template>
         <!-- Actions Slot -->
         <template #item-actions="{ id }">
           <div class="flex justify-end gap-2">
-            <button @click="$router.push({ name: 'view-document', params: { id } })"
-              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
-              View</button>
-            <button @click="$router.push({ name: 'edit-document', params: { id } })"
-              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
-              Edit</button>
-            <button @click="deleteRecord(id)"
-              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
-              Delete</button>
+            <button
+              @click="$router.push({ name: 'view-document', params: { id } })"
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3"
+            >
+              View
+            </button>
+            <button
+              @click="$router.push({ name: 'edit-document', params: { id } })"
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3"
+            >
+              Edit
+            </button>
+            <button
+              @click="deleteRecord(id)"
+              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3"
+            >
+              Delete
+            </button>
           </div>
         </template>
 
         <!-- is_active Badge -->
         <template #item-is_active="{ is_active }">
-          <span class="px-2 py-0.5 rounded-full text-xs font-medium"
-            :class="is_active === 'Yes' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+          <span
+            class="px-2 py-0.5 rounded-full text-xs font-medium"
+            :class="
+              is_active === 'Yes'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-red-100 text-red-700'
+            "
+          >
             {{ is_active }}
           </span>
         </template>
@@ -265,30 +399,69 @@ onMounted(async () => {
     </div>
 
     <!-- Pagination Controls -->
-    <div class="flex flex-col md:flex-row justify-between md:items-center gap-3 px-2 py-3 bg-gray-50 rounded border">
+    <div
+      class="flex flex-col md:flex-row justify-between md:items-center gap-3 px-2 py-3 bg-gray-50 rounded border"
+    >
       <div class="text-sm text-gray-600 text-center md:text-left">
         Items {{ (currentPage - 1) * rowsPerPage + 1 }} -
-        {{ Math.min(currentPage * rowsPerPage, totalItems) }} of {{ totalItems }} |
-        Page {{ currentPage }} of {{ totalPages }}
+        {{ Math.min(currentPage * rowsPerPage, totalItems) }} of
+        {{ totalItems }} | Page {{ currentPage }} of {{ totalPages }}
       </div>
-      <div class="flex flex-col sm:flex-row sm:items-center gap-3 justify-center md:justify-end">
+      <div
+        class="flex flex-col sm:flex-row sm:items-center gap-3 justify-center md:justify-end"
+      >
         <div class="flex justify-center gap-1">
           <span class="text-sm text-gray-600">Items per page:</span>
-          <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-sm">
-            <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">
+          <select
+            v-model="rowsPerPage"
+            class="border rounded px-2 py-1 text-sm"
+          >
+            <option
+              v-for="size in [5, 10, 50, 100, 250, 500, 1000]"
+              :key="size"
+              :value="size"
+            >
               {{ size }}
             </option>
           </select>
         </div>
         <div class="flex gap-1 justify-center">
-          <button @click="goToFirst" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">First</button>
-          <button @click="goToPrev" :disabled="currentPage === 1" class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'">Prev</button>
-          <button @click="goToNext" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">Next</button>
-          <button @click="goToLast" :disabled="currentPage === totalPages" class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'">Last</button>
+          <button
+            @click="goToFirst"
+            :disabled="currentPage === 1"
+            class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'"
+          >
+            First
+          </button>
+          <button
+            @click="goToPrev"
+            :disabled="currentPage === 1"
+            class="border rounded px-3 py-1 text-sm"
+            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'"
+          >
+            Prev
+          </button>
+          <button
+            @click="goToNext"
+            :disabled="currentPage === totalPages"
+            class="border rounded px-3 py-1 text-sm"
+            :class="
+              currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'
+            "
+          >
+            Next
+          </button>
+          <button
+            @click="goToLast"
+            :disabled="currentPage === totalPages"
+            class="border rounded px-3 py-1 text-sm"
+            :class="
+              currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'
+            "
+          >
+            Last
+          </button>
         </div>
       </div>
     </div>
