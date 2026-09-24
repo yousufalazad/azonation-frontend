@@ -1,17 +1,15 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import axios from "axios";
 import Swal from "sweetalert2";
 import { authStore } from "@/store/authStore";
-import functions from "@/global/cookie";
 
 const auth = authStore;
 const route = useRoute();
 const router = useRouter();
 
 // --- state from query ---
-const bearer = ref("");
+//const bearer = ref("");
 const googleEmail = ref("");
 
 // --- form state ---
@@ -60,10 +58,10 @@ const canSubmit = computed(() => {
 
 // Effects
 onMounted(async () => {
-  bearer.value = route.query.token ? String(route.query.token) : "";
+  //bearer.value = route.query.token ? String(route.query.token) : "";
   googleEmail.value = route.query.email ? String(route.query.email) : "";
 
-  if (!bearer.value) {
+  if (!googleEmail.value) {
     await Swal.fire({
       icon: "error",
       title: "Invalid session",
@@ -121,27 +119,12 @@ async function submitForm() {
   try {
     isSubmitting.value = true;
 
-    const response = await axios.post(
-      auth.apiBase + "/api/oauth/google/complete",
-      payload,
-      {
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${bearer.value}`,
-        },
-        withCredentials: true,
-      }
-    );
+    const response = await auth.fetchPublicApi("/api/oauth/google/complete", payload, "POST");
 
-    if (response?.data?.status === "success" && response?.data?.data) {
-      const userData = response.data.data;
-
-      // Mirror your authStore.authenticate success handling
-      auth.isAuthenticated = true;
-      auth.user = userData;
-      functions.setCookie("auth", 1);
-      functions.setCookie("user", JSON.stringify(userData));
+    if (response?.status === "success" && response?.data) {
+      const userData = response.data;
+      auth.setSession(userData);
+      auth._initPromise = Promise.resolve(true);
 
       await Swal.fire({
         icon: "success",
@@ -176,7 +159,8 @@ async function submitForm() {
 
     // Not success
     const msg =
-      response?.data?.message ||
+      response?.errors?.message ||
+      response?.message ||
       "We couldn’t complete your profile. Please review the fields and try again.";
     await Swal.fire({ icon: "error", title: "Couldn’t complete", text: msg });
   } catch (error) {

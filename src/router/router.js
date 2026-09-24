@@ -113,6 +113,21 @@ router.beforeEach(async (to, from, next) => {
 
   try {
     const { authStore } = await import("../store/authStore");
+    await authStore.init();   // after refresh, session is checked from server, and user data is set in store
+
+    // logged in user login/signup page forwarded to dashboard page
+    const guestOnly = ["login", "signup", "forgot-password", "reset-password", "verify-code"];
+    if (authStore.isAuthenticated && guestOnly.includes(to.name)) {
+      const home = {
+        individual: "individual-dashboard-index",
+        organisation: "org-dashboard-index",
+        superadmin: "superadmin-dashboard-index",
+      }[authStore.getUserType()];
+      if (home) {
+        try { topLoaderRef?.finish?.(); } catch (e) {}
+        return next({ name: home });
+      }
+    }
 
     // Not logged in
     if (to.meta.requiresAuth && !authStore.isAuthenticated) {

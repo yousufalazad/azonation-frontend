@@ -4,52 +4,44 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import functions from "../global/cookie";
 
-// const api = axios.create({
-
-//   //baseURL: "http://localhost:8000",
-
-//     window.location.hostname === "localhost"
-//       ? "http://localhost:8000"
-//       : "https://app.azonation.com",
-//   withCredentials: true,
-// });
-
-// const api = axios.create({
-//   baseURL: import.meta.env.VITE_API_BASE ||
-//     (window.location.hostname === "localhost"
-//       ? "http://localhost:8000"
-//       : "https://app.azonation.com"),
-//   withCredentials: true,
-// });
-
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE || "http://localhost:8000",
-  withCredentials: true,
+  withCredentials: true, // session cookie পাঠাবে
+  withXSRFToken: true, // XSRF-TOKEN cookie → X-XSRF-TOKEN header (cross-port এও)
+  headers: {
+    Accept: "application/json",
+    "X-Requested-With": "XMLHttpRequest",
+  },
 });
+
+// POST/PUT/DELETE bring one time CSRF cookie if not present before making the request
+let csrfPromise = null;
+function ensureCsrf() {
+  if (functions.getCookie("XSRF-TOKEN")) return Promise.resolve();
+  if (!csrfPromise) {
+    csrfPromise = api
+      .get("/sanctum/csrf-cookie")
+      .finally(() => (csrfPromise = null));
+  }
+  return csrfPromise;
+}
 
 // ============================
 // REQUEST INTERCEPTOR
 // ============================
 api.interceptors.request.use(
-  (config) => {
-    const token =
-      authStore.user?.accessToken ||
-      authStore.user?.token ||
-      authStore.user?.plainTextToken ||
-      authStore.user?.access_token;
-
-    const activeOrg =
-      authStore.currentOrgId || localStorage.getItem("active_org");
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+  async (config) => {
+    const method = (config.method || "get").toLowerCase();
+    if (!["get", "head", "options"].includes(method)) {
+      await ensureCsrf();
     }
 
-    // ✅ FIXED HEADER NAME
+    // ❌ Bearer token আর নেই। শুধু active org header
+    const activeOrg =
+      authStore.currentOrgId || localStorage.getItem("active_org");
     if (activeOrg) {
       config.headers["X-Org-Id"] = activeOrg;
     }
-
     return config;
   },
   (error) => Promise.reject(error),
@@ -60,23 +52,25 @@ api.interceptors.request.use(
 // ============================
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // 🔴 401 → logout
-    if (error.response?.status === 401) {
-      authStore.isAuthenticated = false;
-      authStore.user = {};
-      authStore.orgAccess = [];
-      authStore.currentOrgId = null;
+  async (error) => {
+    const status = error.response?.status;
+    const config = error.config || {};
 
-      functions.deleteCookie("auth");
-      functions.deleteCookie("user");
-      localStorage.removeItem("active_org");
+    // 🔁 419 = CSRF token মেয়াদ শেষ → নতুন নিয়ে একবার retry
+    if (status === 419 && !config._retried) {
+      config._retried = true;
+      await api.get("/sanctum/csrf-cookie");
+      return api(config);
+    }
 
+    // 🔴 401 → logout (কিন্তু /api/me তে না, ওটা শুধু "logged in কিনা" check করে)
+    if (status === 401 && !config.url?.includes("/api/me")) {
+      authStore.clearSession();
       router.push({ name: "login" });
     }
 
     // 🔴 403 → permission error
-    if (error.response?.status === 403) {
+    if (status === 403) {
       Swal.fire({
         icon: "error",
         title: "Access Denied",
@@ -94,56 +88,90 @@ api.interceptors.response.use(
 // AUTH STORE
 // ============================
 const authStore = reactive({
-  isAuthenticated: functions.getCookie("auth") == 1,
+  isAuthenticated: false,
+  user: {},
+  orgAccess: [],
+  _initPromise: null,
 
-  user: (() => {
-    const cookie = functions.getCookie("user");
+  // login / Google / refresh, same method for all
+  setSession(userData) {
+    this.isAuthenticated = true;
+    this.user = userData || {};
+    this.orgAccess = userData?.org_access || [];
+
+    // previous active org is still valid, keep it
+    const saved = localStorage.getItem("active_org");
+    const valid = this.orgAccess.some((o) => o.org_type_user_id == saved);
+    this.currentOrgId = valid
+      ? saved
+      : (this.orgAccess[0]?.org_type_user_id ?? null);
+
+    if (this.currentOrgId)
+      localStorage.setItem("active_org", this.currentOrgId);
+    else localStorage.removeItem("active_org");
+
+    // Remove old token cookies (auth, user) to avoid stale data
+    functions.deleteCookie("auth");
+    functions.deleteCookie("user");
+  },
+
+  clearSession() {
+    this.isAuthenticated = false;
+    this.user = {};
+    this.orgAccess = [];
+    this.currentOrgId = null;
+    localStorage.removeItem("active_org");
+    functions.deleteCookie("auth");
+    functions.deleteCookie("user");
+  },
+
+  // Asked from server, if logged in, set session, else clear session
+  async fetchUser() {
     try {
-      return cookie && cookie !== "undefined" ? JSON.parse(cookie) : {};
+      const res = await api.get("/api/me");
+      if (res.data?.status === "success") {
+        this.setSession(res.data.data);
+        return true;
+      }
     } catch (e) {
-      console.error("Failed to parse user cookie:", e);
-      return {};
+      // 401 = not logged in
     }
-  })(),
+    this.clearSession();
+    return false;
+  },
 
-  // 🔥 org-wise roles + permissions
-  orgAccess: (() => {
-    const cookie = functions.getCookie("user");
-    try {
-      const u = cookie ? JSON.parse(cookie) : {};
-      return u?.org_access || [];
-    } catch {
-      return [];
+  // One time initialization, fetch user from server if logged in, else clear session
+  init() {
+    if (!this._initPromise) this._initPromise = this.fetchUser();
+    return this._initPromise;
+  },
+
+  // ============================
+  //update permissions for the org that was just modified
+  // (e.g. after a subscription/package change). Independent of switchOrg,
+  // which is only for org-member users switching between orgs.
+  // ============================
+  updateOrgAccess(orgEntry) {
+    if (!orgEntry) return;
+
+    const index = this.orgAccess.findIndex(
+      (o) => o.org_type_user_id == orgEntry.org_type_user_id,
+    );
+
+    if (index !== -1) {
+      this.orgAccess[index] = orgEntry;
+    } else {
+      this.orgAccess.push(orgEntry);
     }
-  })(),
-// ============================
-// 🔥 ADDED: update permissions for the org that was just modified
-// (e.g. after a subscription/package change). Independent of switchOrg,
-// which is only for org-member users switching between orgs.
-// ============================
-updateOrgAccess(orgEntry) {
-  if (!orgEntry) return;
 
-  const index = this.orgAccess.findIndex(
-    (o) => o.org_type_user_id == orgEntry.org_type_user_id
-  );
-
-  if (index !== -1) {
-    this.orgAccess[index] = orgEntry;
-  } else {
-    this.orgAccess.push(orgEntry);
-  }
-
-  // persist so a page refresh doesn't revert to the old cookie data
-  const updatedUser = { ...this.user, org_access: this.orgAccess };
-    this.user = updatedUser;
-    functions.setCookie("user", JSON.stringify(updatedUser));
+    // Update the user object with the new org_access array
+    this.user = { ...this.user, org_access: this.orgAccess };
   },
   currentOrgId: localStorage.getItem("active_org") || null,
 
   errors: null,
   apiBase: api.defaults.baseURL,
-  // 🔥 NEW: loading state for org switching
+  //loading state for org switching
   isSwitchingOrg: false,
   // ============================
   normalizePath(path) {
@@ -232,7 +260,6 @@ updateOrgAccess(orgEntry) {
     }
   },
 
-  // ============================
   async authenticate(username, password, remember_token) {
     try {
       const response = await this.fetchPublicApi(
@@ -242,19 +269,8 @@ updateOrgAccess(orgEntry) {
       );
 
       if (response.status === "success") {
-        this.isAuthenticated = true;
-        this.user = response.data;
-
-        // 🔥 org access
-        this.orgAccess = response.data.org_access || [];
-
-        if (this.orgAccess.length > 0) {
-          this.currentOrgId = this.orgAccess[0].org_type_user_id;
-          localStorage.setItem("active_org", this.currentOrgId);
-        }
-
-        functions.setCookie("auth", 1);
-        functions.setCookie("user", JSON.stringify(response.data));
+        this.setSession(response.data);
+        this._initPromise = Promise.resolve(true);
 
         switch (response.data.type) {
           case "individual":
@@ -308,14 +324,8 @@ updateOrgAccess(orgEntry) {
         try {
           await this.fetchProtectedApi("/api/logout", {}, "POST");
 
-          this.isAuthenticated = false;
-          this.user = {};
-          this.orgAccess = [];
-          this.currentOrgId = null;
-
-          functions.deleteCookie("auth");
-          functions.deleteCookie("user");
-          localStorage.removeItem("active_org");
+          this.clearSession();
+          this._initPromise = null;
 
           router.push({ name: "login" });
 
@@ -336,16 +346,6 @@ updateOrgAccess(orgEntry) {
         }
       }
     });
-  },
-
-  // ============================
-  getUserToken() {
-    return (
-      this.user?.accessToken ||
-      this.user?.token ||
-      this.user?.plainTextToken ||
-      this.user?.access_token
-    );
   },
 
   getUserType() {

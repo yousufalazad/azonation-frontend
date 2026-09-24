@@ -9,7 +9,7 @@ const route = useRoute()
 
 const username = ref('')
 const password = ref('')
-const remember_token = ref(false)
+const remember_token = ref(true)
 const showPassword = ref(false)
 
 

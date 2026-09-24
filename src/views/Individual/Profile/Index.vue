@@ -110,7 +110,7 @@ const updateFirstLastName = async () => {
             closeNameModal();
 
             // Update the first_name in sessionStorage explicitly
-            let user = JSON.parse(functions.getCookie('user'));
+            auth.user = { ...auth.user, first_name: firstName.value, last_name: lastName.value };
             if (user) {
                 user.first_name = firstName.value;
                 user.last_name = lastName.value;
@@ -143,7 +143,7 @@ const updateLastName = async () => {
             closeLastNameModal();
 
             // Update the last_name in sessionStorage explicitly
-            let user = JSON.parse(functions.getCookie('user'));
+            auth.user = { ...auth.user, first_name: firstName.value, last_name: lastName.value };
             if (user) {
                 user.last_name = lastName.value;
                 functions.setCookie('user', JSON.stringify(user));
