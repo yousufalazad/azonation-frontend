@@ -15,6 +15,7 @@ import {
   Building2Icon,
   SettingsIcon,
   ChevronDownIcon,
+  LifeBuoyIcon,
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -75,6 +76,7 @@ const menu = [
       { label: 'nav.orgSettings', to: { name: 'settings' } },
     ],
   },
+  { label: 'nav.support', to: { name: 'support' }, icon: LifeBuoyIcon },
 ];
 
 const openSections = ref([]);

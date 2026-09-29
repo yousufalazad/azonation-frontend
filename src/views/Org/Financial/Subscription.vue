@@ -174,7 +174,7 @@ onMounted(async () => {
 
       <AzCard v-else>
         <AzEmptyState :title="t('subscriptionPage.noneTitle')" :description="t('subscriptionPage.noneText')">
-          <AzButton variant="secondary" :to="{ name: 'contact-us' }">{{ t('orgSettings.contactSupport') }}</AzButton>
+          <AzButton variant="secondary" :to="{ name: 'support', query: { new: 'billing' } }">{{ t('orgSettings.contactSupport') }}</AzButton>
         </AzEmptyState>
       </AzCard>
 

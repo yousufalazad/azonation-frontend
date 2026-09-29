@@ -14,6 +14,10 @@
             <span v-else class="hidden">SuperAdmin Dashboard</span>
           </router-link> -->
           
+          <router-link :to="{ name: 'superadmin-support' }" class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+            <span v-if="isSidebarExpanded">Support inbox</span>
+          </router-link>
+
           <!-- Org Reporting -->
           <div>
             <button @click="toggleSection('org-reporting')"

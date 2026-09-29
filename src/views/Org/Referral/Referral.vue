@@ -17,6 +17,8 @@ const code = computed(() => stats.value.referral_code || "");
 const link = computed(() => (code.value ? `${window.location.origin}/signup?ref=${encodeURIComponent(code.value)}` : ""));
 const joined = computed(() => stats.value.successful_referrals || []);
 const canShare = typeof navigator !== "undefined" && !!navigator.share;
+// Organisations by their organisation name, people by first and last name
+const joinedName = (u) => (u ? u.org_name || [u.first_name, u.last_name].filter(Boolean).join(" ") : "") || t("referralPage.someone");
 
 async function copy(text, what) {
   try {
@@ -83,7 +85,7 @@ onMounted(async () => {
       </AzCard>
       <AzCard v-else>
         <AzEmptyState :title="t('referralPage.noCodeTitle')" :description="t('referralPage.noCodeText')">
-          <AzButton variant="secondary" :to="{ name: 'contact-us' }">{{ t('orgSettings.contactSupport') }}</AzButton>
+          <AzButton variant="secondary" :to="{ name: 'support', query: { new: 'account' } }">{{ t('orgSettings.contactSupport') }}</AzButton>
         </AzEmptyState>
       </AzCard>
 
@@ -110,8 +112,8 @@ onMounted(async () => {
         <AzEmptyState v-if="!joined.length" :title="t('referralPage.noneTitle')" :description="t('referralPage.noneText')" />
         <ul v-else class="divide-y divide-line">
           <li v-for="r in joined" :key="r.id" class="flex items-center gap-3 px-5 py-3">
-            <AzAvatar :name="r.referred_user?.name || '?'" size="sm" />
-            <span class="min-w-0 flex-1 truncate font-medium text-ink">{{ r.referred_user?.name || t('referralPage.someone') }}</span>
+            <AzAvatar :name="joinedName(r.referred_user)" size="sm" />
+            <span class="min-w-0 flex-1 truncate font-medium text-ink">{{ joinedName(r.referred_user) }}</span>
             <span class="text-sm text-ink-muted">{{ shortDate(r.created_at, locale) }}</span>
           </li>
         </ul>

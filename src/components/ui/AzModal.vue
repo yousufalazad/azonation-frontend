@@ -58,7 +58,9 @@ watch(
       lastFocused = document.activeElement;
       document.body.style.overflow = "hidden";
       await nextTick();
-      (focusable()[0] || panel.value)?.focus();
+      // Start on the field marked autofocus, else the first control below the title (not the close button)
+      const items = focusable();
+      (panel.value?.querySelector("[autofocus]") || items.find((el) => !el.closest("header")) || items[0] || panel.value)?.focus();
     } else {
       document.body.style.overflow = "";
       lastFocused?.focus?.();

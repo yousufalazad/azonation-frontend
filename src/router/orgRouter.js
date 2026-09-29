@@ -10,6 +10,8 @@ const Security = () => import("../views/Org/Profile/Security.vue");
 const Settings = () => import("../views/Org/Profile/Settings.vue");
 //Administrator
 const Administrator = () => import("@/views/Org/Profile/Administrator.vue");
+const Support = () => import("@/views/Org/Support/Index.vue");
+const SupportRequest = () => import("@/views/Org/Support/View.vue");
 const UserNotifications = () => import("../views/Org/Notification/UserNotifications.vue");
 //Org Member
 const UnlinkMember = () => import("../views/Org/Member/UnlinkMember.vue");
@@ -686,6 +688,18 @@ const orgRoutes = [
         path: "administrator",
         name: "administrator",
         component: Administrator,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "support",
+        name: "support",
+        component: Support,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "support/:id",
+        name: "support-request",
+        component: SupportRequest,
         meta: { requiresAuth: true },
       },
       {

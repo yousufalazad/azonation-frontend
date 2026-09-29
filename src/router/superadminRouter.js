@@ -88,6 +88,7 @@ const OrderView = () => import("../views/SuperAdmin/E-commerce/order/View.vue");
 const Roles = () => import("@/views/RolePermission/Roles.vue");
 const Permissions = () => import("@/views/RolePermission/Permissions.vue");
 const UserRoleAssign = () => import("@/views/RolePermission/UserRoleAssign.vue");
+const SupportInbox = () => import("@/views/SuperAdmin/Support/Index.vue");
 const superadminRoutes = [
   {
     path: "/superadmin-dashboard",
@@ -102,6 +103,12 @@ const superadminRoutes = [
         path: "index",
         name: "superadmin-dashboard-index",
         component: SuperadminDashboardIndex,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "support",
+        name: "superadmin-support",
+        component: SupportInbox,
         meta: { requiresAuth: true },
       },
       // Role & Permission routes

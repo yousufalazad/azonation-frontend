@@ -1,328 +1,245 @@
+<!-- The organisation's administrator: the person in charge of the account (named on invoices),
+     changing it, and the people who held it before -->
 <script setup>
-import { ref } from 'vue';
-import { authStore } from '../../../store/authStore';
-import Swal from 'sweetalert2';
-import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
+import { computed, onMounted, reactive, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import { useToast } from "@/composables/useToast";
+import { useConfirm } from "@/composables/useConfirm";
+import { shortDate } from "@/helpers/billing";
+import { UserCog, Search, MoreVertical, Pencil, Trash2, History } from "lucide-vue-next";
 
 const auth = authStore;
-const searchQuery = ref('');
-const searchResults = ref([]);
-const administrators = ref([]);
-const formerAdministrators = ref([]);
-const today = new Date().toISOString().split('T')[0];
-const showEditModal = ref(false);
-const showSearchModal = ref(false);
-const editForm = ref({});
-const orgTypeUserId = auth.user.id;
-const searchLoading = ref(false);
+const { t, locale } = useI18n();
+const toast = useToast();
+const confirm = useConfirm();
 
-const fetchAdministrators = async () => {
-    const res = await auth.fetchProtectedApi('/api/org-administrators');
-    if (res && Array.isArray(res)) {
-        administrators.value = res.filter(admin => admin.is_primary === 1 && admin.individual_user);
-        formerAdministrators.value = res.filter(admin => admin.is_primary === 0 && admin.individual_user);
+const loading = ref(true);
+const records = ref([]);
+const current = computed(() => records.value.find((r) => Number(r.is_primary) === 1) || null);
+const past = computed(() => records.value.filter((r) => Number(r.is_primary) !== 1));
+// Only the organisation account itself changes its administrator
+const canChange = computed(() => auth.user?.type === "organisation" && String(auth.currentOrgId || auth.user?.id) === String(auth.user?.id));
+
+const fullName = (r) => [r?.individual_user?.first_name ?? r?.first_name, r?.individual_user?.last_name ?? r?.last_name].filter(Boolean).join(" ") || t("adminPage.unknown");
+const personName = (p) => [p.first_name, p.last_name].filter(Boolean).join(" ") || p.username || p.azon_id;
+
+async function load() {
+  const res = await auth.fetchProtectedApi("/api/org-administrators", {}, "GET");
+  records.value = Array.isArray(res) ? res : [];
+}
+
+// ---- Choose a new administrator ----
+const showPicker = ref(false);
+const query = ref("");
+const results = ref([]);
+const searching = ref(false);
+const searched = ref(false);
+const saving = ref(false);
+let timer = null;
+
+function openPicker() {
+  query.value = "";
+  results.value = [];
+  searched.value = false;
+  showPicker.value = true;
+}
+
+watch(query, (q) => {
+  clearTimeout(timer);
+  const text = q.trim();
+  if (text.length < 3) {
+    results.value = [];
+    searched.value = false;
+    return;
+  }
+  timer = setTimeout(async () => {
+    searching.value = true;
+    const res = await auth.fetchProtectedApi("/api/org-members/search", { query: text }, "POST");
+    if (query.value.trim() === text) {
+      results.value = res?.status ? res.data || [] : [];
+      searched.value = true;
+    }
+    searching.value = false;
+  }, 300);
+});
+
+async function choose(person) {
+  const ok = await confirm({
+    title: t("adminPage.makeTitle", { name: personName(person) }),
+    message: current.value ? t("adminPage.makeTextReplace", { name: fullName(current.value) }) : t("adminPage.makeText"),
+    confirmText: t("adminPage.makeConfirm"),
+  });
+  if (!ok) return;
+  saving.value = true;
+  try {
+    const res = await auth.fetchProtectedApi("/api/org-administrators", { individual_type_user_id: person.id }, "POST");
+    if (res && res.status !== false) {
+      showPicker.value = false;
+      toast.success(t("adminPage.changed", { name: personName(person) }));
+      await load();
     } else {
-        Swal.fire('Error', 'Failed to load administrators.', 'error');
+      toast.error(res?.errors?.message || t("profilePage.saveFailed"));
     }
-};
+  } finally {
+    saving.value = false;
+  }
+}
 
-const openSearchModal = () => {
-    searchQuery.value = '';
-    searchResults.value = [];
-    showSearchModal.value = true;
-};
+// ---- Edit dates or note ----
+const editing = ref(null);
+const editForm = reactive({ start_date: "", end_date: "", admin_note: "" });
+const editError = ref("");
+const editSaving = ref(false);
 
-const searchIndividuals = async () => {
-    const currentQuery = searchQuery.value.trim();
-    if (!currentQuery) {
-        searchResults.value = [];
-        searchLoading.value = false;
-        return;
-    }
-    searchLoading.value = true;
-    try {
-        const response = await auth.fetchProtectedApi('/api/org-members/search', { query: currentQuery }, 'POST');
-        if (searchQuery.value.trim() === currentQuery && response.status) {
-            const individuals = response.data;
-            const updatedResults = await Promise.all(
-                individuals.map(async (individual) => {
-                    const checkRes = await auth.fetchProtectedApi(
-                        '/api/org-administrators/check',
-                        {
-                            org_type_user_id: orgTypeUserId,
-                            individual_type_user_id: individual.id,
-                        },
-                        'POST'
-                    );
-                    return {
-                        ...individual,
-                        already_added: checkRes.status && checkRes.data.exists,
-                    };
-                })
-            );
-            searchResults.value = updatedResults;
-        } else {
-            searchResults.value = [];
-        }
-    } catch (error) {
-        console.error("Error searching individuals:", error);
-        searchResults.value = [];
-    } finally {
-        searchLoading.value = false;
-    }
-};
+function openEdit(r) {
+  editing.value = r;
+  Object.assign(editForm, { start_date: r.start_date ? String(r.start_date).slice(0, 10) : "", end_date: r.end_date ? String(r.end_date).slice(0, 10) : "", admin_note: r.admin_note || "" });
+  editError.value = "";
+}
 
-const addAdministrator = async (individualTypeUserId) => {
-    const today = new Date().toISOString().split("T")[0];
-    try {
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: "Do you want to set this administrator as primary?",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, add it!',
-            cancelButtonText: 'No, cancel!'
-        });
-        if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(
-                '/api/org-administrators',
-                {
-                    individual_type_user_id: individualTypeUserId,
-                    start_date: today,
-                    is_primary: 1,
-                    is_active: 1
-                },
-                'POST'
-            );
-            if (response.message) {
-                await Swal.fire('Added!', 'Administrator added as primary.', 'success');
-                searchResults.value = [];
-                searchQuery.value = '';
-                showSearchModal.value = false;
-                fetchAdministrators();
-            } else {
-                Swal.fire('Failed!', 'Failed to add administrator.', 'error');
-            }
-        }
-    } catch (error) {
-        console.error("Error adding administrator:", error);
-        Swal.fire('Error!', 'Failed to add administrator.', 'error');
-    }
-};
-
-const openEditModal = (admin) => {
-    editForm.value = { ...admin };
-    showEditModal.value = true;
-};
-
-const updateAdministrator = async () => {
-    const startDate = new Date(editForm.value.start_date);
-    const endDate = editForm.value.end_date ? new Date(editForm.value.end_date) : null;
-    const today = new Date();
-
-    if (editForm.value.is_primary === 1 && endDate) {
-        await Swal.fire('Error!', 'Active administrator cannot have an end date.', 'error');
-        return;
-    }
-
-    if (endDate) {
-        if (endDate < startDate) {
-            await Swal.fire('Error!', 'End date cannot be before start date.', 'error');
-            return;
-        }
-    }
-
-    const response = await auth.fetchProtectedApi(
-        `/api/org-administrators/${editForm.value.id}`,
-        editForm.value,
-        'PUT'
-    );
-    if (response.message) {
-        await Swal.fire('Updated!', 'Administrator updated successfully.', 'success');
-        showEditModal.value = false;
-        fetchAdministrators();
+async function saveEdit() {
+  if (editSaving.value) return;
+  const isCurrent = Number(editing.value.is_primary) === 1;
+  if (!isCurrent && editForm.end_date && editForm.start_date && editForm.end_date < editForm.start_date) {
+    editError.value = t("adminPage.endBeforeStart");
+    return;
+  }
+  editSaving.value = true;
+  try {
+    const payload = { start_date: editForm.start_date || null, admin_note: editForm.admin_note.trim() || null };
+    if (!isCurrent) payload.end_date = editForm.end_date || null;
+    const res = await auth.fetchProtectedApi(`/api/org-administrators/${editing.value.id}`, payload, "PUT");
+    if (res?.data) {
+      editing.value = null;
+      toast.success(t("adminPage.saved"));
+      await load();
     } else {
-        Swal.fire('Failed!', 'Failed to update administrator.', 'error');
+      editError.value = res?.errors?.message || t("profilePage.saveFailed");
     }
-};
+  } finally {
+    editSaving.value = false;
+  }
+}
 
+async function removePast(r) {
+  const ok = await confirm({ title: t("adminPage.removeTitle"), message: t("adminPage.removeText", { name: fullName(r) }), confirmText: t("common.delete"), danger: true });
+  if (!ok) return;
+  const res = await auth.fetchProtectedApi(`/api/org-administrators/${r.id}`, {}, "DELETE");
+  if (res && res.status !== false) {
+    toast.success(t("adminPage.removed"));
+    await load();
+  } else {
+    toast.error(res?.errors?.message || t("profilePage.saveFailed"));
+  }
+}
 
-fetchAdministrators();
+const rowActions = (r) => [
+  { label: t("adminPage.editDates"), icon: Pencil, onSelect: () => openEdit(r) },
+  { label: t("adminPage.removeFromHistory"), icon: Trash2, separatorBefore: true, onSelect: () => removePast(r) },
+];
+
+onMounted(async () => {
+  await load();
+  loading.value = false;
+});
 </script>
 
 <template>
-    <div class="add-member max-w-7xl mx-auto p-8 bg-white p-4 rounded shadow">
+  <div class="mx-auto flex max-w-3xl flex-col gap-6">
+    <AzPageHeader :title="t('adminPage.title')" :description="t('adminPage.description')" />
 
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <h2 class="text-lg sm:text-xl font-semibold text-gray-600">Organisation Administrator</h2>
-            <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-                <button @click="openSearchModal"
-                    class="mb-4 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-700">
-                    + Add Organisation Administrator
-                </button>
-            </div>
+    <AzSkeleton v-if="loading" :lines="4" height="4rem" />
+
+    <template v-else>
+      <!-- Current administrator -->
+      <AzCard>
+        <template #header>
+          <h2 class="flex items-center gap-2 text-lg font-semibold text-ink"><UserCog class="h-5 w-5 text-primary" aria-hidden="true" />{{ t('adminPage.current') }}</h2>
+        </template>
+        <div v-if="current" class="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <AzAvatar :name="fullName(current)" :src="current.image_url || ''" size="lg" />
+          <div class="min-w-0 flex-1">
+            <p class="text-xl font-semibold text-ink">{{ fullName(current) }}</p>
+            <p class="text-sm text-ink-muted">
+              <span v-if="current.individual_user?.azon_id">{{ current.individual_user.azon_id }} · </span>{{ t('adminPage.since', { date: shortDate(current.start_date, locale) }) }}
+            </p>
+            <p v-if="current.admin_note" class="mt-1 text-sm text-ink-2">{{ current.admin_note }}</p>
+          </div>
+          <div v-if="canChange" class="flex flex-wrap gap-2">
+            <AzButton variant="quiet" size="sm" @click="openEdit(current)">{{ t('adminPage.editNote') }}</AzButton>
+            <AzButton variant="secondary" size="sm" @click="openPicker">{{ t('adminPage.change') }}</AzButton>
+          </div>
         </div>
+        <AzEmptyState v-else :title="t('adminPage.noneTitle')" :description="t('adminPage.noneText')">
+          <AzButton v-if="canChange" @click="openPicker">{{ t('adminPage.choose') }}</AzButton>
+        </AzEmptyState>
+        <template #footer>
+          <p class="text-sm text-ink-muted">{{ canChange ? t('adminPage.whatItMeans') : t('adminPage.onlyOrg') }}</p>
+        </template>
+      </AzCard>
 
-
-
-        <!-- Search Modal -->
-        <div v-if="showSearchModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 relative">
-                <div class="flex justify-between items-center border-b pb-4 mb-6">
-                    <h2 class="text-xl font-semibold text-gray-800">Search</h2>
-                    <button @click="showSearchModal = false" class="text-gray-500 hover:text-gray-700">&times;</button>
-                </div>
-
-
-                <!-- // Search Input -->
-                <div class="flex mb-4">
-                    <input type="text" v-model="searchQuery"
-                        placeholder="Search by first name, last name, email, mobile, username or Azon Id"
-                        class="w-full p-2 border rounded-l" />
-                    <button @click="searchIndividuals"
-                        class="px-4 py-2 bg-blue-500 text-white rounded-r hover:bg-blue-600">
-                        Search
-                    </button>
-                </div>
-
-                <!-- Loading Spinner and Search Results-->
-                <div class="max-h-[400px] overflow-y-auto">
-                    <div v-if="searchLoading" class="py-4 text-xl text-center text-blue-600">Searching...</div>
-
-                    <ul v-else-if="searchResults.length" class="divide-y py-2 divide-gray-200">
-                        <li v-for="individualUser in searchResults" :key="individualUser.id"
-                            class="flex items-center py-4">
-                            <img :src="individualUser.image_url ? individualUser.image_url : placeholderImage"
-                                alt="Profile picture" class="w-16 h-16 rounded-full object-cover mr-4" />
-
-                            <div class="flex-1">
-                                <p class="font-medium">{{ individualUser.first_name }} {{ individualUser.last_name }}
-                                </p>
-                                <p class="text-xs text-gray-500">Azon Id: {{ individualUser.azon_id }}</p>
-                                <p class="text-xs text-gray-500">City: {{ individualUser.city }}</p>
-                                <p class="text-xs text-gray-500">Country: {{ individualUser.country }}</p>
-                            </div>
-
-                            <div class="ml-4">
-                                <button v-if="!individualUser.already_added"
-                                    class="bg-blue-500 hover:bg-blue-600 text-white text-xs py-1 px-3 rounded"
-                                    @click="addAdministrator(individualUser.id)">
-                                    Set as Administrator
-                                </button>
-                                <span v-else class="text-xs text-gray-500 font-medium">
-                                    Already Administrator
-                                </span>
-                            </div>
-                        </li>
-                    </ul>
-
-                    <div v-else-if="searchQuery && !searchLoading" class="py-4 text-center text-gray-500">
-                        No results found.
-                    </div>
-                </div>
-
-
-                <!-- Cancel Button -->
-                <div class="flex justify-end">
-                    <button @click="showSearchModal = false"
-                        class="px-4 py-3 bg-gray-200 hover:bg-gray-300 rounded text-sm">
-                        Cancel
-                    </button>
-                </div>
+      <!-- History -->
+      <AzCard v-if="past.length" :padded="false">
+        <template #header>
+          <h2 class="flex items-center gap-2 text-lg font-semibold text-ink"><History class="h-5 w-5 text-primary" aria-hidden="true" />{{ t('adminPage.past') }}</h2>
+        </template>
+        <ul class="divide-y divide-line">
+          <li v-for="r in past" :key="r.id" class="flex items-center gap-3 px-5 py-3">
+            <AzAvatar :name="fullName(r)" :src="r.image_url || ''" size="sm" />
+            <div class="min-w-0 flex-1">
+              <p class="truncate font-medium text-ink">{{ fullName(r) }}</p>
+              <p class="truncate text-sm text-ink-muted">
+                {{ shortDate(r.start_date, locale) || '—' }} – {{ shortDate(r.end_date, locale) || '—' }}<template v-if="r.admin_note"> · {{ r.admin_note }}</template>
+              </p>
             </div>
-        </div>
+            <AzMenu v-if="canChange" :items="rowActions(r)" variant="quiet" :aria-label="t('meetings.more', { name: fullName(r) })">
+              <template #icon><MoreVertical class="h-[18px] w-[18px]" /></template>
+            </AzMenu>
+          </li>
+        </ul>
+      </AzCard>
+    </template>
 
-        <h2 class="mt-12 mb-4 text-lg text-gray-600 font-semibold">Current Administrator</h2>
-        <div v-if="administrators.length" class="space-y-4">
-            <div v-for="admin in administrators" class="flex items-center bg-white p-4 rounded shadow">
-                <img :src="admin.image_url || placeholderImage" alt="Profile"
-                    class="w-12 h-12 rounded-full object-cover mr-4" />
-                <div class="flex-1">
-                    <p class="font-medium">{{ admin?.first_name ?? '--' }} {{ admin?.last_name ?? '--' }}</p>
-                    <p v-if="admin.individual_user.azon_id" class="py-1 text-sm text-gray-400">Azon Id: {{
-                        admin.individual_user?.azon_id }}</p>
-                    <p class="py-2 text-xs text-gray-400">From: {{ admin.start_date }}</p>
-                    <p class="py-1 text-xs text-gray-400">Admin note: {{ admin.admin_note }}</p>
-                </div>
-                <button @click="openEditModal(admin)"
-                    class="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Edit</button>
+    <!-- Choose a person -->
+    <AzModal v-model:open="showPicker" :title="current ? t('adminPage.change') : t('adminPage.choose')" :description="t('adminPage.searchHelp')" size="lg">
+      <div class="flex flex-col gap-4">
+        <div class="relative">
+          <Search class="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-ink-muted" aria-hidden="true" />
+          <input v-model="query" type="search" autofocus :placeholder="t('adminPage.searchPlaceholder')" :aria-label="t('adminPage.searchPlaceholder')" autocomplete="off"
+            class="min-h-[48px] w-full rounded-control border border-line-strong bg-surface pl-10 pr-3 text-[15px] text-ink placeholder:text-ink-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30" />
+        </div>
+        <p v-if="query.trim().length > 0 && query.trim().length < 3" class="text-sm text-ink-muted">{{ t('adminPage.typeMore') }}</p>
+        <AzSkeleton v-else-if="searching" :lines="3" height="3rem" />
+        <p v-else-if="searched && !results.length" class="text-sm text-ink-muted">{{ t('adminPage.noResults') }}</p>
+        <ul v-else-if="results.length" class="divide-y divide-line rounded-card border border-line">
+          <li v-for="p in results" :key="p.id" class="flex items-center gap-3 px-4 py-3">
+            <AzAvatar :name="personName(p)" :src="p.image_url || ''" size="sm" />
+            <div class="min-w-0 flex-1">
+              <p class="truncate font-medium text-ink">{{ personName(p) }}</p>
+              <p class="truncate text-sm text-ink-muted">{{ [p.azon_id, p.city].filter(Boolean).join(' · ') }}</p>
             </div>
+            <AzBadge v-if="current && current.individual_type_user_id === p.id" tone="info" :dot="false">{{ t('subscriptionPage.current') }}</AzBadge>
+            <AzButton v-else variant="secondary" size="sm" :loading="saving" @click="choose(p)">{{ t('adminPage.select') }}</AzButton>
+          </li>
+        </ul>
+      </div>
+    </AzModal>
+
+    <!-- Edit dates / note -->
+    <AzModal v-if="editing" :open="true" :title="t('adminPage.editTitle', { name: fullName(editing) })" @close="editing = null">
+      <form id="admin-edit-form" class="flex flex-col gap-5" novalidate @submit.prevent="saveEdit">
+        <div class="grid gap-5 sm:grid-cols-2">
+          <AzInput v-model="editForm.start_date" type="date" :label="t('adminPage.from')" />
+          <AzInput v-if="Number(editing.is_primary) !== 1" v-model="editForm.end_date" type="date" :label="t('adminPage.to')" :error="editError === t('adminPage.endBeforeStart') ? editError : ''" />
         </div>
-
-        <h2 class="mt-12 mb-4 text-lg text-gray-600 font-semibold">Former Administrators</h2>
-        <div class="space-y-4">
-            <div v-for="admin in formerAdministrators" class="flex items-center bg-white p-4 rounded shadow">
-                <img :src="admin.image_url || placeholderImage" alt="Profile"
-                    class="w-12 h-12 rounded-full object-cover mr-4" />
-                <div>
-                    <p class="font-medium">{{ admin?.first_name ?? '--' }} {{ admin?.last_name ?? '--' }}</p>
-                    <p class="py-1 text-xs text-gray-400">Azon Id: {{ admin.individual_user?.azon_id }}</p>
-                    <p v-if="admin.individual_user.azon_id" class="py-1 text-xs text-gray-400">From: {{ admin.start_date
-                        }}</p>
-                    <p class="py-1 text-xs text-gray-400">To: {{ admin.end_date }}</p>
-                    <p class="py-1 text-xs text-gray-400">Admin note: {{ admin.admin_note }}</p>
-                </div>
-                <button @click="openEditModal(admin)"
-                    class="ml-auto px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Edit</button>
-            </div>
-        </div>
-
-
-
-        <!-- Edit Modal -->
-        <div v-if="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 relative">
-                <div class="flex justify-between items-center border-b pb-4 mb-6">
-                    <h2 class="text-xl font-semibold text-gray-800">Edit Administrator</h2>
-                    <button @click="showEditModal = false" class="text-gray-500 hover:text-gray-700">&times;</button>
-                </div>
-
-                <div class="text-center mb-6">
-                    <img :src="editForm.image_url || placeholderImage" alt="Administrator Image"
-                        class="h-24 w-24 rounded-full object-cover mx-auto mb-4" />
-                    <h2 class="text-2xl font-semibold text-gray-800">{{ editForm.individual_user?.first_name }} {{
-                        editForm.individual_user?.last_name }}</h2>
-                    <p class="text-sm text-gray-500">Unique Azon Id: {{ editForm.individual_user?.azon_id }}</p>
-                </div>
-
-                <form @submit.prevent="updateAdministrator">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Start Date</label>
-                            <input v-model="editForm.start_date" type="date"
-                                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" :max="today" />
-                        </div>
-
-                        <div v-if="editForm.is_primary !== 1">
-                            <label class="block text-sm font-medium text-gray-700">End Date</label>
-                            <input v-model="editForm.end_date" type="date"
-                                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                                :min="editForm.start_date" />
-                        </div>
-
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Admin Note</label>
-                            <textarea v-model="editForm.admin_note" rows="3"
-                                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="mt-6 flex justify-end gap-3">
-                        <button type="submit"
-                            class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg">
-                            Save
-                        </button>
-                        <button @click="showEditModal = false" type="button"
-                            class="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded-lg">
-                            Cancel
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-    </div>
+        <AzInput v-model="editForm.admin_note" :label="t('meetingView.note')" :help="t('adminPage.noteHelp')" maxlength="255" autocomplete="off" />
+        <p v-if="editError && editError !== t('adminPage.endBeforeStart')" class="text-sm text-danger" role="alert">{{ editError }}</p>
+      </form>
+      <template #footer>
+        <AzButton variant="quiet" @click="editing = null">{{ t('common.cancel') }}</AzButton>
+        <AzButton type="submit" form="admin-edit-form" :loading="editSaving">{{ t('common.save') }}</AzButton>
+      </template>
+    </AzModal>
+  </div>
 </template>
-
-<style scoped></style>

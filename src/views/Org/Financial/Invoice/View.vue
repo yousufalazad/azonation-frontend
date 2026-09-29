@@ -58,7 +58,7 @@ onMounted(async () => {
             <p class="text-sm text-ink-muted">{{ overdue ? t('invoicePage.overdueSince', { date: shortDate(invoice.due_date, locale) }) : t('invoicePage.payBy', { date: shortDate(invoice.due_date, locale) || '—' }) }}</p>
             <p class="text-2xl font-semibold tabular-nums" :class="overdue ? 'text-danger' : 'text-ink'">{{ money(due, cur) }}</p>
           </div>
-          <AzButton variant="secondary" :to="{ name: 'contact-us' }">{{ t('invoicePage.howToPay') }}</AzButton>
+          <AzButton variant="secondary" :to="{ name: 'support', query: { new: 'billing' } }">{{ t('invoicePage.howToPay') }}</AzButton>
         </div>
         <p class="mt-3 text-sm text-ink-muted">{{ t('invoicePage.payHelp') }}</p>
       </AzCard>

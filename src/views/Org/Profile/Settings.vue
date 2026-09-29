@@ -179,7 +179,7 @@ onMounted(async () => {
           <div>
             <p class="font-semibold text-ink">{{ t('orgSettings.closeTitle') }}</p>
             <p class="text-sm text-ink-muted">{{ t('orgSettings.closeText') }}</p>
-            <AzButton class="mt-3" variant="secondary" size="sm" :to="{ name: 'contact-us' }">{{ t('orgSettings.contactSupport') }}</AzButton>
+            <AzButton class="mt-3" variant="secondary" size="sm" :to="{ name: 'support', query: { new: 'account' } }">{{ t('orgSettings.contactSupport') }}</AzButton>
           </div>
         </div>
       </AzCard>
