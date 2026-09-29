@@ -1,492 +1,184 @@
+<!-- Assets: what the organisation owns, who has each item and its condition -->
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import Swal from "sweetalert2";
-import { authStore } from "../../../store/authStore";
-import EasyDataTable from "vue3-easy-data-table";
-import "vue3-easy-data-table/dist/style.css";
-import { FileText, FileSpreadsheet, FileDown } from "lucide-vue-next";
-import { pdfExport } from "@/helpers/pdfExport.js";
-import { excelExport } from "@/helpers/excelExport.js";
-import { csvExport } from "@/helpers/csvExport.js";
-const showFilters = ref(false);
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import { CurrencyService } from "@/helpers/currency";
+import { useListView } from "@/composables/useListView";
+import { useListExport } from "@/composables/useListExport";
+import { useToast } from "@/composables/useToast";
+import { useConfirm } from "@/composables/useConfirm";
+import { Plus, Download, Package, Pencil, Trash2, MoreVertical, ArrowRightLeft } from "lucide-vue-next";
 
-const router = useRouter();
 const auth = authStore;
-const recordList = ref([]);
-const loading = ref(false);
-const search = ref("");
-const quickFilter = ref("");
-const startDate = ref("");
-const endDate = ref("");
-const selectedProfile = ref(
-  localStorage.getItem("asset_profile") || "detailed",
-);
-const visibleColumns = ref(
-  JSON.parse(localStorage.getItem("asset_columns")) || [
-    "name",
-    "quantity",
-    "asset_lifecycle_status",
-    "start_date",
-    "end_date",
-    "responsible_user_full_name",
-    "actions",
-  ],
-);
+const router = useRouter();
+const { t } = useI18n();
+const toast = useToast();
+const confirm = useConfirm();
 
-const currentPage = ref(1);
-const rowsPerPage = ref(10);
+const assets = ref([]);
+const loading = ref(true);
+const tab = ref("in_use");
 
-const goToFirst = () => (currentPage.value = 1);
-const goToPrev = () => {
-  if (currentPage.value > 1) currentPage.value--;
-};
-const goToNext = () => {
-  if (currentPage.value < totalPages.value) currentPage.value++;
-};
-const goToLast = () => (currentPage.value = totalPages.value);
+const holderName = (a) => [a.responsible_user_first_name, a.responsible_user_last_name].filter(Boolean).join(" ");
+const isOn = (a) => !(a.is_active === 0 || a.is_active === "0");
 
-watch(rowsPerPage, () => (currentPage.value = 1));
-
-//get records from API
-const getRecords = async () => {
-  loading.value = true;
-  try {
-    const res = await auth.fetchProtectedApi("/api/assets", {}, "GET");
-    // if (res.status) {
-    console.log("Asset response:", res.data);
-    recordList.value = res.data.map((r) => ({
-      id: r.id,
-      name: r.name,
-      quantity: r.quantity,
-      start_date: r.start_date
-        ? new Date(r.start_date).toLocaleDateString()
-        : "",
-      end_date: r.end_date ? new Date(r.end_date).toLocaleDateString() : "",
-      responsible_user_first_name: r.responsible_user_first_name,
-      responsible_user_last_name: r.responsible_user_last_name,
-      responsible_user_full_name:
-        `${r.responsible_user_first_name ?? ""} ${r.responsible_user_last_name ?? ""}`.trim(),
-      asset_lifecycle_status: r.asset_lifecycle_statuses_name,
-      is_active: r.is_active === 1 ? "Yes" : "No",
-    }));
-  } catch (err) {
-    console.error("Error fetching assets:", err);
-  } finally {
-    loading.value = false;
+async function load() {
+  const res = await auth.fetchProtectedApi("/api/assets", {}, "GET");
+  if (!res?.status) {
+    toast.error(t("dashboard.loadFailed"));
+    return;
   }
-};
+  assets.value = res.data.map((a) => ({
+    ...a,
+    holder: holderName(a),
+    description: a.description === "null" ? "" : a.description,
+    value_number: Number(a.value_amount || 0) + Number(a.inkind_value || 0),
+  }));
+}
 
-const columnProfiles = {
-  minimal: ["name", "quantity", "asset_lifecycle_status"],
-  detailed: [
-    "name",
-    "quantity",
-    "asset_lifecycle_status",
-    "start_date",
-    "end_date",
-    "responsible_user_full_name",
-    "actions",
-  ],
-};
+const tabOptions = computed(() => [
+  { value: "in_use", label: t("assets.inUse") },
+  { value: "retired", label: t("assets.retired") },
+  { value: "all", label: t("meetings.all") },
+]);
 
-const headers = [
-  { text: "Name", value: "name", sortable: true },
-  { text: "Quantity", value: "quantity", sortable: true },
-  { text: "Start Date", value: "start_date", sortable: true },
-  { text: "End Date", value: "end_date", sortable: true },
-  { text: "Lifecycle Status", value: "asset_lifecycle_status", sortable: true },
-  {
-    text: "Responsible User",
-    value: "responsible_user_full_name",
-    sortable: true,
+const totalValue = computed(() => assets.value.filter(isOn).reduce((sum, a) => sum + a.value_number * 1, 0));
+
+const columns = computed(() => [
+  { key: "name", label: t("assets.name"), sortable: true, class: "font-semibold text-ink" },
+  { key: "holder", label: t("assets.holder"), sortable: true, value: (a) => a.holder || t("assets.withOrg") },
+  { key: "asset_lifecycle_statuses_name", label: t("assets.condition"), sortable: true },
+  { key: "quantity", label: t("assets.quantity"), sortable: true, class: "tabular-nums" },
+  { key: "value_number", label: t("assets.value"), sortable: true, class: "tabular-nums", value: (a) => (a.value_number ? CurrencyService.format(a.value_number) : "") },
+  { key: "description", label: t("assets.description"), sortable: false },
+]);
+
+const list = useListView({
+  key: "assets",
+  items: assets,
+  columns,
+  presets: {
+    detailed: ["name", "holder", "asset_lifecycle_statuses_name", "quantity", "value_number"],
+    minimal: ["name", "holder"],
   },
-  { text: "Actions", value: "actions", sortable: false },
+  searchText: (a) => [a.name, a.description, a.holder, a.asset_lifecycle_statuses_name],
+  filter: (a) => (tab.value === "all" ? true : tab.value === "in_use" ? isOn(a) : !isOn(a)),
+  filterDeps: [tab],
+  defaultSort: "name",
+});
+
+const exportItems = useListExport({
+  columns: list.visibleColumns,
+  rows: list.sorted,
+  title: computed(() => t("assets.title")),
+  fileName: "Assets",
+});
+
+const canCreate = computed(() => auth.hasPermission("asset.create") || auth.user?.type === "organisation");
+const open = (a) => router.push({ name: "view-asset", params: { id: a.id } });
+
+const rowActions = (a) => [
+  { label: t("assets.handover"), icon: ArrowRightLeft, onSelect: () => router.push({ name: "view-asset", params: { id: a.id }, query: { handover: 1 } }) },
+  { label: t("assets.edit"), icon: Pencil, onSelect: () => router.push({ name: "edit-asset", params: { id: a.id } }) },
+  { label: t("assets.delete"), icon: Trash2, onSelect: () => remove(a) },
 ];
 
-const filteredHeaders = computed(() =>
-  headers.filter((h) => visibleColumns.value.includes(h.value)),
-);
-
-watch([selectedProfile, visibleColumns], () => {
-  localStorage.setItem("asset_profile", selectedProfile.value);
-  localStorage.setItem("asset_columns", JSON.stringify(visibleColumns.value));
-});
-
-const applyProfile = () => {
-  visibleColumns.value = [...columnProfiles[selectedProfile.value]];
-};
-
-const filteredAssets = computed(() => {
-  return recordList.value.filter((record) => {
-    const matchSearch =
-      search.value === "" ||
-      record.name.toLowerCase().includes(search.value.toLowerCase());
-    const matchQuick =
-      quickFilter.value === "" || record.is_active === quickFilter.value;
-    const matchStart =
-      startDate.value === "" ||
-      (record.start_date && record.start_date >= startDate.value);
-    const matchEnd =
-      endDate.value === "" ||
-      (record.end_date && record.end_date <= endDate.value);
-    return matchSearch && matchQuick && matchStart && matchEnd;
+async function remove(a) {
+  const ok = await confirm({
+    title: t("meetings.deleteTitle", { name: a.name }),
+    message: t("assets.deleteText"),
+    confirmText: t("assets.delete"),
+    danger: true,
   });
-});
-
-const totalItems = computed(() => filteredAssets.value.length);
-const totalPages = computed(() =>
-  Math.ceil(totalItems.value / rowsPerPage.value),
-);
-
-const paginatedAssets = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage.value;
-  return filteredAssets.value.slice(start, start + rowsPerPage.value);
-});
-
-// Delete record function
-const deleteRecord = async (id) => {
-  const result = await Swal.fire({
-    title: "Are you sure?",
-    text: "Do you want to delete this asset?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes, delete it!",
-    cancelButtonText: "Cancel",
-  });
-  if (result.isConfirmed) {
-    const res = await auth.fetchProtectedApi(`/api/assets/${id}`, {}, "DELETE");
-    if (res.status) {
-      Swal.fire("Deleted!", "Asset has been deleted.", "success");
-      getRecords();
-    } else {
-      Swal.fire("Failed!", "Failed to delete asset.", "error");
-    }
+  if (!ok) return;
+  const res = await auth.fetchProtectedApi(`/api/assets/${a.id}`, {}, "DELETE");
+  if (res?.status) {
+    assets.value = assets.value.filter((x) => x.id !== a.id);
+    toast.success(t("assets.deleted"));
+  } else {
+    toast.error(t("assets.deleteFailed"));
   }
-};
+}
 
-// Export CSV with custom header/footer
-const exportCSV = async () => {
-  await csvExport({
-    headers: filteredHeaders.value,
-    rows: filteredAssets.value,
-    title: "Asset List",
-    fileName: "Assets.csv",
-  });
-};
-
-// Export XLSX with custom header/footer
-const exportXLSX = async () => {
-  await excelExport({
-    headers: filteredHeaders.value,
-    rows: filteredAssets.value,
-    title: "Asset List",
-    fileName: "Assets.xlsx",
-  });
-};
-
-// --- Export Assets PDF ---
-const exportPDF = () => {
-  pdfExport({
-    headers: filteredHeaders.value,
-    rows: filteredAssets.value,
-    title: "Asset List",
-    fileName: "Assets.pdf",
-  });
-};
-
-onMounted(() => getRecords());
+onMounted(async () => {
+  CurrencyService.showSymbol = false;
+  await Promise.all([load(), CurrencyService.code ? null : CurrencyService.load()]);
+  loading.value = false;
+});
 </script>
 
 <template>
-  <div class="p-4 md:p-6 space-y-6 bg-white shadow rounded-lg">
-    <!-- Header -->
-    <div
-      class="flex flex-col md:flex-row justify-between md:items-center gap-4"
-    >
-      <h2 class="text-lg font-semibold text-gray-700">Assets</h2>
-      <div class="flex flex-wrap gap-2">
-        <button
-          @click="exportCSV"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          <FileText class="w-4 h-4" /> CSV
-        </button>
-        <button
-          @click="exportXLSX"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          <FileSpreadsheet class="w-4 h-4" /> Excel
-        </button>
-        <button
-          @click="exportPDF"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          <FileDown class="w-4 h-4" /> PDF
-        </button>
-        <button
-          @click="$router.push({ name: 'create-asset' })"
-          class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm"
-        >
-          + Add Asset
-        </button>
+  <div class="mx-auto flex max-w-7xl flex-col gap-6">
+    <AzPageHeader :title="t('assets.title')" :description="t('assets.description_page')">
+      <AzMenu :label="t('list.export')" :items="exportItems">
+        <template #icon><Download class="h-[18px] w-[18px]" /></template>
+      </AzMenu>
+      <AzButton v-if="canCreate" :to="{ name: 'create-asset' }">
+        <template #icon><Plus class="h-[18px] w-[18px]" /></template>
+        {{ t('assets.add') }}
+      </AzButton>
+    </AzPageHeader>
+
+    <div class="-mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div class="w-full max-w-md">
+        <AzSegmented v-model="tab" :label="t('assets.title')" :options="tabOptions" />
       </div>
+      <p v-if="totalValue" class="text-sm text-ink-muted">
+        {{ t('assets.totalValue') }}: <strong class="font-semibold text-ink">{{ CurrencyService.format(totalValue) }}</strong>
+      </p>
     </div>
 
-    <!-- Mobile-only toggle -->
-    <button
-      @click="showFilters = !showFilters"
-      type="button"
-      class="sm:hidden w-full flex items-center justify-between border rounded-lg px-4 py-2.5 my-5 bg-gray-50 text-sm font-medium text-gray-700"
-    >
-      <span class="flex items-center gap-2">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M3 4h18M6 8h12M9 12h6M11 16h2"
-          />
-        </svg>
-        Filters
-      </span>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="w-4 h-4 transition-transform duration-200"
-        :class="showFilters ? 'rotate-180' : ''"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M19 9l-7 7-7-7"
-        />
-      </svg>
-    </button>
+    <AzCard :padded="false">
+      <AzListToolbar v-model:search="list.search.value" v-model:visible-keys="list.visibleKeys.value"
+        v-model:preset="list.presetModel.value" :columns="columns" :placeholder="t('assets.searchPlaceholder')" />
 
-    <!-- Collapsible on mobile, always visible from sm: up -->
-    <div :class="showFilters ? 'block' : 'hidden'" class="sm:block space-y-4">
-      <!-- Filters -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <div>
-          <label class="text-sm text-gray-600">Search</label>
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Search..."
-            class="w-full border rounded px-3 py-1.5 text-sm"
-          />
-        </div>
-        <div>
-          <label class="text-sm text-gray-600">Is Active</label>
-          <select
-            v-model="quickFilter"
-            class="w-full border rounded px-3 py-1.5 text-sm"
-          >
-            <option value="">All</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-sm text-gray-600">Start Date</label>
-          <input
-            type="date"
-            v-model="startDate"
-            class="w-full border rounded px-3 py-1.5 text-sm"
-          />
-        </div>
-        <div>
-          <label class="text-sm text-gray-600">End Date</label>
-          <input
-            type="date"
-            v-model="endDate"
-            class="w-full border rounded px-3 py-1.5 text-sm"
-          />
-        </div>
-      </div>
+      <div v-if="loading" class="p-5"><AzSkeleton :lines="5" height="2.75rem" /></div>
 
-      <!-- Column Settings -->
-      <div
-        class="bg-gray-50 border rounded p-4 flex flex-col md:flex-row flex-wrap gap-6"
-      >
-        <!-- Column Profile Selector -->
-        <div class="flex flex-col">
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >Column View:</label
-          >
-          <select
-            v-model="selectedProfile"
-            @change="applyProfile"
-            class="border rounded px-3 py-1.5 text-sm w-full md:w-48"
-          >
-            <option value="minimal">Minimal</option>
-            <option value="detailed">Detailed</option>
-          </select>
-        </div>
-        <!-- Visible Columns -->
-        <div class="flex-1">
-          <label class="text-sm font-medium text-gray-700 mb-1 block"
-            >Visible Columns</label
-          >
-          <div class="flex flex-wrap gap-4">
-            <div
-              v-for="header in headers"
-              :key="header.value"
-              class="flex items-center gap-2 text-sm"
-            >
-              <input
-                type="checkbox"
-                v-model="visibleColumns"
-                :value="header.value"
-                :id="header.value"
-                class="accent-blue-600"
-              />
-              <label :for="header.value" class="text-gray-700">{{
-                header.text
-              }}</label>
+      <AzEmptyState v-else-if="!assets.length" :title="t('assets.emptyTitle')" :description="t('assets.emptyText')">
+        <template #icon><Package class="h-7 w-7" /></template>
+        <AzButton v-if="canCreate" :to="{ name: 'create-asset' }">{{ t('assets.add') }}</AzButton>
+      </AzEmptyState>
+
+      <AzEmptyState v-else-if="!list.sorted.value.length" :title="t('list.noMatchTitle')" :description="t('list.noMatchText')">
+        <AzButton variant="secondary" @click="list.search.value = ''; tab = 'all'">{{ t('list.clearFilters') }}</AzButton>
+      </AzEmptyState>
+
+      <template v-else>
+        <AzDataTable :columns="list.visibleColumns.value" :rows="list.paged.value" :sort-key="list.sortKey.value"
+          :sort-dir="list.sortDir.value" @sort="list.sortBy" @row-click="open">
+          <template #cell-holder="{ row }">
+            <span v-if="row.holder" class="inline-flex items-center gap-2"><AzAvatar :name="row.holder" size="sm" />{{ row.holder }}</span>
+            <span v-else class="text-ink-muted">{{ t('assets.withOrg') }}</span>
+          </template>
+          <template #cell-asset_lifecycle_statuses_name="{ row }">
+            <AzBadge v-if="row.asset_lifecycle_statuses_name" tone="neutral">{{ row.asset_lifecycle_statuses_name }}</AzBadge>
+            <span v-else class="text-ink-muted">—</span>
+          </template>
+          <template #actions="{ row }">
+            <div class="flex items-center justify-end gap-1">
+              <AzButton variant="secondary" size="sm" @click="open(row)">{{ t('meetings.open') }}</AzButton>
+              <AzMenu :items="rowActions(row)" variant="quiet" :aria-label="t('meetings.more', { name: row.name })">
+                <template #icon><MoreVertical class="h-[18px] w-[18px]" /></template>
+              </AzMenu>
             </div>
-          </div>
+          </template>
+          <template #mobile="{ row }">
+            <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-primary-soft text-primary-soft-ink">
+              <Package class="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="block truncate font-semibold text-ink">{{ row.name }}<span v-if="row.quantity > 1" class="font-normal text-ink-muted"> × {{ row.quantity }}</span></span>
+              <span class="block truncate text-sm text-ink-muted">{{ row.holder || t('assets.withOrg') }}{{ row.asset_lifecycle_statuses_name ? ` · ${row.asset_lifecycle_statuses_name}` : '' }}</span>
+            </span>
+          </template>
+        </AzDataTable>
+
+        <div class="border-t border-line p-4 sm:px-5">
+          <AzPagination v-model:page="list.page.value" v-model:page-size="list.pageSize.value" :total="list.sorted.value.length" />
         </div>
-      </div>
-    </div>
-
-    <!-- Table (scrollable on mobile) -->
-    <div class="overflow-x-auto">
-      <EasyDataTable
-        :headers="filteredHeaders"
-        :items="paginatedAssets"
-        :search-value="search"
-        :loading="loading"
-        show-index
-        hide-footer
-        :theme-color="'#2563eb'"
-        table-class="min-w-full text-sm"
-        header-class="bg-gray-100"
-        body-row-class="text-sm"
-      >
-        <!-- Header Alignment Fix -->
-        <template #header-actions>
-          <div class="text-right w-full pr-2">Actions</div>
-        </template>
-
-        <!-- Actions Slot -->
-        <template #item-actions="{ id }">
-          <div class="flex justify-end flex-wrap gap-2">
-            <button
-              @click="$router.push({ name: 'view-asset', params: { id } })"
-              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3"
-            >
-              View
-            </button>
-            <button
-              @click="$router.push({ name: 'edit-asset', params: { id } })"
-              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3"
-            >
-              Edit
-            </button>
-            <button
-              @click="deleteRecord(id)"
-              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3"
-            >
-              Delete
-            </button>
-          </div>
-        </template>
-
-        <!-- is_active Badge Slot -->
-        <template #item-is_active="{ is_active }">
-          <span
-            class="px-2 py-0.5 rounded-full text-xs font-medium"
-            :class="
-              is_active === 'Yes'
-                ? 'bg-green-100 text-green-700'
-                : 'bg-red-100 text-red-700'
-            "
-          >
-            {{ is_active }}
-          </span>
-        </template>
-      </EasyDataTable>
-    </div>
-
-    <!-- Pagination Controls -->
-    <div
-      class="flex flex-col md:flex-row justify-between items-center gap-3 px-2 py-3 bg-gray-50 rounded border"
-    >
-      <!-- Info -->
-      <div class="text-sm text-gray-600 text-center md:text-left">
-        Items
-        {{ (currentPage - 1) * rowsPerPage + 1 }} -
-        {{ Math.min(currentPage * rowsPerPage, totalItems) }}
-        of {{ totalItems }} | Page {{ currentPage }} of {{ totalPages }}
-      </div>
-
-      <!-- Controls -->
-      <div class="flex flex-col sm:flex-row items-center gap-3">
-        <div class="flex items-center gap-1">
-          <span class="text-sm text-gray-600">Items per page:</span>
-          <select
-            v-model="rowsPerPage"
-            class="border rounded px-2 py-1 text-sm"
-          >
-            <option
-              v-for="size in [5, 10, 50, 100, 250, 500, 1000]"
-              :key="size"
-              :value="size"
-            >
-              {{ size }}
-            </option>
-          </select>
-        </div>
-        <div class="flex gap-1">
-          <button
-            @click="goToFirst"
-            :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'"
-          >
-            First
-          </button>
-          <button
-            @click="goToPrev"
-            :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'"
-          >
-            Prev
-          </button>
-          <button
-            @click="goToNext"
-            :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-sm"
-            :class="
-              currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'
-            "
-          >
-            Next
-          </button>
-          <button
-            @click="goToLast"
-            :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-sm"
-            :class="
-              currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'
-            "
-          >
-            Last
-          </button>
-        </div>
-      </div>
-    </div>
+      </template>
+    </AzCard>
   </div>
 </template>
