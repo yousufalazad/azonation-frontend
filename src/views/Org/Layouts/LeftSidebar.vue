@@ -62,8 +62,9 @@ const menu = [
   {
     id: 'reports', label: 'nav.reports', icon: BarChartIcon,
     children: [
-      { label: 'nav.income', to: '/org-dashboard/org-report' },
-      { label: 'nav.expense', to: '/org-dashboard/org-expense-report' },
+      { label: 'nav.reportOverview', to: { name: 'org-report' } },
+      { label: 'nav.eventReports', to: { name: 'index-event-summary' } },
+      { label: 'nav.meetingMinutes', to: { name: 'index-meeting-minutes' } },
     ],
   },
   {

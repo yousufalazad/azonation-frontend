@@ -85,7 +85,6 @@ const EditRecognition = () => import("../views/Org/Recognition/Edit.vue");
 const ViewRecognition = () => import("../views/Org/Recognition/View.vue");
 //Report
 const OrgReport = () => import("../views/Org/Report/Index.vue");
-const OrgExpenseReport = () => import("../views/Org/Report/Expense.vue");
 //StrategicPlan
 const StrategicPlan = () => import("../views/Org/StrategicPlan/Index.vue");
 const CreateStrategicPlan = () => import("../views/Org/StrategicPlan/Create.vue");
@@ -577,8 +576,8 @@ const orgRoutes = [
       {
         path: "org-expense-report",
         name: "org-expense-report",
-        component: OrgExpenseReport,
-        meta: { requiresAuth: true },
+        // Income and spending are now on one Reports page
+        redirect: { name: "org-report" },
       },
       {
         path: "strategic-plan",
