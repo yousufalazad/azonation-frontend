@@ -1,532 +1,256 @@
-<!-- Org dashboard initial content -->
+<!-- Organisation dashboard: key numbers, recent members and 12-month trends -->
 <script setup>
-import { ref, onMounted, computed, h } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import dayjs from 'dayjs';
 import { authStore } from '../../../../store/authStore';
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
-import Swal from 'sweetalert2';
-import dayjs from 'dayjs';
-import duration from 'dayjs/plugin/duration';
-import relativeTime from 'dayjs/plugin/relativeTime';
-import { Line } from 'vue-chartjs';
-import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale } from 'chart.js';
 import { CurrencyService } from '@/helpers/currency';
-import LineChartBalance from '../../Report/LineChartBalance.vue';
+import { useToast } from '@/composables/useToast';
+import { Users, CalendarDays, Wallet, TrendingUp, Plus, ChevronRight } from 'lucide-vue-next';
 
-dayjs.extend(duration);
-dayjs.extend(relativeTime);
-ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale);
-
-/* ================= AUTH ================= */
 const auth = authStore;
-const userType = computed(() => auth.user?.type);
+const { t } = useI18n();
+const toast = useToast();
 
-/* ================= TOAST (non-blocking background-fetch feedback) ================= */
-const Toast = Swal.mixin({
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 3000,
-    timerProgressBar: true,
-    didOpen: (t) => {
-        t.addEventListener('mouseenter', Swal.stopTimer);
-        t.addEventListener('mouseleave', Swal.resumeTimer);
-    }
-});
+const canView = computed(() => auth.isAuthenticated && auth.user?.type === 'organisation');
+const orgName = computed(() => auth.user?.org_name || '');
 
-/* ================= UI STATE ================= */
+/* ================= LOADING ================= */
 const isInitialLoading = ref(true);
+let failedCount = 0;
 
-/* ================= MEMBERS ================= */
-const totalOrgMember = ref(0);
+// Every loader returns the API data or null, and counts failures so we can show one message.
+// Optional data (e.g. the next meeting, which is empty when none is planned) never counts as a failure.
+const load = async (url, { optional = false } = {}) => {
+    const res = await auth.fetchProtectedApi(url, {}, 'GET');
+    if (res?.status) return res.data;
+    if (!optional) failedCount++;
+    return null;
+};
+
+/* ================= SUMMARY ================= */
+const totalMembers = ref(0);
+const newMembersThisYear = ref(0);
+const nextMeetingDate = ref('');
+const transactions = ref([]);
 const memberList = ref([]);
-const membershipTypes = ref([]);
-const thisYearNewMemberCount = ref(0);
-
-const fetchMemberList = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/org-members/', {}, 'GET');
-        memberList.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching member list:', error);
-        memberList.value = [];
-    }
-};
-
-const fetchMembershipType = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/membership-types', {}, 'GET');
-        membershipTypes.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching membership types:', error);
-        membershipTypes.value = [];
-    }
-};
-
-const totalOrgMemberCount = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/total-org-member-count', {}, 'GET');
-        totalOrgMember.value = response.status && response.data ? response.data : 0;
-    } catch (error) {
-        console.error('Error fetching total members:', error);
-    }
-};
-
-const getThisYearNewMemberCount = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/this-year-new-member-count', {}, 'GET');
-        thisYearNewMemberCount.value = response.status && response.data ? response.data : 0;
-    } catch (error) {
-        console.error('Error fetching this year new member count:', error);
-    }
-};
-
-const calculateMembershipAge = (startDate) => {
-    if (!startDate) return '';
-    const start = dayjs(startDate);
-    const now = dayjs();
-    const diffYears = now.diff(start, 'year');
-    const diffMonths = now.diff(start.add(diffYears, 'year'), 'month');
-    const diffDays = now.diff(start.add(diffYears, 'year').add(diffMonths, 'month'), 'day');
-    return `${diffYears}y ${diffMonths}m ${diffDays}d`;
-};
-
-const statusBadgeClass = (statusName) => {
-    const s = (statusName || '').toLowerCase();
-    if (s.includes('active')) return 'bg-green-50 text-green-700';
-    if (s.includes('terminat') || s.includes('inactive') || s.includes('expired')) return 'bg-red-50 text-red-600';
-    if (s.includes('pending')) return 'bg-amber-50 text-amber-700';
-    return 'bg-gray-100 text-gray-600';
-};
-
-/* ================= FINANCE (SUMMARY BALANCE) ================= */
-const transactionList = ref([]);
-const transactionCurrencySymbol = ref('');
-
-const getTransactions = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/fund-transactions', {}, 'GET');
-        transactionList.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching transactions:', error);
-    }
-};
 
 const balance = computed(() =>
-    transactionList.value.reduce((acc, trx) => (
-        trx.type === 'income' ? acc + Number(trx.amount) : acc - Number(trx.amount)
-    ), 0)
+    transactions.value.reduce((sum, trx) => (trx.type === 'income' ? sum + Number(trx.amount) : sum - Number(trx.amount)), 0),
 );
 
-const fetchCurrencyPreference = async () => {
-    try {
-        const res = await auth.fetchProtectedApi('/api/fund-transaction-currencies', {}, 'GET');
-        transactionCurrencySymbol.value = res?.data?.currency?.currency_code ?? '';
-    } catch (error) {
-        console.error('Failed to fetch user currency preference:', error);
-        transactionCurrencySymbol.value = '';
-    }
-};
-
-const formatCurrency = (amount) => CurrencyService.format(amount);
-
-/* ================= MEETINGS ================= */
-const nextMeetingDate = ref('');
-
-const orgNextMeeting = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/org-next-meeting', {}, 'GET');
-        if (response.status && response.data?.date) {
-            nextMeetingDate.value = new Intl.DateTimeFormat('en-GB', {
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric'
-            }).format(new Date(response.data.date));
-        }
-    } catch (error) {
-        console.error('Error fetching next meeting:', error);
-        nextMeetingDate.value = '';
-    }
-};
-
-/* ================= SUMMARY CARDS (config-driven, avoids repeated markup) ================= */
 const summaryCards = computed(() => [
-    {
-        title: 'Total Member',
-        value: totalOrgMember.value,
-        link: '/org-dashboard/index-member',
-        linkText: 'See all',
-        iconPath: 'M13 7a4 4 0 11-8 0 4 4 0 018 0zM15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197',
-        iconBg: 'bg-indigo-50',
-        iconColor: 'text-indigo-600'
-    },
-    {
-        title: 'Next Meeting',
-        value: nextMeetingDate.value,
-        emptyText: 'No upcoming meeting found',
-        link: '/org-dashboard/meetings',
-        linkText: 'See all',
-        iconPath: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
-        iconBg: 'bg-blue-50',
-        iconColor: 'text-blue-600'
-    },
-    {
-        title: 'Balance',
-        value: formatCurrency(balance.value),
-        link: '/org-dashboard/fund-management',
-        linkText: 'See all transactions',
-        iconPath: 'M3 10h18M7 15h1m4 0h1M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
-        iconBg: 'bg-emerald-50',
-        iconColor: 'text-emerald-600'
-    },
-    {
-        title: 'This Year New Members',
-        value: thisYearNewMemberCount.value,
-        link: '/org-dashboard/index-member',
-        linkText: 'See all',
-        iconPath: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6',
-        iconBg: 'bg-violet-50',
-        iconColor: 'text-violet-600'
-    }
+    { key: 'members', title: t('dashboard.totalMembers'), value: totalMembers.value, to: { name: 'index-member' }, linkText: t('dashboard.seeAll'), icon: Users, tone: 'bg-primary-soft text-primary-soft-ink' },
+    { key: 'meeting', title: t('dashboard.nextMeeting'), value: nextMeetingDate.value, empty: t('dashboard.noUpcomingMeeting'), to: '/org-dashboard/meetings', linkText: nextMeetingDate.value ? t('dashboard.seeAll') : t('dashboard.scheduleMeeting'), icon: CalendarDays, tone: 'bg-warning-soft text-warning' },
+    { key: 'balance', title: t('dashboard.balance'), value: CurrencyService.format(balance.value), to: '/org-dashboard/fund-management', linkText: t('dashboard.seeTransactions'), icon: Wallet, tone: 'bg-success-soft text-success' },
+    { key: 'new', title: t('dashboard.newMembersThisYear'), value: newMembersThisYear.value, to: { name: 'index-member' }, linkText: t('dashboard.seeAll'), icon: TrendingUp, tone: 'bg-primary-soft text-primary-soft-ink' },
 ]);
 
-/* ================= INCOME / EXPENSE / BALANCE REPORTS ================= */
-// Income and expense are fetched once and shared by the income, expense and balance charts.
-const chartDataIncome = ref(null);
-const chartData = ref(null);
-const chartDataBalance = ref(null);
+/* ================= MEMBERS ================= */
+const recentMembers = computed(() => memberList.value.slice(0, 5));
 
-// Last 12 months as "YYYY-MM", oldest first
-const lastTwelveMonths = () =>
-    Array.from({ length: 12 }, (_, i) => dayjs().subtract(11 - i, 'month').format('YYYY-MM'));
+const memberName = (m) => [m.individual?.first_name, m.individual?.last_name].filter(Boolean).join(' ') || '—';
 
-// Turns [{ year, month, <field> }] into one value per month
-const valuesByMonth = (months, items, field) => {
-    const totals = new Map((items || []).map(item => [
-        `${item.year}-${String(item.month).padStart(2, '0')}`,
-        Number(item[field]) || 0,
-    ]));
-    return months.map(m => totals.get(m) ?? 0);
+const formatDate = (value) => (value && dayjs(value).isValid() ? dayjs(value).format('D MMM YYYY') : '—');
+
+// "2 yr 3 mo", "5 mo", "12 days"
+const membershipAge = (startDate) => {
+    if (!startDate || !dayjs(startDate).isValid()) return '—';
+    const start = dayjs(startDate);
+    const years = dayjs().diff(start, 'year');
+    const months = dayjs().diff(start.add(years, 'year'), 'month');
+    if (years) return `${years} yr${months ? ` ${months} mo` : ''}`;
+    if (months) return `${months} mo`;
+    return `${dayjs().diff(start, 'day')} days`;
 };
 
-const lineDataset = (label, color, data, extra = {}) => ({
-    labels: extra.labels,
-    datasets: [{ label, backgroundColor: color, borderColor: color, data, fill: false, ...extra.dataset }],
-});
-
-const fetchFinanceReports = async () => {
-    chartDataIncome.value = null;
-    chartData.value = null;
-    chartDataBalance.value = null;
-    try {
-        const [incomeResponse, expenseResponse] = await Promise.all([
-            auth.fetchProtectedApi('/api/reports', {}, 'GET'),
-            auth.fetchProtectedApi('/api/org-expense-reports', {}, 'GET'),
-        ]);
-        const months = lastTwelveMonths();
-        const income = incomeResponse.status ? valuesByMonth(months, incomeResponse.data, 'total_income') : null;
-        const expense = expenseResponse.status ? valuesByMonth(months, expenseResponse.data, 'total_expense') : null;
-
-        if (income) chartDataIncome.value = lineDataset('Income', '#4CAF50', income, { labels: months });
-        else Toast.fire({ icon: 'error', title: 'Failed to load income report' });
-
-        if (expense) chartData.value = lineDataset('Expense', '#FF5722', expense, { labels: months });
-        else Toast.fire({ icon: 'error', title: 'Failed to load expense report' });
-
-        if (income && expense) {
-            const balance = income.map((value, i) => value - expense[i]);
-            chartDataBalance.value = lineDataset('Balance', '#3B82F6', balance, { labels: months });
-        }
-    } catch (error) {
-        console.error('Error fetching finance reports:', error);
-        Toast.fire({ icon: 'error', title: 'Error fetching finance reports' });
-    }
+const statusTone = (name) => {
+    const s = (name || '').toLowerCase();
+    if (s.includes('active') && !s.includes('inactive')) return 'success';
+    if (s.includes('terminat') || s.includes('inactive') || s.includes('expired')) return 'danger';
+    if (s.includes('pending') || s.includes('hold')) return 'warning';
+    return 'neutral';
 };
 
-/* ================= CHART COMPONENT ================= */
-// Render function instead of a runtime template string, so the app does not
-// need Vue's in-browser template compiler (smaller bundle, CSP-safe).
-const monthsAxis = { title: { display: true, text: 'Months' } };
-const moneyChartOptions = { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true }, x: monthsAxis } };
-const makeLineChart = (propName, options) => ({
-    props: { [propName]: { type: Object, required: true } },
-    setup(props) {
-        return () => h(Line, { data: props[propName], options });
-    },
-});
-const LineChartIncome = makeLineChart('chartDataIncome', moneyChartOptions);
-const LineChart = makeLineChart('chartData', moneyChartOptions);
+/* ================= TRENDS (last 12 months) ================= */
+const months = Array.from({ length: 12 }, (_, i) => dayjs().subtract(11 - i, 'month'));
+const monthKeys = months.map((m) => m.format('YYYY-MM'));
+const monthLabels = months.map((m) => m.format('MMM'));
 
-/* ================= MEMBERSHIP GROWTH REPORT ================= */
-const chartDataMembership = ref(null);
-
-const fetchMembershipGrowthReportData = async () => {
-    try {
-        chartDataMembership.value = null;
-        const response = await auth.fetchProtectedApi('/api/reports/membership-growth', {}, 'GET');
-        if (!response.status) {
-            Toast.fire({ icon: 'error', title: 'Failed to load membership growth report' });
-            return;
-        }
-        const months = lastTwelveMonths();
-        chartDataMembership.value = lineDataset(
-            'Total Members', '#6366F1', valuesByMonth(months, response.data, 'total_members'),
-            { labels: months, dataset: { tension: 0.3 } },
-        );
-    } catch (error) {
-        console.error('Error fetching membership growth report:', error);
-        Toast.fire({ icon: 'error', title: 'Error fetching membership growth report' });
-    }
+// [{ year, month, <field> }] -> one number per month, oldest first
+const valuesByMonth = (items, field) => {
+    const totals = new Map((items || []).map((item) => [`${item.year}-${String(item.month).padStart(2, '0')}`, Number(item[field]) || 0]));
+    return monthKeys.map((k) => totals.get(k) ?? 0);
 };
 
-const LineChartMembership = makeLineChart('chartDataMembership', {
-    responsive: true,
-    maintainAspectRatio: true,
-    scales: { y: { beginAtZero: true, title: { display: true, text: 'Total Members' } }, x: monthsAxis },
-});
+const income = ref(null);
+const expense = ref(null);
+const growth = ref(null);
+const balanceByMonth = computed(() => (income.value && expense.value ? income.value.map((v, i) => v - expense.value[i]) : null));
 
-/* ================= MOUNT: LOAD EVERYTHING IN PARALLEL ================= */
+const money = (v) => CurrencyService.format(v);
+const count = (v) => Number(v).toLocaleString('en-US');
+
+/* ================= LOAD EVERYTHING IN PARALLEL ================= */
 onMounted(async () => {
-    CurrencyService.showSymbol = false; // false => "USD", true => "$"
-    try {
-        await CurrencyService.load();
-        await Promise.allSettled([
-            fetchMemberList(),
-            fetchMembershipType(),
-            totalOrgMemberCount(),
-            getTransactions(),
-            orgNextMeeting(),
-            getThisYearNewMemberCount(),
-            fetchFinanceReports(),
-            fetchMembershipGrowthReportData(),
-            fetchCurrencyPreference()
-        ]);
-    } finally {
-        isInitialLoading.value = false;
-    }
+    if (!canView.value) return;
+    CurrencyService.showSymbol = false; // "BDT 1,600.00" rather than "৳ 1,600.00"
+    failedCount = 0;
+
+    const [members, total, trx, meeting, newCount, incomeData, expenseData, growthData] = await Promise.all([
+        load('/api/org-members/'),
+        load('/api/total-org-member-count'),
+        load('/api/fund-transactions'),
+        load('/api/org-next-meeting', { optional: true }),
+        load('/api/this-year-new-member-count'),
+        load('/api/reports'),
+        load('/api/org-expense-reports'),
+        load('/api/reports/membership-growth'),
+        CurrencyService.load(),
+    ]);
+
+    memberList.value = Array.isArray(members) ? members : [];
+    totalMembers.value = total || 0;
+    transactions.value = Array.isArray(trx) ? trx : [];
+    nextMeetingDate.value = meeting?.date ? formatDate(meeting.date) : '';
+    newMembersThisYear.value = newCount || 0;
+    income.value = incomeData ? valuesByMonth(incomeData, 'total_income') : null;
+    expense.value = expenseData ? valuesByMonth(expenseData, 'total_expense') : null;
+    growth.value = growthData ? valuesByMonth(growthData, 'total_members') : null;
+
+    isInitialLoading.value = false;
+    if (failedCount) toast.error(t('dashboard.loadFailed'));
 });
 </script>
 
 <template>
-    <div class="py-2">
-        <div v-if="auth.isAuthenticated && userType === 'organisation'">
+    <div v-if="canView" class="mx-auto flex max-w-7xl flex-col gap-8">
+        <AzPageHeader :title="t('dashboard.welcome')" :description="orgName ? t('dashboard.subtitle', { org: orgName }) : ''">
+            <AzButton variant="secondary" to="/org-dashboard/fund-management">{{ t('dashboard.fundManagement') }}</AzButton>
+            <AzButton to="/org-dashboard/create-member">
+                <template #icon><Plus class="h-[18px] w-[18px]" /></template>
+                {{ t('dashboard.addMember') }}
+            </AzButton>
+        </AzPageHeader>
 
-            <!-- SUMMARY CARDS -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div v-for="card in summaryCards" :key="card.title"
-                    class="bg-white shadow rounded-xl p-5 border border-gray-100 hover:shadow-lg transition">
-                    <div :class="['w-10 h-10 rounded-lg flex items-center justify-center mb-3', card.iconBg]">
-                        <svg class="w-5 h-5" :class="card.iconColor" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="card.iconPath" />
-                        </svg>
-                    </div>
-
-                    <h5 class="text-sm text-gray-500 font-medium mb-1">{{ card.title }}</h5>
-
-                    <div v-if="isInitialLoading" class="h-7 w-20 bg-gray-100 rounded animate-pulse"></div>
-                    <template v-else>
-                        <p v-if="card.value" class="text-2xl font-bold text-gray-800">{{ card.value }}</p>
-                        <p v-else class="text-gray-400 text-sm">{{ card.emptyText }}</p>
-                    </template>
-
-                    <router-link :to="card.link">
-                        <button class="text-blue-600 text-sm hover:underline mt-2 inline-block font-medium">
-                            {{ card.linkText }}
-                        </button>
-                    </router-link>
+        <!-- KEY NUMBERS: each card opens the related page -->
+        <section class="-mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" :aria-label="t('nav.home')">
+            <router-link v-for="card in summaryCards" :key="card.key" :to="card.to"
+                class="group flex flex-col gap-3 rounded-card border border-line bg-surface p-5 shadow-card transition hover:border-primary/40 hover:shadow-pop">
+                <div class="flex items-center justify-between gap-3">
+                    <span class="text-sm font-medium text-ink-2">{{ card.title }}</span>
+                    <span class="flex h-10 w-10 items-center justify-center rounded-control" :class="card.tone">
+                        <component :is="card.icon" class="h-5 w-5" aria-hidden="true" />
+                    </span>
                 </div>
+                <AzSkeleton v-if="isInitialLoading" height="2rem" />
+                <p v-else-if="card.value || (card.value === 0 && !card.empty)"
+                    class="text-2xl font-bold tabular-nums text-ink sm:text-[28px]">{{ card.value }}</p>
+                <p v-else class="text-[15px] text-ink-muted">{{ card.empty }}</p>
+                <span class="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-primary group-hover:underline">
+                    {{ card.linkText }}
+                    <ChevronRight class="h-4 w-4" aria-hidden="true" />
+                </span>
+            </router-link>
+        </section>
+
+        <!-- RECENT MEMBERS -->
+        <AzCard :title="t('dashboard.recentMembers')" :description="t('dashboard.recentMembersHint')" :padded="false">
+            <template #actions>
+                <AzButton variant="quiet" size="sm" :to="{ name: 'index-member' }">{{ t('dashboard.seeAllMembers') }}</AzButton>
+            </template>
+
+            <div v-if="isInitialLoading" class="p-5">
+                <AzSkeleton :lines="5" height="2.5rem" />
             </div>
 
-            <!-- TABLE TOP CONTROLS -->
-            <div class="mt-6 py-3 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <h2 class="text-base sm:text-lg font-semibold text-gray-700 truncate">Members</h2>
+            <AzEmptyState v-else-if="!recentMembers.length" :title="t('dashboard.noMembersTitle')" :description="t('dashboard.noMembersText')">
+                <template #icon><Users class="h-7 w-7" /></template>
+                <AzButton to="/org-dashboard/create-member">{{ t('dashboard.addMember') }}</AzButton>
+            </AzEmptyState>
 
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto sm:ml-auto">
-                    <div class="flex flex-row gap-2 justify-end w-full sm:w-auto">
-                        <router-link :to="{ name: 'index-member' }">
-                            <button class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100 transition">
-                                Full Member List
-                            </button>
-                        </router-link>
-                    </div>
+            <template v-else>
+                <!-- Phones: one card per member -->
+                <ul class="divide-y divide-line md:hidden">
+                    <li v-for="member in recentMembers" :key="member.id" class="flex items-center gap-3 px-5 py-4">
+                        <img :src="member.image_url || placeholderImage" :alt="t('member.photoOf', { name: memberName(member) })"
+                            class="h-11 w-11 max-w-none shrink-0 rounded-full border border-line object-cover" loading="lazy" />
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate font-semibold text-ink">{{ memberName(member) }}</p>
+                            <p class="truncate text-sm text-ink-muted">
+                                {{ member.membership_type?.name || '—' }} · {{ formatDate(member.membership_start_date) }}
+                            </p>
+                        </div>
+                        <AzBadge :tone="statusTone(member.membership_status?.name)">{{ member.membership_status?.name || '—' }}</AzBadge>
+                    </li>
+                </ul>
 
-                    <router-link :to="{ path: '/org-dashboard/create-member' }">
-                        <button class="px-4 py-2 text-sm text-white bg-blue-600 rounded hover:bg-blue-700 transition w-full sm:w-auto">
-                            + Add Member
-                        </button>
-                    </router-link>
-                </div>
-            </div>
-
-            <!-- MEMBER LIST TABLE -->
-            <div class="mt-2">
-                <div class="bg-white shadow-md rounded-2xl overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                <!-- Tablets and desktops: table -->
+                <div class="hidden overflow-x-auto md:block">
+                    <table class="az-table min-w-full">
+                        <thead>
                             <tr>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-20">Image</th>
-                                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 w-1/4">Name</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-1/5">Membership ID</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-1/5">Membership Type</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-1/5">Joining Date</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-1/5">Membership Age</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 w-24">Status</th>
+                                <th scope="col" class="w-16"><span class="sr-only">{{ t('member.photo') }}</span></th>
+                                <th scope="col">{{ t('member.name') }}</th>
+                                <th scope="col">{{ t('member.membershipId') }}</th>
+                                <th scope="col">{{ t('member.membershipType') }}</th>
+                                <th scope="col">{{ t('member.joined') }}</th>
+                                <th scope="col">{{ t('member.membershipAge') }}</th>
+                                <th scope="col">{{ t('member.status') }}</th>
                             </tr>
                         </thead>
-
-                        <tbody class="bg-white divide-y divide-gray-100">
-                            <!-- Skeleton rows while loading -->
-                            <template v-if="isInitialLoading">
-                                <tr v-for="n in 3" :key="'sk-' + n">
-                                    <td class="px-4 py-4"><div class="h-10 w-10 rounded-full bg-gray-100 animate-pulse"></div></td>
-                                    <td class="px-6 py-4"><div class="h-4 w-32 bg-gray-100 rounded animate-pulse"></div></td>
-                                    <td class="px-4 py-4"><div class="h-4 w-20 bg-gray-100 rounded animate-pulse"></div></td>
-                                    <td class="px-4 py-4"><div class="h-4 w-24 bg-gray-100 rounded animate-pulse"></div></td>
-                                    <td class="px-4 py-4"><div class="h-4 w-28 bg-gray-100 rounded animate-pulse"></div></td>
-                                    <td class="px-4 py-4"><div class="h-4 w-20 bg-gray-100 rounded animate-pulse"></div></td>
-                                    <td class="px-4 py-4"><div class="h-5 w-16 bg-gray-100 rounded-full animate-pulse"></div></td>
-                                </tr>
-                            </template>
-
-                            <template v-else-if="memberList.length">
-                                <tr v-for="member in memberList.slice(0, 5)" :key="member.id" class="hover:bg-gray-50 transition">
-                                    <td class="px-4 py-4 text-sm text-gray-800">
-                                        <img :src="member.image_url ? member.image_url : placeholderImage" alt="Member Image"
-                                            class="h-10 w-10 rounded-full object-cover">
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-800 font-medium">
-                                        {{ member.individual.first_name }} {{ member.individual.last_name }}
-                                    </td>
-                                    <td class="px-4 py-4 text-sm text-gray-800">{{ member.existing_membership_id || '--' }}</td>
-                                    <td class="px-4 py-4 text-sm text-gray-800">{{ member.membership_type?.name || '--' }}</td>
-                                    <td class="px-4 py-4 text-sm text-gray-800">
-                                        {{
-                                            member.membership_start_date
-                                                ? new Date(member.membership_start_date).toLocaleDateString('en-GB', {
-                                                    day: 'numeric', month: 'long', year: 'numeric'
-                                                })
-                                                : '--'
-                                        }}
-                                    </td>
-                                    <td class="px-4 py-4 text-sm text-gray-800">
-                                        {{ calculateMembershipAge(member.membership_start_date) || '--' }}
-                                    </td>
-                                    <td class="px-4 py-4 text-sm">
-                                        <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium', statusBadgeClass(member.membership_status?.name)]">
-                                            {{ member.membership_status?.name || '--' }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            </template>
-
-                            <tr v-else>
-                                <td colspan="7" class="p-10 text-center text-gray-400">
-                                    <svg class="w-10 h-10 mx-auto mb-2 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2a3 3 0 00-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2a3 3 0 01.356-1.857m0 0a5.002 5.002 0 019.288 0M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                    </svg>
-                                    <p class="text-sm">No members found.</p>
+                        <tbody>
+                            <tr v-for="member in recentMembers" :key="member.id">
+                                <td>
+                                    <img :src="member.image_url || placeholderImage" :alt="t('member.photoOf', { name: memberName(member) })"
+                                        class="h-10 w-10 max-w-none rounded-full border border-line object-cover" loading="lazy" />
+                                </td>
+                                <td class="font-semibold text-ink">{{ memberName(member) }}</td>
+                                <td class="tabular-nums">{{ member.existing_membership_id || '—' }}</td>
+                                <td>{{ member.membership_type?.name || '—' }}</td>
+                                <td class="whitespace-nowrap tabular-nums">{{ formatDate(member.membership_start_date) }}</td>
+                                <td class="whitespace-nowrap">{{ membershipAge(member.membership_start_date) }}</td>
+                                <td>
+                                    <AzBadge :tone="statusTone(member.membership_status?.name)">{{ member.membership_status?.name || '—' }}</AzBadge>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
-
-                    <div v-if="!isInitialLoading && memberList.length" class="px-6 py-4 text-right">
-                        <router-link to="/org-dashboard/index-member">
-                            <button class="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium">
-                                See all members →
-                            </button>
-                        </router-link>
-                    </div>
                 </div>
+            </template>
+        </AzCard>
+
+        <!-- MONEY TRENDS -->
+        <section class="flex flex-col gap-4">
+            <h2 class="text-xl font-semibold text-ink">{{ t('dashboard.financeTitle') }}</h2>
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <AzCard :title="t('dashboard.income')">
+                    <AzLineChart v-if="income" :labels="monthLabels" :values="income" :label="t('dashboard.income')" tone="success" :format-value="money" />
+                    <AzSkeleton v-else-if="isInitialLoading" height="180px" />
+                </AzCard>
+                <AzCard :title="t('dashboard.expense')">
+                    <AzLineChart v-if="expense" :labels="monthLabels" :values="expense" :label="t('dashboard.expense')" tone="danger" :format-value="money" />
+                    <AzSkeleton v-else-if="isInitialLoading" height="180px" />
+                </AzCard>
+                <AzCard :title="t('dashboard.balanceTrend')">
+                    <AzLineChart v-if="balanceByMonth" :labels="monthLabels" :values="balanceByMonth" :label="t('dashboard.balance')" tone="primary" :format-value="money" />
+                    <AzSkeleton v-else-if="isInitialLoading" height="180px" />
+                </AzCard>
             </div>
-        </div>
+        </section>
 
-        <div v-else class="flex items-center justify-center h-screen">
-            <p class="text-gray-500 text-lg">You are not authorized to view this page.</p>
-        </div>
-
-        <!-- FINANCIAL REPORTS -->
-        <div class="mt-8">
-            <h2 class="text-lg font-semibold text-gray-600 mb-4">Financial Reports (Last 12 Months)</h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white shadow-md rounded-2xl p-6">
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                            </svg>
-                        </div>
-                        <h3 class="text-base font-medium text-gray-700">Income</h3>
-                    </div>
-                    <line-chart-income v-if="chartDataIncome" :chart-data-income="chartDataIncome" />
-                    <div v-else class="space-y-2 animate-pulse">
-                        <div class="h-4 bg-gray-100 rounded w-3/4"></div>
-                        <div class="h-32 bg-gray-100 rounded"></div>
-                    </div>
-                </div>
-
-                <div class="bg-white shadow-md rounded-2xl p-6">
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17H5m0 0V9m0 8l8-8 4 4 6-6" />
-                            </svg>
-                        </div>
-                        <h3 class="text-base font-medium text-gray-700">Expense</h3>
-                    </div>
-                    <line-chart v-if="chartData" :chart-data="chartData" />
-                    <div v-else class="space-y-2 animate-pulse">
-                        <div class="h-4 bg-gray-100 rounded w-3/4"></div>
-                        <div class="h-32 bg-gray-100 rounded"></div>
-                    </div>
-                </div>
-
-                <div class="bg-white shadow-md rounded-2xl p-6">
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                        </div>
-                        <h3 class="text-base font-medium text-gray-700">Balance Trend</h3>
-                    </div>
-                    <line-chart-balance v-if="chartDataBalance" :chart-data-balance="chartDataBalance" />
-                    <div v-else class="space-y-2 animate-pulse">
-                        <div class="h-4 bg-gray-100 rounded w-3/4"></div>
-                        <div class="h-32 bg-gray-100 rounded"></div>
-                    </div>
-                </div>
+        <!-- MEMBERSHIP GROWTH -->
+        <section class="flex flex-col gap-4 pb-8">
+            <h2 class="text-xl font-semibold text-ink">{{ t('dashboard.growthTitle') }}</h2>
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <AzCard :title="t('dashboard.totalMembersChart')" class="lg:col-span-2">
+                    <AzLineChart v-if="growth" :labels="monthLabels" :values="growth" :label="t('dashboard.totalMembersChart')" tone="primary" :format-value="count" :height="220" />
+                    <AzSkeleton v-else-if="isInitialLoading" height="220px" />
+                </AzCard>
             </div>
-        </div>
-
-        <!-- MEMBERSHIP GROWTH REPORT -->
-        <div class="mt-8">
-            <h2 class="text-lg font-semibold text-gray-600 mb-4">Membership Growth Reports (Last 12 Months)</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white shadow-md rounded-2xl p-6">
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197" />
-                            </svg>
-                        </div>
-                        <h3 class="text-base font-medium text-gray-700">Total Member</h3>
-                    </div>
-                    <line-chart-membership v-if="chartDataMembership" :chart-data-membership="chartDataMembership" />
-                    <div v-else class="space-y-2 animate-pulse">
-                        <div class="h-4 bg-gray-100 rounded w-3/4"></div>
-                        <div class="h-32 bg-gray-100 rounded"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!--
-          Future work: Program-related charts (Meeting / Event / Project) can follow the
-          same "icon header + LineChart component + skeleton fallback" pattern used above.
-        -->
-
-        <div class="py-5 mt-8"></div>
+        </section>
     </div>
+
+    <AzEmptyState v-else :title="t('dashboard.notAllowed')" />
 </template>

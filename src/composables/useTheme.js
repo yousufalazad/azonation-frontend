@@ -6,6 +6,8 @@ const STORAGE_KEY = "azonation_theme";
 const THEMES = ["light", "dark", "system"];
 
 const theme = ref("system");
+// The theme actually shown (resolves "system"), for code that draws its own colours, e.g. charts
+const isDark = ref(false);
 const media = typeof window !== "undefined" ? window.matchMedia?.("(prefers-color-scheme: dark)") : null;
 
 function readSaved() {
@@ -21,6 +23,7 @@ function apply() {
   const dark = theme.value === "dark" || (theme.value === "system" && !!media?.matches);
   // The "dark" class switches the colour tokens (tailwind.css) and the dark bridge
   document.documentElement.classList.toggle("dark", dark);
+  isDark.value = dark;
 }
 
 export function initTheme() {
@@ -40,5 +43,5 @@ export function useTheme() {
     }
     apply();
   };
-  return { theme, setTheme };
+  return { theme, isDark, setTheme };
 }

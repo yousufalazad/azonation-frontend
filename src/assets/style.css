@@ -43,7 +43,7 @@ html, body {
   margin: 0;
 }
 
-table thead tr th{
+table:not(.az-table) thead tr th{
   font-size: 13px !important;
   font-weight: 600 !important;
   color: #555 !important;
@@ -54,14 +54,14 @@ table thead tr th{
   
 }
 
-table tbody tr:hover{
+table:not(.az-table) tbody tr:hover{
     background-color: #EEEEEE !important;
 }
-table tbody tr:hover td{
+table:not(.az-table) tbody tr:hover td{
     color: #212121 !important;
 }
 
-table tbody tr td{
+table:not(.az-table) tbody tr td{
   font-size: 13px !important;
   padding-top: 1rem !important;
   padding-bottom: 1rem !important;

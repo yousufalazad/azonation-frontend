@@ -77,19 +77,19 @@ const extra = `
 }
 
 /* ---- Global table styles from style.css */
-.dark table thead tr th {
+.dark table:not(.az-table) thead tr th {
   color: rgb(var(--az-ink-2)) !important;
   background-color: rgb(var(--az-surface)) !important;
   border-bottom-color: rgb(var(--az-line)) !important;
 }
-.dark table tbody tr td {
+.dark table:not(.az-table) tbody tr td {
   color: rgb(var(--az-ink-2));
   border-bottom-color: rgb(var(--az-line)) !important;
 }
-.dark table tbody tr:hover {
+.dark table:not(.az-table) tbody tr:hover {
   background-color: rgb(var(--az-surface-2)) !important;
 }
-.dark table tbody tr:hover td {
+.dark table:not(.az-table) tbody tr:hover td {
   color: rgb(var(--az-ink)) !important;
 }
 
