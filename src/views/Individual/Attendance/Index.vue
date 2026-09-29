@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { authStore } from '../../../store/authStore';
-import { format } from 'date-fns';
+import dayjs from 'dayjs';
 import Swal from 'sweetalert2';
 
 const auth = authStore;
@@ -57,7 +57,7 @@ watch(itemsPerPageAbsent, () => {
 const formatDate = (dateStr) => {
   if (!dateStr) return '—';
   try {
-    return format(new Date(dateStr), 'dd MMM yyyy');
+    return dayjs(dateStr).format('DD MMM YYYY');
   } catch {
     return '—';
   }

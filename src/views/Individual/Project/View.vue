@@ -53,10 +53,10 @@ onMounted(fetchProjectDetails);
         <tr><td class="py-2 px-4 border-b font-medium">End Time</td><td>:</td><td class="py-2 px-4 border-b">{{ project.end_time || 'N/A' }}</td></tr>
         <tr><td class="py-2 px-4 border-b font-medium">Status</td><td>:</td><td class="py-2 px-4 border-b">{{ project.status === 0 ? 'Active' : 'Disabled' }}</td></tr>
         <tr><td class="py-2 px-4 border-b font-medium">Conduct Type</td><td>:</td><td class="py-2 px-4 border-b">{{ project.conduct_type === 1 ? 'In Person' : 'Online' }}</td></tr>
-        <tr><td class="py-2 px-4 border-b font-medium">Requirements</td><td>:</td><td class="py-2 px-4 border-b" v-html="project.requirements || 'N/A'"></td></tr>
-        <tr><td class="py-2 px-4 border-b font-medium">Note</td><td>:</td><td class="py-2 px-4 border-b" v-html="project.note || 'N/A'"></td></tr>
-        <tr><td class="py-2 px-4 border-b font-medium">Description</td><td>:</td><td class="py-2 px-4 border-b" v-html="project.description || 'N/A'"></td></tr>
-        <tr><td class="py-2 px-4 border-b font-medium">Short Description</td><td>:</td><td class="py-2 px-4 border-b" v-html="project.short_description || 'N/A'"></td></tr>
+        <tr><td class="py-2 px-4 border-b font-medium">Requirements</td><td>:</td><td class="py-2 px-4 border-b" v-safe-html="project.requirements || 'N/A'"></td></tr>
+        <tr><td class="py-2 px-4 border-b font-medium">Note</td><td>:</td><td class="py-2 px-4 border-b" v-safe-html="project.note || 'N/A'"></td></tr>
+        <tr><td class="py-2 px-4 border-b font-medium">Description</td><td>:</td><td class="py-2 px-4 border-b" v-safe-html="project.description || 'N/A'"></td></tr>
+        <tr><td class="py-2 px-4 border-b font-medium">Short Description</td><td>:</td><td class="py-2 px-4 border-b" v-safe-html="project.short_description || 'N/A'"></td></tr>
         <tr>
           <td class="px-2 py-2 text-left font-semibold w-36">Images</td><td>:</td>
           <td class="px-2 py-2 text-left">

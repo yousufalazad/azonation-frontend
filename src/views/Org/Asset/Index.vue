@@ -4,7 +4,6 @@ import { useRouter } from "vue-router";
 import Swal from "sweetalert2";
 import { authStore } from "../../../store/authStore";
 import EasyDataTable from "vue3-easy-data-table";
-import { utils, writeFileXLSX } from "xlsx";
 import "vue3-easy-data-table/dist/style.css";
 import { FileText, FileSpreadsheet, FileDown } from "lucide-vue-next";
 import { pdfExport } from "@/helpers/pdfExport.js";

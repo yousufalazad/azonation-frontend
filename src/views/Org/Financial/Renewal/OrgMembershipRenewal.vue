@@ -6,20 +6,8 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import duration from "dayjs/plugin/duration";
 import Swal from "sweetalert2";
 import EasyDataTable from "vue3-easy-data-table";
-import { utils as xlsxUtils, writeFileXLSX } from "xlsx";
-import { jsPDF } from "jspdf";
-import "jspdf-autotable";
-import {
-  Document,
-  Packer,
-  Paragraph,
-  TextRun,
-  Table,
-  TableRow,
-  TableCell,
-  WidthType,
-} from "docx";
-import { saveAs } from "file-saver";
+import { downloadCsv } from "@/helpers/download";
+import { excelExport } from "@/helpers/excelExport";
 import placeholderImage from "@/assets/Placeholder/Azonation-profile-image.jpg";
 import { authStore } from "../../../../store/authStore";
 
@@ -424,51 +412,38 @@ const resetFilters = () => {
 };
 
 // Exports: CSV, XLSX, PDF, DOCX
+const renewalFileName = (ext) =>
+  `Org_Membership_Renewals_${new Date().toISOString().slice(0, 10)}.${ext}`;
+
 const exportCSV = async () => {
   const headersRow = visibleHeaders.value.map((h) => h.text);
   const rows = filteredList.value.map((item) =>
-    visibleHeaders.value.map((h) => {
-      const v = item[h.value];
-      return v === null || v === undefined
-        ? ""
-        : typeof v === "object"
-          ? JSON.stringify(v)
-          : v;
-    }),
+    visibleHeaders.value.map((h) => item[h.value]),
   );
-  const csv = [headersRow, ...rows]
-    .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
-    .join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `Org_Membership_Renewals_${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadCsv([headersRow, ...rows], renewalFileName("csv"));
 };
 
-const exportXLSX = async () => {
-  const flat = filteredList.value.map((item) => {
-    const out = {};
-    visibleHeaders.value.forEach((h) => {
-      let val = item[h.value];
-      if (val === null || val === undefined) val = "";
-      if (typeof val === "object") val = JSON.stringify(val);
-      out[h.text] = val;
-    });
-    return out;
+const exportXLSX = () =>
+  excelExport({
+    headers: visibleHeaders.value.map((h) => ({
+      text: h.text,
+      value: (item) => {
+        const val = item[h.value];
+        if (val === null || val === undefined) return "";
+        return typeof val === "object" ? JSON.stringify(val) : val;
+      },
+    })),
+    rows: filteredList.value,
+    title: "Membership renewals",
+    fileName: renewalFileName("xlsx"),
   });
-  const ws = xlsxUtils.json_to_sheet(flat);
-  const wb = xlsxUtils.book_new();
-  xlsxUtils.book_append_sheet(wb, ws, "Renewals");
-  writeFileXLSX(
-    wb,
-    `Org_Membership_Renewals_${new Date().toISOString().slice(0, 10)}.xlsx`,
-  );
-};
 
 const exportPDF = async () => {
+  // PDF library is loaded only when someone exports
+  const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+    import("jspdf"),
+    import("jspdf-autotable"),
+  ]);
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   doc.setFontSize(12);
   doc.text("Organization Membership Renewals", 40, 40);
@@ -481,9 +456,7 @@ const exportPDF = async () => {
       return String(v);
     }),
   );
-  // autoTable
-  // @ts-ignore
-  doc.autoTable({
+  autoTable(doc, {
     startY: 60,
     head,
     body,
@@ -497,6 +470,11 @@ const exportPDF = async () => {
 };
 
 const exportDOCX = async () => {
+  // Word library is loaded only when someone exports
+  const [
+    { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType },
+    { saveAs },
+  ] = await Promise.all([import("docx"), import("file-saver")]);
   const tableRows = [
     new TableRow({
       children: visibleHeaders.value.map(

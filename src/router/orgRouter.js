@@ -1,146 +1,121 @@
-import OrgDashboardLayout from "../views/Org/Layouts/Layout.vue";
-import OrgDashboardIndex from "@/views/Org/Layouts/Dashboard/Index.vue";
-import HeaderNotifications from "../views/Org/Layouts/HeaderNotification.vue";
-import Notifications from "../views/Org/Notification/Index.vue";
-
+const OrgDashboardLayout = () => import("../views/Org/Layouts/Layout.vue");
+const OrgDashboardIndex = () => import("@/views/Org/Layouts/Dashboard/Index.vue");
+const HeaderNotifications = () => import("../views/Org/Layouts/HeaderNotification.vue");
+const Notifications = () => import("../views/Org/Notification/Index.vue");
 // Org Profile
-import MyAccount from "../views/Org/Profile/MyAccount.vue";
-import Profile from "../views/Org/Profile/Profile.vue";
-import fundamentalInfo from "../views/Org/Profile/FundamentalInfo.vue";
-import Security from "../views/Org/Profile/Security.vue";
-import Settings from "../views/Org/Profile/Settings.vue";
-
+const MyAccount = () => import("../views/Org/Profile/MyAccount.vue");
+const Profile = () => import("../views/Org/Profile/Profile.vue");
+const fundamentalInfo = () => import("../views/Org/Profile/FundamentalInfo.vue");
+const Security = () => import("../views/Org/Profile/Security.vue");
+const Settings = () => import("../views/Org/Profile/Settings.vue");
 //Administrator
-import Administrator from "@/views/Org/Profile/Administrator.vue";
-import UserNotifications from "../views/Org/Notification/UserNotifications.vue";
-
+const Administrator = () => import("@/views/Org/Profile/Administrator.vue");
+const UserNotifications = () => import("../views/Org/Notification/UserNotifications.vue");
 //Org Member
-import UnlinkMember from "../views/Org/Member/UnlinkMember.vue";
-import OrgMembershipRenewalCycle from "../views/Org/Financial/Renewal/OrgMembershipRenewalCycle.vue";
-import OrgMembershipRenewalPrice from "../views/Org/Financial/Renewal/OrgMembershipRenewalPrice.vue";
-import OrgMembershipRenewal from "../views/Org/Financial/Renewal/OrgMembershipRenewal.vue";
-import CreateMember from "../views/Org/Member/Create.vue";
-import IndexMember from "../views/Org/Member/Index.vue";
-import FamilyMember from "../views/Org/Member/FamilyMember.vue";
+const UnlinkMember = () => import("../views/Org/Member/UnlinkMember.vue");
+const OrgMembershipRenewalCycle = () => import("../views/Org/Financial/Renewal/OrgMembershipRenewalCycle.vue");
+const OrgMembershipRenewalPrice = () => import("../views/Org/Financial/Renewal/OrgMembershipRenewalPrice.vue");
+const OrgMembershipRenewal = () => import("../views/Org/Financial/Renewal/OrgMembershipRenewal.vue");
+const CreateMember = () => import("../views/Org/Member/Create.vue");
+const IndexMember = () => import("../views/Org/Member/Index.vue");
+const FamilyMember = () => import("../views/Org/Member/FamilyMember.vue");
 // terminated-members
-import TerminatedMember from "../views/Org/Member/TerminatedMember.vue";
-import OrgMembershipTypes from "../views/Org/Member/OrgMembershipTypes.vue";
-
+const TerminatedMember = () => import("../views/Org/Member/TerminatedMember.vue");
+const OrgMembershipTypes = () => import("../views/Org/Member/OrgMembershipTypes.vue");
 //Founder
-import Founders from "../views/Org/Founder/Index.vue";
-
+const Founders = () => import("../views/Org/Founder/Index.vue");
 //Fund and Fund Management
-import Fund from "../views/Org/FundManagement/Fund.vue";
-import FundManagement from "../views/Org/FundManagement/Index.vue";
-
+const Fund = () => import("../views/Org/FundManagement/Fund.vue");
+const FundManagement = () => import("../views/Org/FundManagement/Index.vue");
 //Asset Management
-import AssetManagement from "../views/Org/Asset/Index.vue";
-import CreateAsset from "../views/Org/Asset/Create.vue";
-import EditAsset from "../views/Org/Asset/Edit.vue";
-import ViewAsset from "../views/Org/Asset/View.vue";
-
+const AssetManagement = () => import("../views/Org/Asset/Index.vue");
+const CreateAsset = () => import("../views/Org/Asset/Create.vue");
+const EditAsset = () => import("../views/Org/Asset/Edit.vue");
+const ViewAsset = () => import("../views/Org/Asset/View.vue");
 //Committee
-import CommitteeList from "../views/Org/Committee/Index.vue";
-import FormerCommitteeList from "../views/Org/Committee/FormerCommitteeList.vue";
-import CommitteeMember from "../views/Org/Committee/CommitteeMember.vue";
-
+const CommitteeList = () => import("../views/Org/Committee/Index.vue");
+const FormerCommitteeList = () => import("../views/Org/Committee/FormerCommitteeList.vue");
+const CommitteeMember = () => import("../views/Org/Committee/CommitteeMember.vue");
 //Event
-import IndexEvent from "../views/Org/Event/Index.vue";
-import CreateEvent from "../views/Org/Event/Create.vue";
-import EditEvent from "../views/Org/Event/Edit.vue";
-import ViewEvent from "../views/Org/Event/View.vue";
-import UpcomingEvents from "../views/Org/Event/EventList.vue";
-
-import IndexEventSummary from "../views/Org/Event/EventSummary/Index.vue";
-import CreateEventSummary from "../views/Org/Event/EventSummary/Create.vue";
-import EditEventSummary from "../views/Org/Event/EventSummary/Edit.vue";
-import ViewEventSummary from "../views/Org/Event/EventSummary/View.vue";
-import EventAttendances from "../views/Org/Event/EventAttendances.vue";
-import EventGuestAttendance from "../views/Org/Event/EventGuestAttendance.vue";
-
+const IndexEvent = () => import("../views/Org/Event/Index.vue");
+const CreateEvent = () => import("../views/Org/Event/Create.vue");
+const EditEvent = () => import("../views/Org/Event/Edit.vue");
+const ViewEvent = () => import("../views/Org/Event/View.vue");
+const UpcomingEvents = () => import("../views/Org/Event/EventList.vue");
+const IndexEventSummary = () => import("../views/Org/Event/EventSummary/Index.vue");
+const CreateEventSummary = () => import("../views/Org/Event/EventSummary/Create.vue");
+const EditEventSummary = () => import("../views/Org/Event/EventSummary/Edit.vue");
+const ViewEventSummary = () => import("../views/Org/Event/EventSummary/View.vue");
+const EventAttendances = () => import("../views/Org/Event/EventAttendances.vue");
+const EventGuestAttendance = () => import("../views/Org/Event/EventGuestAttendance.vue");
 //History
-import History from "../views/Org/History/Index.vue";
-import CreateHistory from "../views/Org/History/Create.vue";
-import EditHistory from "../views/Org/History/Edit.vue";
-import ViewHistory from "../views/Org/History/View.vue";
-
+const History = () => import("../views/Org/History/Index.vue");
+const CreateHistory = () => import("../views/Org/History/Create.vue");
+const EditHistory = () => import("../views/Org/History/Edit.vue");
+const ViewHistory = () => import("../views/Org/History/View.vue");
 //Meeting
-import IndexMeeting from "../views/Org/Meeting/Index.vue";
-import CreateMeeting from "../views/Org/Meeting/Create.vue";
-import EditMeeting from "../views/Org/Meeting/Edit.vue";
-import ViewMeeting from "../views/Org/Meeting/View.vue";
-
-import IndexMeetingMinutes from "../views/Org/Meeting/MeetingMinutes/Index.vue";
-import CreateMeetingMinutes from "../views/Org/Meeting/MeetingMinutes/Create.vue";
-import EditMeetingMinutes from "../views/Org/Meeting/MeetingMinutes/Edit.vue";
-import ViewMeetingMinutes from "../views/Org/Meeting/MeetingMinutes/View.vue";
-import MeetingAttendances from "../views/Org/Meeting/MeetingAttendances.vue";
-import MeetingGuestAttendance from "@/views/Org/Meeting/MeetingGuestAttendances.vue";
-
+const IndexMeeting = () => import("../views/Org/Meeting/Index.vue");
+const CreateMeeting = () => import("../views/Org/Meeting/Create.vue");
+const EditMeeting = () => import("../views/Org/Meeting/Edit.vue");
+const ViewMeeting = () => import("../views/Org/Meeting/View.vue");
+const IndexMeetingMinutes = () => import("../views/Org/Meeting/MeetingMinutes/Index.vue");
+const CreateMeetingMinutes = () => import("../views/Org/Meeting/MeetingMinutes/Create.vue");
+const EditMeetingMinutes = () => import("../views/Org/Meeting/MeetingMinutes/Edit.vue");
+const ViewMeetingMinutes = () => import("../views/Org/Meeting/MeetingMinutes/View.vue");
+const MeetingAttendances = () => import("../views/Org/Meeting/MeetingAttendances.vue");
+const MeetingGuestAttendance = () => import("@/views/Org/Meeting/MeetingGuestAttendances.vue");
 //Office Document
-import OfficeDocument from "../views/Org/OfficeDocument/Index.vue";
-import CreateDocument from "../views/Org/OfficeDocument/Create.vue";
-import EditDocument from "../views/Org/OfficeDocument/Edit.vue";
-import ViewDocument from "../views/Org/OfficeDocument/View.vue";
-
+const OfficeDocument = () => import("../views/Org/OfficeDocument/Index.vue");
+const CreateDocument = () => import("../views/Org/OfficeDocument/Create.vue");
+const EditDocument = () => import("../views/Org/OfficeDocument/Edit.vue");
+const ViewDocument = () => import("../views/Org/OfficeDocument/View.vue");
 //Project and Project Summary
-import IndexProject from "../views/Org/Project/Index.vue";
-import CreateProject from "../views/Org/Project/Create.vue";
-import EditProject from "../views/Org/Project/Edit.vue";
-import ViewProject from "../views/Org/Project/View.vue";
-
-import ProjectAttendances from "../views/Org/Project/ProjectAttendances.vue";
-import ProjectGuestAttendance from "@/views/Org/Project/ProjectGuestAttendance.vue";
-
-import IndexProjectSummary from "../views/Org/Project/ProjectSummary/Index.vue";
-import CreateProjectSummary from "../views/Org/Project/ProjectSummary/Create.vue";
-import EditProjectSummary from "../views/Org/Project/ProjectSummary/Edit.vue";
-import ViewProjectSummary from "../views/Org/Project/ProjectSummary/View.vue";
-
+const IndexProject = () => import("../views/Org/Project/Index.vue");
+const CreateProject = () => import("../views/Org/Project/Create.vue");
+const EditProject = () => import("../views/Org/Project/Edit.vue");
+const ViewProject = () => import("../views/Org/Project/View.vue");
+const ProjectAttendances = () => import("../views/Org/Project/ProjectAttendances.vue");
+const ProjectGuestAttendance = () => import("@/views/Org/Project/ProjectGuestAttendance.vue");
+const IndexProjectSummary = () => import("../views/Org/Project/ProjectSummary/Index.vue");
+const CreateProjectSummary = () => import("../views/Org/Project/ProjectSummary/Create.vue");
+const EditProjectSummary = () => import("../views/Org/Project/ProjectSummary/Edit.vue");
+const ViewProjectSummary = () => import("../views/Org/Project/ProjectSummary/View.vue");
 //Recognition
-import Recognition from "../views/Org/Recognition/Index.vue";
-import CreateRecognition from "../views/Org/Recognition/Create.vue";
-import EditRecognition from "../views/Org/Recognition/Edit.vue";
-import ViewRecognition from "../views/Org/Recognition/View.vue";
-
+const Recognition = () => import("../views/Org/Recognition/Index.vue");
+const CreateRecognition = () => import("../views/Org/Recognition/Create.vue");
+const EditRecognition = () => import("../views/Org/Recognition/Edit.vue");
+const ViewRecognition = () => import("../views/Org/Recognition/View.vue");
 //Report
-import OrgReport from "../views/Org/Report/Index.vue";
-import OrgExpenseReport from "../views/Org/Report/Expense.vue";
-
+const OrgReport = () => import("../views/Org/Report/Index.vue");
+const OrgExpenseReport = () => import("../views/Org/Report/Expense.vue");
 //StrategicPlan
-import StrategicPlan from "../views/Org/StrategicPlan/Index.vue";
-import CreateStrategicPlan from "../views/Org/StrategicPlan/Create.vue";
-import EditStrategicPlan from "../views/Org/StrategicPlan/Edit.vue";
-import ViewStrategicPlan from "../views/Org/StrategicPlan/View.vue";
-
+const StrategicPlan = () => import("../views/Org/StrategicPlan/Index.vue");
+const CreateStrategicPlan = () => import("../views/Org/StrategicPlan/Create.vue");
+const EditStrategicPlan = () => import("../views/Org/StrategicPlan/Edit.vue");
+const ViewStrategicPlan = () => import("../views/Org/StrategicPlan/View.vue");
 //Success Story
-import SuccessStory from "../views/Org/SuccessStory/Index.vue";
-import CreateSuccessStory from "../views/Org/SuccessStory/Create.vue";
-import EditSuccessStory from "../views/Org/SuccessStory/Edit.vue";
-import ViewSuccessStory from "../views/Org/SuccessStory/View.vue";
-
+const SuccessStory = () => import("../views/Org/SuccessStory/Index.vue");
+const CreateSuccessStory = () => import("../views/Org/SuccessStory/Create.vue");
+const EditSuccessStory = () => import("../views/Org/SuccessStory/Edit.vue");
+const ViewSuccessStory = () => import("../views/Org/SuccessStory/View.vue");
 //Year plan
-import YearPlan from "../views/Org/YearPlan/Index.vue";
-import CreateYearPlan from "../views/Org/YearPlan/Create.vue";
-import EditYearPlan from "../views/Org/YearPlan/Edit.vue";
-import ViewYearPlan from "../views/Org/YearPlan/View.vue";
-
+const YearPlan = () => import("../views/Org/YearPlan/Index.vue");
+const CreateYearPlan = () => import("../views/Org/YearPlan/Create.vue");
+const EditYearPlan = () => import("../views/Org/YearPlan/Edit.vue");
+const ViewYearPlan = () => import("../views/Org/YearPlan/View.vue");
 //Referral
-import Referral from "../views/Org/Referral/Referral.vue";
-
+const Referral = () => import("../views/Org/Referral/Referral.vue");
 //Billing
-import Package from "../views/Org/Financial/Package.vue";
-import Subscription from "../views/Org/Financial/Subscription.vue";
-import BillCalculation from "@/views/Org/Financial/BillCalculation.vue";
-import BillList from "../views/Org/Financial/ManagementAndStorageBilling/Index.vue";
-import ViewBilling from "../views/Org/Financial/ManagementAndStorageBilling/View.vue";
-
-import Invoices from "../views/Org/Financial/Invoice/Index.vue";
-import ViewInvoice from "../views/Org/Financial/Invoice/View.vue";
-import OrgReceiptIndex from "../views/Org/Financial/Receipt/Index.vue";
+const Package = () => import("../views/Org/Financial/Package.vue");
+const Subscription = () => import("../views/Org/Financial/Subscription.vue");
+const BillCalculation = () => import("@/views/Org/Financial/BillCalculation.vue");
+const BillList = () => import("../views/Org/Financial/ManagementAndStorageBilling/Index.vue");
+const ViewBilling = () => import("../views/Org/Financial/ManagementAndStorageBilling/View.vue");
+const Invoices = () => import("../views/Org/Financial/Invoice/Index.vue");
+const ViewInvoice = () => import("../views/Org/Financial/Invoice/View.vue");
+const OrgReceiptIndex = () => import("../views/Org/Financial/Receipt/Index.vue");
 //  import UnlinkMember from "../views/Org/Member/UnlinkMember.vue";
-import UserRoleAssign from "@/views/RolePermission/OrgUserRoleAssign.vue";
-
+const UserRoleAssign = () => import("@/views/RolePermission/OrgUserRoleAssign.vue");
 const orgRoutes = [
   {
     path: "/org-dashboard",

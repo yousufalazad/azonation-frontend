@@ -2,7 +2,6 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { authStore } from "../../../store/authStore";
-import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
 const auth = authStore;
@@ -82,6 +81,8 @@ const loadImageAsDataURL = (url) => {
 /* ---------------- PDF Download ---------------- */
 const downloadPDF = async () => {
   if (!record.value) return;
+  // PDF library is loaded only when someone downloads
+  const { jsPDF } = await import("jspdf");
 
   try {
     // 1️⃣ Load logo
@@ -296,7 +297,7 @@ onMounted(() => fetchRecord());
             <td class="px-2 py-2 font-semibold w-36 align-top">Plan</td>
             <td class="align-top">:</td>
             <td class="px-2 py-2 align-top">
-              <div v-html="record?.plan" class="prose max-w-none bg-gray-50 p-4 rounded-md border"></div>
+              <div v-safe-html="record?.plan" class="prose max-w-none bg-gray-50 p-4 rounded-md border"></div>
             </td>
           </tr>
           <tr>
@@ -351,7 +352,7 @@ onMounted(() => fetchRecord());
     </div>
 
     <!-- Hidden Plan Section for PDF -->
-    <div id="pdf-plan-content" v-html="record?.plan"
+    <div id="pdf-plan-content" v-safe-html="record?.plan"
       class="absolute top-0 left-0 opacity-0 pointer-events-none bg-white w-[700px] p-4 text-black"></div>
   </div>
 </template>

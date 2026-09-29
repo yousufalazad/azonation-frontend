@@ -143,7 +143,6 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import html2pdf from 'html2pdf.js'
 import { authStore } from '../../../../store/authStore'
 
 const auth = authStore
@@ -177,7 +176,9 @@ const statusClass = (status) => {
   }
 }
 
-const downloadPDF = () => {
+const downloadPDF = async () => {
+  // PDF library is loaded only when someone downloads
+  const { default: html2pdf } = await import('html2pdf.js')
   const element = document.querySelector('.max-w-2xl')
   html2pdf()
     .from(element)

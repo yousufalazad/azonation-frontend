@@ -1,13 +1,12 @@
 <!-- Org dashboard initial content -->
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, h } from 'vue';
 import { authStore } from '../../../../store/authStore';
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
 import Swal from 'sweetalert2';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import moment from 'moment';
 import { Line } from 'vue-chartjs';
 import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale } from 'chart.js';
 import { CurrencyService } from '@/helpers/currency';
@@ -190,178 +189,72 @@ const summaryCards = computed(() => [
     }
 ]);
 
-/* ================= INCOME REPORT ================= */
+/* ================= INCOME / EXPENSE / BALANCE REPORTS ================= */
+// Income and expense are fetched once and shared by the income, expense and balance charts.
 const chartDataIncome = ref(null);
-
-const fetchIncomeReportData = async () => {
-    try {
-        chartDataIncome.value = null;
-        const response = await auth.fetchProtectedApi('/api/reports', {}, 'GET');
-        if (!response.status) {
-            Toast.fire({ icon: 'error', title: 'Failed to load income report' });
-            return;
-        }
-
-        const allMonths = Array.from({ length: 12 }, (_, i) => ({
-            month: moment().subtract(i, 'months').format('YYYY-MM'),
-            total_income: 0
-        }));
-
-        response.data.forEach(item => {
-            const index = allMonths.findIndex(m => m.month === `${item.year}-${String(item.month).padStart(2, '0')}`);
-            if (index !== -1) allMonths[index].total_income = item.total_income;
-        });
-
-        chartDataIncome.value = {
-            labels: allMonths.map(m => m.month).reverse(),
-            datasets: [{
-                label: 'Income',
-                backgroundColor: '#4CAF58',
-                borderColor: '#4CAF50',
-                data: allMonths.map(m => m.total_income).reverse(),
-                fill: false
-            }]
-        };
-    } catch (error) {
-        console.error('Error fetching income report data:', error);
-        Toast.fire({ icon: 'error', title: 'Error fetching income report' });
-    }
-};
-
-const LineChartIncome = {
-    props: { chartDataIncome: { type: Object, required: true } },
-    components: { Line },
-    setup(props) {
-        const chartOptions = {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1000,
-                        max: Math.max(...props.chartDataIncome.datasets[0].data) + 1000
-                    }
-                },
-                x: { title: { display: true, text: 'Months' } }
-            }
-        };
-        return { chartOptions };
-    },
-    template: `<Line :data="chartDataIncome" :options="chartOptions" />`
-};
-
-/* ================= EXPENSE REPORT ================= */
 const chartData = ref(null);
-
-const fetchExpensesReportData = async () => {
-    try {
-        chartData.value = null;
-        const response = await auth.fetchProtectedApi('/api/org-expense-reports', {}, 'GET');
-        if (!response.status) {
-            Toast.fire({ icon: 'error', title: 'Failed to load expense report' });
-            return;
-        }
-
-        const allMonths = Array.from({ length: 12 }, (_, i) => ({
-            month: moment().subtract(i, 'months').format('YYYY-MM'),
-            total_expense: 0
-        }));
-
-        response.data.forEach(item => {
-            const index = allMonths.findIndex(m => m.month === `${item.year}-${String(item.month).padStart(2, '0')}`);
-            if (index !== -1) allMonths[index].total_expense = item.total_expense;
-        });
-
-        chartData.value = {
-            labels: allMonths.map(m => m.month).reverse(),
-            datasets: [{
-                label: 'Expense',
-                backgroundColor: '#FF5722',
-                borderColor: '#FF5722',
-                data: allMonths.map(m => m.total_expense).reverse(),
-                fill: false
-            }]
-        };
-    } catch (error) {
-        console.error('Error fetching expense report data:', error);
-        Toast.fire({ icon: 'error', title: 'Error fetching expense report' });
-    }
-};
-
-const LineChart = {
-    props: { chartData: { type: Object, required: true } },
-    components: { Line },
-    setup(props) {
-        const chartOptions = {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1000,
-                        max: Math.max(...props.chartData.datasets[0].data) + 1000
-                    }
-                },
-                x: { title: { display: true, text: 'Months' } }
-            }
-        };
-        return { chartOptions };
-    },
-    template: `<Line :data="chartData" :options="chartOptions" />`
-};
-
-/* ================= BALANCE TREND REPORT ================= */
 const chartDataBalance = ref(null);
 
-const fetchBalanceReportData = async () => {
+// Last 12 months as "YYYY-MM", oldest first
+const lastTwelveMonths = () =>
+    Array.from({ length: 12 }, (_, i) => dayjs().subtract(11 - i, 'month').format('YYYY-MM'));
+
+// Turns [{ year, month, <field> }] into one value per month
+const valuesByMonth = (months, items, field) => {
+    const totals = new Map((items || []).map(item => [
+        `${item.year}-${String(item.month).padStart(2, '0')}`,
+        Number(item[field]) || 0,
+    ]));
+    return months.map(m => totals.get(m) ?? 0);
+};
+
+const lineDataset = (label, color, data, extra = {}) => ({
+    labels: extra.labels,
+    datasets: [{ label, backgroundColor: color, borderColor: color, data, fill: false, ...extra.dataset }],
+});
+
+const fetchFinanceReports = async () => {
+    chartDataIncome.value = null;
+    chartData.value = null;
+    chartDataBalance.value = null;
     try {
-        chartDataBalance.value = null;
         const [incomeResponse, expenseResponse] = await Promise.all([
             auth.fetchProtectedApi('/api/reports', {}, 'GET'),
-            auth.fetchProtectedApi('/api/org-expense-reports', {}, 'GET')
+            auth.fetchProtectedApi('/api/org-expense-reports', {}, 'GET'),
         ]);
+        const months = lastTwelveMonths();
+        const income = incomeResponse.status ? valuesByMonth(months, incomeResponse.data, 'total_income') : null;
+        const expense = expenseResponse.status ? valuesByMonth(months, expenseResponse.data, 'total_expense') : null;
 
-        if (!incomeResponse.status || !expenseResponse.status) {
-            Toast.fire({ icon: 'error', title: 'Failed to load balance report' });
-            return;
+        if (income) chartDataIncome.value = lineDataset('Income', '#4CAF50', income, { labels: months });
+        else Toast.fire({ icon: 'error', title: 'Failed to load income report' });
+
+        if (expense) chartData.value = lineDataset('Expense', '#FF5722', expense, { labels: months });
+        else Toast.fire({ icon: 'error', title: 'Failed to load expense report' });
+
+        if (income && expense) {
+            const balance = income.map((value, i) => value - expense[i]);
+            chartDataBalance.value = lineDataset('Balance', '#3B82F6', balance, { labels: months });
         }
-
-        const allMonths = Array.from({ length: 12 }, (_, i) => ({
-            month: moment().subtract(i, 'months').format('YYYY-MM'),
-            income: 0,
-            expense: 0,
-            balance: 0
-        }));
-
-        incomeResponse.data.forEach(item => {
-            const index = allMonths.findIndex(m => m.month === `${item.year}-${String(item.month).padStart(2, '0')}`);
-            if (index !== -1) allMonths[index].income = item.total_income;
-        });
-
-        expenseResponse.data.forEach(item => {
-            const index = allMonths.findIndex(m => m.month === `${item.year}-${String(item.month).padStart(2, '0')}`);
-            if (index !== -1) allMonths[index].expense = item.total_expense;
-        });
-
-        allMonths.forEach(item => { item.balance = item.income - item.expense; });
-
-        chartDataBalance.value = {
-            labels: allMonths.map(m => m.month).reverse(),
-            datasets: [{
-                label: 'Balance',
-                backgroundColor: '#3B82F6',
-                borderColor: '#3B82F6',
-                data: allMonths.map(m => m.balance).reverse(),
-                fill: false
-            }]
-        };
     } catch (error) {
-        console.error('Error fetching balance report data:', error);
-        Toast.fire({ icon: 'error', title: 'Error fetching balance report' });
+        console.error('Error fetching finance reports:', error);
+        Toast.fire({ icon: 'error', title: 'Error fetching finance reports' });
     }
 };
+
+/* ================= CHART COMPONENT ================= */
+// Render function instead of a runtime template string, so the app does not
+// need Vue's in-browser template compiler (smaller bundle, CSP-safe).
+const monthsAxis = { title: { display: true, text: 'Months' } };
+const moneyChartOptions = { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true }, x: monthsAxis } };
+const makeLineChart = (propName, options) => ({
+    props: { [propName]: { type: Object, required: true } },
+    setup(props) {
+        return () => h(Line, { data: props[propName], options });
+    },
+});
+const LineChartIncome = makeLineChart('chartDataIncome', moneyChartOptions);
+const LineChart = makeLineChart('chartData', moneyChartOptions);
 
 /* ================= MEMBERSHIP GROWTH REPORT ================= */
 const chartDataMembership = ref(null);
@@ -374,50 +267,22 @@ const fetchMembershipGrowthReportData = async () => {
             Toast.fire({ icon: 'error', title: 'Failed to load membership growth report' });
             return;
         }
-
-        const allMonths = Array.from({ length: 12 }, (_, i) => ({
-            month: moment().subtract(i, 'months').format('YYYY-MM'),
-            total_members: 0
-        }));
-
-        response.data.forEach(item => {
-            const index = allMonths.findIndex(m => m.month === `${item.year}-${String(item.month).padStart(2, '0')}`);
-            if (index !== -1) allMonths[index].total_members = item.total_members;
-        });
-
-        chartDataMembership.value = {
-            labels: allMonths.map(m => m.month).reverse(),
-            datasets: [{
-                label: 'Total Members',
-                backgroundColor: '#6366F1',
-                borderColor: '#6366F1',
-                data: allMonths.map(m => m.total_members).reverse(),
-                fill: false,
-                tension: 0.3
-            }]
-        };
+        const months = lastTwelveMonths();
+        chartDataMembership.value = lineDataset(
+            'Total Members', '#6366F1', valuesByMonth(months, response.data, 'total_members'),
+            { labels: months, dataset: { tension: 0.3 } },
+        );
     } catch (error) {
         console.error('Error fetching membership growth report:', error);
         Toast.fire({ icon: 'error', title: 'Error fetching membership growth report' });
     }
 };
 
-const LineChartMembership = {
-    props: { chartDataMembership: { type: Object, required: true } },
-    components: { Line },
-    setup() {
-        const chartOptions = {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-                y: { beginAtZero: true, title: { display: true, text: 'Total Members' } },
-                x: { title: { display: true, text: 'Months' } }
-            }
-        };
-        return { chartOptions };
-    },
-    template: `<Line :data="chartDataMembership" :options="chartOptions" />`
-};
+const LineChartMembership = makeLineChart('chartDataMembership', {
+    responsive: true,
+    maintainAspectRatio: true,
+    scales: { y: { beginAtZero: true, title: { display: true, text: 'Total Members' } }, x: monthsAxis },
+});
 
 /* ================= MOUNT: LOAD EVERYTHING IN PARALLEL ================= */
 onMounted(async () => {
@@ -431,9 +296,7 @@ onMounted(async () => {
             getTransactions(),
             orgNextMeeting(),
             getThisYearNewMemberCount(),
-            fetchExpensesReportData(),
-            fetchIncomeReportData(),
-            fetchBalanceReportData(),
+            fetchFinanceReports(),
             fetchMembershipGrowthReportData(),
             fetchCurrencyPreference()
         ]);

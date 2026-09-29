@@ -12,7 +12,7 @@ const message = ref("")
 const error = ref("")
 const router = useRouter()
 
-const email = localStorage.getItem('reset_email')
+const email = sessionStorage.getItem('reset_email')
 
 const submitVerifyCode = async () => {
     message.value = ""

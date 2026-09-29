@@ -1,38 +1,32 @@
-import IndividualDashboardLayout from "../views/Individual/Layouts/Layout.vue";
-import IndividualDashboardIndex from "../views/Individual/Layouts/Dashboard/Index.vue";
-import HeaderNotifications from "../views/Individual/Layouts/HeaderNotification.vue";
-import Notifications from "../views/Individual/Notification/Index.vue";
-import ConnectedOrganisations from "../views/Individual/Organisation/Index.vue";
-
+const IndividualDashboardLayout = () => import("../views/Individual/Layouts/Layout.vue");
+const IndividualDashboardIndex = () => import("../views/Individual/Layouts/Dashboard/Index.vue");
+const HeaderNotifications = () => import("../views/Individual/Layouts/HeaderNotification.vue");
+const Notifications = () => import("../views/Individual/Notification/Index.vue");
+const ConnectedOrganisations = () => import("../views/Individual/Organisation/Index.vue");
 //Profile
-import IndividualProfile from "../views/Individual/Profile/Index.vue";
-import IndividualSecurity from "../views/Individual/Profile/Security/Index.vue";
-import IndividualSettings from "../views/Individual/Profile/Settings/Index.vue";
-
-import PastMeeting from "../views/Individual/Meeting/PastMeeting.vue";
-import Committee from "../views/Individual/Committee/Index.vue";
-import PastCommittee from "../views/Individual/Committee/PastCommittee.vue";
-import PastEvent from "../views/Individual/Event/PastEvent.vue";
-import PastProject from "../views/Individual/Project/PastProject.vue";
-import Asset from "../views/Individual/Asset/Index.vue";
-import PastAsset from "../views/Individual/Asset/PastAsset.vue";
-import Attendance from "../views/Individual/Attendance/Index.vue";
-
+const IndividualProfile = () => import("../views/Individual/Profile/Index.vue");
+const IndividualSecurity = () => import("../views/Individual/Profile/Security/Index.vue");
+const IndividualSettings = () => import("../views/Individual/Profile/Settings/Index.vue");
+const PastMeeting = () => import("../views/Individual/Meeting/PastMeeting.vue");
+const Committee = () => import("../views/Individual/Committee/Index.vue");
+const PastCommittee = () => import("../views/Individual/Committee/PastCommittee.vue");
+const PastEvent = () => import("../views/Individual/Event/PastEvent.vue");
+const PastProject = () => import("../views/Individual/Project/PastProject.vue");
+const Asset = () => import("../views/Individual/Asset/Index.vue");
+const PastAsset = () => import("../views/Individual/Asset/PastAsset.vue");
+const Attendance = () => import("../views/Individual/Attendance/Index.vue");
 // add near the other imports
-import Event from "../views/Individual/Event/Index.vue";
-import CreateIndividualEvent from "../views/Individual/Event/Create.vue";
-import EditIndividualEvent from "../views/Individual/Event/Edit.vue";
-
-import Project from "../views/Individual/Project/Index.vue";
-import CreateIndividualProject from "../views/Individual/Project/Create.vue";
-import EditIndividualProject from "../views/Individual/Project/Edit.vue";
-import ViewIndividualProject from "../views/Individual/Project/View.vue";
-
-import Meeting from "../views/Individual/Meeting/Index.vue";
-import CreateIndividualMeeting from "../views/Individual/Meeting/Create.vue";
-import EditIndividualMeeting from "../views/Individual/Meeting/Edit.vue";
-import ViewIndividualMeeting from "../views/Individual/Meeting/View.vue";
-
+const Event = () => import("../views/Individual/Event/Index.vue");
+const CreateIndividualEvent = () => import("../views/Individual/Event/Create.vue");
+const EditIndividualEvent = () => import("../views/Individual/Event/Edit.vue");
+const Project = () => import("../views/Individual/Project/Index.vue");
+const CreateIndividualProject = () => import("../views/Individual/Project/Create.vue");
+const EditIndividualProject = () => import("../views/Individual/Project/Edit.vue");
+const ViewIndividualProject = () => import("../views/Individual/Project/View.vue");
+const Meeting = () => import("../views/Individual/Meeting/Index.vue");
+const CreateIndividualMeeting = () => import("../views/Individual/Meeting/Create.vue");
+const EditIndividualMeeting = () => import("../views/Individual/Meeting/Edit.vue");
+const ViewIndividualMeeting = () => import("../views/Individual/Meeting/View.vue");
 const individualRoutes = [
   {
     path: "/individual-dashboard",

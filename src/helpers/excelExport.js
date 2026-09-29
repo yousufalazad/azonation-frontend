@@ -1,13 +1,16 @@
 // helpers/excelExport.js
-import ExcelJS from "exceljs";
 import dayjs from "dayjs";
 import { authStore } from "../store/authStore";
+import { downloadBlob } from "./download";
 
 const auth = authStore;
 
 /* ----------------------- Main Export ----------------------- */
 export async function excelExport({ headers = [], rows = [], title = "Report", fileName = "export.xlsx" } = {}) {
   try {
+    // Loaded on demand so the Excel library is only downloaded when someone exports
+    const { default: ExcelJS } = await import("exceljs");
+
     // Normalize headers
     let normalizedHeaders;
     if (!Array.isArray(headers)) {
@@ -123,15 +126,8 @@ export async function excelExport({ headers = [], rows = [], title = "Report", f
     /* ---------------- Save ---------------- */
     const buf = await wb.xlsx.writeBuffer();
     const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
     const safeName = /\.xlsx$/i.test(fileName) ? fileName : `${fileName}.xlsx`;
-    a.download = safeName;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    downloadBlob(blob, safeName);
 
   } catch (err) {
     console.error("excelExport error:", err);

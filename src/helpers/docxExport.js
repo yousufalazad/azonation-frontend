@@ -1,18 +1,3 @@
-import {
-  Document,
-  Packer,
-  Paragraph,
-  TextRun,
-  Table,
-  TableRow,
-  TableCell,
-  AlignmentType,
-  WidthType,
-  BorderStyle,
-  Header,
-  Footer,
-} from "docx";
-import { saveAs } from "file-saver";
 import dayjs from "dayjs";
 import { authStore } from "../store/authStore";
 
@@ -20,6 +5,15 @@ const auth = authStore;
 
 /* ----------------------- Main Export ----------------------- */
 export async function docxExport({ headers, rows, title, fileName }) {
+  // Loaded on demand so the Word library is only downloaded when someone exports
+  const [
+    {
+      Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+      AlignmentType, WidthType, BorderStyle, Header, Footer,
+    },
+    { saveAs },
+  ] = await Promise.all([import("docx"), import("file-saver")]);
+
   const orgName = auth.user?.org_name || "Organization";
   // const generatedDate = dayjs().format("YYYY-MM-DD");
   const generatedDate = dayjs().format("DD MMM YYYY");

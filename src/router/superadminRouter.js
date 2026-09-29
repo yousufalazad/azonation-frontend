@@ -1,109 +1,93 @@
-import SuperadminDashboardLayout from "../views/SuperAdmin/Layouts/Layout.vue";
-import SuperadminDashboardIndex from "../views/SuperAdmin/Layouts/Dashboard/Index.vue";
-import SuperAdminProfileUpdate from "../views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue";
-
+const SuperadminDashboardLayout = () => import("../views/SuperAdmin/Layouts/Layout.vue");
+const SuperadminDashboardIndex = () => import("../views/SuperAdmin/Layouts/Dashboard/Index.vue");
+const SuperAdminProfileUpdate = () => import("../views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue");
 //SuperAdmin Master Setting
-import Country from "../views/SuperAdmin/MasterSetting/Country.vue";
-import Region from "../views/SuperAdmin/MasterSetting/Region.vue";
-import RegionCurrency from "../views/SuperAdmin/MasterSetting/RegionCurrency.vue";
-import CountryRegion from "../views/SuperAdmin/MasterSetting/CountryRegion.vue";
-import UserCountry from "../views/SuperAdmin/MasterSetting/UserCountry.vue";
-import DialingCode from "../views/SuperAdmin/MasterSetting/DialingCode.vue";
-import AttendanceType from "../views/SuperAdmin/MasterSetting/AttendanceType.vue";
-import ConductType from "../views/SuperAdmin/MasterSetting/ConductType.vue";
-import MembershipType from "../views/SuperAdmin/MasterSetting/MembershipType.vue";
-import MembershipStatuses from "../views/SuperAdmin/MasterSetting/MembershipStatuses.vue";
-import MembershipRenewalCycle from "../views/SuperAdmin/MasterSetting/MembershipRenewalCycle.vue";
-import Designation from "../views/SuperAdmin/MasterSetting/Designation.vue";
-import Language from "../views/SuperAdmin/MasterSetting/Language.vue";
-import TimeZoneSetup from "../views/SuperAdmin/MasterSetting/TimeZoneSetup.vue";
-import PrivacySetup from "../views/SuperAdmin/MasterSetting/PrivacySetup.vue";
-import RegionalTaxRate from "../views/SuperAdmin/MasterSetting/RegionalTaxRate.vue";
-
+const Country = () => import("../views/SuperAdmin/MasterSetting/Country.vue");
+const Region = () => import("../views/SuperAdmin/MasterSetting/Region.vue");
+const RegionCurrency = () => import("../views/SuperAdmin/MasterSetting/RegionCurrency.vue");
+const CountryRegion = () => import("../views/SuperAdmin/MasterSetting/CountryRegion.vue");
+const UserCountry = () => import("../views/SuperAdmin/MasterSetting/UserCountry.vue");
+const DialingCode = () => import("../views/SuperAdmin/MasterSetting/DialingCode.vue");
+const AttendanceType = () => import("../views/SuperAdmin/MasterSetting/AttendanceType.vue");
+const ConductType = () => import("../views/SuperAdmin/MasterSetting/ConductType.vue");
+const MembershipType = () => import("../views/SuperAdmin/MasterSetting/MembershipType.vue");
+const MembershipStatuses = () => import("../views/SuperAdmin/MasterSetting/MembershipStatuses.vue");
+const MembershipRenewalCycle = () => import("../views/SuperAdmin/MasterSetting/MembershipRenewalCycle.vue");
+const Designation = () => import("../views/SuperAdmin/MasterSetting/Designation.vue");
+const Language = () => import("../views/SuperAdmin/MasterSetting/Language.vue");
+const TimeZoneSetup = () => import("../views/SuperAdmin/MasterSetting/TimeZoneSetup.vue");
+const PrivacySetup = () => import("../views/SuperAdmin/MasterSetting/PrivacySetup.vue");
+const RegionalTaxRate = () => import("../views/SuperAdmin/MasterSetting/RegionalTaxRate.vue");
 //Currency
-import IndexCurrency from "../views/SuperAdmin/Financial/Currency/Index.vue";
+const IndexCurrency = () => import("../views/SuperAdmin/Financial/Currency/Index.vue");
 //Package
-import IndexPackage from "../views/SuperAdmin/Financial/Package/Index.vue";
-import EditPackage from "../views/SuperAdmin/Financial/Package/Edit.vue";
-import ViewPackage from "../views/SuperAdmin/Financial/Package/View.vue";
+const IndexPackage = () => import("../views/SuperAdmin/Financial/Package/Index.vue");
+const EditPackage = () => import("../views/SuperAdmin/Financial/Package/Edit.vue");
+const ViewPackage = () => import("../views/SuperAdmin/Financial/Package/View.vue");
 //Price
-import EditPrice from "../views/SuperAdmin/Financial/Price/Edit.vue";
-import IndexPrice from "../views/SuperAdmin/Financial/Price/Index.vue";
-import ViewPrice from "../views/SuperAdmin/Financial/Price/View.vue";
-
+const EditPrice = () => import("../views/SuperAdmin/Financial/Price/Edit.vue");
+const IndexPrice = () => import("../views/SuperAdmin/Financial/Price/Index.vue");
+const ViewPrice = () => import("../views/SuperAdmin/Financial/Price/View.vue");
 //Subscription
-import EditSubscription from "../views/SuperAdmin/Financial/Subscription/Edit.vue";
+const EditSubscription = () => import("../views/SuperAdmin/Financial/Subscription/Edit.vue");
 //import IndexSubscription from "../views/SuperAdmin/Financial/Subscription/Index.vue";
-import ViewSubscription from "../views/SuperAdmin/Financial/Subscription/View.vue";
-import SuperAdminSubscriptionList from "../views/SuperAdmin/Financial/Subscription/Index.vue";
-
+const ViewSubscription = () => import("../views/SuperAdmin/Financial/Subscription/View.vue");
+const SuperAdminSubscriptionList = () => import("../views/SuperAdmin/Financial/Subscription/Index.vue");
 //UserPrice
-import UserPriceRate from "../views/SuperAdmin/Financial/UserPriceRate/Index.vue";
-
+const UserPriceRate = () => import("../views/SuperAdmin/Financial/UserPriceRate/Index.vue");
 //Billing
-import SuperAdminBillingList from "../views/SuperAdmin/Financial/Billing/Index.vue";
-import SuperAdminBillingCreate from "../views/SuperAdmin/Financial/Billing/Create.vue";
-import SuperAdminBillingEdit from "../views/SuperAdmin/Financial/Billing/Edit.vue";
-import SuperAdminBillingView from "../views/SuperAdmin/Financial/Billing/View.vue";
-
+const SuperAdminBillingList = () => import("../views/SuperAdmin/Financial/Billing/Index.vue");
+const SuperAdminBillingCreate = () => import("../views/SuperAdmin/Financial/Billing/Create.vue");
+const SuperAdminBillingEdit = () => import("../views/SuperAdmin/Financial/Billing/Edit.vue");
+const SuperAdminBillingView = () => import("../views/SuperAdmin/Financial/Billing/View.vue");
 //Everyday member count and billing
-import SuperAdminEverydayMemberCountAndBillingList from "../views/SuperAdmin/Financial/EverydayMemberCountAndBilling/Index.vue";
-import SuperAdminEverydayMemberCountAndBillingCreate from "../views/SuperAdmin/Financial/EverydayMemberCountAndBilling/Create.vue";
-import SuperAdminEverydayMemberCountAndBillingEdit from "../views/SuperAdmin/Financial/EverydayMemberCountAndBilling/Edit.vue";
-import SuperAdminEverydayMemberCountAndBillingView from "../views/SuperAdmin/Financial/EverydayMemberCountAndBilling/View.vue";
-
+const SuperAdminEverydayMemberCountAndBillingList = () => import("../views/SuperAdmin/Financial/EverydayMemberCountAndBilling/Index.vue");
+const SuperAdminEverydayMemberCountAndBillingCreate = () => import("../views/SuperAdmin/Financial/EverydayMemberCountAndBilling/Create.vue");
+const SuperAdminEverydayMemberCountAndBillingEdit = () => import("../views/SuperAdmin/Financial/EverydayMemberCountAndBilling/Edit.vue");
+const SuperAdminEverydayMemberCountAndBillingView = () => import("../views/SuperAdmin/Financial/EverydayMemberCountAndBilling/View.vue");
 // EverydayStorageBilling
-import SuperAdminEverydayStorageBillingList from "../views/SuperAdmin/Financial/EverydayStorageBilling/Index.vue";
-import SuperAdminEverydayStorageBillingCreate from "../views/SuperAdmin/Financial/EverydayStorageBilling/Create.vue";
-import SuperAdminEverydayStorageBillingEdit from "../views/SuperAdmin/Financial/EverydayStorageBilling/Edit.vue";
-import SuperAdminEverydayStorageBillingView from "../views/SuperAdmin/Financial/EverydayStorageBilling/View.vue";
-
+const SuperAdminEverydayStorageBillingList = () => import("../views/SuperAdmin/Financial/EverydayStorageBilling/Index.vue");
+const SuperAdminEverydayStorageBillingCreate = () => import("../views/SuperAdmin/Financial/EverydayStorageBilling/Create.vue");
+const SuperAdminEverydayStorageBillingEdit = () => import("../views/SuperAdmin/Financial/EverydayStorageBilling/Edit.vue");
+const SuperAdminEverydayStorageBillingView = () => import("../views/SuperAdmin/Financial/EverydayStorageBilling/View.vue");
 //ManagementAndStorageBilling
-import SuperAdminManagementAndStorageBillingList from "../views/SuperAdmin/Financial/ManagementAndStorageBilling/Index.vue";
-import SuperAdminManagementAndStorageBillingCreate from "../views/SuperAdmin/Financial/ManagementAndStorageBilling/Create.vue";
-import SuperAdminManagementAndStorageBillingEdit from "../views/SuperAdmin/Financial/ManagementAndStorageBilling/Edit.vue";
-import SuperAdminManagementAndStorageBillingView from "../views/SuperAdmin/Financial/ManagementAndStorageBilling/View.vue";
-
+const SuperAdminManagementAndStorageBillingList = () => import("../views/SuperAdmin/Financial/ManagementAndStorageBilling/Index.vue");
+const SuperAdminManagementAndStorageBillingCreate = () => import("../views/SuperAdmin/Financial/ManagementAndStorageBilling/Create.vue");
+const SuperAdminManagementAndStorageBillingEdit = () => import("../views/SuperAdmin/Financial/ManagementAndStorageBilling/Edit.vue");
+const SuperAdminManagementAndStorageBillingView = () => import("../views/SuperAdmin/Financial/ManagementAndStorageBilling/View.vue");
 //Invoice
-import SuperAdminInvoiceList from "../views/SuperAdmin/Financial/Invoice/Index.vue";
-import SuperAdminInvoiceCreate from "../views/SuperAdmin/Financial/Invoice/Create.vue";
-import SuperAdminInvoiceEdit from "../views/SuperAdmin/Financial/Invoice/Edit.vue";
-import SuperAdminInvoiceView from "../views/SuperAdmin/Financial/Invoice/View.vue";
-
+const SuperAdminInvoiceList = () => import("../views/SuperAdmin/Financial/Invoice/Index.vue");
+const SuperAdminInvoiceCreate = () => import("../views/SuperAdmin/Financial/Invoice/Create.vue");
+const SuperAdminInvoiceEdit = () => import("../views/SuperAdmin/Financial/Invoice/Edit.vue");
+const SuperAdminInvoiceView = () => import("../views/SuperAdmin/Financial/Invoice/View.vue");
 //Receipt
-import SuperAdminReceiptList from "@/views/SuperAdmin/Financial/Receipt/Index.vue";
-import SuperAdminReceiptCreate from "@/views/SuperAdmin/Financial/Receipt/Create.vue";
-import SuperAdminReceiptEdit from "@/views/SuperAdmin/Financial/Receipt/Edit.vue";
-import SuperAdminReceiptView from "@/views/SuperAdmin/Financial/Receipt/View.vue";
-
+const SuperAdminReceiptList = () => import("@/views/SuperAdmin/Financial/Receipt/Index.vue");
+const SuperAdminReceiptCreate = () => import("@/views/SuperAdmin/Financial/Receipt/Create.vue");
+const SuperAdminReceiptEdit = () => import("@/views/SuperAdmin/Financial/Receipt/Edit.vue");
+const SuperAdminReceiptView = () => import("@/views/SuperAdmin/Financial/Receipt/View.vue");
 //Payment Log
-import SuperAdminPaymentLog from "../views/SuperAdmin/Financial/PaymentLog/Index.vue";
-import SuperAdminPaymentLogList from "../views/SuperAdmin/Financial/PaymentLog/Index.vue";
-import SuperAdminPaymentLogCreate from "../views/SuperAdmin/Financial/PaymentLog/Create.vue";
-import SuperAdminPaymentLogEdit from "../views/SuperAdmin/Financial/PaymentLog/Edit.vue";
-import SuperAdminPaymentLogView from "../views/SuperAdmin/Financial/PaymentLog/View.vue";
-
+const SuperAdminPaymentLog = () => import("../views/SuperAdmin/Financial/PaymentLog/Index.vue");
+const SuperAdminPaymentLogList = () => import("../views/SuperAdmin/Financial/PaymentLog/Index.vue");
+const SuperAdminPaymentLogCreate = () => import("../views/SuperAdmin/Financial/PaymentLog/Create.vue");
+const SuperAdminPaymentLogEdit = () => import("../views/SuperAdmin/Financial/PaymentLog/Edit.vue");
+const SuperAdminPaymentLogView = () => import("../views/SuperAdmin/Financial/PaymentLog/View.vue");
 //SuperAdmin E-commerce Setting
-import IndexBusinessType from "../views/SuperAdmin/E-commerce/BusinessType.vue";
-import IndexCategory from "../views/SuperAdmin/E-commerce/Category.vue";
-import IndexSubCategory from "../views/SuperAdmin/E-commerce/SubCategory.vue";
-import IndexSubSubCategory from "../views/SuperAdmin/E-commerce/SubSubCategory.vue";
-import IndexBrand from "../views/SuperAdmin/E-commerce/Brand.vue";
-
-import ProductList from "../views/SuperAdmin/E-commerce/product/Index.vue";
-import ProductCreate from "../views/SuperAdmin/E-commerce/product/Create.vue";
-import ProductEdit from "../views/SuperAdmin/E-commerce/product/Edit.vue";
-import ProductView from "../views/SuperAdmin/E-commerce/product/View.vue";
-
-import OrderList from "../views/SuperAdmin/E-commerce/order/Index.vue";
-import OrderCreate from "../views/SuperAdmin/E-commerce/order/Create.vue";
-import OrderEdit from "../views/SuperAdmin/E-commerce/order/Edit.vue";
-import OrderView from "../views/SuperAdmin/E-commerce/order/View.vue";
-
-import Roles from "@/views/RolePermission/Roles.vue";
-import Permissions from "@/views/RolePermission/Permissions.vue";
-import UserRoleAssign from "@/views/RolePermission/UserRoleAssign.vue";
-
+const IndexBusinessType = () => import("../views/SuperAdmin/E-commerce/BusinessType.vue");
+const IndexCategory = () => import("../views/SuperAdmin/E-commerce/Category.vue");
+const IndexSubCategory = () => import("../views/SuperAdmin/E-commerce/SubCategory.vue");
+const IndexSubSubCategory = () => import("../views/SuperAdmin/E-commerce/SubSubCategory.vue");
+const IndexBrand = () => import("../views/SuperAdmin/E-commerce/Brand.vue");
+const ProductList = () => import("../views/SuperAdmin/E-commerce/product/Index.vue");
+const ProductCreate = () => import("../views/SuperAdmin/E-commerce/product/Create.vue");
+const ProductEdit = () => import("../views/SuperAdmin/E-commerce/product/Edit.vue");
+const ProductView = () => import("../views/SuperAdmin/E-commerce/product/View.vue");
+const OrderList = () => import("../views/SuperAdmin/E-commerce/order/Index.vue");
+const OrderCreate = () => import("../views/SuperAdmin/E-commerce/order/Create.vue");
+const OrderEdit = () => import("../views/SuperAdmin/E-commerce/order/Edit.vue");
+const OrderView = () => import("../views/SuperAdmin/E-commerce/order/View.vue");
+const Roles = () => import("@/views/RolePermission/Roles.vue");
+const Permissions = () => import("@/views/RolePermission/Permissions.vue");
+const UserRoleAssign = () => import("@/views/RolePermission/UserRoleAssign.vue");
 const superadminRoutes = [
   {
     path: "/superadmin-dashboard",

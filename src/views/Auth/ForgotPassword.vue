@@ -19,7 +19,7 @@ const submitForgotPassword = async () => {
     message.value = response.data.message || "Code sent to your email."
 
     // Save email to localStorage to use in verify page
-    localStorage.setItem('reset_email', email.value)
+    sessionStorage.setItem('reset_email', email.value)
 
     // Navigate to Verify Code page
     router.push('/verify-code')

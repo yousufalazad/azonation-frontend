@@ -89,22 +89,22 @@ onMounted(fetchProjectDetails);
         <tr>
           <td class="py-2 px-4 border-b font-medium">Requirements</td>
           <td>:</td>
-          <td class="py-2 px-4 border-b" v-html="project.requirements || 'N/A'"></td>
+          <td class="py-2 px-4 border-b" v-safe-html="project.requirements || 'N/A'"></td>
         </tr>
         <tr>
           <td class="py-2 px-4 border-b font-medium">Note</td>
           <td>:</td>
-          <td class="py-2 px-4 border-b" v-html="project.note || 'N/A'"></td>
+          <td class="py-2 px-4 border-b" v-safe-html="project.note || 'N/A'"></td>
         </tr>
         <tr>
           <td class="py-2 px-4 border-b font-medium">Description</td>
           <td>:</td>
-          <td class="py-2 px-4 border-b" v-html="project.description || 'N/A'"></td>
+          <td class="py-2 px-4 border-b" v-safe-html="project.description || 'N/A'"></td>
         </tr>
         <tr>
           <td class="py-2 px-4 border-b font-medium">Short Description</td>
           <td>:</td>
-          <td class="py-2 px-4 border-b" v-html="project.short_description || 'N/A'"></td>
+          <td class="py-2 px-4 border-b" v-safe-html="project.short_description || 'N/A'"></td>
         </tr>
       </tbody>
     </table>

@@ -1,28 +1,26 @@
 import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router/router";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./assets/css/tailwind.css";
 import "./assets/style.css";
-import "./global/custom.js";
-import 'vue3-easy-data-table/dist/style.css'
-import EasyDataTable from 'vue3-easy-data-table'
+import "vue3-easy-data-table/dist/style.css";
+import EasyDataTable from "vue3-easy-data-table";
 
-import { getHeaderClass } from '@/global/custom'
+import { getHeaderClass } from "@/global/custom";
+import { vSafeHtml } from "@/helpers/sanitizeHtml";
+import { initTheme } from "@/composables/useTheme";
 
-
-// 👇 Import all icons from lucide-vue-next
-import * as icons from "lucide-vue-next";
+// Apply the saved light/dark theme before the first paint
+initTheme();
 
 const app = createApp(App);
 
-app.component('EasyDataTable', EasyDataTable);
-// Add globally
-app.config.globalProperties.$getHeaderClass = getHeaderClass
+app.component("EasyDataTable", EasyDataTable);
+app.directive("safe-html", vSafeHtml);
+app.config.globalProperties.$getHeaderClass = getHeaderClass;
 
-// 👇 Register all Lucide icons globally
-for (const [name, component] of Object.entries(icons)) {
-  app.component(name, component);
-}
+// Lucide icons are imported per component at build time (see vite.config.js)
 
 app.use(router);
 app.mount("#app");

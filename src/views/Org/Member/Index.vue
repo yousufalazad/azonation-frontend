@@ -7,22 +7,8 @@ import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import relativeTime from "dayjs/plugin/relativeTime";
 import placeholderImage from "@/assets/Placeholder/Azonation-profile-image.jpg";
-import { utils, writeFileXLSX } from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import EasyDataTable from "vue3-easy-data-table";
 import "vue3-easy-data-table/dist/style.css";
-import {
-  Document,
-  Packer,
-  Paragraph,
-  TextRun,
-  Table,
-  TableRow,
-  TableCell,
-  WidthType,
-} from "docx";
-import { saveAs } from "file-saver";
 import { pdfExport } from "@/helpers/pdfExport.js";
 import { excelExport } from "@/helpers/excelExport.js";
 import { csvExport } from "@/helpers/csvExport.js";

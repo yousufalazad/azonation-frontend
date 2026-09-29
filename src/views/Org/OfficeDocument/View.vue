@@ -59,7 +59,7 @@ onMounted(fetchDocumentDetails);
         <tr>
           <td class="py-2 px-4 border-b font-medium">Description</td>
           <td>:</td>
-          <td class="py-2 px-4 border-b" v-html="document.description || 'N/A'"></td>
+          <td class="py-2 px-4 border-b" v-safe-html="document.description || 'N/A'"></td>
         </tr>
         <tr>
           <td class="py-2 px-4 border-b font-medium">Is Active</td>

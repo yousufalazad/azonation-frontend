@@ -25,9 +25,8 @@
 import { ref, onMounted } from 'vue';
 import LineChart from './LineChart.vue';
 import { authStore } from '../../../store/authStore';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import Swal from 'sweetalert2';
-import jsPDF from 'jspdf';
 
 const auth = authStore;
 const chartData = ref(null);
@@ -40,7 +39,7 @@ const fetchExpenseReportData = async () => {
     const response = await auth.fetchProtectedApi('/api/org-expense-reports', {}, 'GET');
     if (response.status) {
       const allMonths = Array.from({ length: 12 }, (_, i) => {
-        const month = moment().subtract(i, 'months').format('YYYY-MM');
+        const month = dayjs().subtract(i, 'month').format('YYYY-MM');
         return { month, total_expense: 0 };
       });
 
@@ -93,7 +92,9 @@ const downloadImage = (type) => {
 };
 
 // Download as PDF
-const downloadPDF = () => {
+const downloadPDF = async () => {
+  // PDF library is loaded only when someone downloads
+  const { jsPDF } = await import('jspdf');
   const chartInstance = lineChart.value?.chart?.chart;
   if (chartInstance) {
     const canvas = chartInstance.canvas;

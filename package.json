@@ -10,40 +10,38 @@
     "test:unit": "vitest"
   },
   "dependencies": {
-    "@heroicons/vue": "^2.2.0",
-    "@stripe/stripe-js": "^7.7.0",
+    "@fortawesome/fontawesome-free": "^6.7.2",
     "@tailwindcss/typography": "^0.5.16",
-    "@vueuse/core": "^11.1.0",
-    "and": "^0.0.3",
     "axios": "^1.6.8",
     "chart.js": "^4.4.5",
-    "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "docx": "^9.5.1",
     "dompurify": "^3.1.7",
     "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
-    "html2pdf.js": "^0.10.3",
-    "jspdf": "^2.5.2",
+    "html2pdf.js": "^0.14.0",
+    "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.2",
     "lucide-vue-next": "^0.539.0",
-    "moment": "^2.30.1",
-    "quill": "^2.0.2",
+    "quill": "^2.0.3",
     "sweetalert2": "^11.6.13",
     "vue": "^3.4.21",
-    "vue-axios": "^3.5.2",
     "vue-chartjs": "^5.3.1",
     "vue-router": "^4.3.0",
-    "vue3-easy-data-table": "^1.5.47",
-    "vuedraggable": "^2.24.3",
-    "vuex": "^4.0.2",
-    "xlsx": "^0.18.5"
+    "vue3-easy-data-table": "^1.5.47"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
     "@vue/test-utils": "^2.4.5",
+    "autoprefixer": "^10.6.1",
     "jsdom": "^24.0.0",
+    "postcss": "^8.5.28",
+    "tailwindcss": "^3.4.19",
+    "unplugin-vue-components": "^32.1.0",
     "vite": "^5.2.8",
     "vitest": "^1.4.0"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
   }
 }

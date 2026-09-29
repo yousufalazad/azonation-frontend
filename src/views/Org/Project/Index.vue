@@ -2,9 +2,6 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import Swal from "sweetalert2";
-import { utils, writeFileXLSX } from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { authStore } from "../../../store/authStore";
 import EasyDataTable from "vue3-easy-data-table";
 import "vue3-easy-data-table/dist/style.css";

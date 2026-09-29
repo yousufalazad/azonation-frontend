@@ -4,7 +4,6 @@ import { ref, onMounted, computed, watch } from "vue";
 
 import Swal from "sweetalert2";
 import { authStore } from "../../../store/authStore";
-import { utils, writeFileXLSX } from "xlsx";
 import { pdfExport } from "@/helpers/pdfExport.js";
 import { excelExport } from "@/helpers/excelExport.js";
 import { csvExport } from "@/helpers/csvExport.js";

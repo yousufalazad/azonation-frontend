@@ -39,7 +39,8 @@ api.interceptors.request.use(
     // ❌ Bearer token আর নেই। শুধু active org header
     const activeOrg =
       authStore.currentOrgId || localStorage.getItem("active_org");
-    if (activeOrg) {
+    // A request may name its own org (e.g. switchOrg); otherwise use the active one
+    if (activeOrg && !config.headers["X-Org-Id"]) {
       config.headers["X-Org-Id"] = activeOrg;
     }
     return config;
@@ -85,6 +86,63 @@ api.interceptors.response.use(
 );
 
 // ============================
+// JSON REQUEST HELPER
+// ============================
+const BODY_METHODS = ["POST", "PUT", "PATCH", "DELETE"];
+
+// Identical GET requests made at the same moment (e.g. header and page both
+// loading the same list) share one network call.
+const inflightGets = new Map();
+
+function toResult(error) {
+  return {
+    status: false,
+    errors: error.response?.data?.errors || error.response?.data || error.message,
+  };
+}
+
+// Each caller gets its own copy, so one component changing the data
+// cannot change what another component shows.
+function copyOf(data) {
+  try {
+    return structuredClone(data);
+  } catch {
+    return data;
+  }
+}
+
+async function jsonRequest(endPoint, params, requestType, logLabel) {
+  const method = String(requestType || "GET").toUpperCase();
+  const send = () =>
+    api({
+      method,
+      url: endPoint,
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      data: BODY_METHODS.includes(method) ? params : null,
+      params: method === "GET" ? params : null,
+    }).then((response) => response.data);
+
+  try {
+    if (method !== "GET") return await send();
+
+    const key = `${authStore.currentOrgId ?? ""}|${endPoint}|${JSON.stringify(params ?? {})}`;
+    let pending = inflightGets.get(key);
+    if (!pending) {
+      pending = send().finally(() => inflightGets.delete(key));
+      inflightGets.set(key, pending);
+    }
+    return copyOf(await pending);
+  } catch (error) {
+    console.error(logLabel, error);
+    return toResult(error);
+  }
+}
+
+// Browser storage keys that can hold personal data; cleared on logout
+// (reset_email is kept: it lives in sessionStorage only for the password-reset flow)
+const PERSONAL_DATA_KEYS = ["azonation:user", "user"];
+
+// ============================
 // AUTH STORE
 // ============================
 const authStore = reactive({
@@ -121,6 +179,11 @@ const authStore = reactive({
     this.orgAccess = [];
     this.currentOrgId = null;
     localStorage.removeItem("active_org");
+    // Personal data cached by profile pages must not outlive the session
+    PERSONAL_DATA_KEYS.forEach((key) => {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    });
     functions.deleteCookie("auth");
     functions.deleteCookie("user");
   },
@@ -186,56 +249,15 @@ const authStore = reactive({
   },
 
   // ============================
-  async fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
-    try {
-      const response = await api({
-        method: requestType.toUpperCase(),
-        url: endPoint,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        data: ["POST", "PUT"].includes(requestType.toUpperCase())
-          ? params
-          : null,
-        params: requestType.toUpperCase() === "GET" ? params : null,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Public API error:", error);
-      return {
-        status: false,
-        errors:
-          error.response?.data?.errors || error.response?.data || error.message,
-      };
-    }
+  // Public and protected calls share one implementation: the session cookie is
+  // sent on every request, and the backend decides what each route allows.
+  fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
+    return jsonRequest(endPoint, params, requestType, "Public API error:");
   },
 
   // ============================
-  async fetchProtectedApi(endPoint = "", params = {}, requestType = "GET") {
-    try {
-      const response = await api({
-        method: requestType.toUpperCase(),
-        url: endPoint,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-        data: ["POST", "PUT"].includes(requestType.toUpperCase())
-          ? params
-          : null,
-        params: requestType.toUpperCase() === "GET" ? params : null,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Protected API error:", error);
-      return {
-        status: false,
-        errors:
-          error.response?.data?.errors || error.response?.data || error.message,
-      };
-    }
+  fetchProtectedApi(endPoint = "", params = {}, requestType = "GET") {
+    return jsonRequest(endPoint, params, requestType, "Protected API error:");
   },
 
   // ============================
@@ -363,7 +385,10 @@ const authStore = reactive({
       this.isSwitchingOrg = true;
 
       // API call to validate + get fresh permissions
-      const res = await this.fetchProtectedApi("/api/org/switch");
+      // Ask for the permissions of the org being switched TO (the backend reads X-Org-Id)
+      const { data: res } = await api.get("/api/org/switch", {
+        headers: { "X-Org-Id": orgId },
+      });
 
       if (res.status) {
         const updatedOrg = res.data;

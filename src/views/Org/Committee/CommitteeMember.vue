@@ -3,9 +3,8 @@ import { ref, computed, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { authStore } from '../../../store/authStore';
 import { useRoute, useRouter } from 'vue-router';
-import { utils, writeFileXLSX } from 'xlsx';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { downloadCsv } from '@/helpers/download';
+import { excelExport } from '@/helpers/excelExport';
 import EasyDataTable from 'vue3-easy-data-table';
 import 'vue3-easy-data-table/dist/style.css';
 
@@ -97,27 +96,28 @@ const exportCSV = () => {
         item.end_date,
         item.status_display
     ]);
-    const ws = utils.aoa_to_sheet([header, ...rows]);
-    const wb = utils.book_new();
-    utils.book_append_sheet(wb, ws, 'Members');
-    writeFileXLSX(wb, 'committee_members.csv', { bookType: 'csv' });
+    downloadCsv([header, ...rows], 'committee_members.csv');
 };
 
-const exportXLSX = () => {
-    const rows = filteredList.value.map(item => ({
-        Name: item.full_name,
-        Designation: item.designation_name,
-        'Start Date': item.start_date,
-        'End Date': item.end_date,
-        Status: item.status_display
-    }));
-    const ws = utils.json_to_sheet(rows);
-    const wb = utils.book_new();
-    utils.book_append_sheet(wb, ws, 'Members');
-    writeFileXLSX(wb, 'committee_members.xlsx');
-};
+const exportXLSX = () => excelExport({
+    headers: [
+        { text: 'Name', value: 'full_name' },
+        { text: 'Designation', value: 'designation_name' },
+        { text: 'Start Date', value: 'start_date' },
+        { text: 'End Date', value: 'end_date' },
+        { text: 'Status', value: 'status_display' },
+    ],
+    rows: filteredList.value,
+    title: committeeName.value ? `${committeeName.value} members` : 'Committee members',
+    fileName: 'committee_members.xlsx',
+});
 
-const exportPDF = () => {
+const exportPDF = async () => {
+    // PDF library is loaded only when someone exports
+    const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF();
     const header = [['Name', 'Designation', 'Start Date', 'End Date', 'Status']];
     const body = filteredList.value.map(item => [
