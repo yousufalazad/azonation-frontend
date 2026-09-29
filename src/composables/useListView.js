@@ -91,6 +91,7 @@ export function useListView({
       if (xEmpty && yEmpty) return 0;
       if (xEmpty) return 1; // empty values always last
       if (yEmpty) return -1;
+      if (typeof x === "number" && typeof y === "number") return (x - y) * dir; // amounts, counts
       return String(x).localeCompare(String(y), undefined, { numeric: true, sensitivity: "base" }) * dir;
     });
   });

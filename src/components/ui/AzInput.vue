@@ -12,6 +12,7 @@ defineProps({
   required: { type: Boolean, default: false },
   type: { type: String, default: "text" },
   id: { type: String, default: "" },
+  prefixPad: { type: String, default: "pl-10" }, // wider for text prefixes such as a currency code
 });
 </script>
 
@@ -31,7 +32,7 @@ defineProps({
           :aria-invalid="invalid || undefined"
           :aria-describedby="describedBy"
           class="az-control w-full"
-          :class="[$slots.prefix ? 'pl-10' : '', $slots.suffix ? 'pr-11' : '', invalid ? 'az-control-invalid' : '']"
+          :class="[$slots.prefix ? prefixPad : '', $slots.suffix ? 'pr-11' : '', invalid ? 'az-control-invalid' : '']"
         />
         <span v-if="$slots.suffix" class="absolute right-1.5 flex">
           <slot name="suffix" />
