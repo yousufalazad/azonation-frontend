@@ -1,9 +1,11 @@
 <script setup>
 // A button that opens a short list of actions (e.g. Export: CSV, Excel, PDF, Word).
-// items: [{ label, onSelect, icon? }]. Closes on selection, outside click, Esc and scroll.
-// Icon-only button (e.g. "more" on a table row): leave `label` empty and set `ariaLabel`.
+// items: [{ label, onSelect, icon?, checked?, separatorBefore? }]. Closes on selection, outside click, Esc and scroll.
+// - Icon-only button (e.g. "more" on a table row): leave `label` empty and set `ariaLabel`.
+// - Choice menu (pick one option): give items `checked` (true on the current one) and set `chip`
+//   for a compact rounded trigger; the current option shows a check mark.
 // The list is placed on the page body so scrolling tables and cards cannot clip it.
-import { nextTick, onBeforeUnmount, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, ref } from "vue";
 
 defineOptions({ inheritAttrs: false });
 
@@ -13,6 +15,8 @@ const props = defineProps({
   items: { type: Array, required: true },
   variant: { type: String, default: "secondary" },
   align: { type: String, default: "right" }, // right | left
+  chip: { type: Boolean, default: false }, // small rounded trigger, for choosing a value in a row
+  chipTone: { type: String, default: "default" }, // default | muted | warning | danger
 });
 
 const open = ref(false);
@@ -20,6 +24,8 @@ const root = ref(null);
 const list = ref(null);
 const busy = ref(false);
 const position = ref({});
+
+const isChoice = computed(() => props.items.some((i) => typeof i.checked === "boolean"));
 
 function place() {
   const rect = root.value?.getBoundingClientRect();
@@ -51,7 +57,8 @@ async function toggle() {
   await nextTick();
   place();
   listen(true);
-  list.value?.querySelector("button")?.focus();
+  // Start on the current choice, if there is one
+  (list.value?.querySelector("[aria-checked='true']") || list.value?.querySelector("button"))?.focus();
 }
 
 function close() {
@@ -88,11 +95,27 @@ function onKeydown(e) {
 }
 
 onBeforeUnmount(() => listen(false));
+
+const CHIP_TONES = {
+  default: "border-line bg-surface text-ink-2 hover:border-primary hover:text-primary",
+  muted: "border-dashed border-line bg-transparent text-ink-muted hover:border-primary hover:text-primary",
+  warning: "border-warning/40 bg-warning-soft text-ink hover:border-warning",
+  danger: "border-danger/30 bg-danger-soft text-danger hover:border-danger",
+};
 </script>
 
 <template>
   <div ref="root" class="relative" v-bind="$attrs" @keydown="onKeydown">
-    <AzButton :variant="variant" :size="label ? 'md' : 'sm'" :loading="busy" aria-haspopup="menu" :aria-expanded="open"
+    <button v-if="chip" type="button" aria-haspopup="menu" :aria-expanded="open" :aria-label="ariaLabel || undefined"
+      class="inline-flex min-h-[40px] items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      :class="CHIP_TONES[chipTone] || CHIP_TONES.default" @click="toggle">
+      <slot name="icon" />
+      {{ label }}
+      <svg class="h-4 w-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+    <AzButton v-else :variant="variant" :size="label ? 'md' : 'sm'" :loading="busy" aria-haspopup="menu" :aria-expanded="open"
       :aria-label="ariaLabel || undefined" :class="label ? '' : '!px-2.5'" @click="toggle">
       <template #icon><slot name="icon" /></template>
       <template v-if="label">
@@ -104,13 +127,20 @@ onBeforeUnmount(() => listen(false));
     </AzButton>
     <Teleport to="body">
       <div v-if="open" ref="list" role="menu" :style="position" @keydown="onKeydown"
-        class="fixed z-[1050] min-w-[12rem] overflow-hidden rounded-control border border-line bg-surface py-1 shadow-pop">
-        <button v-for="item in items" :key="item.label" type="button" role="menuitem"
-          class="flex min-h-[44px] w-full items-center gap-3 px-4 text-left text-[15px] text-ink-2 hover:bg-surface-2 hover:text-ink focus:bg-surface-2 focus:outline-none"
-          @click="select(item)">
-          <component :is="item.icon" v-if="item.icon" class="h-4 w-4 text-ink-muted" aria-hidden="true" />
-          {{ item.label }}
-        </button>
+        class="fixed z-[1050] min-w-[12rem] overflow-hidden rounded-control border border-line bg-surface p-1 shadow-pop">
+        <template v-for="item in items" :key="item.label">
+          <div v-if="item.separatorBefore" class="my-1 border-t border-line" role="separator" />
+          <button type="button" :role="isChoice ? 'menuitemradio' : 'menuitem'" :aria-checked="isChoice ? !!item.checked : undefined"
+            class="flex min-h-[44px] w-full items-center gap-3 rounded-md px-3 text-left text-[15px] text-ink-2 hover:bg-surface-2 hover:text-ink focus:bg-surface-2 focus:outline-none"
+            :class="item.checked ? 'bg-surface-2 font-semibold text-ink' : ''"
+            @click="select(item)">
+            <component :is="item.icon" v-if="item.icon" class="h-4 w-4 text-ink-muted" aria-hidden="true" />
+            <span class="flex-1">{{ item.label }}</span>
+            <svg v-if="item.checked" class="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path d="m5 12 5 5L20 7" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </template>
       </div>
     </Teleport>
   </div>

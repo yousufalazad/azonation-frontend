@@ -8,6 +8,7 @@ import { authStore } from "@/store/authStore";
 import { formatDate } from "@/helpers/format";
 import { useToast } from "@/composables/useToast";
 import { useConfirm } from "@/composables/useConfirm";
+import { useAttendanceOptions } from "@/composables/useAttendanceOptions";
 import { UserPlus, Users, Pencil, Trash2 } from "lucide-vue-next";
 
 const auth = authStore;
@@ -18,7 +19,8 @@ const confirm = useConfirm();
 
 const meetingId = computed(() => route.params.id);
 const meeting = ref(null);
-const types = ref([]);
+const options = useAttendanceOptions();
+const { types, statuses } = options;
 const guests = ref([]);
 const loading = ref(true);
 
@@ -26,9 +28,13 @@ const open = ref(false);
 const editing = ref(null); // guest being edited, null = new
 const saving = ref(false);
 const errors = reactive({});
-const form = reactive({ guest_name: "", about_guest: "", attendance_type_id: "", time: "", note: "" });
+const form = reactive({ guest_name: "", about_guest: "", attendance_status_id: "", attendance_type_id: "", time: "", note: "" });
+// The "how" only applies when the guest attended (not Absent, Excused...)
+const formAttended = computed(() => options.isAttended(form.attendance_status_id));
 
 const typeOptions = computed(() => types.value.map((ty) => ({ value: ty.id, label: ty.name })));
+const statusOptions = computed(() => statuses.value.map((s) => ({ value: s.id, label: s.name })));
+const statusTone = (g) => (!g.attendance_status_name ? "neutral" : options.isAttended(g.attendance_status_id) ? "success" : "danger");
 
 async function loadGuests() {
   const res = await auth.fetchProtectedApi("/api/meeting-guest-attendances", { meeting_id: meetingId.value }, "GET");
@@ -39,13 +45,12 @@ async function loadGuests() {
 }
 
 async function load() {
-  const [m, typeList] = await Promise.all([
+  const [m] = await Promise.all([
     auth.fetchProtectedApi(`/api/meetings/${meetingId.value}`, {}, "GET"),
-    auth.fetchProtectedApi("/api/attendance-types", {}, "GET"),
+    options.loadOptions(),
     loadGuests(),
   ]);
   meeting.value = m?.status ? m.data : null;
-  types.value = typeList?.status ? typeList.data.filter((ty) => ty.is_active !== 0 && ty.is_active !== "0") : [];
 }
 
 function openForm(guest = null) {
@@ -54,6 +59,7 @@ function openForm(guest = null) {
   Object.assign(form, {
     guest_name: guest?.guest_name ?? "",
     about_guest: guest?.about_guest ?? "",
+    attendance_status_id: guest?.attendance_status_id ?? (guest?.attendance_type_id ? options.defaultStatus.value?.id : null) ?? options.defaultStatus.value?.id ?? "",
     attendance_type_id: guest?.attendance_type_id ?? types.value[0]?.id ?? "",
     time: guest?.time ? String(guest.time).slice(0, 5) : "",
     note: guest?.note ?? "",
@@ -64,16 +70,18 @@ function openForm(guest = null) {
 async function save() {
   Object.keys(errors).forEach((k) => delete errors[k]);
   if (!form.guest_name.trim()) errors.guest_name = t("guests.needName");
-  if (!form.attendance_type_id) errors.attendance_type_id = t("guests.needStatus");
+  if (!form.attendance_status_id) errors.attendance_status_id = t("guests.needStatus");
+  if (formAttended.value && !form.attendance_type_id) errors.attendance_type_id = t("guests.needHow");
   if (Object.keys(errors).length || saving.value) return;
 
   const payload = {
     meeting_id: Number(meetingId.value),
     guest_name: form.guest_name.trim(),
     about_guest: form.about_guest.trim() || null,
-    attendance_type_id: form.attendance_type_id,
+    attendance_status_id: form.attendance_status_id,
+    attendance_type_id: formAttended.value ? form.attendance_type_id : null,
     date: meeting.value?.date ? String(meeting.value.date).slice(0, 10) : null,
-    time: form.time || null,
+    time: formAttended.value ? form.time || null : null,
     note: form.note.trim() || null,
     is_active: "1",
   };
@@ -133,7 +141,7 @@ onMounted(async () => {
         <template #icon><Users class="h-[18px] w-[18px]" /></template>
         {{ t('attendance.title') }}
       </AzButton>
-      <AzButton v-if="!loading && types.length" @click="openForm()">
+      <AzButton v-if="!loading && types.length && statuses.length" @click="openForm()">
         <template #icon><UserPlus class="h-[18px] w-[18px]" /></template>
         {{ t('guests.add') }}
       </AzButton>
@@ -141,7 +149,7 @@ onMounted(async () => {
 
     <AzSkeleton v-if="loading" :lines="5" height="3.5rem" />
 
-    <AzCard v-else-if="!types.length">
+    <AzCard v-else-if="!types.length || !statuses.length">
       <AzEmptyState :title="t('attendance.noTypesTitle')" :description="t('attendance.noTypesText')" />
     </AzCard>
 
@@ -161,6 +169,7 @@ onMounted(async () => {
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-center gap-2">
               <p class="font-medium text-ink">{{ g.guest_name }}</p>
+              <AzBadge v-if="g.attendance_status_name" :tone="statusTone(g)">{{ g.attendance_status_name }}</AzBadge>
               <AzBadge v-if="g.attendance_types_name" tone="neutral">{{ g.attendance_types_name }}</AzBadge>
               <span v-if="g.time" class="text-sm text-ink-muted">{{ time(g.time) }}</span>
             </div>
@@ -186,8 +195,9 @@ onMounted(async () => {
         <AzInput v-model="form.guest_name" :label="t('guests.name')" :error="errors.guest_name" required maxlength="255" autocomplete="off" />
         <AzTextarea v-model="form.about_guest" :label="t('guests.about')" :help="t('guests.aboutHelp')" rows="2" />
         <div class="grid gap-5 sm:grid-cols-2">
-          <AzSelect v-model="form.attendance_type_id" :label="t('guests.status')" :options="typeOptions" :error="errors.attendance_type_id" required />
-          <AzInput v-model="form.time" type="time" :label="t('guests.arrived')" />
+          <AzSelect v-model="form.attendance_status_id" :label="t('attendance.status')" :options="statusOptions" :error="errors.attendance_status_id" required />
+          <AzSelect v-if="formAttended" v-model="form.attendance_type_id" :label="t('attendance.how')" :options="typeOptions" :error="errors.attendance_type_id" required />
+          <AzInput v-if="formAttended" v-model="form.time" type="time" :label="t('guests.arrived')" />
         </div>
         <AzTextarea v-model="form.note" :label="t('meetingView.note')" rows="2" />
       </form>
