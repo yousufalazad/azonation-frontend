@@ -1,986 +1,321 @@
+<!-- Organisation profile: logo, name, username, email, phone and address. Each part is edited in place. -->
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { authStore } from '../../../store/authStore';
-import Swal from "sweetalert2";
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import { useToast } from "@/composables/useToast";
+import { Camera, Pencil } from "lucide-vue-next";
 
 const auth = authStore;
-const userId = auth.user.id;
-const org_name = computed(() => auth.user?.org_name ?? '');
-const email = computed(() => auth.user?.email ?? '');
-const username = computed(() => auth.user?.username ?? '');
-const baseURL = auth.apiBase;
+const { t } = useI18n();
+const toast = useToast();
 
-// ---- Local user storage (professional & minimal) ----
-const USER_KEY = 'azonation:user';
+const userId = computed(() => auth.user?.id);
+const editing = ref(""); // "name" | "username" | "email" | "phone" | "address" | ""
+const saving = ref(false);
+const errors = reactive({});
+const loading = ref(true);
 
-const pickUserFields = (u = {}) => ({
-    id: u.id ?? auth.user?.id,
-    org_name: u.org_name ?? auth.user?.org_name,
-    email: u.email ?? auth.user?.email,
-    username: u.username ?? auth.user?.username,
-    country: u.country ?? u.userCountry ?? auth.user?.country, // map if needed
-});
-
-const readUserLS = () => {
-    try {
-        const raw = localStorage.getItem(USER_KEY);
-        if (!raw) return null;
-        return JSON.parse(raw);
-    } catch {
-        return null;
+// ---- Logo ----
+const logoUrl = ref("");
+const logoInput = ref(null);
+const uploadingLogo = ref(false);
+async function loadLogo() {
+  const res = await auth.fetchProtectedApi("/api/org-profile/logo", {}, "GET");
+  logoUrl.value = res?.status ? res.data?.image || "" : "";
+}
+async function onLogo(e) {
+  const file = e.target.files?.[0];
+  e.target.value = "";
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) return toast.error(t("profilePage.logoTooBig"));
+  const fd = new FormData();
+  fd.append("image", file);
+  uploadingLogo.value = true;
+  try {
+    const res = await auth.uploadProtectedApi(`/api/org-profile/logo/${userId.value}`, fd, "POST");
+    if (res?.status) {
+      logoUrl.value = res.data.image;
+      toast.success(t("profilePage.logoSaved"));
+    } else {
+      toast.error(t("profilePage.saveFailed"));
     }
+  } finally {
+    uploadingLogo.value = false;
+  }
+}
+
+// ---- Name, username, email ----
+const form = reactive({ org_name: "", username: "", email: "" });
+function startEdit(part) {
+  Object.keys(errors).forEach((k) => delete errors[k]);
+  Object.assign(form, { org_name: auth.user?.org_name || "", username: auth.user?.username || "", email: auth.user?.email || "" });
+  if (part === "phone") Object.assign(phoneForm, phone.value);
+  if (part === "address") Object.assign(addressForm, address.value);
+  editing.value = part;
+}
+const firstError = (res) => {
+  const e = res?.errors;
+  if (e?.errors) return Object.values(e.errors)[0]?.[0];
+  return e?.message || res?.message || "";
 };
 
-const writeUserLS = (partial = {}) => {
-    const current = readUserLS() || pickUserFields(auth.user || {});
-    const updated = pickUserFields({ ...current, ...partial });
+async function saveAccountField(part) {
+  const map = {
+    name: { url: "update-name", key: "org_name", need: "profilePage.needName" },
+    username: { url: "update-username", key: "username", need: "profilePage.needUsername" },
+    email: { url: "update-email", key: "email", need: "profilePage.needEmail" },
+  }[part];
+  const value = form[map.key].trim();
+  if (!value) return (errors[map.key] = t(map.need));
+  if (part === "username" && !/^[a-zA-Z0-9._-]{3,30}$/.test(value)) return (errors.username = t("profilePage.badUsername"));
+  if (part === "email" && !/^\S+@\S+\.\S+$/.test(value)) return (errors.email = t("founders.badEmail"));
+  saving.value = true;
+  try {
+    const res = await auth.fetchProtectedApi(`/api/${map.url}/${userId.value}`, { [map.key]: value }, "PUT");
+    if (res?.status) {
+      auth.user = { ...auth.user, [map.key]: value };
+      toast.success(t("profilePage.saved"));
+      editing.value = "";
+    } else {
+      errors[map.key] = firstError(res) || t("profilePage.saveFailed");
+    }
+  } finally {
+    saving.value = false;
+  }
+}
 
-    // keep auth.user reactive & in sync
-    if (auth.user) Object.assign(auth.user, updated);
+// ---- Phone ----
+const phone = ref({ id: null, dialing_code_id: "", phone_number: "", phone_type: 1, status: 0, dialing_code: "" });
+const phoneForm = reactive({ ...phone.value });
+const dialingCodes = ref([]);
+const dialingOptions = computed(() => dialingCodes.value.map((d) => ({ value: d.id, label: `${d.name} (${d.dialing_code})` })));
+const phoneTypeOptions = computed(() => [1, 2, 3, 4].map((v) => ({ value: v, label: t(`profilePage.phoneType_${v}`) })));
+const visibilityOptions = computed(() => [0, 3, 2, 1].map((v) => ({ value: v, label: t(`profilePage.visibility_${v}`) })));
 
-    localStorage.setItem(USER_KEY, JSON.stringify(updated));
-    return updated;
-};
+async function savePhone() {
+  Object.keys(errors).forEach((k) => delete errors[k]);
+  if (!phoneForm.dialing_code_id) errors.dialing_code_id = t("profilePage.needCountryCode");
+  if (!/^[0-9 ]{5,20}$/.test(String(phoneForm.phone_number).trim())) errors.phone_number = t("profilePage.badPhone");
+  if (Object.keys(errors).length) return;
+  const payload = {
+    dialing_code_id: phoneForm.dialing_code_id,
+    phone_number: String(phoneForm.phone_number).replace(/\s+/g, ""),
+    phone_type: phoneForm.phone_type,
+    status: phoneForm.status,
+  };
+  saving.value = true;
+  try {
+    const res = phone.value.id
+      ? await auth.fetchProtectedApi(`/api/phone-numbers/${phone.value.id}`, payload, "PUT")
+      : await auth.fetchProtectedApi("/api/phone-numbers/", payload, "POST");
+    if (res?.status) {
+      toast.success(t("profilePage.saved"));
+      editing.value = "";
+      await loadPhone();
+    } else {
+      toast.error(firstError(res) || t("profilePage.saveFailed"));
+    }
+  } finally {
+    saving.value = false;
+  }
+}
+async function loadPhone() {
+  const res = await auth.fetchProtectedApi("/api/phone-numbers/", {}, "GET");
+  const p = Array.isArray(res?.data) ? res.data[0] : res?.data;
+  if (res?.status && p) {
+    phone.value = {
+      id: p.id, dialing_code_id: p.dialing_code_id ?? "", phone_number: p.phone_number ?? "",
+      phone_type: Number(p.phone_type) || 1, status: Number(p.status) || 0, dialing_code: p.dialing_code ?? "",
+    };
+  }
+}
 
-// (optional) one-time hydrate from LS -> auth.user
-const hydrateUserFromLS = () => {
-    const saved = readUserLS();
-    if (saved && auth.user) Object.assign(auth.user, saved);
-};
-
-
-// Org logo
-const logoPath = ref('');
-const selectedImage = ref(null);
-
-// Org address
+// ---- Address (fields follow the country's address format) ----
+const address = ref({});
 const addressId = ref(null);
-const address_user_id = ref(null);
-const address_line_one = ref('');
-const address_line_two = ref('');
-const city = ref('');
-const state_or_region = ref('');
-const postal_code = ref('');
-const userCountry = ref('');
-const isEditMode = ref(false);
+const addressForm = reactive({});
+const addressFormat = ref({ fields: ["line1", "line2", "city", "region", "postcode"], labels: {}, required: ["line1", "city"], uppercase: [] });
+const country = ref("");
+const FLAT = { line1: "address_line_one", line2: "address_line_two", city: "city", region: "state_or_region", postcode: "postal_code" };
 
-// Org Phone Number
-const phoneId = ref(null);
-const dialing_code = ref('');
-const dialing_code_id = ref('');
-const phone_number = ref('');
-const phone_type = ref('');
-const statusPhone = ref(''); //status defined in address
-const modalVisiblePhone = ref(false);
-const isEditModePhone = ref(false);
+async function loadAddress() {
+  const [fmt, res] = await Promise.all([
+    auth.fetchProtectedApi("/api/addresses/address-format", {}, "GET"),
+    auth.fetchProtectedApi("/api/addresses/", {}, "GET"),
+  ]);
+  if (fmt?.format?.fields) addressFormat.value = { labels: {}, required: [], uppercase: [], ...fmt.format };
+  const a = Array.isArray(res?.data) ? res.data[0] : res?.data;
+  addressId.value = a?.id ?? null;
+  const c = a?.components || {};
+  address.value = Object.fromEntries(addressFormat.value.fields.map((f) => [f, c[f] ?? a?.[FLAT[f]] ?? ""]));
+}
+const addressLines = computed(() => addressFormat.value.fields.map((f) => address.value[f]).filter(Boolean));
+const fieldLabel = (f) => addressFormat.value.labels?.[f] || t(`profilePage.addr_${f}`);
 
-const allDialingCodes = ref([]);
-
-const modalVisibleName = ref(false);
-const orgName = ref('');
-
-// Org username Change
-const modalVisibleUsername = ref(false);
-const newUsername = ref('');
-
-// Org User Email Change
-const modalVisibleUserEmail = ref(false);
-const newEmail = ref('');
-
-const fetchLogo = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/org-profile/logo`, {}, 'GET');
-        if (response.status && response.data.image) {
-            logoPath.value = response.data.image;
-        }
-    } catch (error) {
-        console.error("Error fetching logo:", error);
+async function saveAddress() {
+  Object.keys(errors).forEach((k) => delete errors[k]);
+  for (const f of addressFormat.value.required || []) {
+    if (!String(addressForm[f] || "").trim()) errors[`addr_${f}`] = t("profilePage.required");
+  }
+  if (Object.keys(errors).length) return;
+  const components = {};
+  addressFormat.value.fields.forEach((f) => {
+    let v = String(addressForm[f] || "").trim();
+    if ((addressFormat.value.uppercase || []).includes(f)) v = v.toUpperCase();
+    components[f] = v || null;
+  });
+  const payload = { components };
+  Object.entries(FLAT).forEach(([k, col]) => (payload[col] = components[k] ?? null));
+  saving.value = true;
+  try {
+    const res = addressId.value
+      ? await auth.fetchProtectedApi(`/api/addresses/${addressId.value}`, payload, "PUT")
+      : await auth.fetchProtectedApi("/api/addresses", payload, "POST");
+    if (res?.status) {
+      toast.success(t("profilePage.saved"));
+      editing.value = "";
+      await loadAddress();
+    } else {
+      toast.error(firstError(res) || t("profilePage.saveFailed"));
     }
-};
-
-const profileImageUpdate = async () => {
-    if (selectedImage.value) {
-        const formData = new FormData();
-        formData.append('image', selectedImage.value);
-        try {
-            const imageResponse = await auth.uploadProtectedApi(`/api/org-profile/logo/${userId}`, formData);
-            if (imageResponse.status) {
-                Swal.fire('Success', 'Logo saved successfully', 'success');
-                logoPath.value = imageResponse.data.image;
-                //window.location.reload();
-            } else {
-                Swal.fire('Error', 'Failed to update logo', 'error');
-            }
-        } catch (error) {
-            console.error("Error updating logo:", error);
-            Swal.fire('Error', 'Failed to update logo', 'error');
-        }
-    }
-};
-
-const updateOrgName = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/update-name/${userId}`, {
-            org_name: orgName.value,
-        }, 'PUT');
-        if (response.status) {
-            Swal.fire('Success', response.message || 'Name updated successfully', 'success');
-            writeUserLS({ org_name: orgName.value });
-            closeNameModal();
-        }
-        else {
-            Swal.fire('Error', response.message || 'Failed to update name, please try again.', 'error');
-        }
-
-    } catch (error) {
-        console.error("Error updating org_name:", error);
-        Swal.fire('Error', error.response?.data?.message || 'An unexpected error occurred while updating the org_name', 'error');
-    }
-};
-
-//Update username
-const updateUsername = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/update-username/${userId}`, {
-            username: newUsername.value,
-        }, 'PUT');
-
-        if (response.status) {
-            Swal.fire('Success', response.message || 'Username updated successfully', 'success');
-            writeUserLS({ username: newUsername.value });
-            closeUsernameModal();
-        } else {
-            Swal.fire('Error', response.message || 'Failed to update username, please try again.', 'error');
-        }
-
-    } catch (error) {
-        if (error.response?.status === 422) {
-            const validationErrors = error.response.data.errors;
-            if (validationErrors?.username) {
-                Swal.fire('Validation Error', validationErrors.username[0], 'error');
-            } else {
-                Swal.fire('Validation Error', 'The provided data is invalid.', 'error');
-            }
-        } else {
-            console.error("Error updating username:", error);
-            Swal.fire('Error', error.response?.data?.message || 'An unexpected error occurred while updating the username', 'error');
-        }
-    }
-};
-
-
-
-const createAddress = async () => {
-    try {
-        const res = await auth.fetchProtectedApi("/api/addresses/", {
-            address_line_one: address_line_one.value,
-            address_line_two: address_line_two.value,
-            city: city.value,
-            state_or_region: state_or_region.value,
-            postal_code: postal_code.value
-        }, 'POST');
-
-        if (res.status) {
-            Swal.fire('Success', 'Address created successfully', 'success');
-            closeAddressModal();
-            await fetchOrgAddress(); // refresh state, no full reload
-        } else {
-            Swal.fire('Error', res.message || 'Failed to create address', 'error');
-        }
-    } catch (e) {
-        console.error("Error create address:", e);
-        Swal.fire('Error', 'Failed to create address', 'error');
-    }
-};
-
-const updateAddress = async () => {
-    try {
-        if (!addressId.value) {
-            // No record yet — fall back to create
-            return createAddress();
-        }
-        const res = await auth.fetchProtectedApi(`/api/addresses/${addressId.value}`, {
-            address_line_one: address_line_one.value,
-            address_line_two: address_line_two.value,
-            city: city.value,
-            state_or_region: state_or_region.value,
-            postal_code: postal_code.value
-        }, 'PUT');
-
-        if (res.status) {
-            Swal.fire('Success', 'Address updated successfully', 'success');
-            closeAddressModal();
-            await fetchOrgAddress();
-        } else {
-            Swal.fire('Error', res.message || 'Failed to update address', 'error');
-        }
-    } catch (e) {
-        console.error("Error updating address:", e);
-        Swal.fire('Error', 'Failed to update address', 'error');
-    }
-};
-
-// const fetchOrgAddress = async () => {
-//     try {
-//         const res = await auth.fetchProtectedApi(`/api/addresses/`, {}, 'GET');
-//         const data = res?.data;
-//         const address = Array.isArray(data) ? data[0] : data;
-
-//         if (res.status && address) {
-//             addressId.value = address.id ?? null;
-//             address_line_one.value = address.address_line_one ?? '';
-//             address_line_two.value = address.address_line_two ?? '';
-//             city.value = address.city ?? '';
-//             state_or_region.value = address.state_or_region ?? '';
-//             postal_code.value = address.postal_code ?? '';
-//             address_user_id.value = address.user_id ?? null;
-//             isEditMode.value = !!addressId.value; // true => Edit, false => Add
-//         } else {
-//             addressId.value = null;
-//             isEditMode.value = false; // Add
-//         }
-//     } catch (e) {
-//         console.error("Error fetching organization address:", e);
-//         addressId.value = null;
-//         isEditMode.value = false;
-//     }
-// };
-const fetchOrgAddress = async () => {
-    try {
-        const res = await auth.fetchProtectedApi(`/api/addresses/`, {}, 'GET')
-        const data = res?.data
-        const address = Array.isArray(data) ? data[0] : data
-
-        if (res.status && address) {
-            addressId.value = address.id ?? null
-            isEditMode.value = true
-
-            // ✅ form data save
-            addressForm.value = {
-                line1: address.address_line_one ?? '',
-                line2: address.address_line_two ?? '',
-                city: address.city ?? '',
-                region: address.state_or_region ?? '',
-                postcode: address.postal_code ?? '',
-            }
-        } else {
-            isEditMode.value = false
-        }
-    } catch (e) {
-        isEditMode.value = false
-    }
+  } finally {
+    saving.value = false;
+  }
 }
 
-
-const fieldMap = {
-    line1: 'address_line_one',
-    line2: 'address_line_two',
-    city: 'city',
-    region: 'state_or_region',
-    postcode: 'postal_code',
-}
-
-const saveAddress = async () => {
-    try {
-        // 1️⃣ Apply uppercase rules
-        addressFormat.value.uppercase.forEach(field => {
-            if (addressForm.value[field]) {
-                addressForm.value[field] =
-                    addressForm.value[field].toUpperCase()
-            }
-        })
-
-        // 2️⃣ Build components object
-        const components = {}
-        Object.keys(fieldMap).forEach(key => {
-            components[key] = addressForm.value[key] || null
-        })
-
-        // 3️⃣ Build API payload
-        const payload = {
-            components, // ✅ REQUIRED
-        }
-
-        // (optional) still send flat fields if needed elsewhere
-        Object.keys(fieldMap).forEach(key => {
-            payload[fieldMap[key]] = addressForm.value[key] || null
-        })
-
-        // 4️⃣ Create or Update
-        const isUpdate = !!addressId.value
-        alert(addressId.value);
-        const url = isUpdate
-            ? `/api/addresses/${addressId.value}`
-            : `/api/addresses`
-
-        const method = isUpdate ? 'PUT' : 'POST'
-
-        // 5️⃣ API call
-        const res = await auth.fetchProtectedApi(url, payload, method)
-
-        if (res.status) {
-            Swal.fire(
-                'Success',
-                isUpdate
-                    ? 'Address updated successfully'
-                    : 'Address created successfully',
-                'success'
-            )
-
-            closeAddressModal()
-            await fetchOrgAddress()
-        } else {
-            Swal.fire('Error', res.message || 'Failed to save address', 'error')
-        }
-    } catch (e) {
-        console.error('Error saving address:', e)
-        Swal.fire('Error', 'Failed to save address', 'error')
-    }
-}
-//for Address
-const modalVisibleAddress = ref(false)
-const addressFormat = ref(null)
-const addressForm = ref({})
-const loadingFormat = ref(false)
-
-// const openAddressModal = async () => {
-//     modalVisibleAddress.value = true
-//     loadingFormat.value = true
-//     try {
-//         const res = await auth.fetchProtectedApi("/api/addresses/address-format", {}, 'GET')
-//         addressFormat.value = res.format
-//         // Initialize form fields dynamically
-//         addressForm.value = {}
-//         res.format.fields.forEach(field => {
-//             addressForm.value[field] = ''
-//         })
-//     } catch (e) {
-//         console.error('Failed to load address format')
-//     } finally {
-//         loadingFormat.value = false
-//     }
-// }
-
-const openAddressModal = async () => {
-    modalVisibleAddress.value = true
-    loadingFormat.value = true
-    try {
-        const res = await auth.fetchProtectedApi("/api/addresses/address-format", {}, 'GET')
-        console.log(res, 'all');
-        console.log(res.countryId), 'country id';
-        console.log(res.group, 'group');
-        console.log(res.group_alias, 'group alias');
-        console.log(res.format, 'format');
-
-
-        addressFormat.value = res.format
-        // 🟢 Create mode → empty
-        if (!isEditMode.value) {
-            addressForm.value = {}
-            res.format.fields.forEach(field => {
-                addressForm.value[field] = ''
-            })
-        }
-        // 🟢 Edit mode → fetchOrgAddress() already filled form
-    } catch (e) {
-        console.error('Failed to load address format')
-    } finally {
-        loadingFormat.value = false
-    }
-}
-
-const closeAddressModal = () => {
-    modalVisibleAddress.value = false;
-};
-
-
-
-
-// Suggest: 1 = Mobile, 2 = Work, 3 = Home, 4 = Other
-const phoneTypeLabel = (v) => ({ 1: 'Mobile', 2: 'Work', 3: 'Home', 4: 'Other' }[Number(v)] || 'Other');
-// Suggest: 0 = Private, 1 = Public (or match your backend exactly)
-const statusLabel = (v) => ({ 0: 'Private', 1: 'Public', 2: 'Connected Organisation', 3: 'Members Only' }[Number(v)] || 'Other');
-
-const fetchOrgPhoneNumber = async () => {
-    try {
-        const res = await auth.fetchProtectedApi(`/api/phone-numbers/`, {}, 'GET');
-        const data = res?.data;
-        const phone = Array.isArray(data) ? data[0] : data;
-
-        if (res.status && phone) {
-            phoneId.value = phone.id ?? null;
-            dialing_code_id.value = phone.dialing_code_id ?? ''; // keep id for update
-            dialing_code.value = phone.dialing_code ?? '';       // string for display
-            phone_number.value = phone.phone_number ?? '';
-            phone_type.value = phone.phone_type ?? '';
-            statusPhone.value = phone.status ?? '';
-            isEditModePhone.value = !!phoneId.value; // true => Edit, false => Add
-        } else {
-            phoneId.value = null;
-            isEditModePhone.value = false; // Add
-        }
-    } catch (e) {
-        console.error("Error fetching organization Phone Number:", e);
-        phoneId.value = null;
-        isEditModePhone.value = false;
-    }
-};
-
-const updateOrgPhoneNumber = async () => {
-    try {
-        const payload = {
-            dialing_code_id: dialing_code_id.value,
-            phone_number: phone_number.value,
-            phone_type: phone_type.value,
-            status: statusPhone.value,
-        };
-        const res = phoneId.value
-            ? await auth.fetchProtectedApi(`/api/phone-numbers/${phoneId.value}`, payload, 'PUT')
-            : await auth.fetchProtectedApi(`/api/phone-numbers/`, payload, 'POST');
-
-        if (res.status) {
-            Swal.fire('Success', phoneId.value ? 'Phone Number updated successfully' : 'Phone Number added successfully', 'success');
-            closePhoneModal();
-            await fetchOrgPhoneNumber();
-        } else {
-            Swal.fire('Error', res.message || 'Failed to save Phone Number', 'error');
-        }
-    } catch (e) {
-        console.error("Error updating Phone Number:", e);
-        Swal.fire('Error', 'Failed to save Phone Number', 'error');
-    }
-};
-
-const fetchDialingCode = async () => {
-    try {
-        // const response = await auth.fetchProtectedApi("/api/phone-numbers/dialing-codes/", {}, 'GET');
-        const response = await auth.fetchProtectedApi("/api/dialing-codes/", {}, 'GET');
-
-        // Ensure the response status is true and data exists
-        if (response.status && response.data) {
-            allDialingCodes.value = response.data;
-            console.log(allDialingCodes);
-            // country_id.value = response.data.country_id || '';
-            // dialing_code.value = response.data.dialing_code || '';
-        } else {
-            //Swal.fire('Error', 'Failed to fetch dialing code', 'error');
-        }
-    } catch (error) {
-        console.error("Error fetching dialing code:", error);
-        Swal.fire('Error', 'Failed to fetch dialing code', 'error');
-    }
-};
-
-const updateUserEmail = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/update-email/${userId}`, {
-            email: newEmail.value,
-        }, 'PUT');
-        if (response.status) {
-            Swal.fire('Success', 'Email updated successfully', 'success');
-            writeUserLS({ email: newEmail.value });
-            closeEmailModal();
-        } else {
-            Swal.fire('Error', 'Failed to update email', 'error');
-        }
-
-    } catch (error) {
-        console.error("Error updating email:", error);
-        Swal.fire('Error', 'Failed to update email', 'error');
-    }
-};
-
-const fetchOrgCountry = async () => {
-    try {
-        const response = await auth.fetchProtectedApi("/api/user-countries/country-name/", {}, 'GET');
-        console.log(response.data);
-
-        if (response.status && response.data) {
-            userCountry.value = response.data.user_country_name.name || '';
-        } else {
-            //Swal.fire('Error', 'Failed to fetch organization country', 'error');
-        }
-    } catch (error) {
-        console.error("Error fetching organization country:", error);
-        Swal.fire('Error', 'Failed to fetch organization country', 'error');
-    }
-};
-
-const handleImageUpload = (event) => {
-    selectedImage.value = event.target.files[0];
-};
-
-
-
-
-//for Phone Number
-const openPhoneModal = () => {
-    isEditModePhone.value = true; //updateAddress() will work 
-    modalVisiblePhone.value = true;
-};
-
-const closePhoneModal = () => {
-    modalVisiblePhone.value = false;
-};
-
-const openNameModal = () => {
-    modalVisibleName.value = true;
-    orgName.value = org_name.value;
-};
-
-const closeNameModal = () => {
-    modalVisibleName.value = false;
-    orgName.value = '';
-};
-
-const openUsernameModal = () => {
-    modalVisibleUsername.value = true;
-    newUsername.value = username.value;
-};
-
-const closeUsernameModal = () => {
-    modalVisibleUsername.value = false;
-};
-
-//Email Address
-const openEmailModal = () => {
-    modalVisibleUserEmail.value = true;
-    newEmail.value = email.value;
-};
-
-const closeEmailModal = () => {
-    modalVisibleUserEmail.value = false;
-};
-
-onMounted(() => {
-    hydrateUserFromLS();
-    fetchLogo();
-    fetchDialingCode();
-    fetchOrgAddress();
-    fetchOrgPhoneNumber();
-    fetchOrgCountry();
+onMounted(async () => {
+  const [, , , codes, ctry] = await Promise.all([
+    loadLogo(), loadPhone(), loadAddress(),
+    auth.fetchProtectedApi("/api/dialing-codes/", {}, "GET"),
+    auth.fetchProtectedApi("/api/user-countries/country-name/", {}, "GET"),
+  ]);
+  dialingCodes.value = (codes?.status ? codes.data : []).filter((d) => !(d.is_active === 0 || d.is_active === "0"));
+  country.value = ctry?.data?.user_country_name?.name || "";
+  loading.value = false;
 });
+onBeforeUnmount(() => (editing.value = ""));
 </script>
 
 <template>
-    <div class="flex flex-col pb-7 pr-7">
-        <!-- Logo Section -->
-        <section>
-            <div class="bg-white shadow rounded-lg p-6">
-                <!-- Card Header -->
-                <h2 class="text-lg font-semibold text-gray-800 mb-6">Logo</h2>
+  <div class="flex flex-col gap-6">
+    <AzPageHeader :title="t('accountNav.profile')" :description="t('profilePage.description')" />
 
-                <!-- Card Content -->
-                <div class="flex flex-col md:flex-row md:justify-between gap-6">
+    <AzSkeleton v-if="loading" :lines="6" height="3.5rem" />
 
-                    <!-- Image Display -->
-                    <div class="flex justify-center md:justify-start">
-                        <img v-if="logoPath" :src="`${logoPath}`" alt="Logo"
-                            class="rounded-lg w-full max-w-[250px]">
-                        <img v-else src="../../../assets/Logo/Your-logo-here.png" alt="Logo"
-                            class="rounded-lg w-full max-w-[250px]">
-                    </div>
+    <template v-else>
+      <!-- Logo and name -->
+      <AzCard>
+        <div class="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+          <div class="relative">
+            <AzAvatar :src="logoUrl" :name="auth.user?.org_name" size="xl" />
+            <button type="button" class="absolute -bottom-1 -right-1 grid h-9 w-9 place-items-center rounded-full border border-line bg-surface text-ink-2 shadow-card hover:text-primary"
+              :aria-label="t('profilePage.changeLogo')" :disabled="uploadingLogo" @click="logoInput?.click()">
+              <Camera class="h-4 w-4" aria-hidden="true" />
+            </button>
+            <input ref="logoInput" type="file" accept="image/png,image/jpeg,image/webp" class="sr-only" tabindex="-1" @change="onLogo" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-xl font-semibold text-ink">{{ auth.user?.org_name || '—' }}</p>
+            <p class="text-sm text-ink-muted">{{ t('profilePage.logoHelp') }}</p>
+          </div>
+        </div>
+      </AzCard>
 
-                    <!-- Upload Section -->
-                    <div class="w-full md:w-auto flex flex-col justify-center mt-4 md:mt-0">
-                        <label for="logo" class="block text-sm font-medium text-gray-700 mb-2">
-                            Upload new logo
-                        </label>
-                        <input type="file" id="logo" @change="handleImageUpload"
-                            class="block w-full text-sm text-gray-500 mb-4">
-                        <button @click="profileImageUpdate"
-                            class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition">
-                            Save
-                        </button>
-                    </div>
+      <!-- Account details -->
+      <AzCard :title="t('profilePage.accountDetails')" :padded="false">
+        <dl class="divide-y divide-line">
+          <!-- Name -->
+          <div class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-start">
+            <dt class="w-44 shrink-0 text-sm font-medium text-ink-muted">{{ t('profilePage.orgName') }}</dt>
+            <dd class="min-w-0 flex-1">
+              <form v-if="editing === 'name'" class="flex flex-col gap-3" novalidate @submit.prevent="saveAccountField('name')">
+                <AzInput v-model="form.org_name" :label="t('profilePage.orgName')" :error="errors.org_name" maxlength="100" autocomplete="organization" />
+                <div class="flex gap-2"><AzButton type="submit" size="sm" :loading="saving">{{ t('common.save') }}</AzButton><AzButton variant="quiet" size="sm" @click="editing = ''">{{ t('common.cancel') }}</AzButton></div>
+              </form>
+              <div v-else class="flex items-center justify-between gap-3">
+                <span class="text-[15px] text-ink">{{ auth.user?.org_name || '—' }}</span>
+                <AzButton variant="quiet" size="sm" @click="startEdit('name')"><template #icon><Pencil class="h-4 w-4" /></template>{{ t('common.edit') }}</AzButton>
+              </div>
+            </dd>
+          </div>
+          <!-- Username -->
+          <div class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-start">
+            <dt class="w-44 shrink-0 text-sm font-medium text-ink-muted">{{ t('profilePage.username') }}</dt>
+            <dd class="min-w-0 flex-1">
+              <form v-if="editing === 'username'" class="flex flex-col gap-3" novalidate @submit.prevent="saveAccountField('username')">
+                <AzInput v-model="form.username" :label="t('profilePage.username')" :help="t('profilePage.usernameHelp')" :error="errors.username" maxlength="30" autocomplete="username" />
+                <div class="flex gap-2"><AzButton type="submit" size="sm" :loading="saving">{{ t('common.save') }}</AzButton><AzButton variant="quiet" size="sm" @click="editing = ''">{{ t('common.cancel') }}</AzButton></div>
+              </form>
+              <div v-else class="flex items-center justify-between gap-3">
+                <span class="text-[15px] text-ink">{{ auth.user?.username || '—' }}</span>
+                <AzButton variant="quiet" size="sm" @click="startEdit('username')"><template #icon><Pencil class="h-4 w-4" /></template>{{ t('common.edit') }}</AzButton>
+              </div>
+            </dd>
+          </div>
+          <!-- Email -->
+          <div class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-start">
+            <dt class="w-44 shrink-0 text-sm font-medium text-ink-muted">{{ t('profilePage.email') }}</dt>
+            <dd class="min-w-0 flex-1">
+              <form v-if="editing === 'email'" class="flex flex-col gap-3" novalidate @submit.prevent="saveAccountField('email')">
+                <AzInput v-model="form.email" type="email" inputmode="email" :label="t('profilePage.email')" :help="t('profilePage.emailHelp')" :error="errors.email" maxlength="100" autocomplete="email" />
+                <div class="flex gap-2"><AzButton type="submit" size="sm" :loading="saving">{{ t('common.save') }}</AzButton><AzButton variant="quiet" size="sm" @click="editing = ''">{{ t('common.cancel') }}</AzButton></div>
+              </form>
+              <div v-else class="flex items-center justify-between gap-3">
+                <span class="break-all text-[15px] text-ink">{{ auth.user?.email || '—' }}</span>
+                <AzButton variant="quiet" size="sm" @click="startEdit('email')"><template #icon><Pencil class="h-4 w-4" /></template>{{ t('common.edit') }}</AzButton>
+              </div>
+            </dd>
+          </div>
+          <!-- Country (changed in Settings) -->
+          <div class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center">
+            <dt class="w-44 shrink-0 text-sm font-medium text-ink-muted">{{ t('profilePage.country') }}</dt>
+            <dd class="flex min-w-0 flex-1 items-center justify-between gap-3">
+              <span class="text-[15px] text-ink">{{ country || '—' }}</span>
+              <AzButton variant="quiet" size="sm" :to="{ name: 'settings' }">{{ t('accountNav.settings') }}</AzButton>
+            </dd>
+          </div>
+        </dl>
+      </AzCard>
 
-                </div>
-            </div>
-        </section>
+      <!-- Phone -->
+      <AzCard :title="t('profilePage.phone')">
+        <template v-if="editing !== 'phone'" #actions>
+          <AzButton variant="quiet" size="sm" @click="startEdit('phone')"><template #icon><Pencil class="h-4 w-4" /></template>{{ phone.id ? t('common.edit') : t('profilePage.add') }}</AzButton>
+        </template>
+        <form v-if="editing === 'phone'" class="grid gap-4 sm:grid-cols-2" novalidate @submit.prevent="savePhone">
+          <AzSelect v-model="phoneForm.dialing_code_id" :label="t('profilePage.countryCode')" :options="dialingOptions" :placeholder="t('meetingForm.choose')" :error="errors.dialing_code_id" />
+          <AzInput v-model="phoneForm.phone_number" type="tel" inputmode="tel" :label="t('profilePage.number')" :error="errors.phone_number" maxlength="20" autocomplete="tel-national" />
+          <AzSelect v-model="phoneForm.phone_type" :label="t('profilePage.phoneType')" :options="phoneTypeOptions" />
+          <AzSelect v-model="phoneForm.status" :label="t('profilePage.whoCanSee')" :options="visibilityOptions" />
+          <div class="flex gap-2 sm:col-span-2"><AzButton type="submit" size="sm" :loading="saving">{{ t('common.save') }}</AzButton><AzButton variant="quiet" size="sm" @click="editing = ''">{{ t('common.cancel') }}</AzButton></div>
+        </form>
+        <div v-else-if="phone.id" class="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span class="text-[15px] font-medium text-ink">{{ phone.dialing_code }} {{ phone.phone_number }}</span>
+          <AzBadge tone="neutral">{{ t(`profilePage.phoneType_${phone.phone_type}`) }}</AzBadge>
+          <span class="text-sm text-ink-muted">{{ t(`profilePage.visibility_${phone.status}`) }}</span>
+        </div>
+        <p v-else class="text-[15px] text-ink-muted">{{ t('profilePage.noPhone') }}</p>
+      </AzCard>
 
-
-        <!--  org_name section -->
-        <section>
-            <div class="bg-white shadow rounded-lg p-6 mt-5">
-                <!-- Card Header -->
-                <h2 class="text-lg font-semibold text-gray-800 mb-6">Org Name</h2>
-
-                <!-- Name Display -->
-                <div class="flex items-center justify-between pb-4">
-                    <div>
-                        <p class="text-gray-900 font-medium">{{ org_name }}</p>
-                    </div>
-                    <button @click="openNameModal()" class="text-sm text-blue-600 hover:underline">
-                        Edit
-                    </button>
-                </div>
-
-                <!-- Modal -->
-                <div v-if="modalVisibleName"
-                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4 sm:px-0">
-                    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
-                        <!-- Modal Title -->
-                        <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">
-                            Edit Name
-                        </h2>
-
-                        <!-- First Name -->
-                        <div class="mb-5">
-                            <label for="orgName" class="block text-sm font-medium text-gray-700 mb-2">First
-                                Name</label>
-                            <input v-model="orgName" type="text" id="orgName" class="w-full border border-gray-300 rounded-lg p-2.5 text-gray-900 shadow-sm 
-                        focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" required />
-                            <p v-if="auth.errors?.orgName" class="text-red-500 text-xs mt-2">
-                                {{ auth.errors?.orgName[0] }}
-                            </p>
-                        </div>
-                        <!-- Action Buttons -->
-                        <div class="flex flex-col-reverse sm:flex-row justify-end gap-3">
-                            <button @click="closeNameModal"
-                                class="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg shadow transition">
-                                Close
-                            </button>
-                            <button @click="updateOrgName"
-                                class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow transition">
-                                Update
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-
-        <!-- Username section -->
-        <section>
-            <div class="bg-white shadow rounded-lg p-6 mt-5">
-                <!-- Card Header -->
-                <h2 class="text-lg font-semibold text-gray-800 mb-6">Username</h2>
-
-                <!-- Username Display -->
-                <div class="flex items-center justify-between pb-4">
-                    <div>
-                        <p class="text-gray-900 font-medium">{{ username }}</p>
-                    </div>
-                    <button @click="openUsernameModal()" class="text-sm text-blue-600 hover:underline">
-                        Edit
-                    </button>
-                </div>
-
-                <!-- Username Modal -->
-                <div v-if="modalVisibleUsername"
-                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4 sm:px-0">
-                    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
-                        <!-- Modal Title -->
-                        <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">
-                            Edit Username
-                        </h2>
-
-                        <!-- Input Field -->
-                        <div class="mb-5">
-                            <label for="newUsername" class="block text-sm font-medium text-gray-700 mb-2">
-                                New Username
-                            </label>
-                            <input v-model="newUsername" type="text" id="newUsername" class="w-full border border-gray-300 rounded-lg p-2.5 text-gray-900 shadow-sm 
-                        focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" required />
-                            <p v-if="auth.errors?.newUsername" class="text-red-500 text-xs mt-2">
-                                {{ auth.errors?.newUsername[0] }}
-                            </p>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="flex flex-col-reverse sm:flex-row justify-end gap-3">
-                            <button @click="closeUsernameModal"
-                                class="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg shadow transition">
-                                Close
-                            </button>
-                            <button @click="updateUsername"
-                                class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow transition">
-                                Update
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-
-        <!-- Address Section -->
-        <section>
-            <div class="bg-white shadow rounded-lg p-6 mt-5">
-                <!-- Card Header -->
-                <h2 class="text-lg font-semibold text-gray-800 mb-6">Address</h2>
-
-                <!-- Address Display -->
-                <div class="flex items-start justify-between pb-4">
-                    <div>
-                        <p class="text-gray-900 mt-1 leading-relaxed">
-                            <span v-if="addressForm.line1">{{ addressForm.line1 }}, </span>
-                            <span v-if="addressForm.line2">{{ addressForm.line2 }}, </span>
-                            <span v-if="addressForm.city">{{ addressForm.city }}, </span>
-                            <span v-if="addressForm.region">{{ addressForm.region }}, </span>
-                            <span v-if="addressForm.postcode">{{ addressForm.postcode }}, </span>
-                            <span v-if="userCountry">{{ userCountry }}</span>
-                        </p>
-                    </div>
-
-                    <button @click="openAddressModal()"
-                        class="text-sm text-blue-600 hover:underline whitespace-nowrap ml-4">
-                        Edit
-                    </button>
-                </div>
-
-                <!-- Address Modal -->
-                <div v-if="modalVisibleAddress"
-                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
-
-                    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-
-                        <h2 class="text-xl font-semibold text-center mb-6">
-                            {{ isEditMode ? 'Edit Address' : 'Create Address' }}
-                        </h2>
-
-                        <div v-if="loadingFormat" class="text-center py-10">
-                            Loading address format...
-                        </div>
-
-                        <div v-else class="space-y-5">
-
-                            <div v-for="field in addressFormat.fields" :key="field">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    {{ addressFormat.labels[field] }}
-                                    <span v-if="addressFormat.required.includes(field)" class="text-red-500">*</span>
-                                </label>
-
-                                <input v-model="addressForm[field]" type="text"
-                                    :required="addressFormat.required.includes(field)" class="w-full border border-gray-300 rounded-lg p-2.5 shadow-sm
-                           focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition" />
-
-                                <p v-if="auth.errors?.[field]" class="text-red-500 text-xs mt-2">
-                                    {{ auth.errors[field][0] }}
-                                </p>
-                            </div>
-
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="flex justify-end gap-3 mt-6">
-                            <button @click="modalVisibleAddress = false"
-                                class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg">
-                                Close
-                            </button>
-                            <!-- <button @click="submitAddress"
-                                class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg">
-                                {{ isEditMode ? 'Submit' : 'Update' }}
-                            </button> -->
-
-                            <button @click="saveAddress">
-                                {{ addressId ? 'Update' : 'Submit' }}
-                            </button>
-
-                        </div>
-
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-
-        <!-- Mobile number section -->
-        <section>
-            <div class="bg-white shadow rounded-lg p-6 mt-5">
-                <!-- Card Header -->
-                <h2 class="text-lg font-semibold text-gray-800 mb-6">Mobile Number</h2>
-
-                <!-- Mobile Number Display -->
-                <div class="flex items-start justify-between pb-4">
-                    <div>
-                        <p class="text-gray-900 mt-1 leading-relaxed">
-                            <span>{{ dialing_code }} {{ phone_number }}</span>
-                            <span class="ml-6">
-                                Type: {{ phoneTypeLabel(phone_type) }}
-                            </span>
-                            <span class="ml-6">
-                                Status: {{ statusLabel(statusPhone) }}
-                            </span>
-                        </p>
-                    </div>
-                    <button @click="openPhoneModal()"
-                        class="text-sm text-blue-600 hover:underline ml-4 whitespace-nowrap">
-                        Edit
-                    </button>
-                </div>
-
-                <!-- Mobile Number Modal -->
-                <div v-if="modalVisiblePhone"
-                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4 sm:px-0">
-                    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
-                        <!-- Modal Header -->
-                        <h2 class="text-xl font-semibold text-gray-800 text-center mb-6">
-                            {{ isEditModePhone ? 'Edit Mobile Number' : 'Add Mobile Number' }}
-                        </h2>
-
-                        <div class="space-y-4">
-                            <!-- Dialing Code -->
-                            <div>
-                                <label for="dialing_code_id" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Dialing Code <span class="text-red-500">*</span>
-                                </label>
-                                <select v-model="dialing_code_id" id="dialing_code_id"
-                                    class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    required>
-                                    <option value="">Select</option>
-                                    <option v-for="dialing_code in allDialingCodes" :key="dialing_code.id"
-                                        :value="dialing_code.id">
-                                        {{ dialing_code.dialing_code }} - ({{ dialing_code.name }})
-                                    </option>
-                                </select>
-                                <p v-if="auth.errors?.dialing_code_id" class="text-red-500 text-xs mt-1">
-                                    {{ auth.errors?.dialing_code_id[0] }}
-                                </p>
-                            </div>
-
-                            <!-- Phone Number -->
-                            <div>
-                                <label for="phone_number" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Phone Number <span class="text-gray-500">(Numbers only)</span>
-                                </label>
-                                <input v-model="phone_number" type="text" id="phone_number"
-                                    class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    @input="phone_number = phone_number.replace(/\D/g, '')" required />
-                                <p v-if="auth.errors?.phone_number" class="text-red-500 text-xs mt-1">
-                                    {{ auth.errors?.phone_number[0] }}
-                                </p>
-                            </div>
-
-                            <!-- Phone Type -->
-                            <div>
-                                <label for="phone_type" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Phone Type
-                                </label>
-                                <select v-model="phone_type" id="phone_type"
-                                    class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    required>
-                                    <option disabled value="">Select</option>
-                                    <option value="1">Mobile</option>
-                                    <option value="2">Work</option>
-                                    <option value="3">Home</option>
-                                    <option value="4">Other</option>
-                                </select>
-                                <p v-if="auth.errors?.phone_type" class="text-red-500 text-xs mt-1">
-                                    {{ auth.errors?.phone_type[0] }}
-                                </p>
-                            </div>
-
-                            <!-- Status -->
-                            <div>
-                                <label for="statusPhone" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Status
-                                </label>
-                                <select v-model="statusPhone" id="statusPhone"
-                                    class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                    <option value="0">Private</option>
-                                    <option value="1">Public</option>
-                                    <option value="2">Connected Organisation</option>
-                                    <option value="3">Members Only</option>
-                                </select>
-                                <p v-if="auth.errors?.statusPhone" class="text-red-500 text-xs mt-1">
-                                    {{ auth.errors?.statusPhone[0] }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="flex justify-end gap-3 mt-6">
-                            <button @click="closePhoneModal"
-                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition">
-                                Cancel
-                            </button>
-                            <button @click="isEditModePhone ? updateOrgPhoneNumber() : updateOrgPhoneNumber()"
-                                class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition">
-                                {{ isEditModePhone ? 'Update' : 'Submit' }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-
-        <!-- User email section -->
-        <section>
-            <div class="bg-white shadow rounded-lg p-6 mt-5">
-                <!-- Card Header -->
-                <h2 class="text-lg font-semibold text-gray-800 mb-6">User Email</h2>
-
-                <!-- Email Display -->
-                <div class="flex items-start justify-between pb-4">
-                    <div>
-                        <p class="text-gray-900 mt-1 leading-relaxed">
-                            {{ email }}
-                            <span class="ml-6">
-                                Status: {{ statusPhone === 1 ? 'Private' : statusPhone === 2 ? 'Connected Organisation'
-                                    : statusPhone === 3 ? 'Public' : 'Others' }}
-                            </span>
-                        </p>
-                    </div>
-                    <button @click="openEmailModal()"
-                        class="text-sm text-blue-600 hover:underline ml-4 whitespace-nowrap">
-                        Edit
-                    </button>
-                </div>
-
-                <!-- Email Modal -->
-                <div v-if="modalVisibleUserEmail"
-                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4 sm:px-0">
-                    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
-                        <!-- Modal Title -->
-                        <h2 class="text-xl font-semibold text-gray-800 text-center mb-6">Edit User Email</h2>
-
-                        <!-- Input Field -->
-                        <div class="mb-4">
-                            <label for="newEmail" class="block text-sm font-medium text-gray-700">User Email
-                                Address</label>
-                            <input v-model="newEmail" type="email" id="newEmail" class="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm p-2.5
-                        focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition" required />
-                            <p v-if="auth.errors?.newEmail" class="text-red-500 text-xs mt-1">
-                                {{ auth.errors?.newEmail[0] }}
-                            </p>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="flex justify-end gap-3 mt-4">
-                            <button @click="closeEmailModal"
-                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition">
-                                Close
-                            </button>
-                            <button @click="updateUserEmail()"
-                                class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
-                                Update
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-
-        <!-- country section -->
-        <section>
-            <div class="bg-white shadow rounded-lg p-6 mt-5">
-                <!-- Card Header -->
-                <h2 class="text-lg font-semibold text-gray-800 mb-6">Country</h2>
-
-                <!-- Country Display -->
-                <div class="flex items-start justify-between pb-4">
-                    <div>
-                        <p class="text-gray-900 mt-1 leading-relaxed">
-                            {{ userCountry }}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
+      <!-- Address -->
+      <AzCard :title="t('profilePage.address')">
+        <template v-if="editing !== 'address'" #actions>
+          <AzButton variant="quiet" size="sm" @click="startEdit('address')"><template #icon><Pencil class="h-4 w-4" /></template>{{ addressLines.length ? t('common.edit') : t('profilePage.add') }}</AzButton>
+        </template>
+        <form v-if="editing === 'address'" class="grid gap-4 sm:grid-cols-2" novalidate @submit.prevent="saveAddress">
+          <div v-for="f in addressFormat.fields" :key="f" :class="f === 'line1' || f === 'line2' ? 'sm:col-span-2' : ''">
+            <AzInput v-model="addressForm[f]" :label="fieldLabel(f)" :required="(addressFormat.required || []).includes(f)" :error="errors[`addr_${f}`]"
+              maxlength="255" :autocomplete="{ line1: 'address-line1', line2: 'address-line2', city: 'address-level2', region: 'address-level1', postcode: 'postal-code' }[f] || 'off'" />
+          </div>
+          <div class="flex gap-2 sm:col-span-2"><AzButton type="submit" size="sm" :loading="saving">{{ t('common.save') }}</AzButton><AzButton variant="quiet" size="sm" @click="editing = ''">{{ t('common.cancel') }}</AzButton></div>
+        </form>
+        <address v-else-if="addressLines.length" class="flex flex-col not-italic text-[15px] text-ink">
+          <span v-for="(line, i) in addressLines" :key="i">{{ line }}</span>
+          <span v-if="country" class="text-ink-muted">{{ country }}</span>
+        </address>
+        <p v-else class="text-[15px] text-ink-muted">{{ t('profilePage.noAddress') }}</p>
+      </AzCard>
+    </template>
+  </div>
 </template>

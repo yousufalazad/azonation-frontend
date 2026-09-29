@@ -72,7 +72,7 @@ const menu = [
     children: [
       { label: 'nav.administrator', to: '/org-dashboard/administrator' },
       { label: 'nav.adminRole', to: '/org-dashboard/user-role-assign' },
-      { label: 'nav.orgSettings', to: '/org-dashboard/settings' },
+      { label: 'nav.orgSettings', to: { name: 'settings' } },
     ],
   },
 ];

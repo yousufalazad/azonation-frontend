@@ -149,12 +149,6 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "fundamental-info",
-        name: "fundamental-info",
-        component: fundamentalInfo,
-        meta: { requiresAuth: true },
-      },
-      {
         path: "unlink-member",
         name: "unlink-member",
         component: UnlinkMember,
@@ -697,15 +691,18 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
+        path: "fundamental-info",
+        redirect: { name: "fundamental-info" },
+      },
+      {
         path: "settings",
-        name: "settings",
-        component: Settings,
-        meta: { requiresAuth: true },
+        redirect: { name: "settings" },
       },
       {
         path: "my-account",
         name: "my-account",
         component: MyAccount,
+        redirect: { name: "profile" },
         meta: { requiresAuth: true },
         children: [
           {
@@ -720,6 +717,18 @@ const orgRoutes = [
           //   component: Administrator,
           //   meta: { requiresAuth: true },
           // },
+          {
+            path: "fundamental-info",
+            name: "fundamental-info",
+            component: fundamentalInfo,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: "settings",
+            name: "settings",
+            component: Settings,
+            meta: { requiresAuth: true },
+          },
           {
             path: "security",
             name: "security",
