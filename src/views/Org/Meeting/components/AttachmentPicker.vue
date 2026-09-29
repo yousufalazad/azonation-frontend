@@ -6,10 +6,14 @@ import { useI18n } from "vue-i18n";
 import { safeUrl } from "@/helpers/sanitizeHtml";
 import { Paperclip, X } from "lucide-vue-next";
 
-defineProps({
+const props = defineProps({
   existingImages: { type: Array, default: () => [] }, // [{ id, image_url, file_name }]
   existingDocuments: { type: Array, default: () => [] }, // [{ id, document_url, file_name }]
+  removable: { type: Boolean, default: false }, // show X on existing files; the page handles "remove-existing"
+  documentAccept: { type: String, default: ".pdf,.doc,.docx,.xls,.xlsx" },
+  documentsHelp: { type: String, default: "" },
 });
+const emit = defineEmits(["remove-existing"]); // (kind: "image" | "document", file)
 const images = defineModel("images", { type: Array, default: () => [] });
 const documents = defineModel("documents", { type: Array, default: () => [] });
 
@@ -46,15 +50,25 @@ const fileClass =
     <div class="flex flex-col gap-5">
       <div v-if="existingImages.length || existingDocuments.length" class="flex flex-col gap-3">
         <p class="text-sm text-ink-muted">{{ t('meetingForm.alreadyAttached') }}</p>
-        <div v-if="existingImages.length" class="flex flex-wrap gap-2">
-          <img v-for="img in existingImages" :key="img.id" :src="img.image_url" :alt="img.file_name || ''"
-            class="h-16 w-16 max-w-none rounded-control border border-line object-cover" loading="lazy" />
+        <div v-if="existingImages.length" class="flex flex-wrap gap-3">
+          <div v-for="img in existingImages" :key="img.id" class="relative">
+            <img :src="img.image_url" :alt="img.file_name || ''" class="h-16 w-16 max-w-none rounded-control border border-line object-cover" loading="lazy" />
+            <button v-if="removable" type="button"
+              class="absolute -right-2 -top-2 grid h-7 w-7 place-items-center rounded-full border border-line bg-surface text-ink-muted shadow-card hover:text-danger"
+              :aria-label="t('meetingForm.remove', { name: img.file_name || '' })" @click="emit('remove-existing', 'image', img)">
+              <X class="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
         </div>
         <ul v-if="existingDocuments.length" class="flex flex-col gap-1">
-          <li v-for="doc in existingDocuments" :key="doc.id">
-            <a :href="safeUrl(doc.document_url)" target="_blank" rel="noopener noreferrer" class="text-[15px] text-primary hover:underline">
+          <li v-for="doc in existingDocuments" :key="doc.id" class="flex items-center justify-between gap-3">
+            <a :href="safeUrl(doc.document_url)" target="_blank" rel="noopener noreferrer" class="truncate text-[15px] text-primary hover:underline">
               {{ doc.file_name || t('meetingView.document') }}
             </a>
+            <button v-if="removable" type="button" class="grid h-8 w-8 shrink-0 place-items-center rounded-full text-ink-muted hover:text-danger"
+              :aria-label="t('meetingForm.remove', { name: doc.file_name || '' })" @click="emit('remove-existing', 'document', doc)">
+              <X class="h-4 w-4" aria-hidden="true" />
+            </button>
           </li>
         </ul>
       </div>
@@ -74,9 +88,9 @@ const fileClass =
         </div>
       </div>
 
-      <AzField :label="t('meetingForm.addDocuments')" :help="t('meetingForm.documentsHelp')">
+      <AzField :label="t('meetingForm.addDocuments')" :help="props.documentsHelp || t('meetingForm.documentsHelp')">
         <template #default="{ id, describedBy }">
-          <input :id="id" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx" :aria-describedby="describedBy" :class="fileClass" @change="onDocuments" />
+          <input :id="id" type="file" multiple :accept="props.documentAccept" :aria-describedby="describedBy" :class="fileClass" @change="onDocuments" />
         </template>
       </AzField>
       <ul v-if="documents.length" class="flex flex-col gap-2">

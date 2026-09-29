@@ -1,466 +1,126 @@
+<!-- Documents: the organisation's papers and files, newest first -->
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
-import Swal from "sweetalert2";
-import { authStore } from "../../../store/authStore";
-import EasyDataTable from "vue3-easy-data-table";
-import "vue3-easy-data-table/dist/style.css";
-import { FileText, FileSpreadsheet, FileDown } from "lucide-vue-next";
-import { pdfExport } from "@/helpers/pdfExport.js";
-import { excelExport } from "@/helpers/excelExport.js";
-import { csvExport } from "@/helpers/csvExport.js";
-const showFilters = ref(false);
+import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import { formatDate } from "@/helpers/format";
+import { useToast } from "@/composables/useToast";
+import { useConfirm } from "@/composables/useConfirm";
+import { Plus, Search, FolderOpen, FileText, Image as ImageIcon, Pencil, Trash2, MoreVertical } from "lucide-vue-next";
 
 const auth = authStore;
-const documentList = ref([]);
+const router = useRouter();
+const { t } = useI18n();
+const toast = useToast();
+const confirm = useConfirm();
+
+const docs = ref([]);
+const loading = ref(true);
 const search = ref("");
-const quickFilter = ref("");
-const loading = ref(false);
+const showRetired = ref(false);
 
-const selectedProfile = ref(
-  localStorage.getItem("document_profile") || "detailed",
-);
-const visibleColumns = ref(
-  JSON.parse(localStorage.getItem("document_columns")) || [
-    "title",
-    "description",
-    "privacy",
-    "is_active",
-    "actions",
-  ],
-);
+const clean = (v) => (v === null || v === undefined || v === "null" ? "" : String(v));
+const isOn = (d) => !(d.is_active === 0 || d.is_active === "0");
 
-const columnProfiles = {
-  minimal: ["title", "privacy", "actions"],
-  detailed: ["title", "description", "privacy", "is_active", "actions"],
-};
+const visible = computed(() => {
+  const q = search.value.trim().toLowerCase();
+  return docs.value
+    .filter((d) => showRetired.value || isOn(d))
+    .filter((d) => !q || [d.title, clean(d.description)].some((v) => String(v || "").toLowerCase().includes(q)));
+});
+const retiredCount = computed(() => docs.value.filter((d) => !isOn(d)).length);
 
-const headers = [
-  { text: "Title", value: "title", sortable: true },
-  { text: "Description", value: "description", sortable: true },
-  { text: "Privacy", value: "privacy", sortable: true },
-  { text: "Is Active", value: "is_active", sortable: true },
-  { text: "Actions", value: "actions" },
+const canCreate = computed(() => auth.hasPermission("document.create") || auth.user?.type === "organisation");
+
+const actions = (d) => [
+  { label: t("documents.edit"), icon: Pencil, onSelect: () => router.push({ name: "edit-document", params: { id: d.id } }) },
+  { label: t("documents.delete"), icon: Trash2, onSelect: () => remove(d) },
 ];
 
-const filteredHeaders = computed(() =>
-  headers.filter((h) => visibleColumns.value.includes(h.value)),
-);
-
-watch([selectedProfile, visibleColumns], () => {
-  localStorage.setItem("document_profile", selectedProfile.value);
-  localStorage.setItem(
-    "document_columns",
-    JSON.stringify(visibleColumns.value),
-  );
-});
-
-const applyProfile = () => {
-  visibleColumns.value = [...columnProfiles[selectedProfile.value]];
-};
-
-const privacySetups = ref([]);
-
-const fetchPrivacySetups = async () => {
-  try {
-    const response = await auth.fetchProtectedApi(
-      "/api/privacy-setups",
-      {},
-      "GET",
-    );
-    if (response.status) {
-      privacySetups.value = response.data;
-    }
-  } catch (error) {
-    console.error("Error fetching privacy setups:", error);
+async function remove(d) {
+  const ok = await confirm({
+    title: t("meetings.deleteTitle", { name: d.title }),
+    message: t("documents.deleteText"),
+    confirmText: t("documents.delete"),
+    danger: true,
+  });
+  if (!ok) return;
+  const res = await auth.fetchProtectedApi(`/api/office-documents/${d.id}`, {}, "DELETE");
+  if (res?.status) {
+    docs.value = docs.value.filter((x) => x.id !== d.id);
+    toast.success(t("documents.deleted"));
+  } else {
+    toast.error(t("documents.deleteFailed"));
   }
-};
-
-const getDocuments = async () => {
-  loading.value = true;
-  try {
-    const response = await auth.fetchProtectedApi(
-      "/api/office-documents",
-      {},
-      "GET",
-    );
-    if (response.status) {
-      documentList.value = response.data.map((d) => ({
-        id: d.id,
-        title: d.title,
-        description: d.description,
-        privacy:
-          privacySetups.value.find((p) => p.id === d.privacy_setup_id)?.name ||
-          "Unknown",
-        is_active: d.is_active === 1 ? "Yes" : "No",
-      }));
-    } else {
-      documentList.value = [];
-    }
-  } catch (error) {
-    console.error("Error fetching documents:", error);
-    documentList.value = [];
-  } finally {
-    loading.value = false;
-  }
-};
-
-const rowsPerPage = ref(10);
-const currentPage = ref(1);
-const totalItems = computed(() => filteredDocuments.value.length);
-const totalPages = computed(() =>
-  Math.ceil(totalItems.value / rowsPerPage.value),
-);
-
-const filteredDocuments = computed(() => {
-  return documentList.value.filter((record) => {
-    const matchSearch =
-      search.value === "" ||
-      record.title.toLowerCase().includes(search.value.toLowerCase());
-    const matchQuick =
-      quickFilter.value === "" || record.is_active === quickFilter.value;
-    return matchSearch && matchQuick;
-  });
-});
-
-const paginatedDocuments = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage.value;
-  const end = start + rowsPerPage.value;
-  return filteredDocuments.value.slice(start, end);
-});
-
-const goToPage = (page) => {
-  if (page >= 1 && page <= totalPages.value) currentPage.value = page;
-};
-const goToFirst = () => goToPage(1);
-const goToPrev = () => goToPage(currentPage.value - 1);
-const goToNext = () => goToPage(currentPage.value + 1);
-const goToLast = () => goToPage(totalPages.value);
-
-const deleteRecord = async (id) => {
-  const result = await Swal.fire({
-    title: "Are you sure?",
-    text: "Do you want to delete this document?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes, delete it!",
-    cancelButtonText: "Cancel",
-  });
-  if (result.isConfirmed) {
-    const res = await auth.fetchProtectedApi(
-      `/api/office-documents/${id}`,
-      {},
-      "DELETE",
-    );
-    if (res.status) {
-      Swal.fire("Deleted!", "Document has been deleted.", "success");
-      getDocuments();
-    } else {
-      Swal.fire("Failed!", "Failed to delete document.", "error");
-    }
-  }
-};
-
-// Export CSV with custom header/footer
-const exportCSV = async () => {
-  await csvExport({
-    headers: filteredHeaders.value,
-    rows: filteredDocuments.value,
-    title: "Document List",
-    fileName: "Documents.csv",
-  });
-};
-
-// Export XLSX with custom header/footer
-const exportXLSX = async () => {
-  await excelExport({
-    headers: filteredHeaders.value,
-    rows: filteredDocuments.value,
-    title: "Document List",
-    fileName: "Documents.xlsx",
-  });
-};
-
-// --- Export Documents PDF ---
-const exportPDF = () => {
-  pdfExport({
-    headers: filteredHeaders.value,
-    rows: filteredDocuments.value,
-    title: "Document List",
-    fileName: "Documents.pdf",
-  });
-};
+}
 
 onMounted(async () => {
-  await fetchPrivacySetups();
-  await getDocuments();
+  const res = await auth.fetchProtectedApi("/api/office-documents", {}, "GET");
+  docs.value = res?.status ? res.data : [];
+  loading.value = false;
 });
 </script>
 
 <template>
-  <div class="p-6 space-y-6 bg-white shadow rounded-lg">
-    <!-- Header -->
-    <div
-      class="flex flex-col sm:flex-row justify-between sm:items-center gap-3"
-    >
-      <h2 class="text-lg font-semibold text-gray-700">Office Documents</h2>
-      <div class="flex flex-wrap gap-2">
-        <button
-          @click="exportCSV"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          <FileText class="w-4 h-4" /> CSV
-        </button>
-        <button
-          @click="exportXLSX"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          <FileSpreadsheet class="w-4 h-4" /> Excel
-        </button>
-        <button
-          @click="exportPDF"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          <FileDown class="w-4 h-4" /> PDF
-        </button>
-        <button
-          @click="$router.push({ name: 'create-document' })"
-          class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm"
-        >
-          + Add Document
-        </button>
+  <div class="mx-auto flex max-w-5xl flex-col gap-6">
+    <AzPageHeader :title="t('documents.title')" :description="t('documents.description')">
+      <AzButton v-if="canCreate" :to="{ name: 'create-document' }">
+        <template #icon><Plus class="h-[18px] w-[18px]" /></template>
+        {{ t('documents.add') }}
+      </AzButton>
+    </AzPageHeader>
+
+    <div v-if="docs.length" class="-mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div class="w-full sm:max-w-sm">
+        <AzInput v-model="search" type="search" :label="t('list.search')" :placeholder="t('documents.searchPlaceholder')" autocomplete="off">
+          <template #prefix><Search class="h-4 w-4" /></template>
+        </AzInput>
       </div>
+      <AzCheckbox v-if="retiredCount" v-model="showRetired" :label="t('documents.showRetired', { n: retiredCount })" />
     </div>
 
-    <!-- Mobile-only toggle -->
-    <button
-      @click="showFilters = !showFilters"
-      type="button"
-      class="sm:hidden w-full flex items-center justify-between border rounded-lg px-4 py-2.5 my-5 bg-gray-50 text-sm font-medium text-gray-700"
-    >
-      <span class="flex items-center gap-2">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M3 4h18M6 8h12M9 12h6M11 16h2"
-          />
-        </svg>
-        Filters
-      </span>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="w-4 h-4 transition-transform duration-200"
-        :class="showFilters ? 'rotate-180' : ''"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M19 9l-7 7-7-7"
-        />
-      </svg>
-    </button>
+    <AzSkeleton v-if="loading" :lines="4" height="4.5rem" />
 
-    <!-- Collapsible on mobile, always visible from sm: up -->
-    <div :class="showFilters ? 'block' : 'hidden'" class="sm:block space-y-4">
-      <!-- Filters -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div>
-          <label class="text-sm text-gray-600">Search</label>
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Search..."
-            class="w-full border rounded px-3 py-1.5 text-sm"
-          />
-        </div>
-        <div>
-          <label class="text-sm text-gray-600">Is Active</label>
-          <select
-            v-model="quickFilter"
-            class="w-full border rounded px-3 py-1.5 text-sm"
-          >
-            <option value="">All</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
-        </div>
-      </div>
+    <AzCard v-else-if="!docs.length">
+      <AzEmptyState :title="t('documents.emptyTitle')" :description="t('documents.emptyText')">
+        <template #icon><FolderOpen class="h-7 w-7" /></template>
+        <AzButton v-if="canCreate" :to="{ name: 'create-document' }">{{ t('documents.add') }}</AzButton>
+      </AzEmptyState>
+    </AzCard>
 
-      <!-- Column Settings -->
-      <div
-        class="bg-gray-50 border rounded p-4 flex flex-col lg:flex-row flex-wrap gap-6 items-start"
-      >
-        <!-- Column Profile Selector -->
-        <div class="flex flex-col w-full sm:w-auto">
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >Column View:</label
-          >
-          <select
-            v-model="selectedProfile"
-            @change="applyProfile"
-            class="border rounded px-3 py-1.5 text-sm w-full sm:w-48"
-          >
-            <option value="minimal">Minimal</option>
-            <option value="detailed">Detailed</option>
-          </select>
-        </div>
-        <div class="flex-1">
-          <label class="text-sm font-medium text-gray-700 mb-1 block"
-            >Visible Columns</label
-          >
-          <div class="flex flex-wrap gap-4">
-            <div
-              v-for="header in headers"
-              :key="header.value"
-              class="flex items-center gap-2 text-sm"
-            >
-              <input
-                type="checkbox"
-                v-model="visibleColumns"
-                :value="header.value"
-                :id="header.value"
-                class="accent-blue-600"
-              />
-              <label :for="header.value" class="text-gray-700">{{
-                header.text
-              }}</label>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <AzCard v-else-if="!visible.length">
+      <AzEmptyState :title="t('list.noMatchTitle')" :description="t('list.noMatchText')" />
+    </AzCard>
 
-    <!-- Table (responsive scroll) -->
-    <div class="overflow-x-auto">
-      <EasyDataTable
-        :headers="filteredHeaders"
-        :items="paginatedDocuments"
-        :loading="loading"
-        show-index
-        hide-footer
-        :theme-color="'#2563eb'"
-      >
-        <!-- Header Alignment Fix -->
-        <template #header-actions>
-          <div class="text-right w-full pr-2">Actions</div>
-        </template>
-        <!-- Actions Slot -->
-        <template #item-actions="{ id }">
-          <div class="flex justify-end gap-2">
-            <button
-              @click="$router.push({ name: 'view-document', params: { id } })"
-              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3"
-            >
-              View
-            </button>
-            <button
-              @click="$router.push({ name: 'edit-document', params: { id } })"
-              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3"
-            >
-              Edit
-            </button>
-            <button
-              @click="deleteRecord(id)"
-              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3"
-            >
-              Delete
-            </button>
-          </div>
-        </template>
-
-        <!-- is_active Badge -->
-        <template #item-is_active="{ is_active }">
-          <span
-            class="px-2 py-0.5 rounded-full text-xs font-medium"
-            :class="
-              is_active === 'Yes'
-                ? 'bg-green-100 text-green-700'
-                : 'bg-red-100 text-red-700'
-            "
-          >
-            {{ is_active }}
-          </span>
-        </template>
-      </EasyDataTable>
-    </div>
-
-    <!-- Pagination Controls -->
-    <div
-      class="flex flex-col md:flex-row justify-between md:items-center gap-3 px-2 py-3 bg-gray-50 rounded border"
-    >
-      <div class="text-sm text-gray-600 text-center md:text-left">
-        Items {{ (currentPage - 1) * rowsPerPage + 1 }} -
-        {{ Math.min(currentPage * rowsPerPage, totalItems) }} of
-        {{ totalItems }} | Page {{ currentPage }} of {{ totalPages }}
-      </div>
-      <div
-        class="flex flex-col sm:flex-row sm:items-center gap-3 justify-center md:justify-end"
-      >
-        <div class="flex justify-center gap-1">
-          <span class="text-sm text-gray-600">Items per page:</span>
-          <select
-            v-model="rowsPerPage"
-            class="border rounded px-2 py-1 text-sm"
-          >
-            <option
-              v-for="size in [5, 10, 50, 100, 250, 500, 1000]"
-              :key="size"
-              :value="size"
-            >
-              {{ size }}
-            </option>
-          </select>
-        </div>
-        <div class="flex gap-1 justify-center">
-          <button
-            @click="goToFirst"
-            :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'"
-          >
-            First
-          </button>
-          <button
-            @click="goToPrev"
-            :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-sm"
-            :class="currentPage === 1 ? 'text-gray-400' : 'hover:bg-gray-100'"
-          >
-            Prev
-          </button>
-          <button
-            @click="goToNext"
-            :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-sm"
-            :class="
-              currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'
-            "
-          >
-            Next
-          </button>
-          <button
-            @click="goToLast"
-            :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-sm"
-            :class="
-              currentPage === totalPages ? 'text-gray-400' : 'hover:bg-gray-100'
-            "
-          >
-            Last
-          </button>
-        </div>
-      </div>
-    </div>
+    <AzCard v-else :padded="false">
+      <ul class="divide-y divide-line">
+        <li v-for="d in visible" :key="d.id" class="relative">
+          <RouterLink :to="{ name: 'view-document', params: { id: d.id } }"
+            class="flex items-start gap-3 px-5 py-4 pr-14 hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-primary-soft text-primary-soft-ink">
+              <FolderOpen class="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-ink">{{ d.title }}</span>
+                <AzBadge v-if="!isOn(d)" tone="neutral">{{ t('assets.retired') }}</AzBadge>
+                <AzBadge v-if="d.privacy_setup_name" tone="neutral">{{ d.privacy_setup_name }}</AzBadge>
+              </span>
+              <span v-if="clean(d.description)" class="block truncate text-[15px] text-ink-2">{{ clean(d.description) }}</span>
+              <span class="mt-0.5 flex flex-wrap items-center gap-x-3 text-sm text-ink-muted">
+                <span v-if="d.date">{{ formatDate(d.date) }}</span>
+                <span v-if="d.documents_count" class="inline-flex items-center gap-1"><FileText class="h-3.5 w-3.5" aria-hidden="true" />{{ t('documents.fileCount', { n: d.documents_count }) }}</span>
+                <span v-if="d.images_count" class="inline-flex items-center gap-1"><ImageIcon class="h-3.5 w-3.5" aria-hidden="true" />{{ t('documents.photoCount', { n: d.images_count }) }}</span>
+                <span v-if="!d.documents_count && !d.images_count">{{ t('documents.noFiles') }}</span>
+              </span>
+            </span>
+          </RouterLink>
+          <AzMenu class="absolute right-3 top-3" :items="actions(d)" variant="quiet" :aria-label="t('meetings.more', { name: d.title })">
+            <template #icon><MoreVertical class="h-[18px] w-[18px]" /></template>
+          </AzMenu>
+        </li>
+      </ul>
+    </AzCard>
   </div>
 </template>
