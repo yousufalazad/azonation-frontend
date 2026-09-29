@@ -105,7 +105,8 @@ const CHIP_TONES = {
 </script>
 
 <template>
-  <div ref="root" class="relative" v-bind="$attrs" @keydown="onKeydown">
+  <!-- No positioning here: the list is placed on the page body, and pages may position the button (e.g. absolute) -->
+  <div ref="root" v-bind="$attrs" @keydown="onKeydown">
     <button v-if="chip" type="button" aria-haspopup="menu" :aria-expanded="open" :aria-label="ariaLabel || undefined"
       class="inline-flex min-h-[40px] items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
       :class="CHIP_TONES[chipTone] || CHIP_TONES.default" @click="toggle">
