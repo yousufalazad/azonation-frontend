@@ -16,7 +16,6 @@ const UserNotifications = () => import("../views/Org/Notification/UserNotificati
 //Org Member
 const UnlinkMember = () => import("../views/Org/Member/UnlinkMember.vue");
 const OrgMembershipRenewalCycle = () => import("../views/Org/Financial/Renewal/OrgMembershipRenewalCycle.vue");
-const OrgMembershipRenewalPrice = () => import("../views/Org/Financial/Renewal/OrgMembershipRenewalPrice.vue");
 const OrgMembershipRenewal = () => import("../views/Org/Financial/Renewal/OrgMembershipRenewal.vue");
 const CreateMember = () => import("../views/Org/Member/Create.vue");
 const IndexMember = () => import("../views/Org/Member/Index.vue");
@@ -187,15 +186,8 @@ const orgRoutes = [
           permission: "org-membership-renewal-cycle.read",
         },
       },
-      {
-        path: "org-membership-renewal-price",
-        name: "org-membership-renewal-price",
-        component: OrgMembershipRenewalPrice,
-        meta: {
-          requiresAuth: true,
-          permission: "org-membership-renewal-price.read",
-        },
-      },
+      // Fees are set on the renewal settings page
+      { path: "org-membership-renewal-price", name: "org-membership-renewal-price", redirect: { name: "org-membership-renewal-cycle" } },
       {
         path: "org-membership-renewal",
         name: "org-membership-renewal",
@@ -651,39 +643,6 @@ const orgRoutes = [
         meta: { requiresAuth: true },
         props: true,
       },
-       {
-            path: "org-membership-type",
-            name: "org-membership-type",
-            component: OrgMembershipTypes,
-            meta: {
-              requiresAuth: true,
-              permission: "org-membership-type.read",
-            },
-          },
-      {
-            path: "org-membership-renewal-cycle",
-            name: "org-membership-renewal-cycle",
-            component: OrgMembershipRenewalCycle,
-            meta: {
-              requiresAuth: true,
-              permission: "org-membership-renewal-cycle.read",
-            },
-          },
-          {
-            path: "org-membership-renewal-price",
-            name: "org-membership-renewal-price",
-            component: OrgMembershipRenewalPrice,
-            meta: { requiresAuth: true },
-          },
-          {
-            path: "org-membership-renewal",
-            name: "org-membership-renewal",
-            component: OrgMembershipRenewal,
-            meta: {
-              requiresAuth: true,
-              permission: "org-membership-renewal.read",
-            },
-          },
       {
         path: "administrator",
         name: "administrator",

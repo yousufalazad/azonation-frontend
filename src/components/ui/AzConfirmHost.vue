@@ -12,7 +12,7 @@ const open = computed({
 </script>
 
 <template>
-  <AzModal v-model:open="open" :title="confirmState.title || $t('common.confirm')" size="sm">
+  <AzModal v-model:open="open" :title="confirmState.title || $t('common.confirm')" size="sm" layer="top">
     <p v-if="confirmState.message" class="text-[15px] text-ink-2">{{ confirmState.message }}</p>
     <template #footer>
       <AzButton variant="quiet" @click="answerConfirm(false)">

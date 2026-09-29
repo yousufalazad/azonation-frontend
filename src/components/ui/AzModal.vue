@@ -10,6 +10,7 @@ const props = defineProps({
   description: { type: String, default: "" },
   size: { type: String, default: "md" }, // sm | md | lg
   dismissible: { type: Boolean, default: true },
+  layer: { type: String, default: "base" }, // base | top (confirmations shown over another dialog)
 });
 
 const emit = defineEmits(["close"]);
@@ -78,7 +79,7 @@ onBeforeUnmount(() => {
   <Teleport to="body">
     <Transition enter-from-class="opacity-0" leave-to-class="opacity-0"
       enter-active-class="transition-opacity duration-150" leave-active-class="transition-opacity duration-150">
-      <div v-if="open" class="fixed inset-0 z-[1000] flex items-end justify-center bg-overlay/50 sm:items-center sm:p-4"
+      <div v-if="open" :class="layer === 'top' ? 'z-[1050]' : 'z-[1000]'" class="fixed inset-0 flex items-end justify-center bg-overlay/50 sm:items-center sm:p-4"
         @mousedown.self="close" @keydown="onKeydown">
         <div ref="panel" role="dialog" aria-modal="true" :aria-labelledby="titleId" tabindex="-1"
           class="flex max-h-[92vh] w-full flex-col rounded-t-card bg-surface shadow-pop outline-none sm:rounded-card"

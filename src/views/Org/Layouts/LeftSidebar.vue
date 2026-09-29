@@ -38,7 +38,6 @@ const menu = [
       { label: 'nav.terminatedMembers', to: { name: 'terminated-member' } },
       { label: 'nav.membershipRenewal', to: { name: 'org-membership-renewal' } },
       { label: 'nav.renewalCycle', to: { name: 'org-membership-renewal-cycle' } },
-      { label: 'nav.renewalPrice', to: { name: 'org-membership-renewal-price' } },
       { label: 'nav.membershipType', to: { name: 'org-membership-type' } },
     ],
   },
