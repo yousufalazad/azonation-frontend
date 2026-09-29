@@ -1,156 +1,145 @@
+<!-- Read a year plan; print-friendly -->
 <script setup>
-import { ref, onMounted } from "vue";
-import DOMPurify from "dompurify";
-import { authStore } from "../../../store/authStore";
-import { useRouter, useRoute } from "vue-router";
+import { computed, onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import { CurrencyService } from "@/helpers/currency";
+import { richTextHtml, safeUrl } from "@/helpers/sanitizeHtml";
+import { datesText } from "@/helpers/plans";
+import { useToast } from "@/composables/useToast";
+import { useConfirm } from "@/composables/useConfirm";
+import { Pencil, Trash2, Printer, Paperclip } from "lucide-vue-next";
 
 const auth = authStore;
 const route = useRoute();
-const id = route.params.id;
+const router = useRouter();
+const { t } = useI18n();
+const toast = useToast();
+const confirm = useConfirm();
 
-const recordId = ref(null);
-const recordDetails = ref({});
-const sanitizedGoals = ref("");
-const sanitizedActivities = ref("");
+const plan = ref(null);
+const loading = ref(true);
+const notFound = ref(false);
 
-const fetchRecordDetails = async () => {
-  try {
-    recordId.value = id;
-    const response = await auth.fetchProtectedApi(
-      `/api/year-plans/${recordId.value}`,
-      {},
-      "GET",
-    );
-    if (response.status) {
-      recordDetails.value = response.data;
-      sanitizedGoals.value = DOMPurify.sanitize(recordDetails.value.goals);
-      sanitizedActivities.value = DOMPurify.sanitize(
-        recordDetails.value.activities,
-      );
-    } else {
-      console.error("Failed to fetch record details");
-    }
-  } catch (error) {
-    console.error("Error fetching record details:", error);
+const statusTone = { draft: "info", approved: "success", completed: "neutral", archived: "neutral" };
+const years = computed(() => [plan.value?.start_year, plan.value?.end_year].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join("–"));
+const title = computed(() => plan.value?.title || t("plans.yearDefaultTitle", { years: years.value || "—" }));
+
+const stats = computed(() => {
+  const p = plan.value;
+  if (!p) return [];
+  return [
+    { label: "plans.years", value: years.value || "—" },
+    { label: "plans.budget", value: p.budget !== null && p.budget !== undefined ? CurrencyService.format(p.budget) : "—" },
+    { label: "plans.dates", value: datesText(p.start_date, p.end_date, t) || "—" },
+  ];
+});
+
+const sections = computed(() => {
+  const p = plan.value;
+  if (!p) return [];
+  return [
+    { label: "plans.goals", html: richTextHtml(p.goals) },
+    { label: "plans.activities", html: richTextHtml(p.activities) },
+  ].filter((s) => s.html);
+});
+
+const printPage = () => window.print();
+
+async function remove() {
+  const ok = await confirm({
+    title: t("meetings.deleteTitle", { name: title.value }),
+    message: t("plans.deleteText"),
+    confirmText: t("plans.delete"),
+    danger: true,
+  });
+  if (!ok) return;
+  const res = await auth.fetchProtectedApi(`/api/year-plans/${route.params.id}`, {}, "DELETE");
+  if (res?.status) {
+    toast.success(t("plans.deleted"));
+    router.push({ name: "year-plan" });
+  } else {
+    toast.error(t("plans.deleteFailed"));
   }
-};
+}
 
-// Get the record ID from the route
-onMounted(() => {
-  fetchRecordDetails();
+onMounted(async () => {
+  const [res] = await Promise.all([
+    auth.fetchProtectedApi(`/api/year-plans/${route.params.id}`, {}, "GET"),
+    CurrencyService.code ? null : CurrencyService.load(),
+  ]);
+  if (res?.status) plan.value = res.data;
+  else notFound.value = true;
+  loading.value = false;
 });
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto mt-5">
-    <div class="bg-white shadow rounded-lg p-6">
-      <div class="flex justify-between items-center mb-6">
-        <h5 class="text-xl font-semibold">Year Plan Details</h5>
-        <button
-          @click="$router.push({ name: 'year-plan' })"
-          class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300"
-        >
-          Back to Year Plan List
-        </button>
-      </div>
-      <div class="grid grid-cols-1 gap-4">
-        <div>
-          <h3 class="text-gray-700 font-semibold">Title</h3>
-          <p class="text-gray-800">{{ recordDetails.title }}</p>
-        </div>
-        <div>
-          <h3 class="text-gray-700 font-semibold">Start Year</h3>
-          <p class="text-gray-800">{{ recordDetails.start_year }}</p>
-        </div>
-        <div>
-          <h3 class="text-gray-700 font-semibold">End Year</h3>
-          <p class="text-gray-800">{{ recordDetails.end_year }}</p>
-        </div>
-        <div>
-          <h3 class="text-gray-700 font-semibold">Budget</h3>
-          <p class="text-gray-800">${{ recordDetails.budget }}</p>
-        </div>
-        <div>
-          <h3 class="text-gray-700 font-semibold">Start Date</h3>
-          <p class="text-gray-800">{{ recordDetails.start_date }}</p>
-        </div>
-        <div>
-          <h3 class="text-gray-700 font-semibold">End Date</h3>
-          <p class="text-gray-800">{{ recordDetails.end_date }}</p>
-        </div>
-        <div>
-          <h3 class="text-gray-700 font-semibold">Privacy Setup</h3>
-          <p class="text-gray-800">
-            <span v-if="recordDetails.privacy_setup_id === 1">Only Me</span>
-            <span v-else-if="recordDetails.privacy_setup_id === 2"
-              >Organization</span
-            >
-            <span v-else-if="recordDetails.privacy_setup_id === 3">Public</span>
-          </p>
-        </div>
-        <div>
-          <h3 class="text-gray-700 font-semibold">Published</h3>
-          <p class="text-gray-800">
-            <span v-if="recordDetails.published === 1">Yes</span>
-            <span v-else>No</span>
-          </p>
-        </div>
-        <div>
-          <h3 class="text-gray-700 font-semibold">Status</h3>
-          <p class="text-gray-800">
-            <span v-if="recordDetails.status === 1">Active</span>
-            <span v-else>Inactive</span>
-          </p>
-        </div>
+  <div class="mx-auto flex max-w-3xl flex-col gap-6">
+    <AzSkeleton v-if="loading" :lines="8" height="2.5rem" />
+
+    <AzCard v-else-if="notFound">
+      <AzEmptyState :title="t('plans.notFound')" :description="t('meetingView.notFoundText')">
+        <AzButton :to="{ name: 'year-plan' }">{{ t('plans.yearTitle') }}</AzButton>
+      </AzEmptyState>
+    </AzCard>
+
+    <template v-else-if="plan">
+      <AzPageHeader :title="title" :back="{ name: 'year-plan' }" :back-label="t('plans.yearTitle')" class="print:hidden">
+        <AzButton variant="danger" @click="remove">
+          <template #icon><Trash2 class="h-[18px] w-[18px]" /></template>
+          {{ t('common.delete') }}
+        </AzButton>
+        <AzButton variant="secondary" @click="printPage">
+          <template #icon><Printer class="h-[18px] w-[18px]" /></template>
+          {{ t('minutes.print') }}
+        </AzButton>
+        <AzButton :to="{ name: 'edit-year-plan', params: { id: plan.id } }">
+          <template #icon><Pencil class="h-[18px] w-[18px]" /></template>
+          {{ t('plans.editYear') }}
+        </AzButton>
+      </AzPageHeader>
+
+      <h1 class="hidden text-2xl font-semibold text-ink print:block">{{ title }}</h1>
+
+      <div class="-mt-2 flex flex-wrap items-center gap-2">
+        <AzBadge :tone="statusTone[plan.status || 'draft']">{{ t(`plans.status_${plan.status || 'draft'}`) }}</AzBadge>
+        <AzBadge v-if="Number(plan.published) === 1" tone="info">{{ t('minutes.shared') }}</AzBadge>
+        <AzBadge v-if="plan.privacy_name" tone="neutral">{{ plan.privacy_name }}</AzBadge>
       </div>
 
-      <!-- Goals -->
-      <div class="mt-6">
-        <h3 class="text-gray-700 font-semibold mb-2">Goals</h3>
-        <div v-html="sanitizedGoals" class="prose"></div>
-      </div>
-
-      <!-- Activities -->
-      <div class="mt-6">
-        <h3 class="text-gray-700 font-semibold mb-2">Activities</h3>
-        <div v-html="sanitizedActivities" class="prose"></div>
-      </div>
-
-      <div class="mt-6">
-        <h3 class="text-gray-700 font-semibold">Images</h3>
-        <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-4">
-          <img
-            v-for="(img, index) in recordDetails.images"
-            :key="img.id || index"
-            :src="img.image_url"
-            alt="Success Image"
-            class="max-w-full rounded-lg"
-          />
+      <section class="grid gap-3 sm:grid-cols-3">
+        <div v-for="s in stats" :key="s.label" class="rounded-card border border-line bg-surface p-4 shadow-card">
+          <p class="text-sm text-ink-muted">{{ t(s.label) }}</p>
+          <p class="text-lg font-semibold text-ink">{{ s.value }}</p>
         </div>
-      </div>
-      <div class="mt-6">
-        <h3 class="text-gray-700 font-semibold">Documents</h3>
-        <ul class="mt-2 list-disc list-inside text-blue-600">
-          <li
-            v-for="(doc, index) in recordDetails.documents"
-            :key="doc.id || index"
-          >
-            <a
-              :href="doc.document_url"
-              target="_blank" rel="noopener noreferrer"
-              class="hover:text-blue-800 underline"
-            >
-              {{ doc.file_name || "Download Document" }}
+      </section>
+
+      <AzCard v-for="s in sections" :key="s.label" :title="t(s.label)">
+        <div class="prose max-w-none" v-safe-html="s.html" />
+      </AzCard>
+      <AzCard v-if="!sections.length">
+        <p class="text-ink-muted">{{ t('plans.noText') }}</p>
+      </AzCard>
+
+      <AzCard v-if="plan.images?.length || plan.documents?.length" :title="t('meetingView.attachments')">
+        <div class="flex flex-col gap-4">
+          <div v-if="plan.images?.length" class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <a v-for="img in plan.images" :key="img.id" :href="safeUrl(img.image_url)" target="_blank" rel="noopener noreferrer">
+              <img :src="img.image_url" :alt="img.file_name || ''" class="aspect-[4/3] w-full max-w-none rounded-control border border-line object-cover" loading="lazy" />
             </a>
-          </li>
-        </ul>
-      </div>
-    </div>
+          </div>
+          <ul v-if="plan.documents?.length" class="flex flex-col gap-2">
+            <li v-for="doc in plan.documents" :key="doc.id" class="flex items-center gap-2">
+              <Paperclip class="h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />
+              <a :href="safeUrl(doc.document_url)" target="_blank" rel="noopener noreferrer" class="truncate text-[15px] text-primary hover:underline">
+                {{ doc.file_name || t('meetingView.document') }}
+              </a>
+            </li>
+          </ul>
+        </div>
+      </AzCard>
+    </template>
   </div>
 </template>
-
-<style scoped>
-.prose {
-  max-width: 100%;
-}
-</style>

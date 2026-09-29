@@ -40,11 +40,33 @@ export function safeUrl(url) {
   return /^https?:\/\//i.test(trimmed) ? trimmed : undefined;
 }
 
+// Text saved straight from the Quill editor keeps bullet lists as <ol><li data-list="bullet">,
+// which shows as a numbered list anywhere else. Turn those into real <ul> lists.
+function fromQuillLists(html) {
+  if (!html.includes("data-list")) return html;
+  const doc = new DOMParser().parseFromString(`<div>${html}</div>`, "text/html");
+  const root = doc.body.firstElementChild;
+  root.querySelectorAll("span.ql-ui").forEach((el) => el.remove());
+  root.querySelectorAll("ol").forEach((ol) => {
+    const items = [...ol.children];
+    if (!items.length || !items.every((li) => li.getAttribute("data-list") === "bullet")) return;
+    const ul = doc.createElement("ul");
+    items.forEach((li) => {
+      li.removeAttribute("data-list");
+      ul.appendChild(li);
+    });
+    ol.replaceWith(ul);
+  });
+  root.querySelectorAll("li[data-list]").forEach((li) => li.removeAttribute("data-list"));
+  return root.innerHTML;
+}
+
 // Formatted text for display: HTML is cleaned; plain text (older records) keeps its line breaks.
 export function richTextHtml(value) {
   const s = String(value ?? "");
-  if (!s.trim()) return "";
-  if (/<[a-z][\s\S]*>/i.test(s)) return sanitizeHtml(s);
+  // Older forms saved the word "null" in empty fields
+  if (!s.trim() || s === "null" || s === "undefined") return "";
+  if (/<[a-z][\s\S]*>/i.test(s)) return fromQuillLists(sanitizeHtml(s));
   const escape = (line) => line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   return s.split(/\n/).map((line) => `<p>${escape(line) || "<br>"}</p>`).join("");
 }
