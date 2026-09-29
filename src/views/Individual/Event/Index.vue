@@ -2,15 +2,17 @@
 <script setup>
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
-import { authStore } from "@/store/authStore";
+import { useRouter } from "vue-router";
+import { canOpenOrgRoute } from "@/router/orgAccess";
 import { shortDate } from "@/helpers/billing";
 import { PartyPopper } from "lucide-vue-next";
 import ActivityList from "../components/ActivityList.vue";
 
-const auth = authStore;
+const router = useRouter();
 const { t, locale } = useI18n();
 const time = (v) => (v ? String(v).slice(0, 5) : "");
-const createRoute = computed(() => (auth.hasPermission("event.create") ? { name: "create-individual-event" } : null));
+// Role-holders add records in the organisation dashboard
+const createRoute = computed(() => (canOpenOrgRoute(router.resolve({ name: "create-event" })) ? { name: "create-event" } : null));
 
 const row = {
   title: (r) => r.title,

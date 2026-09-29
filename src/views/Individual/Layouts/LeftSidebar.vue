@@ -13,8 +13,10 @@ import {
   UserCircle as UserCircleIcon,
   ChevronDown as ChevronDownIcon,
   LifeBuoy as LifeBuoyIcon,
+  Building2 as Building2Icon,
 } from 'lucide-vue-next';
 import { authStore } from '../../../store/authStore';
+import { isActingForOrg, currentOrgName } from '@/router/orgAccess';
 
 const auth = authStore;
 const route = useRoute();
@@ -45,6 +47,10 @@ const profileLinks = [
   { label: 'accountNav.settings', routeName: 'individual-settings' },
 ];
 
+// Members with a role in the current organisation can manage it from the organisation dashboard
+const canManage = computed(() => isActingForOrg());
+const manageName = computed(() => currentOrgName());
+
 const visibleLinks = computed(() => links.filter((l) => !l.permission || auth.hasPermission(l.permission)));
 const isActive = (name) => route.name === name;
 const profileActive = computed(() => profileLinks.some((l) => isActive(l.routeName)));
@@ -64,6 +70,12 @@ const itemClass = (active) => [
 
 <template>
   <nav class="h-full overflow-y-auto overscroll-y-contain p-3" :aria-label="$t('common.menu')">
+    <router-link v-if="canManage" :to="{ name: 'org-dashboard-index' }" @click="handleLinkClick"
+      :title="!props.isSidebarExpanded ? $t('nav.manageOrg', { name: manageName }) : undefined"
+      class="mb-3 flex min-h-[44px] items-center gap-3 rounded-control border border-primary/30 bg-primary-soft px-3 text-[15px] font-semibold text-primary-soft-ink hover:border-primary">
+      <Building2Icon class="h-5 w-5 shrink-0" aria-hidden="true" />
+      <span v-if="props.isSidebarExpanded" class="truncate">{{ $t('nav.manageOrg', { name: manageName }) }}</span>
+    </router-link>
     <ul class="flex flex-col gap-1">
       <li v-for="link in visibleLinks" :key="link.routeName">
         <router-link :to="{ name: link.routeName }" :class="itemClass(isActive(link.routeName))"

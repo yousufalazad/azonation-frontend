@@ -35,6 +35,8 @@ export default {
     systemHint: "আপনার ফোন বা কম্পিউটারের সেটিং অনুসরণ করে",
   },
   nav: {
+    backToMemberArea: "আমার সদস্য পাতায় ফিরুন",
+    manageOrg: "{name} পরিচালনা",
     home: "হোম",
     membership: "সদস্যপদ",
     members: "সদস্যগণ",
@@ -77,6 +79,7 @@ export default {
     notifications: "বিজ্ঞপ্তি",
   },
   account: {
+    managingFor: "আপনি আপনার ভূমিকার জন্য {name} পরিচালনা করছেন।",
     myAccount: "আমার অ্যাকাউন্ট",
     security: "নিরাপত্তা",
     subscription: "সাবস্ক্রিপশন",
@@ -1718,5 +1721,14 @@ export default {
     attended_projects: "অংশ নেওয়া প্রকল্প",
     attendance_emptyTitle: "এখনো কোনো উপস্থিতি লেখা হয়নি",
     attendance_emptyText: "আপনার সংগঠন কে এসেছিল তা লিখলে আপনার উপস্থিতি এখানে দেখা যাবে।",
+  },
+  manageOrg: {
+    title: "{name} পরিচালনা",
+    description: "আপনার ভূমিকা অনুযায়ী সংগঠনের যে অংশে কাজ করতে পারেন।",
+    yourRoles: "আপনার ভূমিকা",
+    nothingTitle: "এখনো পরিচালনার কিছু নেই",
+    nothingText: "আপনার ভূমিকায় এখনো কোনো পাতা নেই। সংগঠনকে এটি হালনাগাদ করতে বলুন।",
+    cardTitle: "আপনি {name} পরিচালনায় সাহায্য করেন",
+    cardText: "আপনার ভূমিকা অনুযায়ী সংগঠনের কিছু অংশ, যেমন সভা বা ইভেন্ট, পরিচালনা করতে পারেন।",
   },
 };

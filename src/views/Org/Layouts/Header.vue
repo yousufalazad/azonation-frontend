@@ -3,10 +3,13 @@ import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { authStore } from "../../../store/authStore";
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
 import Notification from './HeaderNotification.vue';
+import { currentOrgName, isActingForOrg } from '@/router/orgAccess';
 
 const auth = authStore;
 
-const orgName = computed(() => auth.user?.org_name || 'Your Org Name');
+const orgName = computed(() => currentOrgName() || 'Your Org Name');
+// A member managing this organisation for their role, not the organisation account itself
+const acting = computed(() => isActingForOrg());
 const baseURL = auth.apiBase;
 const userId = auth.user.id;
 
@@ -115,7 +118,25 @@ onBeforeUnmount(() => {
             </div>
 
             <!-- Links -->
-            <ul class="py-2 text-[15px] text-ink-2">
+            <ul v-if="acting" class="py-2 text-[15px] text-ink-2">
+              <li class="px-4 pb-2 text-sm text-ink-muted">{{ $t('account.managingFor', { name: orgName }) }}</li>
+              <li>
+                <router-link :to="{ name: 'individual-dashboard-index' }" class="flex min-h-[44px] items-center px-4 hover:bg-surface-2" @click="handleDropdownLinkClick">
+                  {{ $t('nav.backToMemberArea') }}
+                </router-link>
+              </li>
+              <li>
+                <router-link :to="{ name: 'individual-profile' }" class="flex min-h-[44px] items-center px-4 hover:bg-surface-2" @click="handleDropdownLinkClick">
+                  {{ $t('nav.myProfile') }}
+                </router-link>
+              </li>
+              <li class="border-t border-line mt-2 pt-2">
+                <button @click="auth.logout()" class="flex min-h-[44px] w-full items-center px-4 text-left font-semibold text-primary hover:bg-surface-2">
+                  {{ $t('account.logout') }}
+                </button>
+              </li>
+            </ul>
+            <ul v-else class="py-2 text-[15px] text-ink-2">
               <li>
                 <router-link :to="{ name: 'profile' }" class="flex min-h-[44px] items-center px-4 hover:bg-surface-2"
                   @click="handleDropdownLinkClick">

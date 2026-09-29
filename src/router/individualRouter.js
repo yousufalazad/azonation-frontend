@@ -16,16 +16,10 @@ const Asset = () => import("../views/Individual/Asset/Index.vue");
 const Attendance = () => import("../views/Individual/Attendance/Index.vue");
 // add near the other imports
 const Event = () => import("../views/Individual/Event/Index.vue");
-const CreateIndividualEvent = () => import("../views/Individual/Event/Create.vue");
-const EditIndividualEvent = () => import("../views/Individual/Event/Edit.vue");
 const ViewIndividualEvent = () => import("../views/Individual/Event/View.vue");
 const Project = () => import("../views/Individual/Project/Index.vue");
-const CreateIndividualProject = () => import("../views/Individual/Project/Create.vue");
-const EditIndividualProject = () => import("../views/Individual/Project/Edit.vue");
 const ViewIndividualProject = () => import("../views/Individual/Project/View.vue");
 const Meeting = () => import("../views/Individual/Meeting/Index.vue");
-const CreateIndividualMeeting = () => import("../views/Individual/Meeting/Create.vue");
-const EditIndividualMeeting = () => import("../views/Individual/Meeting/Edit.vue");
 const ViewIndividualMeeting = () => import("../views/Individual/Meeting/View.vue");
 const individualRoutes = [
   {
@@ -110,13 +104,6 @@ const individualRoutes = [
       { path: "past-assets", name: "past-individual-assets", redirect: { name: "individual-assets", query: { tab: "past" } } },
       { path: "attendances", name: "individual-attendances", component: Attendance, meta: { requiresAuth: true } },
 
-      // Adding and changing records needs a role in the current organisation
-      { path: "meeting/create", name: "create-individual-meeting", component: CreateIndividualMeeting, meta: { requiresAuth: true, permission: "meeting.create" } },
-      { path: "meeting/edit/:id", name: "edit-individual-meeting", component: EditIndividualMeeting, meta: { requiresAuth: true, permission: "meeting.update" }, props: true },
-      { path: "event/create", name: "create-individual-event", component: CreateIndividualEvent, meta: { requiresAuth: true, permission: "event.create" } },
-      { path: "event/edit/:id", name: "edit-individual-event", component: EditIndividualEvent, meta: { requiresAuth: true, permission: "event.update" }, props: true },
-      { path: "project/create", name: "create-individual-project", component: CreateIndividualProject, meta: { requiresAuth: true, permission: "project.create" } },
-      { path: "project/edit/:id", name: "edit-individual-project", component: EditIndividualProject, meta: { requiresAuth: true, permission: "project.update" }, props: true },
     ],
   },
 ];

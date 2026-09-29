@@ -1,5 +1,6 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { canOpenOrgRoute, isActingForOrg } from '@/router/orgAccess';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
   HomeIcon,
@@ -15,6 +16,7 @@ import {
   Building2Icon,
   SettingsIcon,
   ChevronDownIcon,
+  ArrowLeftIcon,
   LifeBuoyIcon,
 } from 'lucide-vue-next';
 
@@ -78,6 +80,23 @@ const menu = [
   { label: 'nav.support', to: { name: 'support' }, icon: LifeBuoyIcon },
 ];
 
+// A member with a role sees only what their role lets them open, plus a way back to their own area
+const resolved = (to) => {
+  try {
+    return router.resolve(to);
+  } catch {
+    return null;
+  }
+};
+const visibleMenu = computed(() => {
+  const items = menu
+    .map((item) => (item.children ? { ...item, children: item.children.filter((c) => canOpenOrgRoute(resolved(c.to))) } : item))
+    .filter((item) => (item.children ? item.children.length > 0 : canOpenOrgRoute(resolved(item.to))));
+  return isActingForOrg()
+    ? [{ label: 'nav.backToMemberArea', to: { name: 'individual-dashboard-index' }, icon: ArrowLeftIcon }, ...items]
+    : items;
+});
+
 const openSections = ref([]);
 
 const pathOf = (to) => {
@@ -123,7 +142,7 @@ const itemClass = (active) => [
 <template>
   <nav class="h-full overflow-y-auto overscroll-y-contain p-3" :aria-label="$t('common.menu')">
     <ul class="flex flex-col gap-1">
-      <li v-for="item in menu" :key="item.label">
+      <li v-for="item in visibleMenu" :key="item.label">
         <!-- Single link -->
         <router-link v-if="!item.children" :to="item.to" :class="itemClass(isActive(item.to))"
           :aria-current="isActive(item.to) ? 'page' : undefined"

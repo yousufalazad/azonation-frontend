@@ -35,6 +35,8 @@ export default {
     systemHint: "Follows your phone or computer setting",
   },
   nav: {
+    backToMemberArea: "Back to my member area",
+    manageOrg: "Manage {name}",
     home: "Home",
     membership: "Membership",
     members: "Members",
@@ -77,6 +79,7 @@ export default {
     notifications: "Notifications",
   },
   account: {
+    managingFor: "You are managing {name} for your role.",
     myAccount: "My account",
     security: "Security",
     subscription: "Subscription",
@@ -1718,5 +1721,14 @@ export default {
     attended_projects: "Projects taken part in",
     attendance_emptyTitle: "No attendance recorded yet",
     attendance_emptyText: "When your organisation records who came, your attendance appears here.",
+  },
+  manageOrg: {
+    title: "Manage {name}",
+    description: "The parts of the organisation your role lets you work on.",
+    yourRoles: "Your roles",
+    nothingTitle: "Nothing to manage yet",
+    nothingText: "Your role does not include any pages yet. Ask the organisation to update it.",
+    cardTitle: "You help run {name}",
+    cardText: "Your role lets you manage parts of the organisation, such as meetings or events.",
   },
 };

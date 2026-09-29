@@ -8,12 +8,16 @@ import { CurrencyService } from '@/helpers/currency';
 import { useToast } from '@/composables/useToast';
 import { formatDate, membershipAge, humanize, statusTone } from '@/helpers/format';
 import { Users, CalendarDays, Wallet, TrendingUp, Plus, ChevronRight } from 'lucide-vue-next';
+import { isActingForOrg } from '@/router/orgAccess';
+import ManageHome from './ManageHome.vue';
 
 const auth = authStore;
 const { t } = useI18n();
 const toast = useToast();
 
 const canView = computed(() => auth.isAuthenticated && auth.user?.type === 'organisation');
+// Members with a role get a home page for the parts they manage
+const acting = computed(() => isActingForOrg());
 const orgName = computed(() => auth.user?.org_name || '');
 
 /* ================= LOADING ================= */
@@ -230,5 +234,6 @@ onMounted(async () => {
         </section>
     </div>
 
+    <ManageHome v-else-if="acting" />
     <AzEmptyState v-else :title="t('dashboard.notAllowed')" />
 </template>

@@ -6,6 +6,7 @@ import { useI18n } from "vue-i18n";
 import { authStore } from "@/store/authStore";
 import { useToast } from "@/composables/useToast";
 import { shortDate } from "@/helpers/billing";
+import { isActingForOrg, currentOrgName } from "@/router/orgAccess";
 import { CalendarDays, PartyPopper, FolderKanban, Users, Package, Copy, Building2, MapPin } from "lucide-vue-next";
 
 const auth = authStore;
@@ -16,6 +17,7 @@ const loading = ref(true);
 const orgs = ref([]);
 const azonId = ref("");
 
+const canManage = computed(() => isActingForOrg());
 const firstName = computed(() => auth.user?.first_name || "");
 const time = (v) => (v ? String(v).slice(0, 5) : "");
 const when = (date, clock) => [shortDate(date, locale.value), time(clock)].filter(Boolean).join(" · ");
@@ -40,6 +42,17 @@ onMounted(async () => {
 <template>
   <div class="mx-auto flex max-w-6xl flex-col gap-6">
     <AzPageHeader :title="firstName ? t('memberHome.hello', { name: firstName }) : t('dashboard.welcome')" :description="t('memberHome.description')" />
+
+    <!-- Role-holders manage their organisation from the organisation dashboard -->
+    <AzCard v-if="canManage">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="font-semibold text-ink">{{ t('manageOrg.cardTitle', { name: currentOrgName() }) }}</p>
+          <p class="text-sm text-ink-muted">{{ t('manageOrg.cardText') }}</p>
+        </div>
+        <AzButton :to="{ name: 'org-dashboard-index' }">{{ t('nav.manageOrg', { name: currentOrgName() }) }}</AzButton>
+      </div>
+    </AzCard>
 
     <AzSkeleton v-if="loading" :lines="6" height="4rem" />
 

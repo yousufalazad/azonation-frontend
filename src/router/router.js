@@ -1,4 +1,5 @@
 // router/router.js
+import { canOpenOrgRoute, isActingForOrg } from "./orgAccess";
 import { createRouter, createWebHistory } from "vue-router";
 import superadminRoutes from "./superadminRouter";
 import individualRoutes from "./individualRouter";
@@ -136,6 +137,15 @@ router.beforeEach(async (to, from, next) => {
         topLoaderRef?.finish?.();
       } catch (e) {}
       return next({ name: "login" });
+    }
+
+    // Members with a role may use parts of the organisation dashboard for that organisation
+    if (to.meta.requiresAuth && to.meta.type === "organisation" && authStore.getUserType() === "individual") {
+      if (canOpenOrgRoute(to)) return next();
+      try {
+        topLoaderRef?.finish?.();
+      } catch (e) {}
+      return next(isActingForOrg() ? { name: "unauthorized" } : { name: "individual-dashboard-index" });
     }
 
     // Wrong user type
