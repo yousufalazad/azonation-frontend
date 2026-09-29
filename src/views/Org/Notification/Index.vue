@@ -137,8 +137,10 @@ const closeDetail = () => {
 const openLink = (n) => {
   const url = linkOf(n);
   if (!url) return;
-  if (url.startsWith('/')) router.push(url);
-  else window.open(url, '_blank', 'noopener');
+  // In-app paths stay in the app; only http(s) links may open a new tab
+  // (blocks javascript: and data: links coming from notification content)
+  if (url.startsWith('/') && !url.startsWith('//')) router.push(url);
+  else if (/^https?:\/\//i.test(url)) window.open(url, '_blank', 'noopener,noreferrer');
 };
 
 // Browser back/forward or manual URL change

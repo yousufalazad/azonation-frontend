@@ -31,3 +31,11 @@ export const vSafeHtml = {
   mounted: render,
   updated: render,
 };
+
+// Returns the URL only if it is a safe web link (http/https), otherwise undefined.
+// Use for links typed in by users, e.g. :href="safeUrl(record.video_link)".
+export function safeUrl(url) {
+  if (typeof url !== "string") return undefined;
+  const trimmed = url.trim();
+  return /^https?:\/\//i.test(trimmed) ? trimmed : undefined;
+}

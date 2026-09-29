@@ -166,7 +166,7 @@ onMounted(() => {
             <div v-if="projectSummary.documents && projectSummary.documents.length">
               <ul class="mt-2 list-disc list-inside text-blue-600">
                 <li v-for="(doc, index) in projectSummary.documents" :key="doc.id || index">
-                  <a :href="doc.document_url" target="_blank" class="hover:text-blue-800">
+                  <a :href="doc.document_url" target="_blank" rel="noopener noreferrer" class="hover:text-blue-800">
                     {{ doc.file_name || 'Download Document' }}
                   </a>
                 </li>

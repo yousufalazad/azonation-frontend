@@ -326,7 +326,7 @@ onMounted(() => fetchRecord());
             <td class="px-2 py-2">
               <ul class="mt-2 list-disc list-inside text-blue-600">
                 <li v-for="(doc, index) in record.documents" :key="index">
-                  <a :href="safeJoinUrl(auth.apiBase, doc.document_url)" target="_blank"
+                  <a :href="safeJoinUrl(auth.apiBase, doc.document_url)" target="_blank" rel="noopener noreferrer"
                     class="hover:text-blue-800 underline">{{ doc.file_name || "Download Document" }}</a>
                 </li>
               </ul>

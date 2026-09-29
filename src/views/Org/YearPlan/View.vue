@@ -137,7 +137,7 @@ onMounted(() => {
           >
             <a
               :href="doc.document_url"
-              target="_blank"
+              target="_blank" rel="noopener noreferrer"
               class="hover:text-blue-800 underline"
             >
               {{ doc.file_name || "Download Document" }}

@@ -58,10 +58,10 @@ onMounted(loadReferralData);
       <!-- Share Options -->
       <div class="flex gap-4 mt-4 text-sm text-gray-700">
         <span>Share:</span>
-        <a :href="`https://wa.me/?text=Join us using code ${referralCode}`" target="_blank"
+        <a :href="`https://wa.me/?text=Join us using code ${referralCode}`" target="_blank" rel="noopener noreferrer"
           class="text-green-600 hover:underline">WhatsApp</a>
         <a :href="`https://www.facebook.com/sharer/sharer.php?u=https://azonation.com&quote=Use code ${referralCode}`"
-          target="_blank" class="text-blue-600 hover:underline">Facebook</a>
+          target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">Facebook</a>
         <a :href="`mailto:?subject=Join us&body=Use our referral code ${referralCode}`"
           class="text-gray-600 hover:underline">Email</a>
       </div>

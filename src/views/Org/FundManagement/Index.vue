@@ -1030,7 +1030,7 @@ onMounted(async () => {
                 📄
                 <a
                   :href="doc.document_url"
-                  target="_blank"
+                  target="_blank" rel="noopener noreferrer"
                   class="hover:underline truncate max-w-[90%]"
                   :title="doc.file_name"
                 >

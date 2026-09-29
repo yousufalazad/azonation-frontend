@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { authStore } from '../../../../store/authStore';
+import { safeUrl } from '@/helpers/sanitizeHtml';
 
 const router = useRouter();
 const auth = authStore;
@@ -108,7 +109,7 @@ onMounted(() => {
                         <td class="px-2 py-2 text-left font-semibold w-36">Video Link</td>
                         <td>:</td>
                         <td class="px-2 py-2 text-left">
-                            <a :href="record.video_link" target="_blank" class="text-blue-500 underline">{{
+                            <a :href="safeUrl(record.video_link)" target="_blank" rel="noopener noreferrer" class="text-blue-500 underline">{{
                                 record.video_link }}</a>
                         </td>
                     </tr>
@@ -156,7 +157,7 @@ onMounted(() => {
                             <div v-if="record.documents && record.documents.length">
                                 <ul class="mt-2 list-disc list-inside text-blue-600">
                                     <li v-for="(doc, index) in record.documents" :key="doc.id || index">
-                                        <a :href="doc.document_url" target="_blank" class="hover:text-blue-800">
+                                        <a :href="doc.document_url" target="_blank" rel="noopener noreferrer" class="hover:text-blue-800">
                                             {{ doc.file_name || 'Download Document' }}
                                         </a>
                                     </li>
