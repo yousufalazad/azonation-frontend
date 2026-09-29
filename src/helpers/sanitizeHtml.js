@@ -39,3 +39,12 @@ export function safeUrl(url) {
   const trimmed = url.trim();
   return /^https?:\/\//i.test(trimmed) ? trimmed : undefined;
 }
+
+// Formatted text for display: HTML is cleaned; plain text (older records) keeps its line breaks.
+export function richTextHtml(value) {
+  const s = String(value ?? "");
+  if (!s.trim()) return "";
+  if (/<[a-z][\s\S]*>/i.test(s)) return sanitizeHtml(s);
+  const escape = (line) => line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return s.split(/\n/).map((line) => `<p>${escape(line) || "<br>"}</p>`).join("");
+}

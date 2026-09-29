@@ -1,523 +1,219 @@
+<!-- One committee: its term, description and the people serving on it (by role) -->
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import Swal from 'sweetalert2';
-import { authStore } from '../../../store/authStore';
-import { useRoute, useRouter } from 'vue-router';
-import { downloadCsv } from '@/helpers/download';
-import { excelExport } from '@/helpers/excelExport';
-import EasyDataTable from 'vue3-easy-data-table';
-import 'vue3-easy-data-table/dist/style.css';
+import { computed, onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import { richTextHtml } from "@/helpers/sanitizeHtml";
+import { useToast } from "@/composables/useToast";
+import { useConfirm } from "@/composables/useConfirm";
+import { servingState, periodText } from "@/helpers/committee";
+import CommitteeFormModal from "./components/CommitteeFormModal.vue";
+import CommitteeMemberModal from "./components/CommitteeMemberModal.vue";
+import { CalendarRange, Pencil, Trash2, UserPlus, MoreVertical } from "lucide-vue-next";
 
-const router = useRouter();
-const route = useRoute();
 const auth = authStore;
+const route = useRoute();
+const router = useRouter();
+const { t } = useI18n();
+const toast = useToast();
+const confirm = useConfirm();
 
-const committeeId = ref(route.params.committeeId || null);
-const committeeName = ref(route.params.committeeName || null);
-const isModalOpen = ref(false);
-const isViewModalOpen = ref(false);
-const isEditMode = ref(false);
-const selectedCommitteeMemberId = ref(null);
+const committeeId = computed(() => route.params.committeeId);
+const committee = ref(null);
+const people = ref([]); // committee members
+const members = ref([]); // organisation members to choose from
+const designations = ref([]);
+const loading = ref(true);
+const notFound = ref(false);
 
-const user_id = ref('');
-const designation_id = ref('');
-const start_date = ref('');
-const end_date = ref('');
-const note = ref('');
-const is_active = ref(1);
+const committeeFormOpen = ref(false);
+const memberFormOpen = ref(false);
+const editingMember = ref(null);
 
-const viewData = ref({});
-const userList = ref([]);
-const designationList = ref([]);
-const committeeMemberList = ref([]);
+async function loadPeople() {
+  const res = await auth.fetchProtectedApi(`/api/committee-members/${committeeId.value}`, {}, "GET");
+  people.value = (res?.status ? res.data : []).map((p) => ({
+    ...p,
+    name: [p.first_name, p.last_name].filter(Boolean).join(" ") || "—",
+    state: servingState(p),
+  }));
+}
 
-const search = ref('');
-const startFilter = ref('');
-const endFilter = ref('');
-const quickDateFilter = ref('');
-const rowsPerPage = ref(10);
-const currentPage = ref(1);
+async function load() {
+  const [c, orgMembers, roles] = await Promise.all([
+    auth.fetchProtectedApi(`/api/committees/${committeeId.value}`, {}, "GET"),
+    auth.fetchProtectedApi("/api/org-all-member-name", {}, "GET"),
+    auth.fetchProtectedApi("/api/designations", {}, "GET"),
+    loadPeople(),
+  ]);
+  if (!c?.status) {
+    notFound.value = true;
+    return;
+  }
+  committee.value = { ...c.data, state: servingState(c.data) };
+  members.value = (orgMembers?.status ? orgMembers.data : [])
+    .filter((m) => m.individual)
+    .map((m) => ({
+      id: m.individual.id,
+      name: [m.individual.first_name, m.individual.last_name].filter(Boolean).join(" "),
+      membership: m.membership_type?.name || "",
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  designations.value = (roles?.status ? roles.data : []).filter((d) => !(d.is_active === 0 || d.is_active === "0"));
+}
 
-const headers = [
-    { text: 'Name', value: 'full_name' },
-    { text: 'Designation', value: 'designation_name' },
-    { text: 'Start Date', value: 'start_date' },
-    { text: 'End Date', value: 'end_date' },
-    { text: 'Status', value: 'status_display' },
-    { text: 'Actions', value: 'actions', sortable: false }
+// Serving now, in role order (President first...); then people who served before
+const byRole = (a, b) => (a.designation_id ?? 0) - (b.designation_id ?? 0) || a.name.localeCompare(b.name);
+const serving = computed(() => people.value.filter((p) => p.state === "current").sort(byRole));
+const past = computed(() => people.value.filter((p) => p.state === "former").sort(byRole));
+const takenUserIds = computed(() => serving.value.map((p) => p.user_id));
+
+const description = computed(() => richTextHtml(committee.value?.short_description));
+
+function openMember(record = null) {
+  editingMember.value = record;
+  memberFormOpen.value = true;
+}
+
+const personActions = (p) => [
+  { label: t("committees.editMember"), icon: Pencil, onSelect: () => openMember(p) },
+  { label: t("committees.removeMember"), icon: Trash2, onSelect: () => removePerson(p) },
 ];
 
-const filteredList = computed(() => {
-    let list = [...committeeMemberList.value];
-    if (startFilter.value) list = list.filter(item => item.start_date >= startFilter.value);
-    if (endFilter.value) list = list.filter(item => item.end_date <= endFilter.value);
-    if (search.value.trim()) {
-        const s = search.value.toLowerCase();
-        list = list.filter(item =>
-        (`${item.first_name} ${item.last_name}`.toLowerCase().includes(s) ||
-            item.designation_name.toLowerCase().includes(s))
-        );
-    }
-    return list.map(item => ({
-        ...item,
-        full_name: `${item.first_name} ${item.last_name}`,
-        status_display: item.is_active === 1 ? 'Active' : 'Disabled'
-    }));
-});
+async function removePerson(p) {
+  const ok = await confirm({
+    title: t("committees.removeTitle", { name: p.name }),
+    message: t("committees.removeText"),
+    confirmText: t("committees.removeMember"),
+    danger: true,
+  });
+  if (!ok) return;
+  const res = await auth.fetchProtectedApi(`/api/committee-members/${p.id}`, {}, "DELETE");
+  if (res?.status) {
+    toast.success(t("committees.memberRemoved"));
+    await loadPeople();
+  } else {
+    toast.error(t("committees.memberSaveFailed"));
+  }
+}
 
-const paginatedList = computed(() => {
-    const start = (currentPage.value - 1) * rowsPerPage.value;
-    return filteredList.value.slice(start, start + rowsPerPage.value);
-});
+async function removeCommittee() {
+  const ok = await confirm({
+    title: t("meetings.deleteTitle", { name: committee.value.name }),
+    message: t("committees.deleteText", { n: people.value.length }),
+    confirmText: t("committees.delete"),
+    danger: true,
+  });
+  if (!ok) return;
+  const res = await auth.fetchProtectedApi(`/api/committees/${committeeId.value}`, {}, "DELETE");
+  if (res?.status) {
+    toast.success(t("committees.deleted"));
+    router.push({ name: "committees" });
+  } else {
+    toast.error(t("committees.deleteFailed"));
+  }
+}
 
-const totalPages = computed(() => Math.ceil(filteredList.value.length / rowsPerPage.value));
+async function onCommitteeSaved() {
+  const c = await auth.fetchProtectedApi(`/api/committees/${committeeId.value}`, {}, "GET");
+  if (c?.status) committee.value = { ...c.data, state: servingState(c.data) };
+}
 
-const applyQuickDateFilter = () => {
-    const today = new Date();
-    const format = d => d.toISOString().split('T')[0];
-    if (quickDateFilter.value === 'last7') {
-        const d = new Date(today); d.setDate(today.getDate() - 7);
-        startFilter.value = format(d); endFilter.value = format(today);
-    } else if (quickDateFilter.value === 'thisMonth') {
-        const d1 = new Date(today.getFullYear(), today.getMonth(), 1);
-        const d2 = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        startFilter.value = format(d1); endFilter.value = format(d2);
-    } else {
-        startFilter.value = ''; endFilter.value = '';
-    }
-};
-
-const exportCSV = () => {
-    const header = headers.filter(h => h.value !== 'actions').map(h => h.text);
-    const rows = filteredList.value.map(item => [
-        item.full_name,
-        item.designation_name,
-        item.start_date,
-        item.end_date,
-        item.status_display
-    ]);
-    downloadCsv([header, ...rows], 'committee_members.csv');
-};
-
-const exportXLSX = () => excelExport({
-    headers: [
-        { text: 'Name', value: 'full_name' },
-        { text: 'Designation', value: 'designation_name' },
-        { text: 'Start Date', value: 'start_date' },
-        { text: 'End Date', value: 'end_date' },
-        { text: 'Status', value: 'status_display' },
-    ],
-    rows: filteredList.value,
-    title: committeeName.value ? `${committeeName.value} members` : 'Committee members',
-    fileName: 'committee_members.xlsx',
-});
-
-const exportPDF = async () => {
-    // PDF library is loaded only when someone exports
-    const [{ jsPDF }, { default: autoTable }] = await Promise.all([
-        import('jspdf'),
-        import('jspdf-autotable'),
-    ]);
-    const doc = new jsPDF();
-    const header = [['Name', 'Designation', 'Start Date', 'End Date', 'Status']];
-    const body = filteredList.value.map(item => [
-        item.full_name,
-        item.designation_name,
-        item.start_date,
-        item.end_date,
-        item.status_display
-    ]);
-    autoTable(doc, { head: header, body });
-    doc.save('committee_members.pdf');
-};
-
-const getOrgUserList = async () => {
-    const res = await auth.fetchProtectedApi('/api/org-all-member-name', {}, 'GET');
-    if (res.status) userList.value = res.data;
-};
-
-const getDesignationList = async () => {
-    const res = await auth.fetchProtectedApi('/api/designations', {}, 'GET');
-    if (res.status) designationList.value = res.data;
-};
-
-const getCommitteeMemberList = async () => {
-    const res = await auth.fetchProtectedApi(`/api/committee-members/${committeeId.value}`, {}, 'GET');
-    if (res.status) committeeMemberList.value = res.data;
-};
-
-const resetForm = () => {
-    user_id.value = '';
-    designation_id.value = '';
-    start_date.value = '';
-    end_date.value = '';
-    note.value = '';
-    is_active.value = 1;
-    selectedCommitteeMemberId.value = null;
-    isEditMode.value = false;
-    isModalOpen.value = false;
-};
-
-const openModalForAdd = () => { resetForm(); isModalOpen.value = true; };
-
-const openModalForEdit = (member) => {
-    user_id.value = member.user_id;
-    designation_id.value = member.designation_id;
-    start_date.value = member.start_date;
-    end_date.value = member.end_date;
-    note.value = member.note;
-    is_active.value = member.is_active;
-    selectedCommitteeMemberId.value = member.id;
-    isEditMode.value = true;
-    isModalOpen.value = true;
-};
-const openViewModal = (item) => { viewData.value = item; isViewModalOpen.value = true; };
-
-const submitForm = async () => {
-    const payload = {
-        committee_id: committeeId.value,
-        user_id: user_id.value,
-        designation_id: designation_id.value,
-        start_date: start_date.value,
-        end_date: end_date.value,
-        note: note.value,
-        is_active: is_active.value
-    };
-
-    const method = isEditMode.value ? 'PUT' : 'POST';
-    const url = isEditMode.value
-        ? `/api/committee-members/${selectedCommitteeMemberId.value}`
-        : '/api/committee-members';
-
-    const confirm = await Swal.fire({
-        title: 'Are you sure?',
-        text: `You want to ${isEditMode.value ? 'update' : 'add'} this member?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, save it!'
-    });
-
-    if (confirm.isConfirmed) {
-        const res = await auth.fetchProtectedApi(url, payload, method);
-        if (res.status) {
-            Swal.fire('Success!', 'Saved successfully.', 'success');
-            getCommitteeMemberList();
-            resetForm();
-        } else {
-            Swal.fire('Error!', 'Failed to save.', 'error');
-        }
-    }
-};
-
-const deleteMember = async (id) => {
-    const confirm = await Swal.fire({
-        title: 'Are you sure?',
-        text: 'This member will be deleted!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, delete it!'
-    });
-
-    if (confirm.isConfirmed) {
-        const res = await auth.fetchProtectedApi(`/api/committee-members/${id}`, {}, 'DELETE');
-        if (res.status) {
-            getCommitteeMemberList();
-            Swal.fire('Deleted!', 'Member deleted.', 'success');
-        } else {
-            Swal.fire('Error!', 'Failed to delete.', 'error');
-        }
-    }
-};
-
-const CommitteeDetails = ref([]);
-// Fetch meeting details
-const fetchCommitteeDetails = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/committees/${committeeId.value}`, {}, 'GET');
-        CommitteeDetails.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching committees:', error);
-        CommitteeDetails.value = [];
-    }
-};
-
-onMounted(() => {
-    getOrgUserList();
-    getDesignationList();
-    getCommitteeMemberList();
-    fetchCommitteeDetails();
+onMounted(async () => {
+  await load();
+  loading.value = false;
 });
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-6">
-    <!-- Committee Details -->
-    <section class="mb-6">
-      <div class="bg-white shadow-md rounded-xl p-4 border">
-        <h5 class="text-sm sm:text-md text-gray-800 flex flex-wrap gap-2">
-          <span>Name: {{ CommitteeDetails.name }}</span>
-          <span class="mx-2 hidden sm:inline">•</span>
-          <span>Start Date: {{ CommitteeDetails.start_date }}</span>
-          <span class="mx-2 hidden sm:inline">•</span>
-          <span>End Date: {{ CommitteeDetails.end_date }}</span>
-        </h5>
-      </div>
-    </section>
+  <div class="mx-auto flex max-w-4xl flex-col gap-6">
+    <AzSkeleton v-if="loading" :lines="6" height="3rem" />
 
-    <!-- Header & Actions -->
-    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-white p-4 rounded shadow gap-3">
-      <h2 class="text-base sm:text-lg font-semibold text-gray-800">
-        {{ CommitteeDetails.name }} Members
-      </h2>
-      <div class="flex flex-wrap gap-2">
-        <button @click="exportCSV"
-          class="border px-3 py-1.5 text-xs sm:text-sm rounded hover:bg-gray-100">
-          CSV
-        </button>
-        <button @click="exportXLSX"
-          class="border px-3 py-1.5 text-xs sm:text-sm rounded hover:bg-gray-100">
-          Excel
-        </button>
-        <button @click="exportPDF"
-          class="border px-3 py-1.5 text-xs sm:text-sm rounded hover:bg-gray-100">
-          PDF
-        </button>
-        <button @click="openModalForAdd"
-          class="bg-green-600 text-white px-3 sm:px-4 py-2 text-xs sm:text-sm rounded hover:bg-green-500">
-          + Add Member
-        </button>
-        <button @click="router.push({ name: 'committees' })"
-          class="bg-blue-600 text-white px-3 sm:px-4 py-2 text-xs sm:text-sm rounded hover:bg-blue-500">
-          ← Back
-        </button>
-      </div>
-    </div>
+    <AzCard v-else-if="notFound">
+      <AzEmptyState :title="t('committees.notFound')" :description="t('meetingView.notFoundText')">
+        <AzButton :to="{ name: 'committees' }">{{ t('committees.title') }}</AzButton>
+      </AzEmptyState>
+    </AzCard>
 
-    <!-- Filters -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-      <div>
-        <label class="text-sm text-gray-600">Search</label>
-        <input v-model="search" type="text" placeholder="Search..."
-          class="w-full border rounded px-3 py-1.5 text-sm" />
-      </div>
-      <div>
-        <label class="text-sm text-gray-600">Start Date</label>
-        <input type="date" v-model="startFilter"
-          class="w-full border rounded px-3 py-1.5 text-sm" />
-      </div>
-      <div>
-        <label class="text-sm text-gray-600">End Date</label>
-        <input type="date" v-model="endFilter"
-          class="w-full border rounded px-3 py-1.5 text-sm" />
-      </div>
-      <div>
-        <label class="text-sm text-gray-600">Quick Filter</label>
-        <select v-model="quickDateFilter" @change="applyQuickDateFilter"
-          class="w-full border rounded px-3 py-1.5 text-sm">
-          <option value="">All</option>
-          <option value="last7">Last 7 Days</option>
-          <option value="thisMonth">This Month</option>
-        </select>
-      </div>
-    </div>
+    <template v-else-if="committee">
+      <AzPageHeader :title="committee.name" :back="{ name: 'committees' }" :back-label="t('committees.title')">
+        <AzButton variant="danger" @click="removeCommittee">
+          <template #icon><Trash2 class="h-[18px] w-[18px]" /></template>
+          {{ t('common.delete') }}
+        </AzButton>
+        <AzButton variant="secondary" @click="committeeFormOpen = true">
+          <template #icon><Pencil class="h-[18px] w-[18px]" /></template>
+          {{ t('committees.edit') }}
+        </AzButton>
+      </AzPageHeader>
 
-    <!-- Table -->
-    <div class="my-6 overflow-x-auto">
-      <EasyDataTable
-        :headers="headers"
-        :items="paginatedList"
-        :search-value="search"
-        :rows-per-page="rowsPerPage"
-        :current-page="currentPage"
-        :loading="false"
-        :hide-footer="true"
-        table-class="min-w-full text-sm"
-        header-class="bg-gray-100"
-        body-row-class="text-sm"
-        theme-color="#3b82f6"
-      >
-        <template #item-status_display="{ status_display }">
-          <span :class="status_display === 'Active' ? 'text-green-600' : 'text-red-600'">
-            {{ status_display }}
-          </span>
+      <div class="-mt-2 flex flex-wrap items-center gap-3 text-sm text-ink-muted">
+        <AzBadge :tone="committee.state === 'current' ? 'success' : 'neutral'">{{ t(`committees.${committee.state}`) }}</AzBadge>
+        <span v-if="periodText(committee, t)" class="inline-flex items-center gap-1.5">
+          <CalendarRange class="h-4 w-4" aria-hidden="true" />{{ periodText(committee, t) }}
+        </span>
+      </div>
+
+      <AzCard v-if="description" :title="t('committees.about')">
+        <div class="prose prose-sm max-w-none" v-safe-html="description" />
+      </AzCard>
+
+      <!-- Serving now -->
+      <AzCard :title="t('committees.servingNow', { n: serving.length })" :padded="false">
+        <template #actions>
+          <AzButton size="sm" @click="openMember()">
+            <template #icon><UserPlus class="h-4 w-4" /></template>
+            {{ t('committees.addMember') }}
+          </AzButton>
         </template>
-        <template #item-actions="{ id }">
-          <div class="flex flex-wrap gap-2 justify-end">
-            <button
-              @click="openViewModal(committeeMemberList.find(c => c.id === id))"
-              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
-              View
-            </button>
-            <button
-              @click="openModalForEdit(committeeMemberList.find(c => c.id === id))"
-              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
-              Edit
-            </button>
-            <button
-              @click="deleteMember(id)"
-              class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
-              Delete
-            </button>
-          </div>
-        </template>
-      </EasyDataTable>
-    </div>
+        <AzEmptyState v-if="!serving.length" :title="t('committees.noMembersTitle')" :description="t('committees.noMembersText')">
+          <AzButton @click="openMember()">{{ t('committees.addMember') }}</AzButton>
+        </AzEmptyState>
+        <ul v-else class="divide-y divide-line">
+          <li v-for="p in serving" :key="p.id" class="flex items-center gap-3 px-5 py-3">
+            <AzAvatar :name="p.name" size="md" />
+            <div class="min-w-0 flex-1">
+              <p class="truncate font-medium text-ink">{{ p.name }}</p>
+              <p class="flex flex-wrap items-center gap-x-2 text-sm text-ink-muted">
+                <AzBadge tone="info">{{ p.designation_name || '—' }}</AzBadge>
+                <span v-if="periodText(p, t)">{{ periodText(p, t) }}</span>
+                <span v-if="p.note" class="truncate">· {{ p.note }}</span>
+              </p>
+            </div>
+            <AzMenu :items="personActions(p)" variant="quiet" :aria-label="t('meetings.more', { name: p.name })">
+              <template #icon><MoreVertical class="h-[18px] w-[18px]" /></template>
+            </AzMenu>
+          </li>
+        </ul>
+      </AzCard>
 
-    <!-- Custom Pagination -->
-    <div class="flex flex-col sm:flex-row justify-between items-center gap-3 px-2 py-3 bg-gray-50 rounded border">
-      <!-- Left Info -->
-      <div class="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
-        Items {{ (currentPage - 1) * rowsPerPage + 1 }} -
-        {{ Math.min(currentPage * rowsPerPage, filteredList.length) }}
-        of {{ filteredList.length }} |
-        Page {{ currentPage }} of {{ totalPages }}
-      </div>
+      <!-- Served before -->
+      <AzCard v-if="past.length" :title="t('committees.servedBefore', { n: past.length })" :padded="false">
+        <ul class="divide-y divide-line">
+          <li v-for="p in past" :key="p.id" class="flex items-center gap-3 px-5 py-3">
+            <AzAvatar :name="p.name" size="md" muted />
+            <div class="min-w-0 flex-1">
+              <p class="truncate font-medium text-ink-2">{{ p.name }}</p>
+              <p class="flex flex-wrap items-center gap-x-2 text-sm text-ink-muted">
+                <span>{{ p.designation_name || '—' }}</span>
+                <span v-if="periodText(p, t)">· {{ periodText(p, t) }}</span>
+              </p>
+            </div>
+            <AzMenu :items="personActions(p)" variant="quiet" :aria-label="t('meetings.more', { name: p.name })">
+              <template #icon><MoreVertical class="h-[18px] w-[18px]" /></template>
+            </AzMenu>
+          </li>
+        </ul>
+      </AzCard>
 
-      <!-- Right controls -->
-      <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-        <!-- Page Size -->
-        <div class="flex items-center justify-center sm:justify-start gap-1">
-          <span class="text-gray-600">Items per page:</span>
-          <select v-model="rowsPerPage" class="border rounded px-2 py-1 text-xs sm:text-sm">
-            <option v-for="size in [5, 10, 50, 100, 250, 500, 1000]" :key="size" :value="size">
-              {{ size }}
-            </option>
-          </select>
-        </div>
+      <AzCard v-if="committee.note" :title="t('meetingView.note')">
+        <p class="whitespace-pre-line text-[15px] text-ink-2">{{ committee.note }}</p>
+      </AzCard>
 
-        <!-- Page Navigation -->
-        <div class="flex justify-center flex-wrap gap-1">
-          <button @click="currentPage = 1" :disabled="currentPage === 1"
-            class="border rounded px-3 py-1"
-            :class="currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
-            First
-          </button>
-          <button @click="currentPage = Math.max(1, currentPage - 1)" :disabled="currentPage === 1"
-            class="border rounded px-3 py-1"
-            :class="currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
-            Prev
-          </button>
-          <button @click="currentPage = Math.min(totalPages, currentPage + 1)" :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1"
-            :class="currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
-            Next
-          </button>
-          <button @click="currentPage = totalPages" :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1"
-            :class="currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'">
-            Last
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- View Modal -->
-  <div v-if="isViewModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6">
-      <h2 class="text-lg sm:text-xl font-semibold text-gray-800 mb-6">
-        View Committee Member
-      </h2>
-
-      <div class="space-y-4 text-xs sm:text-sm text-gray-700">
-        <div class="flex justify-between pb-2">
-          <span class="font-medium text-gray-600 w-32 sm:w-40">Name:</span>
-          <span class="text-gray-800">{{ viewData.first_name }} {{ viewData.last_name }}</span>
-        </div>
-        <div class="flex justify-between pb-2">
-          <span class="font-medium text-gray-600 w-32 sm:w-40">Designation:</span>
-          <span class="text-gray-800">{{ viewData.designation_name }}</span>
-        </div>
-        <div class="flex justify-between pb-2">
-          <span class="font-medium text-gray-600 w-32 sm:w-40">Start Date:</span>
-          <span class="text-gray-800">{{ viewData.start_date }}</span>
-        </div>
-        <div class="flex justify-between pb-2">
-          <span class="font-medium text-gray-600 w-32 sm:w-40">End Date:</span>
-          <span class="text-gray-800">{{ viewData.end_date }}</span>
-        </div>
-        <div class="flex justify-between pb-2">
-          <span class="font-medium text-gray-600 w-32 sm:w-40">Note:</span>
-          <span class="text-gray-800">{{ viewData.note }}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="font-medium text-gray-600 w-32 sm:w-40">Status:</span>
-          <span :class="viewData.is_active == 1 ? 'text-green-600' : 'text-red-600'">
-            {{ viewData.is_active == 1 ? 'Active' : 'Disabled' }}
-          </span>
-        </div>
-      </div>
-
-      <div class="text-right pt-6">
-        <button @click="isViewModalOpen = false"
-          class="bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-5 rounded-md transition">
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Add/Edit Modal -->
-  <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-6">
-      <h2 class="text-lg sm:text-xl font-semibold text-gray-800">
-        {{ isEditMode ? 'Edit' : 'Add' }} Committee Member
-      </h2>
-
-      <form @submit.prevent="submitForm" class="space-y-5">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Committee Member Name</label>
-          <select v-model="user_id" required
-            class="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none">
-            <option value="">Select User</option>
-            <option v-for="user in userList" :key="user.individual.id" :value="user.individual.id">
-              {{ user.individual.first_name }} {{ user.individual.last_name }}
-            </option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Designation</label>
-          <select v-model="designation_id" required
-            class="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none">
-            <option value="">Select Designation</option>
-            <option v-for="d in designationList" :key="d.id" :value="d.id">{{ d.name }}</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-          <input v-model="start_date" type="date"
-            class="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-          <input v-model="end_date" type="date"
-            class="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
-          <input v-model="note" type="text"
-            class="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-          <select v-model="is_active"
-            class="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none">
-            <option value="1">Active</option>
-            <option value="0">Disabled</option>
-          </select>
-        </div>
-        <div class="flex justify-end space-x-3 pt-4">
-          <button type="submit"
-            class="bg-green-600 hover:bg-green-500 text-white font-medium py-2 px-5 rounded-md transition">
-            {{ isEditMode ? 'Update' : 'Add' }}
-          </button>
-          <button @click="isModalOpen = false" type="button"
-            class="bg-red-600 hover:bg-red-500 text-white font-medium py-2 px-5 rounded-md transition">
-            Cancel
-          </button>
-        </div>
-      </form>
-    </div>
+      <CommitteeFormModal v-model:open="committeeFormOpen" :committee="committee" @saved="onCommitteeSaved" />
+      <CommitteeMemberModal v-model:open="memberFormOpen" :committee="committee" :record="editingMember" :members="members"
+        :designations="designations" :taken-user-ids="takenUserIds" @saved="loadPeople" />
+    </template>
   </div>
 </template>
-

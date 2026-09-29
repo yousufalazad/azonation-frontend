@@ -34,7 +34,6 @@ const EditAsset = () => import("../views/Org/Asset/Edit.vue");
 const ViewAsset = () => import("../views/Org/Asset/View.vue");
 //Committee
 const CommitteeList = () => import("../views/Org/Committee/Index.vue");
-const FormerCommitteeList = () => import("../views/Org/Committee/FormerCommitteeList.vue");
 const CommitteeMember = () => import("../views/Org/Committee/CommitteeMember.vue");
 //Event
 const IndexEvent = () => import("../views/Org/Event/Index.vue");
@@ -278,8 +277,8 @@ const orgRoutes = [
       {
         path: "former-committee-list",
         name: "former-committee-list",
-        component: FormerCommitteeList,
-        meta: { requiresAuth: true, permission: "former-committee.read" },
+        // Former committees are a tab on the Committees page
+        redirect: { name: "committees", query: { tab: "former" } },
       },
       {
         path: "events",
