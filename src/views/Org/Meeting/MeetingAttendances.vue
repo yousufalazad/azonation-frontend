@@ -1,352 +1,238 @@
-<!-- meeting att -->
-
+<!-- Who came to a meeting: one list of all members, tap a status for each person, save once -->
 <script setup>
-import { ref, onMounted } from 'vue';
-import Swal from 'sweetalert2';
-import { authStore } from '../../../store/authStore';
-import { useRoute, useRouter } from 'vue-router';
+import { computed, onMounted, ref } from "vue";
+import { onBeforeRouteLeave, useRoute } from "vue-router";
+import { useI18n } from "vue-i18n";
+import dayjs from "dayjs";
+import { authStore } from "@/store/authStore";
+import { formatDate } from "@/helpers/format";
+import { useToast } from "@/composables/useToast";
+import { useConfirm } from "@/composables/useConfirm";
+import { Search, X, CheckCheck, UserPlus } from "lucide-vue-next";
 
-const router = useRouter();
-const route = useRoute();
 const auth = authStore;
+const route = useRoute();
+const { t } = useI18n();
+const toast = useToast();
+const confirm = useConfirm();
 
-const user_id = ref(null);
-const attendance_type_id = ref(null);
-const date = ref('');
-const time = ref('');
-const note = ref('');
-const is_active = ref('1');
-const isEditMode = ref(false);
-const selectedMeetingAttendanceId = ref(null);
-const meetingId = ref(route.params.id);
+const meetingId = computed(() => route.params.id);
+const meeting = ref(null);
+const types = ref([]);
+const rows = ref([]); // { userId, name, membership, existingId, savedType, type, time }
+const loading = ref(true);
+const saving = ref(false);
+const search = ref("");
 
-// Modal toggle
-const showFormModal = ref(false);
+async function load() {
+  const [m, members, typeList, attendance] = await Promise.all([
+    auth.fetchProtectedApi(`/api/meetings/${meetingId.value}`, {}, "GET"),
+    auth.fetchProtectedApi("/api/org-all-member-name", {}, "GET"),
+    auth.fetchProtectedApi("/api/attendance-types", {}, "GET"),
+    auth.fetchProtectedApi("/api/meeting-attendances", { meeting_id: meetingId.value }, "GET"),
+  ]);
+  meeting.value = m?.status ? m.data : null;
+  types.value = typeList?.status ? typeList.data.filter((ty) => ty.is_active !== 0 && ty.is_active !== "0") : [];
 
-const meetingDetails = ref([]);
-// Fetch meeting details
-const fetchMeetingDetails = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/meetings/${meetingId.value}`, {}, 'GET');
-        meetingDetails.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching meetings:', error);
-        meetingDetails.value = [];
+  // Attendance for this meeting only (older servers ignore the filter)
+  const marks = (attendance?.status ? attendance.data : []).filter((a) => String(a.meeting_id) === String(meetingId.value));
+  const byUser = new Map(marks.map((a) => [String(a.user_id), a]));
+
+  const list = (members?.status ? members.data : [])
+    .filter((mem) => mem.individual)
+    .map((mem) => {
+      const mark = byUser.get(String(mem.individual.id));
+      byUser.delete(String(mem.individual.id));
+      return {
+        userId: mem.individual.id,
+        name: [mem.individual.first_name, mem.individual.last_name].filter(Boolean).join(" "),
+        membership: mem.membership_type?.name || "",
+        existingId: mark?.id ?? null,
+        savedType: mark?.attendance_type_id ?? null,
+        type: mark?.attendance_type_id ?? null,
+        time: mark?.time ?? null,
+      };
+    });
+  // People marked earlier who are no longer active members stay visible
+  for (const mark of byUser.values()) {
+    list.push({
+      userId: mark.user_id,
+      name: [mark.user_first_name, mark.user_last_name].filter(Boolean).join(" ") || "—",
+      membership: t("attendance.formerMember"),
+      existingId: mark.id,
+      savedType: mark.attendance_type_id,
+      type: mark.attendance_type_id,
+      time: mark.time,
+    });
+  }
+  rows.value = list.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+const visible = computed(() => {
+  const q = search.value.trim().toLowerCase();
+  return q ? rows.value.filter((r) => r.name.toLowerCase().includes(q)) : rows.value;
+});
+
+const changed = computed(() => rows.value.filter((r) => String(r.type ?? "") !== String(r.savedType ?? "")));
+const unmarked = computed(() => rows.value.filter((r) => !r.type));
+
+const summary = computed(() =>
+  types.value.map((ty) => ({ id: ty.id, name: ty.name, count: rows.value.filter((r) => String(r.type) === String(ty.id)).length })),
+);
+
+function mark(row, typeId) {
+  row.type = String(row.type) === String(typeId) ? null : typeId; // tap again to clear
+}
+
+const markRestItems = computed(() =>
+  types.value.map((ty) => ({
+    label: ty.name,
+    onSelect: () => unmarked.value.forEach((r) => (r.type = ty.id)),
+  })),
+);
+
+function discard() {
+  rows.value.forEach((r) => (r.type = r.savedType));
+}
+
+async function save() {
+  if (saving.value || !changed.value.length) return;
+  saving.value = true;
+  try {
+    const now = dayjs().format("HH:mm:ss");
+    const upserts = changed.value.filter((r) => r.type).map((r) => ({
+      meeting_id: Number(meetingId.value),
+      user_id: r.userId,
+      attendance_type_id: r.type,
+      time: r.time || now,
+      note: null,
+      is_active: true,
+    }));
+    const removals = changed.value.filter((r) => !r.type && r.existingId);
+
+    const results = await Promise.all([
+      upserts.length ? auth.fetchProtectedApi("/api/meeting-attendances/bulk", upserts, "POST") : { status: true },
+      ...removals.map((r) => auth.fetchProtectedApi(`/api/meeting-attendances/${r.existingId}`, {}, "DELETE")),
+    ]);
+    if (results.every((res) => res?.status)) {
+      toast.success(t("attendance.saved"));
+    } else {
+      toast.error(t("attendance.saveFailed"));
     }
-};
+    await load();
+  } finally {
+    saving.value = false;
+  }
+}
 
-const userList = ref([]);
-const getOrgUserList = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/org-all-member-name', {}, 'GET');
-        userList.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching users:', error);
-        userList.value = [];
-    }
-};
+onBeforeRouteLeave(async () => {
+  if (!changed.value.length) return true;
+  return confirm({
+    title: t("attendance.leaveTitle"),
+    message: t("attendance.leaveText"),
+    confirmText: t("attendance.leave"),
+    danger: true,
+  });
+});
 
-const attendanceTypeList = ref([]);
-const getAttendanceTypeList = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/attendance-types', {}, 'GET');
-        attendanceTypeList.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching attendance types:', error);
-        attendanceTypeList.value = [];
-    }
-};
+onMounted(async () => {
+  await load();
+  loading.value = false;
+});
 
-const meetingAttendanceList = ref([]);
-const getMeetingAttendanceList = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/meeting-attendances', {}, 'GET');
-        meetingAttendanceList.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching meeting attendance:', error);
-        meetingAttendanceList.value = [];
-    }
-};
-
-// Reset form
-const resetForm = () => {
-    user_id.value = null;
-    attendance_type_id.value = null;
-    date.value = '';
-    time.value = '';
-    note.value = '';
-    is_active.value = '1';
-    selectedMeetingAttendanceId.value = null;
-    isEditMode.value = false;
-};
-
-// Open modal for add
-const openAddModal = () => {
-    resetForm();
-    isEditMode.value = false;
-    showFormModal.value = true;
-};
-
-// Add / Update attendance
-const submitForm = async () => {
-    const payload = {
-        meeting_id: meetingId.value,
-        user_id: user_id.value,
-        attendance_type_id: attendance_type_id.value || null,
-        date: date.value,
-        time: time.value,
-        note: note.value,
-        is_active: is_active.value
-    };
-    try {
-        let apiUrl = '/api/meeting-attendances';
-        let method = 'POST';
-        if (isEditMode.value && selectedMeetingAttendanceId.value) {
-            apiUrl = `/api/meeting-attendances/${selectedMeetingAttendanceId.value}`;
-            method = 'PUT';
-        }
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this meeting attendance?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, save it!',
-            cancelButtonText: 'No, cancel!'
-        });
-
-        if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(apiUrl, payload, method);
-
-            if (response.status) {
-                await Swal.fire('Success!', `Meeting attendance ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
-                getMeetingAttendanceList();
-                resetForm();
-                showFormModal.value = false;
-            } else {
-                Swal.fire('Failed!', 'Failed to save meeting attendance.', 'error');
-            }
-        }
-    } catch (error) {
-        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} meeting attendance:`, error);
-        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} meeting attendance.`, 'error');
-    }
-};
-
-// Edit meetingAttendance
-const editMeetingAttendance = (meetingAttendance) => {
-    user_id.value = meetingAttendance.user_id;
-    attendance_type_id.value = meetingAttendance.attendance_type_id;
-    date.value = meetingAttendance.date;
-    time.value = meetingAttendance.time;
-    note.value = meetingAttendance.note;
-    is_active.value = meetingAttendance.is_active;
-    selectedMeetingAttendanceId.value = meetingAttendance.id;
-    isEditMode.value = true;
-    showFormModal.value = true;
-};
-
-// Delete meetingAttendance
-const deleteMeetingAttendance = async (id) => {
-    try {
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'Do you want to delete this meeting attendance?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, cancel!'
-        });
-
-        if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/meeting-attendances/${id}`, {}, 'DELETE');
-            if (response.status) {
-                await Swal.fire('Deleted!', 'Meeting attendance has been deleted.', 'success');
-                getMeetingAttendanceList();
-            } else {
-                Swal.fire('Failed!', 'Failed to delete meeting attendance.', 'error');
-            }
-        }
-    } catch (error) {
-        console.error('Error deleting meeting attendance:', error);
-        Swal.fire('Error!', 'Failed to delete meeting attendance.', 'error');
-    }
-};
-
-onMounted(() => {
-    fetchMeetingDetails();
-    getOrgUserList();
-    getAttendanceTypeList();
-    getMeetingAttendanceList();
+const whenText = computed(() => {
+  const m = meeting.value;
+  if (!m) return "";
+  const date = m.date ? formatDate(m.date) : t("meetings.noDate");
+  return m.start_time ? `${date} · ${dayjs(`2000-01-01 ${m.start_time}`).format("h:mm A")}` : date;
 });
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-11/12">
-        <!-- Meeting Details Card -->
-        <section class="mb-6">
-            <div class="bg-white shadow-md rounded-xl p-4 border">
-                <h5 class="text-md  text-gray-800">
-                    Name: {{ meetingDetails.name }}
-                    <span class="mx-2">•</span>
-                    Date: {{ meetingDetails.date }}
-                    <span class="mx-2">•</span>
-                    Time: {{ meetingDetails.time }}
-                </h5>
-            </div>
-        </section>
+  <div class="mx-auto flex max-w-4xl flex-col gap-6 pb-24">
+    <AzPageHeader :title="t('attendance.title')" :description="meeting ? `${meeting.name} — ${whenText}` : ''"
+      :back="{ name: 'view-meeting', params: { id: meetingId } }" :back-label="meeting?.name || t('meetings.title')">
+      <AzButton variant="secondary" :to="{ name: 'meeting-guest-attendance', params: { id: meetingId } }">
+        <template #icon><UserPlus class="h-[18px] w-[18px]" /></template>
+        {{ t('meetings.guests') }}
+      </AzButton>
+    </AzPageHeader>
 
-        <!-- Attendance Card -->
-        <section class="bg-white shadow-md rounded-xl border">
-            <!-- Header -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b gap-3">
-                <h5 class="text-lg font-semibold text-gray-700">Members Attendance List</h5>
+    <AzSkeleton v-if="loading" :lines="8" height="3.5rem" />
 
-                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    <button @click="openAddModal"
-                        class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-500 w-full sm:w-auto">
-                        Add Member Attendance
-                    </button>
-                    <button @click="router.push({ name: 'index-meeting' })"
-                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 w-full sm:w-auto">
-                        Back to Meeting List
-                    </button>
-                </div>
-            </div>
-
-            <!-- Table -->
-            <div class="overflow-x-auto p-4">
-                <table class="min-w-full table-auto border-collapse border border-gray-200 text-sm text-left">
-                    <thead class="bg-gray-100">
-                        <tr class="text-gray-700">
-                            <th class="border px-4 py-2">SL</th>
-                            <th class="px-4 py-2 border">Members</th>
-                            <th class="px-4 py-2 border">Attendance Type</th>
-                            <th class="px-4 py-2 border">Attendance Time</th>
-                            <th class="px-4 py-2 border">Active</th>
-                            <th class="px-4 py-2 border">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(meetingAttendance, index) in meetingAttendanceList" :key="meetingAttendance.id"
-                            class="hover:bg-gray-50">
-                            <td class="px-4 py-2 border">{{ index + 1 }}</td>
-                            <td class="px-4 py-2 border">
-                                {{ meetingAttendance.user_first_name }} {{ meetingAttendance.user_last_name }}
-                            </td>
-                            <td class="px-4 py-2 border">{{ meetingAttendance.attendance_types_name }}</td>
-                            <td class="px-4 py-2 border">{{ meetingAttendance.time }}</td>
-                            <td class="px-4 py-2 border">
-                                <span
-                                    :class="Number(meetingAttendance.is_active) === 0 ? 'text-red-600' : 'text-green-600'">
-                                    {{ Number(meetingAttendance.is_active) === 0 ? "No" : "Yes" }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-2 border flex gap-2">
-                                <button @click="editMeetingAttendance(meetingAttendance)"
-                                    class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
-                                    Edit
-                                </button>
-                                <button @click="deleteMeetingAttendance(meetingAttendance.id)"
-                                    class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
-                                    Delete
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Modal -->
-        <div v-if="showFormModal"
-            class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 px-4">
-            <div class="bg-white rounded-xl shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6">
-                <!-- Header -->
-                <div class="flex justify-between items-center border-b pb-3 mb-4">
-                    <h5 class="text-lg font-semibold text-gray-700">
-                        {{ isEditMode ? 'Edit' : 'Add' }} Meeting Attendance
-                    </h5>
-                    <button @click="showFormModal = false" class="text-gray-500 hover:text-gray-700">✖</button>
-                </div>
-
-                <!-- Form -->
-                <form @submit.prevent="submitForm" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                        <!-- Member -->
-                        <div class="col-span-4">
-                            <label for="user_id" class="block text-gray-700 font-semibold mb-2">Member Name</label>
-                            <select v-model="user_id" id="user_id" class="w-full border border-gray-300 rounded-md p-2"
-                                required>
-                                <option value="">Select member</option>
-                                <option v-for="user in userList" :key="user.individual.id" :value="user.individual.id">
-                                    {{ user.individual.first_name }} {{ user.individual.last_name }}
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Attendance Type -->
-                        <div class="col-span-4">
-                            <label for="attendance_type_id" class="block text-gray-700 font-semibold mb-2">Type
-                                Name</label>
-                            <select v-model="attendance_type_id" id="attendance_type_id"
-                                class="w-full border border-gray-300 rounded-md p-2">
-                                <option value="">Select Attendance Type</option>
-                                <option v-for="attendanceType in attendanceTypeList" :key="attendanceType.id"
-                                    :value="attendanceType.id">
-                                    {{ attendanceType.name }}
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Date -->
-                        <div class="col-span-4">
-                            <label for="date" class="block text-gray-700 font-semibold mb-2">Date</label>
-                            <input v-model="date" type="date"
-                                class="w-full border border-gray-300 rounded-md py-2 px-4" />
-                        </div>
-
-                        <!-- Time -->
-                        <div class="col-span-4">
-                            <label for="time" class="block text-gray-700 font-semibold mb-2">Time</label>
-                            <input v-model="time" type="time"
-                                class="w-full border border-gray-300 rounded-md py-2 px-4" />
-                        </div>
-
-                        <!-- Note -->
-                        <div class="col-span-4">
-                            <label for="note" class="block text-gray-700 font-semibold mb-2">Note</label>
-                            <input v-model="note" type="text"
-                                class="w-full border border-gray-300 rounded-md py-2 px-4" />
-                        </div>
-
-                        <!-- Active -->
-                        <div class="col-span-4">
-                            <label for="is_active" class="block text-gray-700 font-semibold mb-2">Active</label>
-                            <select v-model="is_active" id="is_active"
-                                class="w-full border border-gray-300 rounded-md py-2 px-3">
-                                <option value="">Select is Active</option>
-                                <option value="1">Yes</option>
-                                <option value="0">No</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Buttons -->
-                    <div class="col-span-full flex justify-end gap-3 mt-4">
-                        <button type="submit" class="bg-green-600 text-white rounded-md py-2 px-4 hover:bg-green-500">
-                            {{ isEditMode ? 'Update' : 'Add' }}
-                        </button>
-                        <button type="button" @click="resetForm"
-                            class="bg-yellow-600 text-white rounded-md py-2 px-4 hover:bg-yellow-700">
-                            Reset
-                        </button>
-                        <button type="button" @click="showFormModal = false"
-                            class="bg-gray-500 text-white rounded-md py-2 px-4 hover:bg-gray-600">
-                            Cancel
-                        </button>
-                    </div>
-                </form>
-            </div>
+    <template v-else>
+      <!-- Totals -->
+      <section class="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-live="polite">
+        <div v-for="s in summary" :key="s.id" class="rounded-card border border-line bg-surface p-4 shadow-card">
+          <p class="text-sm text-ink-muted">{{ s.name }}</p>
+          <p class="text-2xl font-semibold text-ink">{{ s.count }}</p>
         </div>
-    </div>
+        <div class="rounded-card border border-line bg-surface p-4 shadow-card">
+          <p class="text-sm text-ink-muted">{{ t('attendance.notMarked') }}</p>
+          <p class="text-2xl font-semibold text-ink">{{ unmarked.length }}</p>
+        </div>
+      </section>
+
+      <AzCard :padded="false">
+        <template #header>
+          <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-end">
+            <div class="flex-1">
+              <AzInput v-model="search" type="search" :label="t('attendance.find')" :placeholder="t('attendance.findPlaceholder')" autocomplete="off">
+                <template #prefix><Search class="h-4 w-4" /></template>
+              </AzInput>
+            </div>
+            <AzMenu v-if="types.length && unmarked.length" :label="t('attendance.markRest', { n: unmarked.length })" :items="markRestItems">
+              <template #icon><CheckCheck class="h-[18px] w-[18px]" /></template>
+            </AzMenu>
+          </div>
+        </template>
+
+        <AzEmptyState v-if="!rows.length" :title="t('attendance.noMembersTitle')" :description="t('attendance.noMembersText')">
+          <AzButton :to="{ name: 'index-member' }">{{ t('nav.members') }}</AzButton>
+        </AzEmptyState>
+        <AzEmptyState v-else-if="!types.length" :title="t('attendance.noTypesTitle')" :description="t('attendance.noTypesText')" />
+        <p v-else-if="!visible.length" class="px-5 py-8 text-center text-ink-muted">{{ t('list.noMatchTitle') }}</p>
+
+        <ul v-else class="divide-y divide-line">
+          <li v-for="row in visible" :key="row.userId" class="flex flex-col gap-3 px-5 py-3 sm:flex-row sm:items-center">
+            <div class="flex min-w-0 flex-1 items-center gap-3">
+              <AzAvatar :name="row.name" size="sm" />
+              <div class="min-w-0">
+                <p class="truncate font-medium text-ink">{{ row.name }}</p>
+                <p v-if="row.membership" class="truncate text-sm text-ink-muted">{{ row.membership }}</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2" role="radiogroup" :aria-label="t('attendance.statusFor', { name: row.name })">
+              <button v-for="ty in types" :key="ty.id" type="button" role="radio" :aria-checked="String(row.type) === String(ty.id)"
+                class="min-h-[40px] rounded-full border px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                :class="String(row.type) === String(ty.id)
+                  ? 'border-primary bg-primary text-primary-on'
+                  : 'border-line bg-surface text-ink-2 hover:border-primary hover:text-primary'"
+                @click="mark(row, ty.id)">
+                {{ ty.name }}
+              </button>
+              <button v-if="row.type" type="button" class="grid h-10 w-10 place-items-center rounded-full text-ink-muted hover:bg-surface-2 hover:text-ink"
+                :aria-label="t('attendance.clear', { name: row.name })" @click="row.type = null">
+                <X class="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+          </li>
+        </ul>
+      </AzCard>
+    </template>
+
+    <!-- Save bar: appears once something changes -->
+    <Transition enter-from-class="translate-y-full opacity-0" leave-to-class="translate-y-full opacity-0"
+      enter-active-class="transition duration-200" leave-active-class="transition duration-150">
+      <div v-if="changed.length" class="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 px-4 py-3 shadow-pop backdrop-blur">
+        <div class="mx-auto flex max-w-4xl items-center justify-between gap-3">
+          <p class="text-[15px] font-medium text-ink">{{ t('attendance.changes', { n: changed.length }) }}</p>
+          <div class="flex gap-2">
+            <AzButton variant="quiet" :disabled="saving" @click="discard">{{ t('attendance.discard') }}</AzButton>
+            <AzButton :loading="saving" @click="save">{{ t('common.save') }}</AzButton>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </div>
 </template>
