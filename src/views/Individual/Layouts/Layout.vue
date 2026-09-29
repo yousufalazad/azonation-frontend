@@ -44,7 +44,7 @@ watch(
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-gray-100">
+  <div class="min-h-screen flex flex-col bg-canvas">
     <Header
       @toggle-sidebar="toggleSidebar"
       @toggle-mobile-sidebar="toggleMobileMenu"

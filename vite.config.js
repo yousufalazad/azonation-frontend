@@ -49,7 +49,8 @@ export default defineConfig(({ command, mode }) => {
     plugins: [
       vue(),
       Components({
-        dirs: [],
+        // Shared Az* components (src/components/ui) can be used in any template without importing
+        dirs: ["src/components/ui"],
         dts: false,
         resolvers: [LucideResolver],
       }),
@@ -65,6 +66,12 @@ export default defineConfig(({ command, mode }) => {
         },
       },
     ],
+    define: {
+      // vue-i18n build flags: Composition API only, no devtools in production
+      __VUE_I18N_FULL_INSTALL__: true,
+      __VUE_I18N_LEGACY_API__: false,
+      __INTLIFY_PROD_DEVTOOLS__: false,
+    },
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),
@@ -84,6 +91,7 @@ export default defineConfig(({ command, mode }) => {
             if (!id.includes("node_modules")) return;
             if (/[\\/]node_modules[\\/](vue|@vue|vue-router)[\\/]/.test(id)) return "vendor-vue";
             if (/[\\/]node_modules[\\/](axios|sweetalert2|dompurify)[\\/]/.test(id)) return "vendor-core";
+            if (/[\\/]node_modules[\\/](vue-i18n|@intlify)[\\/]/.test(id)) return "vendor-vue";
           },
         },
       },

@@ -1,3 +1,103 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ==========================================================================
+   Azonation Calm design tokens
+   Colours are "R G B" triplets so Tailwind opacity modifiers work
+   (e.g. bg-primary/10). Tailwind names live in tailwind.config.js.
+   ========================================================================== */
+@layer base {
+  :root {
+    --az-canvas: 247 249 252;
+    --az-surface: 255 255 255;
+    --az-surface-2: 240 243 248;
+    --az-line: 227 232 240;
+    --az-line-strong: 185 194 208;
+    --az-ink: 21 28 40;
+    --az-ink-2: 58 68 85;
+    --az-muted: 106 117 135;
+
+    --az-primary: 11 99 209;
+    --az-primary-hover: 10 79 168;
+    --az-primary-soft: 238 245 255;
+    --az-primary-soft-ink: 10 79 168;
+    --az-on-primary: 255 255 255;
+
+    --az-success: 18 128 92;
+    --az-success-soft: 227 245 238;
+    --az-warning: 154 82 0;
+    --az-warning-soft: 255 241 220;
+    --az-danger: 200 50 43;
+    --az-danger-soft: 253 233 231;
+
+    --az-focus: 26 123 240;
+    --az-overlay: 16 24 40;
+  }
+
+  :root.dark {
+    color-scheme: dark;
+
+    --az-canvas: 14 19 28;
+    --az-surface: 22 29 41;
+    --az-surface-2: 29 38 52;
+    --az-line: 42 52 70;
+    --az-line-strong: 61 74 96;
+    --az-ink: 232 237 245;
+    --az-ink-2: 195 204 218;
+    --az-muted: 140 151 170;
+
+    --az-primary: 77 147 245;
+    --az-primary-hover: 132 180 251;
+    --az-primary-soft: 19 39 68;
+    --az-primary-soft-ink: 181 210 255;
+    --az-on-primary: 10 24 48;
+
+    --az-success: 76 199 154;
+    --az-success-soft: 16 41 31;
+    --az-warning: 240 168 74;
+    --az-warning-soft: 46 34 16;
+    --az-danger: 240 124 116;
+    --az-danger-soft: 51 23 26;
+
+    --az-focus: 132 180 251;
+    --az-overlay: 0 0 0;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+  }
+
+  /* Visible keyboard focus everywhere, never for mouse clicks */
+  :focus-visible {
+    outline: 3px solid rgb(var(--az-focus));
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Shared look for text inputs, selects and textareas (used by Az* components) */
+@layer components {
+  .az-control {
+    @apply min-h-touch rounded-control border border-line-strong bg-surface px-3.5 text-[15px] text-ink;
+    @apply placeholder:text-ink-muted transition-colors;
+    @apply focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary/25;
+    @apply disabled:cursor-not-allowed disabled:bg-surface-2 disabled:text-ink-muted;
+  }
+  .az-control-invalid {
+    @apply border-danger focus:border-danger focus:ring-danger/25;
+  }
+}

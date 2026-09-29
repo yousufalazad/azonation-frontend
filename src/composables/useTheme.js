@@ -19,7 +19,7 @@ function readSaved() {
 
 function apply() {
   const dark = theme.value === "dark" || (theme.value === "system" && !!media?.matches);
-  // color-scheme (dark scrollbars and form controls) is added once pages have dark styles
+  // The "dark" class switches the colour tokens (tailwind.css) and the dark bridge
   document.documentElement.classList.toggle("dark", dark);
 }
 

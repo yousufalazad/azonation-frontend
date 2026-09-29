@@ -80,6 +80,11 @@ const baseRoutes = [
   { path: "/about-us", name: "about-us", component: AboutUs },
   { path: "/contact-us", name: "contact-us", component: ContactUs },
 
+  // Design system reference (development builds only)
+  ...(import.meta.env.DEV
+    ? [{ path: "/style-guide", name: "style-guide", component: () => import("@/views/Common/StyleGuide.vue") }]
+    : []),
+
   // 404
   { path: "/:pathMatch(.*)*", name: "not-found", component: NotFound },
 ];

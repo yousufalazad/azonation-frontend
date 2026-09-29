@@ -55,18 +55,18 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <header class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-white shadow px-4 py-3">
+  <header class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between border-b border-line bg-surface px-4 py-3">
     <!-- Left Section: Logo & Sidebar Buttons -->
     <div class="flex items-center gap-2 sm:gap-4 max-w-[70%]">
       <!-- Mobile Sidebar Toggle -->
-      <button @click="emit('toggle-mobile-sidebar')" class="lg:hidden text-gray-600">
+      <button @click="emit('toggle-mobile-sidebar')" class="lg:hidden flex h-10 w-10 items-center justify-center rounded-full text-ink-2 hover:bg-surface-2" :aria-label="$t('common.menu')">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
 
       <!-- Desktop Sidebar Toggle -->
-      <button @click="emit('toggle-sidebar')" class="hidden lg:block text-gray-600">
+      <button @click="emit('toggle-sidebar')" class="hidden lg:flex h-10 w-10 items-center justify-center rounded-full text-ink-2 hover:bg-surface-2" :aria-label="$t('common.menu')">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6h18M3 12h18M3 18h18" />
         </svg>
@@ -74,7 +74,7 @@ onBeforeUnmount(() => {
 
       <!-- Org Name -->
       <a href="/org-dashboard/index"
-        class="text-base sm:text-lg font-semibold text-gray-800 hover:text-blue-700 max-w-[200px] sm:max-w-none truncate">
+        class="text-base sm:text-lg font-semibold text-ink hover:text-primary max-w-[200px] sm:max-w-none truncate">
         <span class="block truncate">{{ orgName }}</span>
       </a>
     </div>
@@ -85,65 +85,71 @@ onBeforeUnmount(() => {
 
       <!-- Profile Dropdown -->
       <div class="relative">
-        <button ref="profileButton" @click="toggleProfileDropdown" class="flex items-center focus:outline-none">
+        <button ref="profileButton" @click="toggleProfileDropdown" class="flex items-center rounded-full"
+          :aria-label="$t('account.openMenu')" :aria-expanded="isProfileDropdownOpen">
           <img :src="logoPath ? `${logoPath}` : placeholderImage" alt="Org Logo"
-            class="w-10 h-10 rounded-full object-cover border border-gray-300" />
+            class="w-10 h-10 rounded-full object-cover border border-line-strong" />
         </button>
 
         <!-- Dropdown Menu -->
         <transition name="fade">
           <div v-if="isProfileDropdownOpen" ref="profileMenu"
-            class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-50">
+            class="absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-5rem)] overflow-y-auto rounded-card border border-line bg-surface shadow-pop z-50">
 
             <!-- Logo -->
-            <div class="flex justify-center p-4 border-b">
+            <div class="flex justify-center p-4 border-b border-line">
               <img :src="logoPath ? `${logoPath}` : placeholderImage" alt="Org Logo"
                 class="rounded-lg max-h-[90px] max-w-[200px] w-auto h-auto" />
             </div>
 
             <!-- User Info -->
-            <div class="p-4 border-b">
-              <p class="font-semibold text-gray-800">{{ auth.user.email }}</p>
-              <p class="text-xs text-gray-500 mt-1">Username: {{ auth.user.username }}</p>
-              <p class="text-xs text-gray-500">Azon ID: {{ auth.user.azon_id }}</p>
+            <div class="p-4 border-b border-line">
+              <p class="font-semibold text-ink break-all">{{ auth.user.email }}</p>
+              <p class="text-xs text-ink-muted mt-1">{{ $t('account.username') }}: {{ auth.user.username }}</p>
+              <p class="text-xs text-ink-muted">{{ $t('account.azonId') }}: {{ auth.user.azon_id }}</p>
+            </div>
+
+            <!-- Language and theme -->
+            <div class="p-4 border-b border-line">
+              <AzAppearanceSettings />
             </div>
 
             <!-- Links -->
-            <ul class="py-2 text-sm text-gray-700">
+            <ul class="py-2 text-[15px] text-ink-2">
               <li>
-                <router-link :to="{ name: 'profile' }" class="block px-4 py-2 hover:bg-gray-100"
+                <router-link :to="{ name: 'profile' }" class="flex min-h-[44px] items-center px-4 hover:bg-surface-2"
                   @click="handleDropdownLinkClick">
-                  My Account
+                  {{ $t('account.myAccount') }}
                 </router-link>
               </li>
               <li>
-                <router-link :to="{ name: 'security' }" class="block px-4 py-2 hover:bg-gray-100"
+                <router-link :to="{ name: 'security' }" class="flex min-h-[44px] items-center px-4 hover:bg-surface-2"
                   @click="handleDropdownLinkClick">
-                  Security
+                  {{ $t('account.security') }}
                 </router-link>
               </li>
               <li>
-                <router-link :to="{ name: 'subscription' }" class="block px-4 py-2 hover:bg-gray-100"
+                <router-link :to="{ name: 'subscription' }" class="flex min-h-[44px] items-center px-4 hover:bg-surface-2"
                   @click="handleDropdownLinkClick">
-                  Subscription
+                  {{ $t('account.subscription') }}
                 </router-link>
               </li>
               <li>
-                <router-link :to="{ name: 'invoices' }" class="block px-4 py-2 hover:bg-gray-100"
+                <router-link :to="{ name: 'invoices' }" class="flex min-h-[44px] items-center px-4 hover:bg-surface-2"
                   @click="handleDropdownLinkClick">
-                  Billing
+                  {{ $t('account.billing') }}
                 </router-link>
               </li>
               <li>
-                <router-link :to="{ name: 'referral' }" class="block px-4 py-2 hover:bg-gray-100"
+                <router-link :to="{ name: 'referral' }" class="flex min-h-[44px] items-center px-4 hover:bg-surface-2"
                   @click="handleDropdownLinkClick">
-                  Invite Friend
+                  {{ $t('account.inviteFriend') }}
                 </router-link>
               </li>
-              <li class="border-t mt-2">
+              <li class="border-t border-line mt-2 pt-2">
                 <button @click="auth.logout()"
-                  class="w-full text-left px-4 py-2 text-blue-600 hover:bg-gray-100 font-semibold">
-                  Logout
+                  class="flex min-h-[44px] w-full items-center px-4 text-left font-semibold text-primary hover:bg-surface-2">
+                  {{ $t('account.logout') }}
                 </button>
               </li>
             </ul>

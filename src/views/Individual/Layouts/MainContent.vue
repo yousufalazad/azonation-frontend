@@ -17,27 +17,27 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
 </script>
 
 <template>
-  <div class="flex bg-gray-100 min-h-screen">
+  <div class="flex bg-canvas min-h-screen">
     <!-- Backdrop for Mobile -->
     <div
       v-if="props.isMobileMenuOpen"
       @click="emit('close-mobile-menu')"
-      class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+      class="fixed inset-0 bg-overlay/50 z-30 lg:hidden"
     ></div>
 
     <!-- Sidebar -->
     <aside :class="[
-      'fixed top-16 left-0 h-[calc(100vh-64px)] w-64 bg-white shadow-md z-40',
+      'fixed top-16 left-0 h-[calc(100vh-64px)] w-64 bg-surface border-r border-line z-40',
       'transform transition-transform duration-300 ease-in-out',
       props.isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
       'lg:translate-x-0',
       props.isSidebarExpanded ? 'lg:w-64' : 'lg:w-20'
     ]">
-      <LeftSidebar :isSidebarExpanded="props.isSidebarExpanded" />
+      <LeftSidebar :isSidebarExpanded="props.isSidebarExpanded || props.isMobileMenuOpen" @close-mobile-menu="emit('close-mobile-menu')" />
     </aside>
 
     <!-- Main Content -->
-    <main
+    <div
       :class="[
         'flex-1 flex flex-col transition-all duration-300 ease-in-out pt-16',
         props.isSidebarExpanded ? 'lg:ml-64' : 'lg:ml-20'
@@ -46,12 +46,8 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
       <div class="flex-1 overflow-y-auto py-6 px-4 sm:px-6 lg:px-8 pb-28">
         <router-view />
       </div>
-    </main>
+    </div>
   </div>
 </template>
 
-<style scoped>
-aside::-webkit-scrollbar { width: 4px; }
-aside::-webkit-scrollbar-thumb { background-color: darkgray; border-radius: 10px; }
-aside::-webkit-scrollbar-track { background: lightgray; }
-</style>
+
