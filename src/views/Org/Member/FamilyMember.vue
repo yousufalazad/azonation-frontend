@@ -53,14 +53,16 @@ const closeViewModal = () => {
 const saveMember = async () => {
   try {
     const endpoint = editMode.value
-      ? `/api/family-members/${form.value.member_id}`
+      ? `/api/family-members/${form.value.id}`
       : '/api/family-members';
-    const method = editMode.value ? 'PUT' : 'POST';
+    // File-style form data must be sent as POST; Laravel reads _method=PUT
+    const method = 'POST';
 
     const formData = new FormData();
     for (const key in form.value) {
-      formData.append(key, form.value[key]);
+      formData.append(key, form.value[key] ?? '');
     }
+    if (editMode.value) formData.append('_method', 'PUT');
 
     const response = await auth.uploadProtectedApi(endpoint, formData, method);
     if (response.status) {
@@ -169,7 +171,7 @@ onMounted(() => {
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="member in familyMembers" :key="member.member_id" class="hover:bg-gray-50 transition">
+          <tr v-for="member in familyMembers" :key="member.id" class="hover:bg-gray-50 transition">
             <td class="px-6 py-4 text-sm text-gray-700">{{ member.name }}</td>
             <td class="px-6 py-4 text-sm text-gray-700">{{ member.mobile }}</td>
             <td class="px-6 py-4 text-sm text-gray-700">{{ member.email }}</td>
@@ -190,7 +192,7 @@ onMounted(() => {
                 class="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2 hover:bg-yellow-600 transition">
                 Edit
               </button>
-              <button @click="deleteMember(member.member_id)"
+              <button @click="deleteMember(member.id)"
                 class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition">
                 Delete
               </button>
