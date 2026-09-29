@@ -1,639 +1,246 @@
+<!-- Events: upcoming and past events, with attendance, guests and the report afterwards -->
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import Swal from "sweetalert2";
-import { authStore } from "../../../store/authStore";
-import EasyDataTable from "vue3-easy-data-table";
-import "vue3-easy-data-table/dist/style.css";
-import { pdfExport } from "@/helpers/pdfExport.js";
-import { excelExport } from "@/helpers/excelExport.js";
-import { csvExport } from "@/helpers/csvExport.js";
+import { useI18n } from "vue-i18n";
+import dayjs from "dayjs";
+import { authStore } from "@/store/authStore";
+import { formatDate } from "@/helpers/format";
+import { useListView } from "@/composables/useListView";
+import { useListExport } from "@/composables/useListExport";
+import { useToast } from "@/composables/useToast";
+import { useConfirm } from "@/composables/useConfirm";
+import { Plus, Download, PartyPopper, MapPin, ClipboardList, Users, UserPlus, Pencil, Trash2, MoreVertical } from "lucide-vue-next";
 
-const router = useRouter();
 const auth = authStore;
-const showFilters = ref(false);
+const router = useRouter();
+const { t } = useI18n();
+const toast = useToast();
+const confirm = useConfirm();
 
-const search = ref("");
-const startDate = ref("");
-const endDate = ref("");
-const quickDateFilter = ref("");
-const eventList = ref([]);
-const eventSummary = ref([]);
-const loading = ref(false);
+const events = ref([]);
+const summaryByEvent = ref(new Map()); // event id -> summary id
+const loading = ref(true);
 
-const columnProfiles = {
-  minimal: ["user_id", "title", "date", "status_display", "actions"],
-  detailed: [
-    "user_id",
-    "title",
-    "name",
-    "date",
-    "time",
-    "venue_name",
-    "status_display",
-    "actions",
-  ],
+const today = dayjs().startOf("day");
+
+// "upcoming" | "today" | "past" | "inactive"   (status 1 = switched off)
+const whenState = (e) => {
+  if (Number(e.status) === 1) return "inactive";
+  if (!e.date) return "upcoming";
+  const d = dayjs(e.date).startOf("day");
+  if (d.isSame(today)) return "today";
+  return d.isAfter(today) ? "upcoming" : "past";
 };
-const selectedProfile = ref(
-  localStorage.getItem("selected_event_profile") || "detailed",
-);
-const visibleColumns = ref(
-  JSON.parse(localStorage.getItem("visible_event_columns")) ||
-    columnProfiles[selectedProfile.value],
-);
+const timeText = (e) => (e.time ? dayjs(`2000-01-01 ${e.time}`).format("h:mm A") : "");
 
-const allHeaders = [
-  { text: "ID", value: "user_id", sortable: true },
-  { text: "Title", value: "title", sortable: true },
-  { text: "Name", value: "name", sortable: true },
-  { text: "Date", value: "date", sortable: true },
-  { text: "Time", value: "time", sortable: true },
-  { text: "Venue", value: "venue_name", sortable: true },
-  { text: "Status", value: "status_display", sortable: true },
-  { text: "Actions", value: "actions" },
-];
+async function load() {
+  const [eventRes, summaryRes] = await Promise.all([
+    auth.fetchProtectedApi("/api/events", {}, "GET"),
+    auth.fetchProtectedApi("/api/event-summaries", {}, "GET"),
+  ]);
+  if (!eventRes?.status) {
+    toast.error(t("dashboard.loadFailed"));
+    events.value = [];
+    return;
+  }
+  events.value = eventRes.data.map((e) => ({
+    ...e,
+    state: whenState(e),
+    when_text: [e.date ? formatDate(e.date) : t("meetings.noDate"), timeText(e)].filter(Boolean).join(" · "),
+    where_text: e.venue_name || e.venue_address || "",
+  }));
+  summaryByEvent.value = new Map((summaryRes?.status ? summaryRes.data : []).map((s) => [s.event_id, s.id]));
+}
 
-watch(
-  [visibleColumns, selectedProfile],
-  () => {
-    localStorage.setItem(
-      "visible_event_columns",
-      JSON.stringify(visibleColumns.value),
-    );
-    localStorage.setItem("selected_event_profile", selectedProfile.value);
+const tab = ref("upcoming");
+const tabOptions = computed(() => [
+  { value: "upcoming", label: t("meetings.upcoming") },
+  { value: "past", label: t("meetings.past") },
+  { value: "all", label: t("meetings.all") },
+]);
+
+const dateFrom = ref("");
+const dateTo = ref("");
+
+const stateLabel = (s) => ({ today: t("meetings.today"), upcoming: t("meetings.upcoming"), past: t("meetings.past"), inactive: t("events.off") })[s];
+const stateTone = (s) => ({ today: "warning", upcoming: "info", past: "neutral", inactive: "neutral" })[s];
+
+const columns = computed(() => [
+  { key: "name", label: t("events.name"), sortable: true, class: "font-semibold text-ink" },
+  { key: "date", label: t("meetings.when"), sortable: true, value: (e) => e.when_text },
+  { key: "where_text", label: t("meetings.where"), sortable: true },
+  { key: "conduct_type_name", label: t("meetings.how"), sortable: true },
+  { key: "short_description", label: t("events.shortDescription"), sortable: true },
+  { key: "state", label: t("member.status"), sortable: true, value: (e) => stateLabel(e.state) },
+]);
+
+const list = useListView({
+  key: "events",
+  items: events,
+  columns,
+  presets: {
+    detailed: ["name", "date", "where_text", "conduct_type_name", "state"],
+    minimal: ["name", "date", "state"],
   },
-  { deep: true },
-);
-
-const applyProfile = () => {
-  visibleColumns.value = [...columnProfiles[selectedProfile.value]];
-};
-
-const filteredHeaders = computed(() => {
-  return allHeaders.filter((h) => visibleColumns.value.includes(h.value));
-});
-
-const filteredEvents = computed(() => {
-  return eventList.value.filter((event) => {
-    if (startDate.value && event.date < startDate.value) return false;
-    if (endDate.value && event.date > endDate.value) return false;
-    if (
-      search.value &&
-      !event.title.toLowerCase().includes(search.value.toLowerCase())
-    )
-      return false;
+  searchText: (e) => [e.name, e.title, e.short_description, e.venue_name, e.venue_address, e.conduct_type_name],
+  filter: (e) => {
+    if (tab.value === "upcoming" && !["upcoming", "today"].includes(e.state)) return false;
+    if (tab.value === "past" && e.state !== "past") return false;
+    if (dateFrom.value && (!e.date || dayjs(e.date).isBefore(dayjs(dateFrom.value), "day"))) return false;
+    if (dateTo.value && (!e.date || dayjs(e.date).isAfter(dayjs(dateTo.value), "day"))) return false;
     return true;
+  },
+  filterDeps: [tab, dateFrom, dateTo],
+  defaultSort: "date",
+});
+
+// Upcoming: soonest first. Past: most recent first.
+const setTab = (value) => {
+  tab.value = value;
+  list.sortKey.value = "date";
+  list.sortDir.value = value === "upcoming" ? "asc" : "desc";
+};
+
+const activeFilterCount = computed(() => [dateFrom.value, dateTo.value].filter(Boolean).length);
+const clearFilters = () => {
+  dateFrom.value = "";
+  dateTo.value = "";
+};
+
+const exportItems = useListExport({
+  columns: list.visibleColumns,
+  rows: list.sorted,
+  title: computed(() => t("events.title")),
+  fileName: "Events",
+});
+
+const canCreate = computed(() => auth.hasPermission("event.create") || auth.user?.type === "organisation");
+
+const open = (e) => router.push({ name: "view-event", params: { id: e.id } });
+
+const rowActions = (e) => {
+  const summaryId = summaryByEvent.value.get(e.id);
+  return [
+    summaryId
+      ? { label: t("events.viewReport"), icon: ClipboardList, onSelect: () => router.push({ name: "view-event-summary", params: { id: summaryId } }) }
+      : { label: t("events.writeReport"), icon: ClipboardList, onSelect: () => router.push({ name: "create-event-summary", params: { eventId: e.id } }) },
+    { label: t("meetings.attendance"), icon: Users, onSelect: () => router.push({ name: "event-attendances", params: { id: e.id } }) },
+    { label: t("meetings.guests"), icon: UserPlus, onSelect: () => router.push({ name: "event-guest-attendance", params: { id: e.id } }) },
+    { label: t("events.edit"), icon: Pencil, onSelect: () => router.push({ name: "edit-event", params: { id: e.id } }) },
+    { label: t("events.delete"), icon: Trash2, onSelect: () => remove(e) },
+  ];
+};
+
+async function remove(e) {
+  const ok = await confirm({
+    title: t("meetings.deleteTitle", { name: e.name }),
+    message: t("events.deleteText"),
+    confirmText: t("events.delete"),
+    danger: true,
   });
-});
-
-const rowsPerPage = ref(10);
-const currentPage = ref(1);
-
-const totalItems = computed(() => filteredEvents.value.length);
-const totalPages = computed(() =>
-  Math.ceil(totalItems.value / rowsPerPage.value),
-);
-
-const paginatedCommittees = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage.value;
-  return [...filteredEvents.value]
-    .sort((a, b) => a.user_id - b.user_id)
-    .slice(start, start + rowsPerPage.value);
-});
-
-watch(rowsPerPage, () => {
-  currentPage.value = 1;
-});
-
-const goToFirst = () => {
-  currentPage.value = 1;
-};
-const goToPrev = () => {
-  if (currentPage.value > 1) currentPage.value--;
-};
-const goToNext = () => {
-  if (currentPage.value < totalPages.value) currentPage.value++;
-};
-const goToLast = () => {
-  currentPage.value = totalPages.value;
-};
-
-const applyQuickDateFilter = () => {
-  const today = new Date();
-  const formatDate = (d) => d.toISOString().split("T")[0];
-
-  if (quickDateFilter.value === "last7") {
-    const date = new Date(today);
-    date.setDate(today.getDate() - 7);
-    startDate.value = formatDate(date);
-    endDate.value = formatDate(today);
-  } else if (quickDateFilter.value === "thisMonth") {
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    startDate.value = formatDate(firstDay);
-    endDate.value = formatDate(lastDay);
-  } else if (quickDateFilter.value === "last30") {
-    const date = new Date(today);
-    date.setDate(today.getDate() - 30);
-    startDate.value = formatDate(date);
-    endDate.value = formatDate(today);
+  if (!ok) return;
+  const res = await auth.fetchProtectedApi(`/api/events/${e.id}`, {}, "DELETE");
+  if (res?.status) {
+    events.value = events.value.filter((x) => x.id !== e.id);
+    toast.success(t("events.deleted"));
   } else {
-    startDate.value = "";
-    endDate.value = "";
+    toast.error(t("events.deleteFailed"));
   }
-};
+}
 
-// const exportCSV = () => {
-//   const header = filteredHeaders.value.map(h => h.text)
-//   const rows = paginatedCommittees.value.map(e => filteredHeaders.value.map(h => e[h.value] ?? ''))
-//   const ws = utils.aoa_to_sheet([header, ...rows])
-//   const wb = utils.book_new()
-//   utils.book_append_sheet(wb, ws, 'Events')
-//   writeFileXLSX(wb, 'events.csv', { bookType: 'csv' })
-// }
-
-// const exportXLSX = () => {
-//   const json = paginatedCommittees.value.map(e => {
-//     const obj = {}
-//     filteredHeaders.value.forEach(h => (obj[h.text] = e[h.value]))
-//     return obj
-//   })
-//   const ws = utils.json_to_sheet(json)
-//   const wb = utils.book_new()
-//   utils.book_append_sheet(wb, ws, 'Events')
-//   writeFileXLSX(wb, 'events.xlsx')
-// }
-
-// const exportPDF = () => {
-//   const doc = new jsPDF()
-//   const hdr = filteredHeaders.value.map(h => h.text)
-//   const body = paginatedCommittees.value.map(e => hdr.map(txt => e[allHeaders.find(c => c.text === txt)?.value] ?? ''))
-//   autoTable(doc, { head: [hdr], body })
-//   doc.save('events.pdf')
-// }
-
-// Export CSV with custom header/footer
-const exportCSV = async () => {
-  await csvExport({
-    headers: filteredHeaders.value,
-    rows: paginatedCommittees.value,
-    title: "Event List",
-    fileName: "Events.csv",
-  });
-};
-
-// Export XLSX with custom header/footer
-const exportXLSX = async () => {
-  await excelExport({
-    headers: filteredHeaders.value,
-    rows: paginatedCommittees.value,
-    title: "Event List",
-    fileName: "Events.xlsx",
-  });
-};
-
-// --- Export Events PDF ---
-const exportPDF = () => {
-  pdfExport({
-    headers: filteredHeaders.value,
-    rows: paginatedCommittees.value,
-    title: "Event List",
-    fileName: "Events.pdf",
-  });
-};
-const getEvents = async () => {
-  loading.value = true;
-  try {
-    const response = await auth.fetchProtectedApi("/api/events", {}, "GET");
-    eventList.value = response.status
-      ? response.data.map((item) => ({
-          id: item.id,
-          user_id: item.user_id,
-          title: item.title ?? "",
-          name: item.name ?? "",
-          date: item.date ?? "",
-          time: item.time ?? "",
-          venue_name: item.venue_name ?? "",
-          status: item.status ?? 0,
-          status_display: item.status === 0 ? "Active" : "Disabled",
-        }))
-      : [];
-  } catch (e) {
-    console.error("Error fetching events:", e);
-    eventList.value = [];
-  } finally {
-    loading.value = false;
-  }
-};
-
-const getEventSummaries = async () => {
-  try {
-    const response = await auth.fetchProtectedApi(
-      "/api/event-summaries",
-      {},
-      "GET",
-    );
-    eventSummary.value = response.status ? response.data : [];
-  } catch (e) {
-    console.error("Error fetching event summaries:", e);
-    eventSummary.value = [];
-  }
-};
-
-const deleteRecord = async (eventId) => {
-  const confirmed = await Swal.fire({
-    title: "Are you sure?",
-    text: "This action cannot be undone!",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#d33",
-    confirmButtonText: "Yes, delete it!",
-  });
-
-  if (confirmed.isConfirmed) {
-    try {
-      const response = await auth.fetchProtectedApi(
-        `/api/events/${eventId}`,
-        {},
-        "DELETE",
-      );
-      if (response.status) {
-        eventList.value = eventList.value.filter((e) => e.id !== eventId);
-        Swal.fire("Deleted!", "Event has been deleted.", "success");
-      } else {
-        Swal.fire("Error!", "Failed to delete event.", "error");
-      }
-    } catch (e) {
-      Swal.fire("Error!", "Failed to delete event.", "error");
-    }
-  }
-};
-
-const viewSummary = (record) => {
-  const summary = eventSummary.value.find((s) => s.event_id === record.id);
-  if (summary) {
-    router.push({ name: "view-event-summary", params: { id: summary.id } });
-  }
-};
-const addSummary = (record) => {
-  router.push({ name: "create-event-summary", params: { eventId: record.id } });
-};
-const goToCreateEvent = () => router.push({ name: "create-event" });
-const goToEditEvent = (id) =>
-  router.push({ name: "edit-event", params: { id } });
-const goToViewEvent = (id) =>
-  router.push({ name: "view-event", params: { id } });
-const goToAttendances = (id) =>
-  router.push({ name: "event-attendances", params: { id } });
-const goToGuestAttendance = (id) =>
-  router.push({ name: "event-guest-attendance", params: { id } });
-
-onMounted(() => {
-  getEvents();
-  getEventSummaries();
+onMounted(async () => {
+  setTab("upcoming");
+  await load();
+  loading.value = false;
 });
 </script>
 
 <template>
-  <div class="p-4 sm:p-6 bg-white rounded-lg shadow space-y-6">
-    <!-- Header -->
-    <div
-      class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
-    >
-      <h2 class="text-lg sm:text-xl font-semibold text-gray-800">Events</h2>
+  <div class="mx-auto flex max-w-7xl flex-col gap-6">
+    <AzPageHeader :title="t('events.title')" :description="t('events.description')">
+      <AzMenu :label="t('list.export')" :items="exportItems">
+        <template #icon><Download class="h-[18px] w-[18px]" /></template>
+      </AzMenu>
+      <AzButton v-if="canCreate" :to="{ name: 'create-event' }">
+        <template #icon><Plus class="h-[18px] w-[18px]" /></template>
+        {{ t('events.add') }}
+      </AzButton>
+    </AzPageHeader>
 
-      <!-- Export + Create Buttons -->
-      <div class="flex flex-wrap gap-2">
-        <button
-          @click="exportCSV"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          <FileText class="w-4 h-4" /> CSV
-        </button>
-        <button
-          @click="exportXLSX"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          <FileSpreadsheet class="w-4 h-4" /> Excel
-        </button>
-        <button
-          @click="exportPDF"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          <FileDown class="w-4 h-4" /> PDF
-        </button>
-        <button
-          @click="goToCreateEvent"
-          class="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium px-4 py-2 rounded"
-        >
-          Add Event
-        </button>
-      </div>
+    <div class="-mt-2 w-full max-w-md">
+      <AzSegmented :model-value="tab" :label="t('events.title')" :options="tabOptions" @update:model-value="setTab" />
     </div>
 
-    <!-- Mobile-only toggle -->
-    <button
-      @click="showFilters = !showFilters"
-      type="button"
-      class="sm:hidden w-full flex items-center justify-between border rounded-lg px-4 py-2.5 my-5 bg-gray-50 text-sm font-medium text-gray-700"
-    >
-      <span class="flex items-center gap-2">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M3 4h18M6 8h12M9 12h6M11 16h2"
-          />
-        </svg>
-        Filters
-      </span>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="w-4 h-4 transition-transform duration-200"
-        :class="showFilters ? 'rotate-180' : ''"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M19 9l-7 7-7-7"
-        />
-      </svg>
-    </button>
+    <AzCard :padded="false">
+      <AzListToolbar v-model:search="list.search.value" v-model:visible-keys="list.visibleKeys.value"
+        v-model:preset="list.presetModel.value" :columns="columns" :placeholder="t('events.searchPlaceholder')"
+        :active-count="activeFilterCount" @clear="clearFilters">
+        <AzInput v-model="dateFrom" type="date" :label="t('funds.from')" />
+        <AzInput v-model="dateTo" type="date" :label="t('funds.to')" />
+      </AzListToolbar>
 
-    <!-- Collapsible on mobile, always visible from sm: up -->
-    <div :class="showFilters ? 'block' : 'hidden'" class="sm:block space-y-4">
-      <!-- Filters -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div>
-          <label class="block text-xs sm:text-sm text-gray-600 mb-1"
-            >Start Date</label
-          >
-          <input
-            type="date"
-            v-model="startDate"
-            class="w-full border rounded px-3 py-1.5 text-xs sm:text-sm"
-          />
-        </div>
-        <div>
-          <label class="block text-xs sm:text-sm text-gray-600 mb-1"
-            >End Date</label
-          >
-          <input
-            type="date"
-            v-model="endDate"
-            class="w-full border rounded px-3 py-1.5 text-xs sm:text-sm"
-          />
-        </div>
-        <div>
-          <label class="block text-xs sm:text-sm text-gray-600 mb-1"
-            >Quick Filter</label
-          >
-          <select
-            v-model="quickDateFilter"
-            @change="applyQuickDateFilter"
-            class="w-full border rounded px-3 py-1.5 text-xs sm:text-sm"
-          >
-            <option value="">All</option>
-            <option value="last7">Last 7 Days</option>
-            <option value="thisMonth">This Month</option>
-            <option value="last30">Last 30 Days</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs sm:text-sm text-gray-600 mb-1"
-            >Search</label
-          >
-          <input
-            type="text"
-            v-model="search"
-            placeholder="Search..."
-            class="w-full border rounded px-3 py-1.5 text-xs sm:text-sm"
-          />
-        </div>
-      </div>
+      <div v-if="loading" class="p-5"><AzSkeleton :lines="5" height="2.75rem" /></div>
 
-      <!-- Column Settings -->
-      <div
-        class="bg-gray-50 border rounded p-4 flex flex-col lg:flex-row flex-wrap gap-6"
-      >
-        <!-- Column Profile Selector -->
-        <div class="flex flex-col w-full sm:w-auto">
-          <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1"
-            >Column View:</label
-          >
-          <select
-            v-model="selectedProfile"
-            @change="applyProfile"
-            class="border rounded px-3 py-1.5 text-xs sm:text-sm w-full sm:w-48"
-          >
-            <option value="minimal">Minimal</option>
-            <option value="detailed">Detailed</option>
-          </select>
-        </div>
+      <AzEmptyState v-else-if="!events.length" :title="t('events.emptyTitle')" :description="t('events.emptyText')">
+        <template #icon><PartyPopper class="h-7 w-7" /></template>
+        <AzButton v-if="canCreate" :to="{ name: 'create-event' }">{{ t('events.add') }}</AzButton>
+      </AzEmptyState>
 
-        <!-- Column Visibility -->
-        <div class="w-full">
-          <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
-            >Select Visible Columns</label
-          >
-          <div class="flex flex-wrap gap-4">
-            <div
-              v-for="header in allHeaders"
-              :key="header.value"
-              class="flex items-center gap-2 text-xs sm:text-sm"
-            >
-              <input
-                type="checkbox"
-                v-model="visibleColumns"
-                :value="header.value"
-                :id="header.value"
-                class="accent-blue-600"
-              />
-              <label :for="header.value" class="text-gray-700">{{
-                header.text
-              }}</label>
+      <AzEmptyState v-else-if="!list.sorted.value.length && tab === 'upcoming' && !list.search.value && !activeFilterCount"
+        :title="t('events.emptyUpcomingTitle')" :description="t('events.emptyUpcomingText')">
+        <template #icon><PartyPopper class="h-7 w-7" /></template>
+        <AzButton v-if="canCreate" :to="{ name: 'create-event' }">{{ t('events.add') }}</AzButton>
+        <AzButton variant="secondary" @click="setTab('past')">{{ t('meetings.past') }}</AzButton>
+      </AzEmptyState>
+
+      <AzEmptyState v-else-if="!list.sorted.value.length" :title="t('list.noMatchTitle')" :description="t('list.noMatchText')">
+        <AzButton variant="secondary" @click="clearFilters(); list.search.value = ''">{{ t('list.clearFilters') }}</AzButton>
+      </AzEmptyState>
+
+      <template v-else>
+        <AzDataTable :columns="list.visibleColumns.value" :rows="list.paged.value" :sort-key="list.sortKey.value"
+          :sort-dir="list.sortDir.value" @sort="list.sortBy" @row-click="open">
+          <template #cell-name="{ row }">
+            <span class="flex items-center gap-2">
+              {{ row.name }}
+              <ClipboardList v-if="summaryByEvent.has(row.id)" class="h-4 w-4 text-success" :aria-label="t('events.reportDone')" />
+            </span>
+          </template>
+          <template #cell-where_text="{ row }">
+            <span class="inline-flex items-center gap-1.5">
+              <MapPin v-if="row.where_text" class="h-4 w-4 text-ink-muted" aria-hidden="true" />
+              {{ row.where_text || '—' }}
+            </span>
+          </template>
+          <template #cell-state="{ row }">
+            <AzBadge :tone="stateTone(row.state)">{{ stateLabel(row.state) }}</AzBadge>
+          </template>
+          <template #actions="{ row }">
+            <div class="flex items-center justify-end gap-1">
+              <AzButton variant="secondary" size="sm" @click="open(row)">{{ t('meetings.open') }}</AzButton>
+              <AzMenu :items="rowActions(row)" variant="quiet" :aria-label="t('meetings.more', { name: row.name })">
+                <template #icon><MoreVertical class="h-[18px] w-[18px]" /></template>
+              </AzMenu>
             </div>
-          </div>
+          </template>
+          <template #mobile="{ row }">
+            <span class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-control bg-primary-soft text-primary-soft-ink">
+              <span class="text-[11px] font-semibold uppercase leading-none">{{ row.date ? formatDate(row.date).split(' ')[1] : '—' }}</span>
+              <span class="text-lg font-bold leading-tight">{{ row.date ? formatDate(row.date).split(' ')[0] : '' }}</span>
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="block truncate font-semibold text-ink">{{ row.name }}</span>
+              <span class="block truncate text-sm text-ink-muted">{{ timeText(row) || t('meetings.noTime') }}{{ row.where_text ? ` · ${row.where_text}` : '' }}</span>
+            </span>
+            <AzBadge v-if="row.state === 'today' || row.state === 'inactive'" :tone="stateTone(row.state)">{{ stateLabel(row.state) }}</AzBadge>
+          </template>
+        </AzDataTable>
+
+        <div class="border-t border-line p-4 sm:px-5">
+          <AzPagination v-model:page="list.page.value" v-model:page-size="list.pageSize.value" :total="list.sorted.value.length" />
         </div>
-      </div>
-    </div>
-
-    <!-- Data Table -->
-    <div class="overflow-x-auto">
-      <EasyDataTable
-        :headers="filteredHeaders"
-        :items="paginatedCommittees"
-        :loading="loading"
-        show-index
-        hide-footer
-        table-class="min-w-full text-xs sm:text-sm"
-        header-class="bg-gray-100"
-        body-row-class="text-xs sm:text-sm"
-        :theme-color="'#3b82f6'"
-      >
-        <!-- Status Badge Slot -->
-        <template #item-status_display="{ status_display }">
-          <span
-            :class="{
-              'text-green-600 font-medium': status_display === 'Active',
-              'text-red-500 font-medium': status_display !== 'Active',
-            }"
-          >
-            {{ status_display }}
-          </span>
-        </template>
-
-        <!-- Header Alignment Fix -->
-        <template #header-actions>
-          <div class="text-right w-full pr-2">Actions</div>
-        </template>
-        <!-- Actions Slot -->
-        <template #item-actions="{ id }">
-          <div class="flex flex-wrap justify-end gap-2">
-            <button
-              @click="viewSummary(eventList.find((e) => e.id === id))"
-              v-if="eventSummary.find((s) => s.event_id === id)"
-              class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs"
-            >
-              Summary View
-            </button>
-            <button
-              @click="addSummary(eventList.find((e) => e.id === id))"
-              v-else
-              class="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-xs"
-            >
-              Summary Add
-            </button>
-            <button
-              @click="goToAttendances(id)"
-              class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
-            >
-              Attendances
-            </button>
-            <button
-              @click="goToGuestAttendance(id)"
-              class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
-            >
-              Guests
-            </button>
-            <button
-              @click="goToEditEvent(id)"
-              class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs"
-            >
-              Edit
-            </button>
-            <button
-              @click="goToViewEvent(id)"
-              class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs"
-            >
-              View
-            </button>
-            <button
-              @click="deleteRecord(id)"
-              class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs"
-            >
-              Delete
-            </button>
-          </div>
-        </template>
-      </EasyDataTable>
-    </div>
-
-    <!-- ✅ Bottom Pagination -->
-    <div
-      class="flex flex-col sm:flex-row justify-between items-center gap-3 px-2 py-3 bg-gray-50 rounded border"
-    >
-      <!-- ✅ Left info -->
-      <div class="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
-        Items
-        {{ (currentPage - 1) * rowsPerPage + 1 }}-
-        {{ Math.min(currentPage * rowsPerPage, totalItems) }}
-        of {{ totalItems }} | Page {{ currentPage }} of {{ totalPages }}
-      </div>
-
-      <!-- ✅ Right controls -->
-      <div class="flex flex-col sm:flex-row items-center gap-3">
-        <!-- Page Size -->
-        <div class="flex items-center gap-1">
-          <span class="text-xs sm:text-sm text-gray-600">Items per page:</span>
-          <select
-            v-model="rowsPerPage"
-            class="border rounded px-2 py-1 text-xs sm:text-sm"
-          >
-            <option
-              v-for="size in [5, 10, 50, 100, 250, 500, 1000]"
-              :key="size"
-              :value="size"
-            >
-              {{ size }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Navigation Buttons -->
-        <div class="flex flex-wrap justify-center gap-1">
-          <button
-            @click="goToFirst"
-            :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-xs sm:text-sm"
-            :class="
-              currentPage === 1
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'hover:bg-gray-100'
-            "
-          >
-            First
-          </button>
-          <button
-            @click="goToPrev"
-            :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-xs sm:text-sm"
-            :class="
-              currentPage === 1
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'hover:bg-gray-100'
-            "
-          >
-            Prev
-          </button>
-          <button
-            @click="goToNext"
-            :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-xs sm:text-sm"
-            :class="
-              currentPage === totalPages
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'hover:bg-gray-100'
-            "
-          >
-            Next
-          </button>
-          <button
-            @click="goToLast"
-            :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-xs sm:text-sm"
-            :class="
-              currentPage === totalPages
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'hover:bg-gray-100'
-            "
-          >
-            Last
-          </button>
-        </div>
-      </div>
-    </div>
+      </template>
+    </AzCard>
   </div>
 </template>

@@ -1,164 +1,179 @@
+<!-- One event: when and where, details, attachments, and links to attendance, guests and the report -->
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { authStore } from '../../../store/authStore';
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import dayjs from "dayjs";
+import { authStore } from "@/store/authStore";
+import { formatDate } from "@/helpers/format";
+import { safeUrl } from "@/helpers/sanitizeHtml";
+import { useToast } from "@/composables/useToast";
+import { useConfirm } from "@/composables/useConfirm";
+import { CalendarDays, Clock, MapPin, ClipboardList, Users, UserPlus, Pencil, Trash2, Paperclip } from "lucide-vue-next";
 
 const auth = authStore;
 const route = useRoute();
 const router = useRouter();
-const record = ref([]);
+const { t } = useI18n();
+const toast = useToast();
+const confirm = useConfirm();
 
-// Selected Record ID
-const selectedRecordId = ref(route.params.id);
+const id = computed(() => route.params.id);
+const event = ref(null);
+const summaryId = ref(null);
+const loading = ref(true);
+const notFound = ref(false);
 
-// Fetch Event details on mount
-const fetchEventDetails = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/events/event/${selectedRecordId.value}`, {}, 'GET');
-        record.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching events:', error);
-        record.value = [];
-    }
-};
+// The old form saved the word "null" in empty fields
+const clean = (v) => (v === null || v === undefined || v === "null" ? "" : String(v));
 
-// Fetch the Event details on component mount
-onMounted(() => {
-    fetchEventDetails();
+async function load() {
+  const [res, summaries] = await Promise.all([
+    auth.fetchProtectedApi(`/api/events/event/${id.value}`, {}, "GET"),
+    auth.fetchProtectedApi("/api/event-summaries", {}, "GET"),
+  ]);
+  if (!res?.status) {
+    notFound.value = true;
+    return;
+  }
+  event.value = res.data;
+  summaryId.value = (summaries?.status ? summaries.data : []).find((s) => String(s.event_id) === String(id.value))?.id ?? null;
+}
+
+const timeText = computed(() => (event.value?.time ? dayjs(`2000-01-01 ${event.value.time}`).format("h:mm A") : t("meetings.noTime")));
+
+const state = computed(() => {
+  const e = event.value;
+  if (!e) return null;
+  if (Number(e.status) === 1) return "inactive";
+  if (!e.date) return "upcoming";
+  const d = dayjs(e.date).startOf("day");
+  const today = dayjs().startOf("day");
+  return d.isSame(today) ? "today" : d.isAfter(today) ? "upcoming" : "past";
+});
+const stateTone = { today: "warning", upcoming: "info", past: "neutral", inactive: "neutral" };
+const stateLabel = (s) => (s === "inactive" ? t("events.off") : t(`meetings.${s}`));
+
+const textSections = computed(() => {
+  const e = event.value;
+  if (!e) return [];
+  return [
+    { label: "events.about", value: clean(e.description) },
+    { label: "meetingView.requirements", value: clean(e.requirements) },
+    { label: "meetingView.note", value: clean(e.note) },
+  ].filter((s) => s.value);
+});
+
+async function remove() {
+  const ok = await confirm({
+    title: t("meetings.deleteTitle", { name: event.value.name }),
+    message: t("events.deleteText"),
+    confirmText: t("events.delete"),
+    danger: true,
+  });
+  if (!ok) return;
+  const res = await auth.fetchProtectedApi(`/api/events/${id.value}`, {}, "DELETE");
+  if (res?.status) {
+    toast.success(t("events.deleted"));
+    router.push({ name: "index-event" });
+  } else {
+    toast.error(t("events.deleteFailed"));
+  }
+}
+
+onMounted(async () => {
+  await load();
+  loading.value = false;
 });
 </script>
 
 <template>
-    <div class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow">
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-            <h5 class="text-xl font-semibold text-center sm:text-left">
-                View Event
-            </h5>
+  <div class="mx-auto flex max-w-5xl flex-col gap-6">
+    <AzSkeleton v-if="loading" :lines="6" height="2.5rem" />
 
-            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-                <button @click="$router.push({ name: 'edit-event', params: { id: record.id } })"
-                    class="bg-yellow-500 hover:bg-yellow-600 text-white p-2 m-2 rounded w-full sm:w-auto">
-                    Event Edit
-                </button>
+    <AzCard v-else-if="notFound">
+      <AzEmptyState :title="t('events.notFound')" :description="t('meetingView.notFoundText')">
+        <AzButton :to="{ name: 'index-event' }">{{ t('events.title') }}</AzButton>
+      </AzEmptyState>
+    </AzCard>
 
-                <button @click="$router.push({ name: 'index-event' })"
-                    class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300 w-full sm:w-auto">
-                    Back to Event List
-                </button>
-            </div>
+    <template v-else-if="event">
+      <AzPageHeader :title="event.name || event.title" :description="clean(event.short_description)" :back="{ name: 'index-event' }" :back-label="t('events.title')">
+        <AzButton variant="danger" @click="remove">
+          <template #icon><Trash2 class="h-[18px] w-[18px]" /></template>
+          {{ t('common.delete') }}
+        </AzButton>
+        <AzButton :to="{ name: 'edit-event', params: { id: event.id } }">
+          <template #icon><Pencil class="h-[18px] w-[18px]" /></template>
+          {{ t('events.edit') }}
+        </AzButton>
+      </AzPageHeader>
+
+      <section class="-mt-2 grid gap-4 md:grid-cols-3">
+        <div class="flex items-start gap-3 rounded-card border border-line bg-surface p-4 shadow-card">
+          <CalendarDays class="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+          <div class="min-w-0">
+            <p class="text-sm text-ink-muted">{{ t('meetingView.date') }}</p>
+            <p class="font-semibold text-ink">{{ event.date ? formatDate(event.date) : t('meetings.noDate') }}</p>
+            <AzBadge v-if="state" class="mt-1" :tone="stateTone[state]">{{ stateLabel(state) }}</AzBadge>
+          </div>
         </div>
-
-
-        <!-- Event Details Table -->
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                <tbody class="text-gray-600 text-md font-medium">
-                    <tr>
-                        <td class="p-2 text-left font-semibold w-36">Event ID</td>
-                        <td class="p-2">:</td>
-                        <td class="p-2">{{ record.id }}</td>
-                    </tr>
-                    <tr>
-                        <td class="p-2 text-left font-semibold w-36">Title</td>
-                        <td class="p-2">:</td>
-                        <td class="p-2">{{ record.title }}</td>
-                    </tr>
-                    <tr>
-                        <td class="p-2 text-left font-semibold w-36">Name</td>
-                        <td class="p-2">:</td>
-                        <td class="p-2">{{ record.name }}</td>
-                    </tr>
-                    <tr>
-                        <td class="p-2 text-left font-semibold w-36">Short Description</td>
-                        <td class="p-2">:</td>
-                        <td class="p-2">{{ record.short_description }}</td>
-                    </tr>
-                    <tr>
-                        <td class="p-2 text-left font-semibold w-36">Description</td>
-                        <td class="p-2">:</td>
-                        <td class="p-2">{{ record.description }}</td>
-                    </tr>
-                    <tr>
-                        <td class="p-2 text-left font-semibold w-36">Date</td>
-                        <td class="p-2">:</td>
-                        <td class="p-2">{{ record.date }}</td>
-                    </tr>
-                    <tr>
-                        <td class="p-2 text-left font-semibold w-36">Time</td>
-                        <td class="p-2">:</td>
-                        <td class="p-2">{{ record.time }}</td>
-                    </tr>
-                    <tr>
-                        <td class="p-2 text-left font-semibold w-36">Venue Name</td>
-                        <td class="p-2">:</td>
-                        <td class="p-2">{{ record.venue_name }}</td>
-                    </tr>
-                    <tr>
-                        <td class="p-2 text-left font-semibold w-36">Venue Address</td>
-                        <td class="p-2">:</td>
-                        <td class="p-2">{{ record.venue_address }}</td>
-                    </tr>
-                    <tr>
-                        <td class="p-2 text-left font-semibold w-36">Requirements</td>
-                        <td class="p-2">:</td>
-                        <td class="p-2">{{ record.requirements }}</td>
-                    </tr>
-                    <tr>
-                        <td class="p-2 text-left font-semibold w-36">Note</td>
-                        <td class="p-2">:</td>
-                        <td class="p-2">{{ record.note }}</td>
-                    </tr>
-                    <tr>
-                        <td class="p-2 text-left font-semibold w-36">Status</td>
-                        <td class="p-2">:</td>
-                        <td class="p-2">
-                            <span :class="record.status === 0 ? 'text-green-500' : 'text-red-500'">
-                                {{ record.status === 0 ? 'Active' : 'Disabled' }}
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="p-2 text-left font-semibold w-36">Conduct Type</td>
-                        <td class="p-2">:</td>
-                        <td class="p-2">
-                            <span :class="record.conduct_type === 1 ? 'text-blue-500' : 'text-yellow-500'">
-                                {{ record.conduct_type === 1 ? 'In Person' : 'Online' }}
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="px-2 py-2 text-left font-semibold w-36">Images</td>
-                        <td>:</td>
-                        <td class="px-2 py-2 text-left">
-                            <div v-if="record.images && record.images.length">
-                                <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-4">
-                                    <img v-for="(img, index) in record.images" :key="img.id || index"
-                                        :src="img.image_url" alt="History Image" class="max-w-full rounded-lg" />
-                                </div>
-                            </div>
-                            <div v-else>
-                                <p class="text-gray-700">No images available</p>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td class="px-2 py-2 text-left font-semibold w-36">Documents</td>
-                        <td>:</td>
-                        <td class="px-2 py-2 text-left">
-                            <div v-if="record.documents && record.documents.length">
-                                <ul class="mt-2 list-disc list-inside text-blue-600">
-                                    <li v-for="(doc, index) in record.documents" :key="doc.id || index">
-                                        <a :href="doc.document_url" target="_blank" rel="noopener noreferrer" class="hover:text-blue-800">
-                                            {{ doc.file_name || 'Download Document' }}
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="flex items-start gap-3 rounded-card border border-line bg-surface p-4 shadow-card">
+          <Clock class="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+          <div class="min-w-0">
+            <p class="text-sm text-ink-muted">{{ t('meetingView.time') }}</p>
+            <p class="font-semibold text-ink">{{ timeText }}</p>
+            <p v-if="event.conduct_type_name" class="text-sm text-ink-muted">{{ event.conduct_type_name }}</p>
+          </div>
         </div>
-    </div>
+        <div class="flex items-start gap-3 rounded-card border border-line bg-surface p-4 shadow-card">
+          <MapPin class="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+          <div class="min-w-0">
+            <p class="text-sm text-ink-muted">{{ t('meetings.where') }}</p>
+            <p class="break-words font-semibold text-ink">{{ clean(event.venue_name) || '—' }}</p>
+            <p v-if="clean(event.venue_address)" class="break-words text-sm text-ink-muted">{{ clean(event.venue_address) }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid gap-3 sm:grid-cols-3">
+        <AzButton variant="secondary" block :to="{ name: 'event-attendances', params: { id: event.id } }">
+          <template #icon><Users class="h-[18px] w-[18px]" /></template>
+          {{ t('meetings.attendance') }}
+        </AzButton>
+        <AzButton variant="secondary" block :to="{ name: 'event-guest-attendance', params: { id: event.id } }">
+          <template #icon><UserPlus class="h-[18px] w-[18px]" /></template>
+          {{ t('meetings.guests') }}
+        </AzButton>
+        <AzButton variant="secondary" block
+          :to="summaryId ? { name: 'view-event-summary', params: { id: summaryId } } : { name: 'create-event-summary', params: { eventId: event.id } }">
+          <template #icon><ClipboardList class="h-[18px] w-[18px]" /></template>
+          {{ summaryId ? t('events.viewReport') : t('events.writeReport') }}
+        </AzButton>
+      </section>
+
+      <AzCard v-for="section in textSections" :key="section.label" :title="t(section.label)">
+        <p class="whitespace-pre-line text-[15px] leading-relaxed text-ink-2">{{ section.value }}</p>
+      </AzCard>
+
+      <AzCard v-if="event.images?.length || event.documents?.length" :title="t('meetingView.attachments')">
+        <div class="flex flex-col gap-4">
+          <div v-if="event.images?.length" class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <a v-for="img in event.images" :key="img.id" :href="safeUrl(img.image_url)" target="_blank" rel="noopener noreferrer">
+              <img :src="img.image_url" :alt="img.file_name || t('meetingView.attachments')"
+                class="aspect-[4/3] w-full max-w-none rounded-control border border-line object-cover hover:opacity-90" loading="lazy" />
+            </a>
+          </div>
+          <ul v-if="event.documents?.length" class="flex flex-col gap-2">
+            <li v-for="doc in event.documents" :key="doc.id" class="flex items-center gap-2">
+              <Paperclip class="h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />
+              <a :href="safeUrl(doc.document_url)" target="_blank" rel="noopener noreferrer" class="truncate text-[15px] text-primary hover:underline">
+                {{ doc.file_name || t('meetingView.document') }}
+              </a>
+            </li>
+          </ul>
+        </div>
+      </AzCard>
+    </template>
+  </div>
 </template>

@@ -41,7 +41,6 @@ const IndexEvent = () => import("../views/Org/Event/Index.vue");
 const CreateEvent = () => import("../views/Org/Event/Create.vue");
 const EditEvent = () => import("../views/Org/Event/Edit.vue");
 const ViewEvent = () => import("../views/Org/Event/View.vue");
-const UpcomingEvents = () => import("../views/Org/Event/EventList.vue");
 const IndexEventSummary = () => import("../views/Org/Event/EventSummary/Index.vue");
 const CreateEventSummary = () => import("../views/Org/Event/EventSummary/Create.vue");
 const EditEventSummary = () => import("../views/Org/Event/EventSummary/Edit.vue");
@@ -311,8 +310,8 @@ const orgRoutes = [
       {
         path: "upcoming-events",
         name: "upcoming-events",
-        component: UpcomingEvents,
-        meta: { requiresAuth: true, permission: "event.read" },
+        // The Events list opens on upcoming events
+        redirect: { name: "index-event" },
       },
       {
         path: "event-summary",
