@@ -1,1867 +1,366 @@
+<!-- Organisation members: search, filter, sort, export and manage members -->
 <script setup>
-import { ref, onMounted, computed, watch, reactive } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { authStore } from "../../../store/authStore";
-import Swal from "sweetalert2";
+import { useI18n } from "vue-i18n";
 import dayjs from "dayjs";
-import duration from "dayjs/plugin/duration";
-import relativeTime from "dayjs/plugin/relativeTime";
+import { authStore } from "../../../store/authStore";
 import placeholderImage from "@/assets/Placeholder/Azonation-profile-image.jpg";
-import EasyDataTable from "vue3-easy-data-table";
-import "vue3-easy-data-table/dist/style.css";
-import { pdfExport } from "@/helpers/pdfExport.js";
-import { excelExport } from "@/helpers/excelExport.js";
-import { csvExport } from "@/helpers/csvExport.js";
-import { docxExport } from "@/helpers/docxExport";
-
-dayjs.extend(duration);
-dayjs.extend(relativeTime);
+import { formatDate, membershipAge, humanize, statusTone } from "@/helpers/format";
+import { useListExport } from "@/composables/useListExport";
+import { useToast } from "@/composables/useToast";
+import { Plus, Search, SlidersHorizontal, Download, Users, ChevronUp, ChevronDown } from "lucide-vue-next";
+import MemberDetailsModal from "./components/MemberDetailsModal.vue";
+import MemberEditModal from "./components/MemberEditModal.vue";
+import MemberTerminateModal from "./components/MemberTerminateModal.vue";
 
 const auth = authStore;
 const route = useRoute();
 const router = useRouter();
-const org_name = auth.user.org_name;
+const { t } = useI18n();
+const toast = useToast();
 
+/* ================= DATA ================= */
 const memberList = ref([]);
-const search = ref("");
+const membershipTypes = ref([]);
+const membershipStatuses = ref([]);
+const loading = ref(true);
+
+async function fetchMembers() {
+  const res = await auth.fetchProtectedApi("/api/org-members/", {}, "GET");
+  if (!res?.status) {
+    toast.error(t("dashboard.loadFailed"));
+    memberList.value = [];
+    return;
+  }
+  memberList.value = res.data.map((m) => ({
+    ...m,
+    full_name: [m.individual?.first_name, m.individual?.last_name].filter(Boolean).join(" "),
+  }));
+}
+
+async function fetchLookups() {
+  const [types, statuses] = await Promise.all([
+    auth.fetchProtectedApi("/api/org-membership-types", {}, "GET"),
+    auth.fetchProtectedApi("/api/membership-statuses", {}, "GET"),
+  ]);
+  membershipTypes.value = types?.status ? types.data : [];
+  membershipStatuses.value = statuses?.status ? statuses.data : [];
+}
+
+/* ================= COLUMNS ================= */
+// `key` is also the export field; `value` turns a row into export text
+const allColumns = computed(() => [
+  { key: "image_url", label: t("member.photo") },
+  { key: "full_name", label: t("member.name"), sortable: true },
+  { key: "existing_membership_id", label: t("member.membershipId"), sortable: true },
+  { key: "membership_type.name", label: t("member.membershipType"), sortable: true, value: (m) => m.membership_type?.name ?? "" },
+  { key: "membership_status.name", label: t("member.status"), sortable: true, value: (m) => (m.membership_status?.name ? humanize(m.membership_status.name) : "") },
+  { key: "membership_start_date", label: t("member.joined"), sortable: true, value: (m) => (m.membership_start_date ? formatDate(m.membership_start_date) : "") },
+  { key: "membership_age", label: t("member.membershipAge"), value: (m) => (m.membership_start_date ? membershipAge(m.membership_start_date) : "") },
+]);
+
+const COLUMN_PRESETS = {
+  minimal: ["full_name", "existing_membership_id", "membership_type.name"],
+  detailed: ["image_url", "full_name", "existing_membership_id", "membership_type.name", "membership_status.name", "membership_start_date", "membership_age"],
+};
+
+// Remembered per browser: which columns this person likes to see
+const readSaved = (key, fallback) => {
+  try {
+    return JSON.parse(localStorage.getItem(key)) ?? fallback;
+  } catch {
+    return fallback;
+  }
+};
+const columnPreset = ref(readSaved("members_column_preset", "detailed"));
+const visibleKeys = ref(readSaved("members_visible_columns", COLUMN_PRESETS.detailed));
+watch([columnPreset, visibleKeys], () => {
+  try {
+    localStorage.setItem("members_column_preset", JSON.stringify(columnPreset.value));
+    localStorage.setItem("members_visible_columns", JSON.stringify(visibleKeys.value));
+  } catch {
+    // storage unavailable: preference lasts for this visit
+  }
+}, { deep: true });
+const applyPreset = (preset) => {
+  columnPreset.value = preset;
+  visibleKeys.value = [...COLUMN_PRESETS[preset]];
+};
+const columns = computed(() => allColumns.value.filter((c) => visibleKeys.value.includes(c.key)));
+const presetOptions = computed(() => [
+  { value: "detailed", label: t("list.columnsDetailed") },
+  { value: "minimal", label: t("list.columnsMinimal") },
+]);
+const presetModel = computed({ get: () => columnPreset.value, set: applyPreset });
+
+/* ================= FILTERS ================= */
+const search = ref(typeof route.query.q === "string" ? route.query.q : "");
+const typeFilter = ref("");
+const statusFilter = ref("");
 const dateFrom = ref("");
 const dateTo = ref("");
-const loading = ref(false);
-
-const selectedMember = ref(null);
-const viewModal = ref(false);
-const editModal = ref(false);
-const individual_type_user_id = ref("");
-const membership_type_id = ref("");
-const membership_status_id = ref("");
-const new_membership_type_started_from = ref("");
-const new_membership_status_started_from = ref("");
-const approved_by = ref("");
-const approved_at = ref("");
-const sponsored_user_id = ref("");
-const compact_view = ref(false);
-
-// ✅ Column Profile Logic
-const columnProfiles = {
-  minimal: ["full_name", "membership_type.name", "existing_membership_id"],
-
-  detailed: [
-    "image_url",
-    "full_name",
-    "existing_membership_id",
-    "membership_type.name",
-    "membership_start_date",
-    "membership_age",
-    "actions",
-  ],
-};
-
-const selectedProfile = ref(
-  localStorage.getItem("selected_member_profile") || "detailed",
-);
-const visibleColumns = ref(
-  JSON.parse(localStorage.getItem("visible_member_columns")) ||
-    columnProfiles[selectedProfile.value],
-);
-
-watch(
-  [visibleColumns, selectedProfile],
-  () => {
-    localStorage.setItem(
-      "visible_member_columns",
-      JSON.stringify(visibleColumns.value),
-    );
-    localStorage.setItem("selected_member_profile", selectedProfile.value);
-  },
-  { deep: true },
-);
-
-const applyProfile = () => {
-  visibleColumns.value = [...columnProfiles[selectedProfile.value]];
-};
-
-// ✅ Table Headers
-const allHeaders = [
-  { text: "Image", value: "image_url" },
-  { text: "Name", value: "full_name", sortable: true },
-  { text: "Membership ID", value: "existing_membership_id", sortable: true },
-  { text: "Membership Type", value: "membership_type.name", sortable: true },
-  { text: "Joining Date", value: "membership_start_date", sortable: true },
-  { text: "Membership Age", value: "membership_age" },
-  { text: "Actions", value: "actions" },
-];
-
-// Visibility filter
-const headers = computed(() =>
-  allHeaders.filter((h) => visibleColumns.value.includes(h.value)),
-);
-
-// ✅ Fetch member list
-const fetchMemberList = async () => {
-  loading.value = true;
-  try {
-    const response = await auth.fetchProtectedApi(
-      "/api/org-members/",
-      {},
-      "GET",
-    );
-    memberList.value = response.status
-      ? response.data.map((m) => ({
-          ...m,
-          full_name:
-            `${m.individual.first_name || ""} ${m.individual.last_name || ""}`.trim(),
-          image_url: m.image_url ?? placeholderImage, // Force fallback URL at data source
-        }))
-      : [];
-  } catch {
-    memberList.value = [];
-  } finally {
-    loading.value = false;
-  }
-};
-const membershipTypes = ref([]);
-// ✅ Fetch membership types
-const fetchMembershipType = async () => {
-  try {
-    const response = await auth.fetchProtectedApi(
-      "/api/org-membership-types",
-      {},
-      "GET",
-    );
-    membershipTypes.value = response.status ? response.data : [];
-  } catch (error) {
-    console.error("Error fetching membership types:", error);
-  }
-};
-
-const membershipStatuses = ref([]);
-// ✅ Fetch membership types
-const fetchMembershipSatatuses = async () => {
-  try {
-    const response = await auth.fetchProtectedApi(
-      "/api/membership-statuses",
-      {},
-      "GET",
-    );
-    membershipStatuses.value = response.status ? response.data : [];
-  } catch (error) {
-    console.error("Error fetching membership types:", error);
-  }
-};
-
-// ✅ Membership status badge class
-const statusClass = computed(() => {
-  const status = (
-    selectedMember.value?.membership_status?.name || ""
-  ).toLowerCase();
-
-  const map = {
-    active: "bg-green-100 text-green-700",
-    inactive: "bg-gray-200 text-gray-600",
-    suspended: "bg-red-100 text-red-700",
-    on_hold: "bg-yellow-100 text-yellow-700",
-    pending: "bg-blue-100 text-blue-700",
-    probation: "bg-purple-100 text-purple-700",
-    expired: "bg-black text-white",
-    applied: "bg-sky-100 text-sky-700",
-    under_review: "bg-indigo-100 text-indigo-700",
-    rejected: "bg-red-200 text-red-800",
-    withdrawn: "bg-orange-100 text-orange-700",
-    graduated: "bg-emerald-100 text-emerald-700",
-    retired: "bg-stone-100 text-stone-700",
-    lifetime: "bg-teal-100 text-teal-700",
-    honorary: "bg-pink-100 text-pink-700",
-    deceased: "bg-gray-800 text-white",
-    banned: "bg-red-800 text-white",
-  };
-
-  return map[status] || "bg-gray-200 text-gray-600"; // fallback
-});
-
-// ✅ Format status for display
-const formattedStatus = computed(() => {
-  const raw = selectedMember.value?.membership_status?.name || "--";
-  return raw
-    .replace(/_/g, " ") // replace underscores with spaces
-    .replace(/\b\w/g, (c) => c.toUpperCase()); // capitalise each word
-});
-
-// ✅ Membership age calculator
-const calculateMembershipAge = (startDate) => {
-  if (!startDate) return "";
-  const start = dayjs(startDate);
-  const now = dayjs();
-  const diffYears = now.diff(start, "year");
-  const diffMonths = now.diff(start.add(diffYears, "year"), "month");
-  const diffDays = now.diff(
-    start.add(diffYears, "year").add(diffMonths, "month"),
-    "day",
-  );
-  return `${diffYears}y ${diffMonths}m ${diffDays}d`;
-};
-
-// ✅ Data filter
-const filteredMembers = computed(() => {
-  const keyword = search.value.trim().toLowerCase();
-  let list = [...memberList.value].map((member) => ({
-    ...member,
-    image_url: member.image_url || placeholderImage,
-  }));
-
-  if (keyword) {
-    list = list.filter((m) => {
-      const fullName = m.full_name?.toLowerCase() || "";
-      const membershipId =
-        m.existing_membership_id?.toString().toLowerCase() || "";
-      const membershipType = m.membership_type?.name?.toLowerCase() || "";
-      const membershipStart = m.membership_start_date
-        ? dayjs(m.membership_start_date).format("YYYY-MM-DD").toLowerCase()
-        : "";
-      const membershipAge =
-        calculateMembershipAge(m.membership_start_date)?.toLowerCase() || "";
-
-      return (
-        fullName.includes(keyword) ||
-        membershipId.includes(keyword) ||
-        membershipType.includes(keyword) ||
-        membershipStart.includes(keyword) ||
-        membershipAge.includes(keyword)
-      );
-    });
-  }
-
-  if (membership_type_id.value) {
-    list = list.filter(
-      (m) => m.membership_type_id === membership_type_id.value,
-    );
-  }
-  if (membership_status_id.value) {
-    list = list.filter(
-      (m) => m.membership_status_id === membership_status_id.value,
-    );
-  }
-  if (dateFrom.value && dateTo.value) {
-    const from = dayjs(dateFrom.value);
-    const to = dayjs(dateTo.value);
-    list = list.filter((m) => {
-      const d = dayjs(m.membership_start_date);
-      return d.isAfter(from.subtract(1, "day")) && d.isBefore(to.add(1, "day"));
-    });
-  }
-
-  return list;
-});
-
-// ✅ Export functions
-// const exportXLSX = () => {
-//   const data = filteredMembers.value.map(m => ({
-//     'Full Name': m.full_name,
-//     'Membership Type': m.membership_type?.name || '--',
-//     'Joining Date': m.membership_start_date ? dayjs(m.membership_start_date).format('YYYY-MM-DD') : '--',
-//     'Membership ID': m.existing_membership_id || '--',
-//     'Membership Age': calculateMembershipAge(m.membership_start_date)
-//   }))
-//   const ws = utils.json_to_sheet(data)
-//   const wb = utils.book_new()
-//   utils.book_append_sheet(wb, ws, "Members")
-//   writeFileXLSX(wb, "OrgMembers.xlsx")
-// }
-
-// const exportCSV = () => {
-//   const data = filteredMembers.value.map(m => [
-//     m.full_name,
-//     m.membership_type?.name || '--',
-//     m.membership_start_date ? dayjs(m.membership_start_date).format('YYYY-MM-DD') : '--',
-//     m.existing_membership_id || '--',
-//     calculateMembershipAge(m.membership_start_date)
-//   ])
-//   const ws = utils.aoa_to_sheet([
-//     ['Full Name', 'Membership Type', 'Joining Date', 'Membership ID', 'Membership Age'],
-//     ...data
-//   ])
-//   const wb = utils.book_new()
-//   utils.book_append_sheet(wb, ws, "Members")
-//   writeFileXLSX(wb, "OrgMembers.csv", { bookType: 'csv' })
-// }
-
-// Export CSV with custom header/footer
-const exportCSV = async () => {
-  await csvExport({
-    headers: headers.value,
-    rows: filteredMembers.value,
-    title: "Member List",
-    fileName: "Members.csv",
-  });
-};
-
-// Export XLSX with custom header/footer
-const exportXLSX = async () => {
-  await excelExport({
-    headers: headers.value,
-    rows: filteredMembers.value,
-    title: "Member List",
-    fileName: "Members.xlsx",
-  });
-};
-
-// --- Export Members PDF ---
-const exportPDF = () => {
-  pdfExport({
-    headers: headers.value,
-    rows: filteredMembers.value,
-    title: "Member List",
-    fileName: "Members.pdf",
-  });
-};
-
-const exportDOCX = () => {
-  docxExport({
-    headers: headers.value,
-    rows: filteredMembers.value,
-    title: "Member List",
-    fileName: "Members.docx",
-    logoPath: "/storage/org/profile/image/20250924184601_map.JPG",
-  });
-};
-
-const logoPath = ref(null);
-const baseURL = auth.apiBase;
-
-// --- Utils ---
-const isAbsoluteUrl = (u) => /^https?:\/\//i.test(u);
-const safeJoinUrl = (base, path) =>
-  isAbsoluteUrl(path)
-    ? path
-    : `${base.replace(/\/+$/, "")}/${String(path).replace(/^\/+/, "")}`;
-
-const withTimeout = (promise, ms = 6000) =>
-  new Promise((resolve, reject) => {
-    const t = setTimeout(() => reject(new Error("Image load timeout")), ms);
-    promise
-      .then((v) => {
-        clearTimeout(t);
-        resolve(v);
-      })
-      .catch((e) => {
-        clearTimeout(t);
-        reject(e);
-      });
-  });
-
-// URL → Base64 (PNG) with CORS + timeout
-const urlToBase64 = (url) =>
-  withTimeout(
-    new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = "Anonymous";
-      img.onload = () => {
-        try {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width || 80;
-          canvas.height = img.height || 80;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0);
-          resolve(canvas.toDataURL("image/png")); // <-- REAL PNG
-        } catch (err) {
-          reject(err);
-        }
-      };
-      img.onerror = reject;
-      const sep = url.includes("?") ? "&" : "?";
-      img.src = `${url}${sep}t=${Date.now()}`;
-    }),
-    6000,
-  );
-
-// TRUE PNG placeholder via canvas (no SVG)
-const makePlaceholderPng = (initials = "Logo", size = 80) => {
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-
-  // bg (rounded square)
-  const r = 16;
-  const w = size,
-    h = size;
-  ctx.fillStyle = "#2563eb";
-  ctx.beginPath();
-  ctx.moveTo(r, 0);
-  ctx.lineTo(w - r, 0);
-  ctx.quadraticCurveTo(w, 0, w, r);
-  ctx.lineTo(w, h - r);
-  ctx.quadraticCurveTo(w, h, w - r, h);
-  ctx.lineTo(r, h);
-  ctx.quadraticCurveTo(0, h, 0, h - r);
-  ctx.lineTo(0, r);
-  ctx.quadraticCurveTo(0, 0, r, 0);
-  ctx.closePath();
-  ctx.fill();
-
-  // text
-  ctx.fillStyle = "#ffffff";
-  ctx.font = `700 ${Math.round(size * 0.32)}px Helvetica, Arial, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(initials, size / 2, size / 2);
-
-  return canvas.toDataURL("image/png");
-};
-
-// Infer jsPDF image format from data URL
-const guessJsPdfFormat = (dataUrl) => {
-  if (!dataUrl || typeof dataUrl !== "string") return "PNG";
-  if (dataUrl.startsWith("data:image/jpeg")) return "JPEG";
-  if (dataUrl.startsWith("data:image/webp")) return "WEBP";
-  return "PNG";
-};
-
-const ORG_INITIALS = "Logo";
-
-// --- Fetch & prepare logo (with robust fallback) ---
-const fetchLogo = async () => {
-  try {
-    const response = await auth.fetchProtectedApi(
-      `/api/org-profile/logo`,
-      {},
-      "GET",
-    );
-    const raw = response?.data?.image;
-
-    if (response?.status && raw) {
-      const fullUrl = safeJoinUrl(baseURL, raw);
-      try {
-        logoPath.value = await urlToBase64(fullUrl);
-        console.log(
-          "Logo fetched and converted to Base64.",
-          logoPath.value?.slice(0, 32) + "...",
-        );
-        return;
-      } catch (imgErr) {
-        console.warn("Logo conversion failed, using placeholder.", imgErr);
-      }
-    } else {
-      console.warn("No image in API response, using placeholder.");
-    }
-  } catch (error) {
-    console.warn("Logo fetch error, using placeholder.", error);
-  }
-  // fallback to TRUE PNG
-  logoPath.value = makePlaceholderPng(ORG_INITIALS, 80);
-};
-// ✅ Modal handlers
-const viewMemberDetail = (member) => {
-  selectedMember.value = member;
-  viewModal.value = true;
-};
-const closeViewModal = () => {
-  selectedMember.value = null;
-  viewModal.value = false;
-};
-
-const editMember = () => {
-  if (selectedMember.value) {
-    membership_type_id.value = selectedMember.value.membership_type_id;
-    membership_status_id.value = selectedMember.value.membership_status_id;
-    new_membership_type_started_from.value = "";
-    new_membership_status_started_from.value = "";
-    approved_by.value = selectedMember.value.approved_by;
-    approved_at.value = selectedMember.value.approved_at;
-    sponsored_user_id.value = selectedMember.value.sponsored_user_id;
-    editModal.value = true;
-  }
-};
-
-const closeEditModal = () => {
-  selectedMember.value = null;
-  membership_type_id.value = "";
-  new_membership_type_started_from.value = "";
-  membership_status_id.value = "";
-  new_membership_status_started_from.value = "";
-  approved_by.value = "";
-  approved_at.value = "";
-  sponsored_user_id.value = "";
-  editModal.value = false;
-  closeViewModal();
-  // ⬇️ remove the query param so refresh won’t reopen the modal
-  router.replace({ name: "index-member", query: {} });
-};
-
-// ✅ Update Member
-const updateMember = async () => {
-  try {
-    const memberId = selectedMember.value?.id;
-    const payload = {
-      existing_membership_id: selectedMember.value?.existing_membership_id,
-      membership_start_date: selectedMember.value?.membership_start_date,
-      membership_type_id: membership_type_id.value,
-      new_membership_type_started_from:
-        selectedMember.value?.new_membership_type_started_from,
-      new_membership_status_started_from:
-        selectedMember.value?.new_membership_status_started_from,
-      membership_status_id: membership_status_id.value,
-      approved_by: approved_by.value,
-      approved_at: approved_at.value,
-      sponsored_user_id: sponsored_user_id.value,
-    };
-    console.log(payload);
-    const response = await auth.fetchProtectedApi(
-      `/api/org-members/${memberId}`,
-      payload,
-      "PUT",
-    );
-
-    if (response.status) {
-      await fetchMemberList();
-      closeEditModal();
-      Swal.fire({
-        icon: "success",
-        title: "Member Updated",
-        text: "Member information has been successfully updated.",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    } else {
-      Swal.fire("Failed", "Update failed", "error");
-    }
-  } catch (error) {
-    console.error(error);
-    Swal.fire("Error", "An unexpected error occurred.", "error");
-  }
-};
-
-const currentPage = ref(1);
-const rowsPerPage = ref(10);
-
-const totalItems = computed(() => filteredMembers.value.length);
-
-const totalPages = computed(() => {
-  return Math.ceil(totalItems.value / rowsPerPage.value) || 1;
-});
-
-const paginatedMembers = computed(() => {
-  if (!filteredMembers.value?.length) return [];
-  const start = (currentPage.value - 1) * rowsPerPage.value;
-  return filteredMembers.value.slice(start, start + rowsPerPage.value);
-});
-
-watch([search, rowsPerPage], () => {
-  currentPage.value = 1;
-});
-const goToFirst = () => (currentPage.value = 1);
-const goToPrev = () => {
-  if (currentPage.value > 1) currentPage.value--;
-};
-const goToNext = () => {
-  if (currentPage.value < totalPages.value) currentPage.value++;
-};
-const goToLast = () => (currentPage.value = totalPages.value);
-
-const terminationModal = ref(false);
-const terminationMember = ref(null);
-const terminationReasons = ref([]);
-const orgAdministrator = ref("");
-
-const terminationForm = reactive({
-  org_type_user_id: auth.user?.id ?? null, // org user
-  individual_type_user_id: null, // member's user id
-  terminated_member_name: "",
-  terminated_member_email: "",
-  terminated_member_mobile: "",
-  terminated_at: dayjs().format("YYYY-MM-DD"),
-  processed_at: dayjs().format("YYYY-MM-DD"),
-  membership_termination_reason_id: "",
-  org_administrator_id: orgAdministrator.value?.id ?? null, // admin processing
-  rejoin_eligible: true,
-  file_path: null, // File object
-  membership_duration_days: null,
-  membership_status_before_termination: null, // 'active' | 'suspended' | 'probation'
-  membership_type_before_termination: null,
-  joined_at: dayjs().format("YYYY-MM-DD"),
-  org_note: "",
-});
-
-// ✅ Fetch termination reasons
-const fetchTerminationReasons = async () => {
-  try {
-    const res = await auth.fetchProtectedApi(
-      "/api/membership-termination-reasons",
-      {},
-      "GET",
-    );
-
-    terminationReasons.value = res?.status ? res.data : [];
-  } catch (e) {
-    console.error(e);
-    Swal.fire("An error occurred. Please try again.", "", "error");
-  }
-};
-const fetchOrgAdministrators = async () => {
-  try {
-    const res = await auth.fetchProtectedApi(
-      "/api/org-administrators/primary",
-      {},
-      "GET",
-    );
-
-    orgAdministrator.value = res?.status ? res.data : {};
-    terminationForm.org_administrator_id = orgAdministrator.value?.id ?? null;
-  } catch (e) {
-    console.error(e);
-    Swal.fire("An error occurred. Please try again.", "", "error");
-  }
-};
-// ✅ Duration auto-calc: terminated_at - membership_start_date
-const computeTerminationDuration = () => {
-  const start = terminationMember.value?.membership_start_date;
-  const end = terminationForm.terminated_at;
-  if (start && end) {
-    terminationForm.membership_duration_days = dayjs(end).diff(
-      dayjs(start),
-      "day",
-    );
-  } else {
-    terminationForm.membership_duration_days = null;
-  }
-};
-watch(() => terminationForm.terminated_at, computeTerminationDuration);
-
-// ✅ Open / Close modal
-const openTerminationModal = (member) => {
-  terminationMember.value = member;
-  terminationForm.org_type_user_id = auth.user?.id ?? null;
-  terminationForm.individual_type_user_id = member?.individual?.id ?? null;
-  terminationForm.id = member.id ?? null;
-  const first = member?.individual?.first_name ?? "";
-  const last = member?.individual?.last_name ?? "";
-  terminationForm.terminated_member_name = `${first} ${last}`.trim() || "";
-  terminationForm.terminated_member_email = member?.individual?.email ?? "";
-  terminationForm.terminated_member_mobile =
-    member?.individual?.phone_number?.phone_number ?? "016";
-
-  // Defaults
-  terminationForm.existing_membership_id = member?.existing_membership_id ?? "";
-  terminationForm.terminated_at = dayjs().format("YYYY-MM-DD");
-  terminationForm.processed_at = dayjs().format("YYYY-MM-DD");
-  terminationForm.membership_termination_reason_id = "";
-  terminationForm.org_administrator_id = orgAdministrator.value?.id ?? null;
-  terminationForm.rejoin_eligible = true;
-  terminationForm.file_path = null;
-  terminationForm.membership_duration_days = null;
-  terminationForm.membership_status_before_termination =
-    member?.membership_status?.name ?? null;
-  terminationForm.membership_type_before_termination =
-    member?.membership_type?.name ?? null;
-  terminationForm.joined_at =
-    member?.membership_start_date ?? dayjs().format("YYYY-MM-DD");
-  terminationForm.org_note = "";
-
-  computeTerminationDuration();
-  terminationModal.value = true;
-};
-
-const closeTerminationModal = () => {
-  terminationModal.value = false;
-  terminationMember.value = null;
-  // reset core fields (keep object reference intact)
-  Object.assign(terminationForm, {
-    org_type_user_id: auth.user?.id ?? null,
-    individual_type_user_id: null,
-    terminated_member_name: "",
-    terminated_member_email: "",
-    terminated_member_mobile: "",
-    terminated_at: dayjs().format("YYYY-MM-DD"),
-    processed_at: dayjs().format("YYYY-MM-DD"),
-    membership_termination_reason_id: "",
-    org_administrator_id: orgAdministrator.value?.id ?? null,
-    rejoin_eligible: true,
-    file_path: null,
-    membership_duration_days: null,
-    membership_status_before_termination: null,
-    membership_type_before_termination: null,
-    joined_at: dayjs().format("YYYY-MM-DD"),
-    org_note: "",
-  });
-};
-
-// Submit (create) termination
-const submitTermination = async () => {
-  try {
-    // ✅ Pre-check: membership type
-    if (!terminationForm.membership_type_before_termination) {
-      Swal.fire(
-        "Membership type before termination is required.",
-        "",
-        "warning",
-      );
-      return;
-    }
-
-    // ✅ Pre-check: membership status
-    if (!terminationForm.membership_status_before_termination) {
-      Swal.fire(
-        "Membership status before termination is required.",
-        "",
-        "warning",
-      );
-      return;
-    }
-
-    // ✅ Pre-check: membership status
-    if (!terminationForm.membership_termination_reason_id) {
-      Swal.fire(
-        "Membership termination reason before termination is required.",
-        "",
-        "warning",
-      );
-      return;
-    }
-
-    // ✅ Pre-check: organization administrator
-    if (!terminationForm.org_administrator_id) {
-      Swal.fire(
-        "Member termination is not allowed until an Organization Administrator has been assigned.",
-        "",
-        "warning",
-      );
-      return;
-    }
-
-    // ✅ Confirmation dialog
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "This will permanently terminate the membership.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, terminate it!",
-      cancelButtonText: "Cancel",
-      reverseButtons: true,
-    });
-
-    if (!result.isConfirmed) return; // exit if cancelled
-
-    // ✅ Build FormData
-    const fd = new FormData();
-    fd.append(
-      "existing_membership_id",
-      terminationForm.existing_membership_id ?? "",
-    );
-    fd.append("org_type_user_id", terminationForm.org_type_user_id ?? "");
-    fd.append(
-      "individual_type_user_id",
-      terminationForm.individual_type_user_id ?? "",
-    );
-    fd.append(
-      "terminated_member_name",
-      terminationForm.terminated_member_name ?? "",
-    );
-    fd.append(
-      "terminated_member_email",
-      terminationForm.terminated_member_email ?? "",
-    );
-    fd.append(
-      "terminated_member_mobile",
-      terminationForm.terminated_member_mobile ?? "",
-    );
-    fd.append("terminated_at", terminationForm.terminated_at ?? "");
-    fd.append("processed_at", terminationForm.processed_at ?? "");
-    fd.append(
-      "membership_termination_reason_id",
-      terminationForm.membership_termination_reason_id ?? "",
-    );
-    fd.append(
-      "org_administrator_id",
-      terminationForm.org_administrator_id ?? null,
-    );
-    fd.append("rejoin_eligible", terminationForm.rejoin_eligible ? "1" : "0");
-    if (terminationForm.file_path)
-      fd.append("file_path", terminationForm.file_path);
-    if (terminationForm.membership_duration_days !== null)
-      fd.append(
-        "membership_duration_days",
-        String(terminationForm.membership_duration_days),
-      );
-    if (terminationForm.membership_status_before_termination)
-      fd.append(
-        "membership_status_before_termination",
-        terminationForm.membership_status_before_termination,
-      );
-    if (terminationForm.membership_type_before_termination)
-      fd.append(
-        "membership_type_before_termination",
-        terminationForm.membership_type_before_termination,
-      );
-    if (terminationForm.joined_at)
-      fd.append("joined_at", terminationForm.joined_at);
-    fd.append("org_note", terminationForm.org_note ?? "");
-
-    // ✅ Submit
-    const res = await auth.uploadProtectedApi(
-      "/api/membership-terminations",
-      fd,
-      "POST",
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      },
-    );
-
-    if (res?.status) {
-      closeTerminationModal();
-      Swal.fire({
-        icon: "success",
-        title: "Membership terminated",
-        text: "The termination has been recorded.",
-        timer: 1800,
-        showConfirmButton: false,
-      });
-      deleteMember(terminationForm.id);
-    } else {
-      Swal.fire("An error occurred. Please try again.", "", "error");
-    }
-  } catch (e) {
-    console.error(e);
-    Swal.fire("An error occurred. Please try again.", "", "error");
-  }
-};
-
-// ✅ Delete Member
-const deleteMember = async (memberId) => {
-  try {
-    // show processing message
-    Swal.fire({
-      title: "Deleting...",
-      text: "Please wait while we remove the member.",
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      },
-    });
-
-    const response = await auth.fetchProtectedApi(
-      `/api/org-members/${memberId}`,
-      {},
-      "DELETE",
-    );
-
-    if (response.status) {
-      await fetchMemberList();
-      closeViewModal();
-      Swal.fire({
-        icon: "success",
-        title: "Deleted!",
-        text: "Member deleted successfully.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-    } else {
-      Swal.fire({
-        icon: "error",
-        title: "Error!",
-        text: "Failed to delete member.",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    Swal.fire({
-      icon: "error",
-      title: "Error!",
-      text: "An error occurred.",
-      timer: 2000,
-      showConfirmButton: false,
-    });
-  }
-};
-
-// ✅ Open edit modal after adding member
-const openEditById = (id) => {
-  if (!id) return;
-  const nId = Number(id);
-  const m = memberList.value.find((x) => x.id === nId);
-  selectedMember.value = m;
-  editMember();
-};
-
-const filteredDropdownMembers = computed(() => {
-  if (!selectedMember.value?.individual_type_user_id) {
-    return memberList.value;
-  }
-
-  return memberList.value.filter(
-    (m) => m.individual.id !== selectedMember.value.individual_type_user_id,
-  );
-});
-
-
-// ✅ Lifecycle
-onMounted(async () => {
-  await fetchMemberList();
-  fetchMembershipType();
-  fetchMembershipSatatuses();
-  fetchTerminationReasons();
-  fetchOrgAdministrators();
-  fetchLogo();
-
-  const editId = route.query.edit;
-  if (editId) openEditById(editId); // ⬅️ no extra fetch; use memberList
-});
-
 const showFilters = ref(false);
 
+const typeOptions = computed(() => [
+  { value: "", label: t("list.all") },
+  // members store the global membership type id, so filter by membership_type_id
+  ...membershipTypes.value.map((ty) => ({ value: ty.membership_type_id, label: ty.membership_type?.name ?? "—" })),
+]);
+const statusOptions = computed(() => [
+  { value: "", label: t("list.all") },
+  ...membershipStatuses.value.map((s) => ({ value: s.id, label: humanize(s.name) })),
+]);
+
+const activeFilterCount = computed(() => [typeFilter.value, statusFilter.value, dateFrom.value, dateTo.value].filter(Boolean).length);
+const clearFilters = () => {
+  search.value = "";
+  typeFilter.value = "";
+  statusFilter.value = "";
+  dateFrom.value = "";
+  dateTo.value = "";
+};
+
+const filteredMembers = computed(() => {
+  const q = search.value.trim().toLowerCase();
+  return memberList.value.filter((m) => {
+    if (q) {
+      const haystack = [m.full_name, m.existing_membership_id, m.membership_type?.name, m.individual?.email]
+        .filter(Boolean).join(" ").toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    if (typeFilter.value !== "" && m.membership_type_id !== typeFilter.value) return false;
+    if (statusFilter.value !== "" && m.membership_status_id !== statusFilter.value) return false;
+    if (dateFrom.value || dateTo.value) {
+      if (!m.membership_start_date) return false;
+      const d = dayjs(m.membership_start_date);
+      if (dateFrom.value && d.isBefore(dayjs(dateFrom.value), "day")) return false;
+      if (dateTo.value && d.isAfter(dayjs(dateTo.value), "day")) return false;
+    }
+    return true;
+  });
+});
+
+/* ================= SORTING ================= */
+const sortKey = ref("full_name");
+const sortDir = ref("asc");
+const sortValue = (m, key) => {
+  if (key === "membership_type.name") return m.membership_type?.name ?? "";
+  if (key === "membership_status.name") return m.membership_status?.name ?? "";
+  return m[key] ?? "";
+};
+const sortedMembers = computed(() => {
+  const dir = sortDir.value === "asc" ? 1 : -1;
+  return [...filteredMembers.value].sort((a, b) => {
+    const x = sortValue(a, sortKey.value);
+    const y = sortValue(b, sortKey.value);
+    if (x === y) return 0;
+    if (x === "") return 1; // empty values always last
+    if (y === "") return -1;
+    return String(x).localeCompare(String(y), undefined, { numeric: true, sensitivity: "base" }) * dir;
+  });
+});
+const sortBy = (key) => {
+  if (sortKey.value === key) sortDir.value = sortDir.value === "asc" ? "desc" : "asc";
+  else {
+    sortKey.value = key;
+    sortDir.value = "asc";
+  }
+};
+const ariaSort = (key) => (sortKey.value === key ? (sortDir.value === "asc" ? "ascending" : "descending") : "none");
+
+/* ================= PAGINATION ================= */
+const page = ref(1);
+const pageSize = ref(readSaved("members_page_size", 10));
+watch(pageSize, (v) => {
+  try { localStorage.setItem("members_page_size", JSON.stringify(v)); } catch { /* ignore */ }
+});
+// Any change to what is listed starts again at page 1
+watch([search, typeFilter, statusFilter, dateFrom, dateTo, sortKey, sortDir], () => (page.value = 1));
+const pagedMembers = computed(() => sortedMembers.value.slice((page.value - 1) * pageSize.value, page.value * pageSize.value));
+
+/* ================= EXPORT ================= */
+const exportItems = useListExport({
+  columns,
+  rows: sortedMembers,
+  title: computed(() => t("members.exportTitle")),
+  fileName: "Members",
+});
+
+/* ================= DIALOGS ================= */
+const selected = ref(null);
+const detailsOpen = ref(false);
+const editOpen = ref(false);
+const terminateOpen = ref(false);
+
+const openDetails = (m) => {
+  selected.value = m;
+  detailsOpen.value = true;
+};
+const openEdit = (m) => {
+  selected.value = m;
+  detailsOpen.value = false;
+  editOpen.value = true;
+};
+const openTerminate = (m) => {
+  selected.value = m;
+  detailsOpen.value = false;
+  terminateOpen.value = true;
+};
+
+// "?edit=<id>" (after adding a member) opens that member's edit dialog once
+watch(editOpen, (isOpen) => {
+  if (!isOpen && route.query.edit) router.replace({ query: { ...route.query, edit: undefined } });
+});
+
+/* ================= LOAD ================= */
+onMounted(async () => {
+  await Promise.all([fetchMembers(), fetchLookups()]);
+  loading.value = false;
+  const editId = Number(route.query.edit);
+  if (editId) {
+    const m = memberList.value.find((x) => x.id === editId);
+    if (m) openEdit(m);
+  }
+});
+
+const orgName = computed(() => auth.user?.org_name || "");
 </script>
 
 <template>
-  <div class="p-6 bg-white rounded-lg shadow space-y-6">
-    <!-- Top Bar -->
-    <div
-      class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
-    >
-      <h2 class="text-lg font-semibold text-gray-700">Members</h2>
-      <div class="flex flex-wrap gap-2">
-        <!-- Export Buttons -->
-        <button
-          @click="exportCSV"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          <FileText class="w-4 h-4" /> CSV
-        </button>
-        <button
-          @click="exportXLSX"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          <FileSpreadsheet class="w-4 h-4" /> Excel
-        </button>
-        <button
-          @click="exportPDF"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          <FileDown class="w-4 h-4" /> PDF
-        </button>
-        <button
-          @click="exportDOCX"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          <FileText class="w-4 h-4" /> Word
-        </button>
-        <!-- <button @click="$router.push({ name: 'org-membership-types' })"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100">
-          Org Membership Types
-        </button> -->
+  <div class="mx-auto flex max-w-7xl flex-col gap-6">
+    <AzPageHeader :title="t('members.title')" :description="orgName ? t('members.description', { org: orgName }) : ''">
+      <AzMenu :label="t('list.export')" :items="exportItems">
+        <template #icon><Download class="h-[18px] w-[18px]" /></template>
+      </AzMenu>
+      <AzButton :to="{ name: 'create-member' }">
+        <template #icon><Plus class="h-[18px] w-[18px]" /></template>
+        {{ t('members.add') }}
+      </AzButton>
+    </AzPageHeader>
 
-        <button
-          @click="$router.push({ name: 'terminated-members' })"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          Terminated Member
-        </button>
-        <button
-          @click="$router.push({ name: 'unlink-member' })"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-3 py-1.5 text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          Unlink Member
-        </button>
-        <button
-          @click="$router.push({ name: 'create-member' })"
-          class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm"
-        >
-          + Add Member
-        </button>
-      </div>
+    <!-- Related lists -->
+    <div class="-mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[15px]">
+      <router-link :to="{ name: 'terminated-member' }" class="font-medium text-primary hover:underline">{{ t('members.terminated') }}</router-link>
+      <router-link :to="{ name: 'unlink-member' }" class="font-medium text-primary hover:underline">{{ t('members.unlinked') }}</router-link>
     </div>
 
-    <!-- Mobile-only toggle -->
-    <button
-      @click="showFilters = !showFilters"
-      type="button"
-      class="sm:hidden w-full flex items-center justify-between border rounded-lg px-4 py-2.5 bg-gray-50 text-sm font-medium text-gray-700"
-    >
-      <span class="flex items-center gap-2">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M3 4h18M6 8h12M9 12h6M11 16h2"
-          />
-        </svg>
-        Filters
-      </span>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="w-4 h-4 transition-transform duration-200"
-        :class="showFilters ? 'rotate-180' : ''"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M19 9l-7 7-7-7"
-        />
-      </svg>
-    </button>
-
-    <!-- Collapsible on mobile, always visible from sm: up -->
-    <div :class="showFilters ? 'block' : 'hidden'" class="sm:block space-y-4">
-      <!-- Filters: fill the full width on desktop, wrap on smaller screens -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <!-- Search -->
-        <div class="flex flex-col">
-          <label class="text-sm text-gray-600">Search</label>
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Search..."
-            class="w-full border rounded px-3 py-1.5 text-sm"
-          />
-        </div>
-
-        <!-- Membership Type -->
-        <div class="flex flex-col">
-          <label class="text-sm text-gray-600">Membership Type</label>
-          <select
-            v-model="membership_type_id"
-            class="w-full border rounded px-3 py-1.5 text-sm"
-          >
-            <option value="">All Types</option>
-            <option
-              v-for="type in membershipTypes"
-              :key="type.id"
-              :value="type.id"
-            >
-              {{ type.membership_type.name }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Membership Status -->
-        <div class="flex flex-col">
-          <label class="text-sm text-gray-600">Membership Status</label>
-          <select
-            v-model="membership_status_id"
-            class="w-full border rounded px-3 py-1.5 text-sm"
-          >
-            <option value="">All Membership Status</option>
-            <option
-              v-for="status in membershipStatuses"
-              :key="status.id"
-              :value="status.id"
-            >
-              {{ status.name }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Start Date -->
-        <div class="flex flex-col">
-          <label class="text-sm text-gray-600">Start Date</label>
-          <input
-            v-model="dateFrom"
-            type="date"
-            class="w-full border rounded px-3 py-1.5 text-sm"
-          />
-        </div>
-
-        <!-- End Date -->
-        <div class="flex flex-col">
-          <label class="text-sm text-gray-600">End Date</label>
-          <input
-            v-model="dateTo"
-            type="date"
-            class="w-full border rounded px-3 py-1.5 text-sm"
-          />
-        </div>
-      </div>
-
-      <!-- Column View -->
-      <div
-        class="bg-gray-50 border rounded p-4 flex flex-col lg:flex-row gap-6"
-      >
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >Column View:</label
-          >
-          <select
-            v-model="selectedProfile"
-            @change="applyProfile"
-            class="border rounded px-3 py-1.5 text-xs sm:text-sm w-full sm:w-48"
-          >
-            <option value="minimal">Minimal</option>
-            <option value="detailed">Detailed</option>
-          </select>
-        </div>
-        <div class="flex-1">
-          <label class="text-sm font-medium text-gray-700 mb-1 block"
-            >Visible Columns</label
-          >
-          <div class="flex flex-wrap gap-4">
-            <div
-              v-for="header in allHeaders"
-              :key="header.value"
-              class="flex items-center gap-2 text-sm"
-            >
-              <input
-                type="checkbox"
-                v-model="visibleColumns"
-                :value="header.value"
-                :id="header.value"
-                class="accent-blue-600"
-              />
-              <label :for="header.value" class="text-gray-700">{{
-                header.text
-              }}</label>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Member Table -->
-    <div class="overflow-x-auto">
-      <EasyDataTable
-        :headers="headers"
-        :items="paginatedMembers"
-        :search-value="search"
-        :loading="loading"
-        show-index
-        hide-footer
-        table-class="min-w-full text-sm"
-        header-class="bg-gray-100"
-        body-row-class="text-sm"
-        :theme-color="'#3b82f6'"
-      >
-        <!-- Profile Image -->
-        <template #item-image_url="{ image_url }">
-          <img
-            :src="image_url"
-            class="h-10 w-10 rounded-full object-cover bg-gray-100"
-          />
-        </template>
-
-        <!-- Full Name -->
-        <template #item-full_name="{ full_name }">
-          <span class="text-gray-700">{{ full_name || "--" }}</span>
-        </template>
-
-        <!-- Membership ID -->
-        <template #item-existing_membership_id="{ existing_membership_id }">
-          <span>{{ existing_membership_id || "--" }}</span>
-        </template>
-
-        <!-- Membership Type -->
-        <template #item-membership_type.name="{ membership_type }">
-          <span>{{ membership_type?.name || "--" }}</span>
-        </template>
-
-        <!-- Joining Date -->
-        <template #item-membership_start_date="{ membership_start_date }">
-          <span>{{
-            membership_start_date
-              ? dayjs(membership_start_date).format("DD-MM-YYYY")
-              : "--"
-          }}</span>
-        </template>
-
-        <!-- Membership Age -->
-        <template #item-membership_age="{ membership_start_date }">
-          <span>{{ calculateMembershipAge(membership_start_date) }}</span>
-        </template>
-
-        <!-- Actions -->
-        <template #item-actions="{ id }">
-          <button
-            @click="viewMemberDetail(memberList.find((m) => m.id === id))"
-            class="text-blue-600 hover:underline text-xs"
-          >
-            Details
-          </button>
-          <!-- <button @click="openTerminationModal(memberList.find(m => m.id === id))"
-            class="text-red-600 hover:underline text-xs">Terminate</button> -->
-        </template>
-      </EasyDataTable>
-    </div>
-
-    <!-- Pagination -->
-    <div
-      class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 px-2 py-3 bg-gray-50 rounded border"
-    >
-      <!-- Status Text -->
-      <div class="text-xs sm:text-sm text-gray-600 text-center md:text-left">
-        Items {{ (currentPage - 1) * rowsPerPage + 1 }} -
-        {{ Math.min(currentPage * rowsPerPage, totalItems) }}
-        of {{ totalItems }} | Page {{ currentPage }} of {{ totalPages }}
-      </div>
-
-      <!-- Controls -->
-      <div
-        class="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto"
-      >
-        <!-- Page Size -->
-        <div class="flex items-center justify-center sm:justify-start gap-1">
-          <span class="text-xs sm:text-sm text-gray-600">Items per page:</span>
-          <select
-            v-model="rowsPerPage"
-            class="border rounded px-2 py-1 text-xs sm:text-sm"
-          >
-            <option
-              v-for="size in [5, 10, 50, 100, 250, 500, 1000]"
-              :key="size"
-              :value="size"
-            >
-              {{ size }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Navigation -->
-        <div class="flex justify-center flex-wrap gap-1">
-          <button
-            @click="goToFirst"
-            :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-xs sm:text-sm transition"
-            :class="
-              currentPage === 1
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'hover:bg-gray-100'
-            "
-          >
-            First
-          </button>
-          <button
-            @click="goToPrev"
-            :disabled="currentPage === 1"
-            class="border rounded px-3 py-1 text-xs sm:text-sm transition"
-            :class="
-              currentPage === 1
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'hover:bg-gray-100'
-            "
-          >
-            Prev
-          </button>
-          <button
-            @click="goToNext"
-            :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-xs sm:text-sm transition"
-            :class="
-              currentPage === totalPages
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'hover:bg-gray-100'
-            "
-          >
-            Next
-          </button>
-          <button
-            @click="goToLast"
-            :disabled="currentPage === totalPages"
-            class="border rounded px-3 py-1 text-xs sm:text-sm transition"
-            :class="
-              currentPage === totalPages
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'hover:bg-gray-100'
-            "
-          >
-            Last
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ✅ Modals -->
-    <!-- View Modal -->
-    <div
-      v-if="viewModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-    >
-      <div
-        class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 relative overflow-y-auto max-h-[90vh]"
-      >
-        <!-- Header -->
-        <div
-          class="flex flex-col md:flex-row md:items-center md:justify-between border-b pb-4 mb-6 gap-4"
-        >
-          <img
-            :src="selectedMember?.image_url ?? placeholderImage"
-            alt="Member Image"
-            class="h-24 w-24 rounded-full object-cover"
-          />
+    <AzCard :padded="false">
+      <!-- SEARCH AND FILTERS -->
+      <div class="flex flex-col gap-4 border-b border-line p-4 sm:p-5">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
           <div class="flex-1">
-            <h2 class="text-2xl font-semibold text-gray-800">
-              {{ selectedMember?.individual?.first_name ?? "--" }}
-              {{ selectedMember?.individual?.last_name ?? "--" }}
-            </h2>
-            <p class="text-sm text-gray-500">
-              Membership Id: {{ selectedMember?.existing_membership_id }}
-            </p>
+            <AzInput v-model="search" type="search" :label="t('list.search')" :placeholder="t('members.searchPlaceholder')" autocomplete="off">
+              <template #prefix><Search class="h-5 w-5" /></template>
+            </AzInput>
+          </div>
+          <AzButton variant="secondary" :aria-expanded="showFilters" aria-controls="member-filters" @click="showFilters = !showFilters">
+            <template #icon><SlidersHorizontal class="h-[18px] w-[18px]" /></template>
+            {{ t('list.filters') }}
+            <span v-if="activeFilterCount" class="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-on">{{ activeFilterCount }}</span>
+          </AzButton>
+        </div>
+
+        <div v-show="showFilters" id="member-filters" class="flex flex-col gap-4">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <AzSelect v-model="typeFilter" :label="t('members.type')" :options="typeOptions" />
+            <AzSelect v-model="statusFilter" :label="t('members.status')" :options="statusOptions" />
+            <AzInput v-model="dateFrom" type="date" :label="t('list.joinedFrom')" />
+            <AzInput v-model="dateTo" type="date" :label="t('list.joinedTo')" />
+          </div>
+          <div class="flex flex-col gap-3 rounded-control bg-surface-2 p-4 lg:flex-row lg:items-start lg:gap-8">
+            <div class="w-full max-w-xs">
+              <p class="mb-1.5 text-sm font-semibold text-ink">{{ t('list.columns') }}</p>
+              <AzSegmented v-model="presetModel" :label="t('list.columns')" :options="presetOptions" />
+            </div>
+            <fieldset class="flex flex-wrap gap-x-5">
+              <legend class="sr-only">{{ t('list.columns') }}</legend>
+              <AzCheckbox v-for="col in allColumns" :key="col.key" v-model="visibleKeys" :value="col.key" :label="col.label" class="!min-h-[40px] !py-2" />
+            </fieldset>
           </div>
           <div>
-            <span class="text-sm px-3 py-1 rounded-full" :class="statusClass">
-              {{ formattedStatus }}
-            </span>
+            <AzButton variant="quiet" size="sm" @click="clearFilters">{{ t('list.clearFilters') }}</AzButton>
           </div>
-        </div>
-
-        <!-- Details -->
-
-        <div class="grid grid-cols-1 gap-y-4 text-sm text-gray-700">
-          <div class="flex justify-between">
-            <span class="font-medium text-gray-600">Membership type:</span>
-            <span>{{ selectedMember?.membership_type?.name ?? "--" }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="font-medium text-gray-600">Membership status:</span>
-            <span>{{ selectedMember?.membership_status?.name ?? "--" }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="font-medium text-gray-600">Start date:</span>
-            <span>
-              {{
-                selectedMember?.membership_start_date
-                  ? new Date(
-                      selectedMember?.membership_start_date,
-                    ).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })
-                  : "Not provided"
-              }}
-            </span>
-          </div>
-          <div class="flex justify-between">
-            <span class="font-medium text-gray-600">Membership age:</span>
-            <span>{{
-              calculateMembershipAge(selectedMember?.membership_start_date)
-            }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="font-medium text-gray-600"
-              >Reference/sponsored by:</span
-            >
-            <span>
-              {{
-                selectedMember?.sponsored_user_id
-                  ? memberList.find(
-                      (m) =>
-                        m.individual.id === selectedMember.sponsored_user_id,
-                    )?.full_name
-                  : "Not provided"
-              }}
-            </span>
-          </div>
-          <div class="flex justify-between">
-            <span class="font-medium text-gray-600">Approved by:</span>
-            <span>
-              {{
-                selectedMember?.approved_by
-                  ? memberList.find(
-                      (m) => m.individual.id === selectedMember.approved_by,
-                    )?.full_name
-                  : "Not provided"
-              }}
-            </span>
-          </div>
-          <div class="flex justify-between">
-            <span class="font-medium text-gray-600">Approved at:</span>
-            <span>
-              {{
-                selectedMember?.approved_at
-                  ? new Date(selectedMember?.approved_at).toLocaleDateString(
-                      "en-GB",
-                      {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      },
-                    )
-                  : "Not provided"
-              }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="mt-8 flex justify-end gap-3">
-          <button
-            @click="editMember"
-            class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-5 py-2 rounded-lg"
-          >
-            Edit
-          </button>
-
-          <button
-            @click="openTerminationModal(selectedMember)"
-            class="bg-red-600 hover:bg-red-700 text-white text-sm px-5 py-2 rounded-lg"
-          >
-            Terminate
-          </button>
-          <button
-            @click="closeViewModal"
-            class="bg-gray-200 hover:bg-gray-300 text-sm px-5 py-2 rounded-lg"
-          >
-            Close
-          </button>
         </div>
       </div>
-    </div>
 
-    <!-- Edit Modal -->
-    <div
-      v-if="editModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-    >
-      <div
-        class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 relative overflow-y-auto max-h-[90vh]"
-      >
-        <div class="flex justify-between items-center border-b pb-4 mb-6">
-          <h2 class="text-xl font-semibold text-gray-800">Edit Member</h2>
-          <button
-            @click="closeEditModal"
-            class="text-gray-500 hover:text-gray-700"
-          >
-            &times;
-          </button>
+      <!-- LIST -->
+      <div v-if="loading" class="p-5"><AzSkeleton :lines="6" height="2.75rem" /></div>
+
+      <AzEmptyState v-else-if="!memberList.length" :title="t('members.noMembersTitle')" :description="t('members.noMembersText')">
+        <template #icon><Users class="h-7 w-7" /></template>
+        <AzButton :to="{ name: 'create-member' }">{{ t('members.add') }}</AzButton>
+      </AzEmptyState>
+
+      <AzEmptyState v-else-if="!sortedMembers.length" :title="t('list.noMatchTitle')" :description="t('list.noMatchText')">
+        <template #icon><Search class="h-7 w-7" /></template>
+        <AzButton variant="secondary" @click="clearFilters">{{ t('list.clearFilters') }}</AzButton>
+      </AzEmptyState>
+
+      <template v-else>
+        <!-- Phones: tap a member to see details -->
+        <ul class="divide-y divide-line md:hidden">
+          <li v-for="m in pagedMembers" :key="m.id">
+            <button type="button" class="flex w-full items-center gap-3 px-4 py-4 text-left hover:bg-surface-2" @click="openDetails(m)">
+              <img :src="m.image_url || placeholderImage" :alt="t('member.photoOf', { name: m.full_name })"
+                class="h-11 w-11 max-w-none shrink-0 rounded-full border border-line object-cover" loading="lazy" />
+              <span class="min-w-0 flex-1">
+                <span class="block truncate font-semibold text-ink">{{ m.full_name || '—' }}</span>
+                <span class="block truncate text-sm text-ink-muted">
+                  {{ m.existing_membership_id || '—' }} · {{ m.membership_type?.name || '—' }}
+                </span>
+              </span>
+              <AzBadge v-if="m.membership_status?.name" :tone="statusTone(m.membership_status.name)">{{ humanize(m.membership_status.name) }}</AzBadge>
+            </button>
+          </li>
+        </ul>
+
+        <!-- Tablets and desktops -->
+        <div class="hidden overflow-x-auto md:block">
+          <table class="az-table min-w-full">
+            <thead>
+              <tr>
+                <th v-for="col in columns" :key="col.key" scope="col" :aria-sort="col.sortable ? ariaSort(col.key) : undefined">
+                  <span v-if="col.key === 'image_url'" class="sr-only">{{ col.label }}</span>
+                  <button v-else-if="col.sortable" type="button" class="inline-flex items-center gap-1 uppercase hover:text-ink"
+                    :aria-label="t('list.sortBy', { column: col.label })" @click="sortBy(col.key)">
+                    {{ col.label }}
+                    <ChevronUp v-if="sortKey === col.key && sortDir === 'asc'" class="h-3.5 w-3.5" aria-hidden="true" />
+                    <ChevronDown v-else-if="sortKey === col.key" class="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                  <template v-else>{{ col.label }}</template>
+                </th>
+                <th scope="col"><span class="sr-only">{{ t('common.actions') }}</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="m in pagedMembers" :key="m.id">
+                <td v-for="col in columns" :key="col.key" :class="col.key === 'full_name' ? 'font-semibold text-ink' : ''">
+                  <img v-if="col.key === 'image_url'" :src="m.image_url || placeholderImage" :alt="t('member.photoOf', { name: m.full_name })"
+                    class="h-10 w-10 max-w-none rounded-full border border-line object-cover" loading="lazy" />
+                  <AzBadge v-else-if="col.key === 'membership_status.name' && m.membership_status?.name" :tone="statusTone(m.membership_status.name)">
+                    {{ humanize(m.membership_status.name) }}
+                  </AzBadge>
+                  <span v-else class="whitespace-nowrap tabular-nums">{{ (col.value ? col.value(m) : m[col.key]) || '—' }}</span>
+                </td>
+                <td class="text-right">
+                  <AzButton variant="quiet" size="sm" @click="openDetails(m)">{{ t('members.details') }}</AzButton>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <div class="mb-6 text-center">
-          <img
-            :src="selectedMember?.image_url ?? placeholderImage"
-            alt="Member Image"
-            class="h-24 w-24 rounded-full object-cover mx-auto mb-4"
-          />
-          <h2 class="text-2xl font-semibold text-gray-800">
-            {{ selectedMember?.individual?.first_name ?? "--" }}
-            {{ selectedMember?.individual?.last_name ?? "--" }}
-          </h2>
-          <p class="text-sm text-gray-500">
-            Unique Azon Id: {{ selectedMember?.individual?.azon_id ?? "" }}
-          </p>
+        <div class="border-t border-line p-4 sm:px-5">
+          <AzPagination v-model:page="page" v-model:page-size="pageSize" :total="sortedMembers.length" />
         </div>
+      </template>
+    </AzCard>
 
-        <form @submit.prevent="updateMember" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Organisation Membership Id</label
-            >
-            <input
-              v-model="selectedMember.existing_membership_id"
-              type="text"
-              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-            />
-          </div>
-
-          <div>
-            <label
-              for="membership_type_id"
-              class="block text-sm font-medium text-gray-700"
-              >Membership type</label
-            >
-            <select
-              v-model="membership_type_id"
-              id="membership_type_id"
-              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-            >
-              <option value="" disabled>Select membership type</option>
-              <option
-                v-for="membershipType in membershipTypes"
-                :key="membershipType.membership_type_id"
-                :value="membershipType.membership_type_id"
-              >
-                {{ membershipType.membership_type.name }}
-              </option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >New Membership type started from</label
-            >
-            <input
-              v-model="selectedMember.new_membership_type_started_from"
-              type="date"
-              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label
-              for="membership_status_id"
-              class="block text-sm font-medium text-gray-700"
-              >Membership status</label
-            >
-            <select
-              v-model="membership_status_id"
-              id="membership_status_id"
-              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-            >
-              <option value="" disabled>Select membership status</option>
-              <option
-                v-for="membershipStatus in membershipStatuses"
-                :key="membershipStatus.id"
-                :value="membershipStatus.id"
-              >
-                {{ membershipStatus.name }}
-              </option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >New Membership status started from</label
-            >
-            <input
-              v-model="selectedMember.new_membership_status_started_from"
-              type="date"
-              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Membership Start Date</label
-            >
-            <input
-              v-model="selectedMember.membership_start_date"
-              type="date"
-              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-            />
-          </div>
-
-          <div>
-            <label
-              for="sponsored_user_id"
-              class="block text-sm font-medium text-gray-700"
-              >Reference/Sponsored Member</label
-            >
-            <select
-              v-model="sponsored_user_id"
-              id="sponsored_user_id"
-              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-            >
-              <option value="" disabled>
-                Select Reference/Sponsored Member
-              </option>
-              <option
-                v-for="orgMember in filteredDropdownMembers"
-                :key="orgMember.individual.id"
-                :value="orgMember.individual.id"
-              >
-                {{ orgMember.full_name }}
-              </option>
-            </select>
-          </div>
-
-          <div>
-            <label
-              for="approved_by "
-              class="block text-sm font-medium text-gray-700"
-              >Approved by
-            </label>
-            <select
-              v-model="approved_by"
-              id="approved_by "
-              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-            >
-              <option value="" disabled>Select Approved by</option>
-              <option
-                v-for="orgMember in filteredDropdownMembers"
-                :key="orgMember.individual.id"
-                :value="orgMember.individual.id"
-              >
-                {{ orgMember.full_name }}
-              </option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Approved at</label
-            >
-            <input
-              v-model="approved_at"
-              type="date"
-              class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-            />
-          </div>
-          <div class="mt-6 flex justify-end gap-3">
-            <button
-              type="submit"
-              class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg"
-            >
-              Save
-            </button>
-            <button
-              @click="closeEditModal"
-              type="button"
-              class="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded-lg"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Membership Termination Modal -->
-    <div
-      v-if="terminationModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-    >
-      <div
-        class="bg-white rounded-2xl shadow-lg w-full max-w-3xl p-6 relative overflow-y-auto max-h-[90vh]"
-      >
-        <!-- Header -->
-        <div class="flex justify-between items-center border-b pb-4 mb-6">
-          <h2 class="text-xl font-semibold text-gray-800">
-            Terminate Membership
-          </h2>
-          <button
-            @click="closeTerminationModal"
-            class="text-gray-500 hover:text-gray-700"
-          >
-            &times;
-          </button>
-        </div>
-
-        <!-- Member summary -->
-        <div class="mb-6 flex items-center gap-4">
-          <img
-            :src="terminationMember?.image_url ?? placeholderImage"
-            class="h-16 w-16 rounded-full object-cover"
-          />
-          <div>
-            <div class="text-lg font-semibold text-gray-800">
-              {{ terminationMember?.individual?.first_name ?? "--" }}
-              {{ terminationMember?.individual?.last_name ?? "" }}
-            </div>
-            <div class="text-sm text-gray-500">
-              Membership ID:
-              {{ terminationMember?.existing_membership_id ?? "--" }}
-            </div>
-          </div>
-        </div>
-
-        <form @submit.prevent="submitTermination" class="space-y-5">
-          <!-- Grid fields -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- terminated_member_email -->
-            <div>
-              <!-- terminated_member_name -->
-              <input
-                v-model="terminationForm.terminated_member_name"
-                type="text"
-                hidden
-              />
-              <input
-                v-model="terminationForm.existing_membership_id"
-                type="text"
-                hidden
-              />
-              <label class="block text-sm font-medium text-gray-700"
-                >Email</label
-              >
-              <input
-                v-model="terminationForm.terminated_member_email"
-                type="email"
-                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0"
-                readonly
-              />
-            </div>
-
-            <!-- terminated_member_mobile -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700"
-                >Mobile</label
-              >
-              <input
-                v-model="terminationForm.terminated_member_mobile"
-                type="text"
-                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0"
-                readonly
-              />
-            </div>
-
-            <!-- membership_duration_days (readonly) -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700"
-                >Membership Duration (days)</label
-              >
-              <input
-                :value="terminationForm.membership_duration_days ?? ''"
-                type="text"
-                readonly
-                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0"
-              />
-            </div>
-            <!-- joined_at -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700"
-                >Joined At</label
-              >
-              <input
-                v-model="terminationForm.joined_at"
-                type="date"
-                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0"
-                readonly
-              />
-            </div>
-
-            <!-- membership_type_before_termination -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700"
-                >Membership Type Before Termination</label
-              >
-              <input
-                :value="terminationForm.membership_type_before_termination"
-                type="text"
-                readonly
-                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0"
-              />
-            </div>
-            <!-- membership_status_before_termination -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700"
-                >Membership Status Before Termination</label
-              >
-              <input
-                :value="terminationForm.membership_status_before_termination"
-                type="text"
-                readonly
-                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0"
-              />
-            </div>
-
-            <!-- membership_termination_reason_id -->
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700"
-                >Termination Reason</label
-              >
-              <select
-                v-model="terminationForm.membership_termination_reason_id"
-                class="w-full mt-1 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm"
-              >
-                <option value="" disabled>Select a reason</option>
-                <option
-                  v-for="r in terminationReasons"
-                  :key="r.id"
-                  :value="r.id"
-                >
-                  {{ r.reason }}
-                </option>
-              </select>
-            </div>
-
-            <!-- terminated_at -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700"
-                >Terminated At</label
-              >
-              <input
-                v-model="terminationForm.terminated_at"
-                type="date"
-                @change="computeTerminationDuration"
-                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-
-            <!-- processed_at -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700"
-                >Processed At</label
-              >
-              <input
-                v-model="terminationForm.processed_at"
-                type="date"
-                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-            <!-- file_path -->
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700"
-                >Supporting Document (optional)</label
-              >
-              <input
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                @change="
-                  (e) =>
-                    (terminationForm.file_path = e.target.files?.[0] ?? null)
-                "
-              />
-            </div>
-            <!-- org_note -->
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700"
-                >Organisation Note</label
-              >
-              <textarea
-                v-model="terminationForm.org_note"
-                rows="3"
-                class="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                placeholder="Reason for leaving the organisation"
-              ></textarea>
-            </div>
-
-            <!-- org_administrator_id  (readonly display) -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700"
-                >Org Administrator</label
-              >
-              <input
-                :value="terminationForm.org_administrator_id"
-                type="text"
-                hidden
-                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600"
-              />
-              <input
-                :value="
-                  orgAdministrator?.first_name || orgAdministrator?.last_name
-                    ? `${orgAdministrator?.first_name ?? ''} ${orgAdministrator?.last_name ?? ''}`.trim()
-                    : '--'
-                "
-                type="text"
-                readonly
-                class="w-full mt-1 border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-600 focus:outline-none focus:ring-0"
-              />
-            </div>
-
-            <!-- rejoin_eligible -->
-            <div class="flex items-center gap-2 mt-6">
-              <input
-                id="rejoin_eligible"
-                type="checkbox"
-                v-model="terminationForm.rejoin_eligible"
-                class="accent-blue-600"
-              />
-              <label for="rejoin_eligible" class="text-sm text-gray-700"
-                >Eligible to rejoin in future</label
-              >
-            </div>
-          </div>
-
-          <!-- Actions -->
-          <div class="flex justify-end gap-3">
-            <button
-              type="submit"
-              class="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-lg"
-            >
-              Confirm Termination
-            </button>
-            <button
-              type="button"
-              @click="closeTerminationModal"
-              class="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded-lg"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <MemberDetailsModal v-model:open="detailsOpen" :member="selected" :members="memberList"
+      @edit="openEdit" @terminate="openTerminate" />
+    <MemberEditModal v-model:open="editOpen" :member="selected" :members="memberList"
+      :membership-types="membershipTypes" :membership-statuses="membershipStatuses" @saved="fetchMembers" />
+    <MemberTerminateModal v-model:open="terminateOpen" :member="selected" @terminated="fetchMembers" />
   </div>
 </template>

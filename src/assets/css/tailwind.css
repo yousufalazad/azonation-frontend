@@ -108,7 +108,8 @@
     @apply border-collapse text-left text-[15px] text-ink-2;
   }
   .az-table th {
-    @apply whitespace-nowrap border-b border-line bg-surface-2 px-4 py-3 text-[13px] font-semibold uppercase tracking-wide text-ink-muted;
+    /* relative: keeps screen-reader-only labels inside the scrolling table */
+    @apply relative whitespace-nowrap border-b border-line bg-surface-2 px-4 py-3 text-[13px] font-semibold uppercase tracking-wide text-ink-muted;
   }
   .az-table td {
     @apply border-b border-line px-4 py-3 align-middle;

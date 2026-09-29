@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import { authStore } from "../store/authStore";
+import { cellValue } from "./exportValue";
 
 const auth = authStore;
 
@@ -56,7 +57,7 @@ export async function docxExport({ headers, rows, title, fileName }) {
   /* ---------- Table Body ---------- */
   const tableRows = rows.map((r) => {
     const cells = headers.map((h) => {
-      const textValue = r[h.value] != null ? String(r[h.value]) : "";
+      const textValue = String(cellValue(r, h));
       return new TableCell({
         width: { size: 100 / headers.length, type: WidthType.PERCENTAGE },
         children: [

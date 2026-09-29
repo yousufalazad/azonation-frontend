@@ -2,6 +2,7 @@
 import dayjs from "dayjs";
 import { authStore } from "../store/authStore";
 import { downloadBlob } from "./download";
+import { cellValue } from "./exportValue";
 
 const auth = authStore;
 
@@ -69,12 +70,7 @@ export async function excelExport({ headers = [], rows = [], title = "Report", f
     });
 
     (rows || []).forEach((r) => {
-      const rowVals = normalizedHeaders.map((hdr) => {
-        if (typeof hdr.value === "function") {
-          try { return hdr.value(r); } catch { return ""; }
-        }
-        return r?.[hdr.value] ?? r?.[hdr.text] ?? "";
-      });
+      const rowVals = normalizedHeaders.map((hdr) => cellValue(r, hdr));
       const newRow = ws.addRow(rowVals);
       newRow.eachCell((cell) => {
         cell.alignment = { horizontal: "left", vertical: "middle" };

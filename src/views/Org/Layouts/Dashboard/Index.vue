@@ -7,6 +7,7 @@ import { authStore } from '../../../../store/authStore';
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
 import { CurrencyService } from '@/helpers/currency';
 import { useToast } from '@/composables/useToast';
+import { formatDate, membershipAge, humanize, statusTone } from '@/helpers/format';
 import { Users, CalendarDays, Wallet, TrendingUp, Plus, ChevronRight } from 'lucide-vue-next';
 
 const auth = authStore;
@@ -52,26 +53,6 @@ const recentMembers = computed(() => memberList.value.slice(0, 5));
 
 const memberName = (m) => [m.individual?.first_name, m.individual?.last_name].filter(Boolean).join(' ') || '—';
 
-const formatDate = (value) => (value && dayjs(value).isValid() ? dayjs(value).format('D MMM YYYY') : '—');
-
-// "2 yr 3 mo", "5 mo", "12 days"
-const membershipAge = (startDate) => {
-    if (!startDate || !dayjs(startDate).isValid()) return '—';
-    const start = dayjs(startDate);
-    const years = dayjs().diff(start, 'year');
-    const months = dayjs().diff(start.add(years, 'year'), 'month');
-    if (years) return `${years} yr${months ? ` ${months} mo` : ''}`;
-    if (months) return `${months} mo`;
-    return `${dayjs().diff(start, 'day')} days`;
-};
-
-const statusTone = (name) => {
-    const s = (name || '').toLowerCase();
-    if (s.includes('active') && !s.includes('inactive')) return 'success';
-    if (s.includes('terminat') || s.includes('inactive') || s.includes('expired')) return 'danger';
-    if (s.includes('pending') || s.includes('hold')) return 'warning';
-    return 'neutral';
-};
 
 /* ================= TRENDS (last 12 months) ================= */
 const months = Array.from({ length: 12 }, (_, i) => dayjs().subtract(11 - i, 'month'));
@@ -182,7 +163,7 @@ onMounted(async () => {
                                 {{ member.membership_type?.name || '—' }} · {{ formatDate(member.membership_start_date) }}
                             </p>
                         </div>
-                        <AzBadge :tone="statusTone(member.membership_status?.name)">{{ member.membership_status?.name || '—' }}</AzBadge>
+                        <AzBadge :tone="statusTone(member.membership_status?.name)">{{ humanize(member.membership_status?.name) }}</AzBadge>
                     </li>
                 </ul>
 
@@ -212,7 +193,7 @@ onMounted(async () => {
                                 <td class="whitespace-nowrap tabular-nums">{{ formatDate(member.membership_start_date) }}</td>
                                 <td class="whitespace-nowrap">{{ membershipAge(member.membership_start_date) }}</td>
                                 <td>
-                                    <AzBadge :tone="statusTone(member.membership_status?.name)">{{ member.membership_status?.name || '—' }}</AzBadge>
+                                    <AzBadge :tone="statusTone(member.membership_status?.name)">{{ humanize(member.membership_status?.name) }}</AzBadge>
                                 </td>
                             </tr>
                         </tbody>

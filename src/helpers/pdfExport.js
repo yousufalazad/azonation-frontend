@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import { authStore } from "../store/authStore";
+import { cellValue } from "./exportValue";
 
 const auth = authStore;
 
@@ -157,7 +158,7 @@ export async function pdfExport({ headers, rows, title, fileName }) {
   // Table data
   const header = headers.map((h) => h.text);
   const body = rows.map((r) =>
-    header.map((h) => r[headers.find((hdr) => hdr.text === h).value] || "")
+    headers.map((hdr) => String(cellValue(r, hdr)))
   );
 
   // Watermark
