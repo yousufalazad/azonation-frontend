@@ -1,214 +1,153 @@
+<!-- Your bill: this month so far (from each day's member count), an estimate for the whole month,
+     last month's total, and the monthly bills already made -->
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { authStore } from '../../../store/authStore';
+import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import { loadBillingCurrency, money, rate, statusTone, monthName, shortDate } from "@/helpers/billing";
+import { CalendarClock, History, ReceiptText } from "lucide-vue-next";
+
 const auth = authStore;
+const router = useRouter();
+const { t, locale } = useI18n();
 
-const dailyPriceRate = ref([]);
-const currentMonthName = ref('');
-const currentMonthTotalMember = ref(0);
-const subMonthTotalMember = ref(0);
-const subMonthTotalBillAmount = ref(0);
-// Removed duplicate declaration of approximateBill
-const userCurrency = ref('');
-const previousMonthName = ref('');
-const currentMonthMemberCount = ref([]);
-const subMonthMemberCount = ref([]);
-const previousMonthTotalBillAmount = ref(0);
+const loading = ref(true);
+const currency = ref({});
+const thisMonthDays = ref([]);
+const lastMonthDays = ref([]);
+const members = ref(null);
+const dailyRate = ref(null);
+const bills = ref([]);
 
+const now = new Date();
+const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+const thisMonthLabel = computed(() => monthName(now, locale.value));
+const lastMonthLabel = computed(() => monthName(new Date(now.getFullYear(), now.getMonth() - 1, 1), locale.value));
 
-const getCurrentMonthName = () => {
-    const options = { month: 'long' };
-    currentMonthName.value = new Date().toLocaleDateString(undefined, options);
-};
+const sum = (rows, key) => rows.reduce((acc, r) => acc + Number(r[key] || 0), 0);
+const soFar = computed(() => sum(thisMonthDays.value, "day_total_bill"));
+const lastMonthTotal = computed(() => sum(lastMonthDays.value, "day_total_bill"));
+const memberDays = computed(() => sum(thisMonthDays.value, "day_total_member"));
 
-const getPreviousMonthName = () => {
-    const previousMonth = new Date();
-    previousMonth.setMonth(previousMonth.getMonth() - 1);
-    const options = { month: 'long' };
-    previousMonthName.value = previousMonth.toLocaleDateString(undefined, options);
-};
-
-const getCurrentMonthBillCalculation = async () => {
-    // const firstDayOfMonth = new Date();
-    // firstDayOfMonth.setDate(1);
-
-    try {
-        const response = await auth.fetchProtectedApi('/api/org-financial/current-month-bill-calculation', {}, 'GET');
-        console.log(response.data)
-        if (response.status) {
-            currentMonthMemberCount.value = response.data;
-            calculateCurrentMonthTotalMember(); // ✅ Call here after data is loaded
-        } else {
-        }
-    } catch (error) {
-        console.error('Error fetching sub month bill calculation:', error);
-    }
-};
-
-// New method to get sub month's bill calculation and active member counts
-const getSubMonthBillCalculation = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/org-financial/sub-month-bill-calculation', {}, 'GET');
-        console.log(response.data)
-        if (response.status) {
-            subMonthMemberCount.value = response.data;
-            calculateSubMonthTotalMember(); // ✅ Call here after data is loaded
-        } else {
-        }
-    } catch (error) {
-        console.error('Error fetching sub month bill calculation:', error);
-    }
-};
-
-const getDailyPriceRate = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/management-subscriptions/daily-price-rate', {}, 'GET');
-        if (response.status) {
-            dailyPriceRate.value = response.daily_price_rate;
-        } else {
-        }
-    } catch (error) {
-        console.error('Error fetching price rate:', error);
-    }
-};
-
-const getUserCurrency = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/management-subscriptions/currencies', {}, 'GET');
-        if (response.status) {
-            userCurrency.value = response.data.currency_code;
-        } else {
-        }
-    } catch (error) {
-        console.error('Error fetching price rate:', error);
-    }
-};
-
-const calculateCurrentMonthTotalMember = () => {
-    currentMonthTotalMember.value = currentMonthMemberCount.value.reduce((acc, count) => acc + count.day_total_member, 0);
-};
-
-const calculateSubMonthTotalMember = () => {
-    subMonthTotalMember.value = subMonthMemberCount.value.reduce((acc, count) => acc + count.day_total_member, 0);
-};
-
-
-const approximateBill = computed(() => {
-    return dailyPriceRate.value * currentMonthTotalMember.value;
+// Days still to be counted this month are estimated with today's members and price
+const recordedDates = computed(() => new Set(thisMonthDays.value.map((d) => String(d.date).slice(0, 10))));
+const daysLeft = computed(() => Math.max(0, daysInMonth - recordedDates.value.size));
+const estimate = computed(() => {
+  if (dailyRate.value === null || members.value === null) return null;
+  return soFar.value + daysLeft.value * members.value * dailyRate.value;
 });
 
-const subMonthActualBill = computed(() => {
-    return dailyPriceRate.value * subMonthTotalMember.value;
-});
+const dayRows = computed(() => thisMonthDays.value.slice().sort((a, b) => String(b.date).localeCompare(String(a.date))));
+const dayColumns = computed(() => [
+  { key: "date", label: t("billPage.day"), value: (r) => shortDate(r.date, locale.value) },
+  { key: "day_total_member", label: t("billPage.members"), class: "tabular-nums" },
+  { key: "day_total_bill", label: t("billPage.amount"), class: "tabular-nums", value: (r) => money(r.day_total_bill, currency.value) },
+]);
 
-onMounted(() => {
-    getDailyPriceRate();
-    getUserCurrency();
-    getCurrentMonthName();
-    getPreviousMonthName();
-    getCurrentMonthBillCalculation();
-    getSubMonthBillCalculation();
-    });
+const billColumns = computed(() => [
+  { key: "service_month", label: t("billPage.forMonth"), class: "font-semibold text-ink", value: (b) => billMonth(b) },
+  { key: "total_member", label: t("billPage.members"), class: "tabular-nums" },
+  { key: "total", label: t("billPage.amount"), class: "tabular-nums", value: (b) => money(billTotal(b), { code: b.currency_code }) },
+  { key: "bill_status", label: t("billPage.status") },
+]);
+const billTotal = (b) => Number(b.total_management_bill_amount || 0) + Number(b.total_storage_bill_amount || 0);
+const billMonth = (b) => (b.period_start ? monthName(new Date(`${String(b.period_start).slice(0, 10)}T00:00:00`), locale.value) : `${b.service_month || ""} ${b.service_year || ""}`.trim());
+
+const openBill = (b) => router.push({ name: "view-billing", params: { id: b.id } });
+
+onMounted(async () => {
+  const [cur, thisRes, lastRes, billRes] = await Promise.all([
+    loadBillingCurrency(),
+    auth.fetchProtectedApi("/api/org-financial/current-month-bill-calculation", {}, "GET"),
+    auth.fetchProtectedApi("/api/org-financial/sub-month-bill-calculation", {}, "GET"),
+    auth.fetchProtectedApi("/api/org-all-bill", {}, "GET"),
+  ]);
+  currency.value = cur;
+  thisMonthDays.value = thisRes?.status ? thisRes.data || [] : [];
+  lastMonthDays.value = lastRes?.status ? lastRes.data || [] : [];
+  members.value = thisRes?.billable_members ?? null;
+  dailyRate.value = thisRes?.daily_price_rate != null ? Number(thisRes.daily_price_rate) : null;
+  bills.value = billRes?.status ? billRes.data || [] : [];
+  loading.value = false;
+});
 </script>
 
 <template>
-    <div class="max-w-6xl mb-5 pb-5">
-      <!-- Current Month Bill -->
-      <section class="mb-10">
-        <h1 class="text-2xl font-semibold text-gray-800 mb-6">Approximate bill — {{ currentMonthName }}</h1>
-  
-        <div class="overflow-x-auto bg-white shadow rounded-lg">
-          <table class="min-w-full divide-y divide-gray-200 text-sm text-gray-700">
-            <thead class="bg-gray-50 text-left">
-              <tr>
-                <th class="px-4 py-3 font-medium">#</th>
-                <th class="px-4 py-3 font-medium">Date</th>
-                <th class="px-4 py-3 font-medium">Total member</th>
-                <th class="px-4 py-3 font-medium">Day bill</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(count, index) in currentMonthMemberCount" :key="count.date" class="hover:bg-gray-50">
-                <td class="px-4 py-2">{{ index + 1 }}</td>
-                <td class="px-4 py-2">{{ count.date }}</td>
-                <td class="px-4 py-2">{{ count.day_total_member }}</td>
-                <td class="px-4 py-2">{{ count.day_total_bill }}</td>
-              </tr>
-              <tr v-if="currentMonthMemberCount.length === 0">
-                <td colspan="4" class="text-center text-gray-500 px-4 py-4">There are no members</td>
-              </tr>
-              <tr v-if="currentMonthMemberCount.length > 0" class="font-semibold bg-gray-50">
-                <td colspan="2" class="px-4 py-3 text-right">Total member: {{ currentMonthTotalMember }}</td>
-                <td colspan="2" class="px-4 py-3 text-center">Total bill: {{ userCurrency }} {{ approximateBill }}</td>
-                <td></td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-  
-        <!-- Calculation Summary -->
-        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6">
-          <h2 class="text-lg font-medium mb-3">Calculation summary</h2>
-          <div class="space-y-1">
-            <p><span class="font-medium">Total member:</span> {{ currentMonthTotalMember }}</p>
-            <p><span class="font-medium">Price per member per day:</span> {{ userCurrency }} {{ dailyPriceRate }}</p>
-            <p><span class="font-medium">Approximate bill:</span> {{ userCurrency }} {{ approximateBill }}</p>
-          </div>
-        </div>
-      </section>
-  
-      <!-- Previous Month Bill -->
-      <section>
-        <h1 class="text-2xl font-semibold text-gray-800 mb-6">Bill — {{ previousMonthName }}</h1>
-  
-        <div class="overflow-x-auto bg-white shadow rounded-lg">
-          <table class="min-w-full divide-y divide-gray-200 text-sm text-gray-700">
-            <thead class="bg-gray-50 text-left">
-              <tr>
-                <th class="px-4 py-3 font-medium">#</th>
-                <th class="px-4 py-3 font-medium">Date</th>
-                <th class="px-4 py-3 font-medium">Total member</th>
-                <th class="px-4 py-3 font-medium">Total bill</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(count, index) in subMonthMemberCount" :key="count.date" class="hover:bg-gray-50">
-                <td class="px-4 py-2">{{ index + 1 }}</td>
-                <td class="px-4 py-2">{{ count.date }}</td>
-                <td class="px-4 py-2">{{ count.day_total_member }}</td>
-                <td class="px-4 py-2">{{ count.day_total_bill }}</td>
-              </tr>
-              <tr v-if="subMonthMemberCount.length === 0">
-                <td colspan="4" class="text-center text-gray-500 px-4 py-4">
-                  There are no members for {{ previousMonthName }}
-                </td>
-              </tr>
-              <tr v-if="subMonthMemberCount.length > 0" class="font-semibold bg-gray-50">
-                <td colspan="2" class="px-4 py-3 text-right">Total member: {{ subMonthTotalMember }}</td>
-                <td colspan="2" class="px-4 py-3 text-center">Total bill: {{ userCurrency }} {{ subMonthActualBill }}</td>
-                <td></td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-  
-        <!-- Sub Month Calculation Summary -->
-        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6">
-          <h2 class="text-lg font-medium mb-3">Summary</h2>
-          <div class="space-y-1">
-            <p><span class="font-medium">Total member:</span> {{ subMonthTotalMember }}</p>
-            <p><span class="font-medium">Price per member per day:</span> {{ userCurrency }} {{ dailyPriceRate }}</p>
-            <p><span class="font-medium">Total bill:</span> {{ userCurrency }} {{ subMonthActualBill }}</p>
-          </div>
-        </div>
-      </section>
-    </div>
-    <div class="mb-5 pb-5"></div>
-  </template>
-  
+  <div class="flex flex-col gap-6">
+    <AzPageHeader :title="t('billPage.title')" :description="t('billPage.description')">
+      <AzButton variant="quiet" :to="{ name: 'subscription' }">{{ t('billPage.seePlan') }}</AzButton>
+    </AzPageHeader>
 
-<style scoped>
-/* You can add scoped styles here if needed */
-</style>
+    <AzSkeleton v-if="loading" :lines="6" height="4rem" />
+
+    <template v-else>
+      <div class="grid gap-4 md:grid-cols-3">
+        <AzCard>
+          <p class="text-sm text-ink-muted">{{ t('billPage.soFar', { month: thisMonthLabel }) }}</p>
+          <p class="mt-1 text-3xl font-semibold tabular-nums text-ink">{{ money(soFar, currency) }}</p>
+          <p class="mt-1 text-sm text-ink-muted">{{ t('billPage.daysCounted', { n: recordedDates.size, total: daysInMonth }, recordedDates.size) }}</p>
+        </AzCard>
+        <AzCard>
+          <p class="text-sm text-ink-muted">{{ t('billPage.estimate') }}</p>
+          <p class="mt-1 text-3xl font-semibold tabular-nums text-ink">{{ estimate !== null ? money(estimate, currency) : '—' }}</p>
+          <p v-if="estimate !== null" class="mt-1 text-sm text-ink-muted">{{ t('billPage.estimateHelp', { members, price: rate(dailyRate, currency) }) }}</p>
+          <p v-else class="mt-1 text-sm text-ink-muted">{{ t('billPage.noPrice') }}</p>
+        </AzCard>
+        <AzCard>
+          <p class="text-sm text-ink-muted">{{ lastMonthLabel }}</p>
+          <p class="mt-1 text-3xl font-semibold tabular-nums text-ink">{{ money(lastMonthTotal, currency) }}</p>
+          <p class="mt-1 text-sm text-ink-muted">{{ t('billPage.lastMonthHelp') }}</p>
+        </AzCard>
+      </div>
+
+      <!-- How it works -->
+      <AzCard>
+        <div class="flex items-start gap-3">
+          <CalendarClock class="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+          <p class="text-sm text-ink-2">{{ t('billPage.howItWorks') }}</p>
+        </div>
+      </AzCard>
+
+      <!-- Monthly bills already made -->
+      <AzCard :padded="false">
+        <template #header>
+          <h2 class="flex items-center gap-2 text-lg font-semibold text-ink"><ReceiptText class="h-5 w-5 text-primary" aria-hidden="true" />{{ t('billPage.monthlyBills') }}</h2>
+        </template>
+        <AzEmptyState v-if="!bills.length" :title="t('billPage.noBillsTitle')" :description="t('billPage.noBillsText')" />
+        <AzDataTable v-else :columns="billColumns" :rows="bills" @row-click="openBill">
+          <template #cell-bill_status="{ row }">
+            <AzBadge :tone="statusTone(row.bill_status)">{{ t(`billing.status_${row.bill_status}`, row.bill_status) }}</AzBadge>
+          </template>
+          <template #actions="{ row }">
+            <AzButton variant="secondary" size="sm" @click.stop="openBill(row)">{{ t('meetings.open') }}</AzButton>
+          </template>
+          <template #mobile="{ row }">
+            <span class="min-w-0 flex-1">
+              <span class="block truncate font-semibold text-ink">{{ billMonth(row) }}</span>
+              <span class="block truncate text-sm text-ink-muted">{{ money(billTotal(row), { code: row.currency_code }) }} · {{ t('billPage.membersCount', { n: row.total_member || 0 }) }}</span>
+            </span>
+            <AzBadge :tone="statusTone(row.bill_status)">{{ t(`billing.status_${row.bill_status}`, row.bill_status) }}</AzBadge>
+          </template>
+        </AzDataTable>
+      </AzCard>
+
+      <!-- Each day this month -->
+      <AzCard v-if="dayRows.length" :padded="false">
+        <template #header>
+          <h2 class="flex items-center gap-2 text-lg font-semibold text-ink"><History class="h-5 w-5 text-primary" aria-hidden="true" />{{ t('billPage.eachDay', { month: thisMonthLabel }) }}</h2>
+        </template>
+        <AzDataTable :columns="dayColumns" :rows="dayRows">
+          <template #mobile="{ row }">
+            <span class="min-w-0 flex-1">
+              <span class="block font-semibold text-ink">{{ shortDate(row.date, locale) }}</span>
+              <span class="block text-sm text-ink-muted">{{ t('billPage.membersCount', { n: row.day_total_member }) }}</span>
+            </span>
+            <span class="font-semibold tabular-nums text-ink">{{ money(row.day_total_bill, currency) }}</span>
+          </template>
+        </AzDataTable>
+        <div class="border-t border-line px-5 py-3 text-sm text-ink-muted">{{ t('billPage.memberDays', { n: memberDays }) }}</div>
+      </AzCard>
+    </template>
+  </div>
+</template>

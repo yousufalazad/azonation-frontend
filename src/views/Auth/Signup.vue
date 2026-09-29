@@ -237,6 +237,13 @@ async function submitForm() {
 onMounted(() => {
     fetchCountries();
 
+  // Invite links (/signup?ref=CODE) fill in the referral code
+  const refCode = String(route.query.ref || "").trim().slice(0, 40);
+  if (refCode) {
+    referralSource.value = "referral";
+    referral.value = refCode;
+  }
+
   const updateIsDesktop = () => {
     isDesktop.value = window.innerWidth >= 1024;
   };

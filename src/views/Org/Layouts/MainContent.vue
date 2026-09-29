@@ -25,7 +25,7 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
     <!-- Sidebar -->
     <!-- Sidebar -->
     <aside :class="[
-      'bg-surface border-r border-line z-40 transition-all duration-300 ease-in-out',
+      'bg-surface border-r border-line z-40 transition-all duration-300 ease-in-out print:!hidden',
       props.isMobileMenuOpen ? 'fixed top-16 left-0 h-[calc(100vh-64px)] w-64 block' : 'hidden',
       'lg:fixed lg:top-16 lg:left-0 lg:h-[calc(100vh-64px)]',
       props.isSidebarExpanded ? 'lg:w-64' : 'lg:w-20',
@@ -37,7 +37,7 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
 
     <!-- Main Content -->
     <div :class="[
-      'flex-1 flex flex-col transition-all duration-300 ease-in-out pt-16 overflow-x-auto', // ← added overflow-x-auto
+      'flex-1 flex flex-col transition-all duration-300 ease-in-out pt-16 overflow-x-auto print:!ml-0 print:pt-0',
       props.isSidebarExpanded ? 'lg:ml-64' : 'lg:ml-20'
     ]">
       <div class="flex-1 overflow-y-auto py-6 px-4 sm:px-6 lg:px-8 pb-28">

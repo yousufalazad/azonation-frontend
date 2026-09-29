@@ -103,10 +103,8 @@ const ViewYearPlan = () => import("../views/Org/YearPlan/View.vue");
 //Referral
 const Referral = () => import("../views/Org/Referral/Referral.vue");
 //Billing
-const Package = () => import("../views/Org/Financial/Package.vue");
 const Subscription = () => import("../views/Org/Financial/Subscription.vue");
 const BillCalculation = () => import("@/views/Org/Financial/BillCalculation.vue");
-const BillList = () => import("../views/Org/Financial/ManagementAndStorageBilling/Index.vue");
 const ViewBilling = () => import("../views/Org/Financial/ManagementAndStorageBilling/View.vue");
 const Invoices = () => import("../views/Org/Financial/Invoice/Index.vue");
 const ViewInvoice = () => import("../views/Org/Financial/Invoice/View.vue");
@@ -741,12 +739,8 @@ const orgRoutes = [
           //   component: Settings,
           //   meta: { requiresAuth: true },
           // },
-          {
-            path: "package",
-            name: "package",
-            component: Package,
-            meta: { requiresAuth: true },
-          },
+          // Plans are compared on the Subscription page
+          { path: "package", name: "package", redirect: { name: "subscription" } },
           {
             path: "subscription",
             name: "subscription",
@@ -759,12 +753,8 @@ const orgRoutes = [
             component: BillCalculation,
             meta: { requiresAuth: true },
           },
-          {
-            path: "bill-list",
-            name: "bill-list",
-            component: BillList,
-            meta: { requiresAuth: true },
-          },
+          // Monthly bills are listed on the Bill page
+          { path: "bill-list", name: "bill-list", redirect: { name: "bill-calculation" } },
           {
             path: "view-billing/:id",
             name: "view-billing",
@@ -800,7 +790,7 @@ const orgRoutes = [
             path: "referral",
             name: "referral",
             component: Referral,
-            meta: { requiresAuth: false },
+            meta: { requiresAuth: true },
           },
         ],
       },

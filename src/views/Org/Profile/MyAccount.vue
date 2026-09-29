@@ -36,7 +36,7 @@ const flat = computed(() => groups.value.flatMap((g) => g.items));
 <template>
   <div class="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:items-start">
     <!-- Phones and tablets: tabs you can scroll sideways -->
-    <nav class="-mx-4 overflow-x-auto border-b border-line px-4 lg:hidden" :aria-label="t('accountNav.title')">
+    <nav class="-mx-4 overflow-x-auto border-b border-line px-4 lg:hidden print:hidden" :aria-label="t('accountNav.title')">
       <ul class="flex gap-1 pb-2">
         <li v-for="item in flat" :key="item.label">
           <RouterLink :to="item.to" class="inline-flex min-h-[40px] items-center gap-2 whitespace-nowrap rounded-full px-3.5 text-sm font-semibold text-ink-2 hover:bg-surface-2"
@@ -48,7 +48,7 @@ const flat = computed(() => groups.value.flatMap((g) => g.items));
     </nav>
 
     <!-- Large screens: side menu -->
-    <aside class="hidden w-60 shrink-0 lg:block">
+    <aside class="hidden w-60 shrink-0 lg:block print:!hidden">
       <h1 class="mb-4 text-xl font-semibold text-ink">{{ t('accountNav.title') }}</h1>
       <nav class="flex flex-col gap-5" :aria-label="t('accountNav.title')">
         <div v-for="g in groups" :key="g.label">

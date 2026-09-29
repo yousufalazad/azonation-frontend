@@ -55,7 +55,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <header class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between border-b border-line bg-surface px-4 py-3">
+  <header class="fixed top-0 left-0 right-0 z-50 print:hidden flex items-center justify-between border-b border-line bg-surface px-4 py-3">
     <!-- Left Section: Logo & Sidebar Buttons -->
     <div class="flex items-center gap-2 sm:gap-4 max-w-[70%]">
       <!-- Mobile Sidebar Toggle -->

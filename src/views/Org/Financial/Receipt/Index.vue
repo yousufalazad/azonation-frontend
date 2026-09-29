@@ -1,214 +1,94 @@
-<template>
-  <div>
-    <h1 class="text-2xl font-semibold mb-4">Receipts</h1>
-
-    <!-- Error State -->
-    <div v-if="errorMessage" class="text-red-500 text-center py-8">
-      {{ errorMessage }}
-    </div>
-
-    <!-- No Receipts Found -->
-    <div v-else-if="receipts.length === 0" class="text-gray-500 text-center py-8">
-      No receipts found.
-    </div>
-
-    <!-- Receipts Table -->
-    <table v-else class="min-w-full bg-white border rounded shadow-sm">
-      <thead class="bg-gray-100 text-left">
-        <tr>
-          <th class="py-2 px-4 border">Sl</th>
-          <th class="py-2 px-4 border">Receipt Code</th>
-          <th class="py-2 px-4 border">Invoice ID</th>
-          <th class="py-2 px-4 border">Amount Received</th>
-          <th class="py-2 px-4 border">Currency</th>
-          <th class="py-2 px-4 border">Gateway Type</th>
-          <th class="py-2 px-4 border">Payment Date</th>
-          <th class="py-2 px-4 border">Status</th>
-          <th class="py-2 px-4 border">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(receipt, index) in receipts" :key="receipt.id" class="hover:bg-gray-50 transition">
-          <td class="py-2 px-4 border">{{ index + 1 }}</td>
-          <td class="py-2 px-4 border">{{ receipt.receipt_code }}</td>
-          <td class="py-2 px-4 border">{{ receipt.invoice_id }}</td>
-          <td class="py-2 px-4 border">{{ receipt.amount_received }}</td>
-          <td class="py-2 px-4 border">{{ receipt.currency_code }}</td>
-          <td class="py-2 px-4 border">{{ receipt.gateway_type }}</td>
-          <td class="py-2 px-4 border">{{ formatDate(receipt.payment_date) }}</td>
-          <td class="py-2 px-4 border">
-            <span :class="statusClass(receipt.status)" class="capitalize font-medium">
-              {{ receipt.status }}
-            </span>
-          </td>
-          <td class="py-2 px-4 border">
-            <button @click="openModal(receipt)" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
-              View
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Receipt Modal -->
-  <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white rounded-xl shadow-lg p-6 max-w-2xl w-full relative font-mono print:font-sans">
-      <!-- Close Button -->
-      <button @click="closeModal"
-        class="absolute top-3 right-3 text-gray-600 hover:text-red-500 text-xl font-bold print:hidden">
-        &times;
-      </button>
-
-      <!-- Receipt Container with dotted border -->
-      <div class="border border-dotted border-gray-400 p-6 rounded-md">
-        <!-- Header -->
-        <div class="text-center mb-4">
-          <h2 class="text-2xl font-bold text-gray-800 uppercase tracking-wide">
-            Payment Receipt
-          </h2>
-          <p class="text-sm text-gray-500 mt-1">
-            Receipt Code:
-            <span class="font-semibold">{{ selectedReceipt.receipt_code }}</span>
-          </p>
-        </div>
-
-        <!-- Dashed Separator -->
-        <hr class="border-t border-dashed border-gray-400 my-4" />
-
-        <!-- Info Table -->
-        <div class="grid grid-cols-2 gap-y-3 gap-x-8 text-sm text-gray-800">
-          <div>
-            <span class="font-semibold">Invoice ID:</span>
-            {{ selectedReceipt.invoice_id }}
-          </div>
-          <div>
-            <span class="font-semibold">Payment Date:</span>
-            {{ formatDate(selectedReceipt.payment_date) }}
-          </div>
-          <div>
-            <span class="font-semibold">Amount Received:</span>
-            {{ selectedReceipt.amount_received }} {{ selectedReceipt.currency_code }}
-          </div>
-          <div>
-            <span class="font-semibold">Gateway type:</span>
-            {{ selectedReceipt.gateway_type }}
-          </div>
-          <div>
-            <span class="font-semibold">Transaction Reference:</span>
-            {{ selectedReceipt.transaction_reference || 'N/A' }}
-          </div>
-          <div>
-            <span class="font-semibold">Status:</span>
-            <span :class="statusClass(selectedReceipt.status)">
-              {{ selectedReceipt.status }}
-            </span>
-          </div>
-          <div class="col-span-2">
-            <span class="font-semibold">Note:</span>
-            {{ selectedReceipt.note || 'N/A' }}
-          </div>
-          <div class="col-span-2">
-            <span class="font-semibold">Admin Note:</span>
-            {{ selectedReceipt.admin_note || 'N/A' }}
-          </div>
-        </div>
-
-        <!-- Dashed Separator -->
-        <hr class="border-t border-dashed border-gray-400 my-4" />
-
-        <!-- Footer -->
-        <div class="text-right text-xs text-gray-500 mt-4">
-          Printed on: {{ formatDate(new Date()) }}
-        </div>
-      </div>
-
-      <!-- Download PDF -->
-      <!-- Footer Buttons -->
-      <div class="mt-6 flex justify-between print:hidden">
-        <!-- Download PDF Button -->
-        <button @click="downloadPDF" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-          Download PDF
-        </button>
-
-        <!-- Close Button -->
-        <button @click="closeModal" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-
-</template>
-
+<!-- Receipts for payments this organisation has made to Azonation; open one to see its details -->
 <script setup>
-import { ref, onMounted } from 'vue'
-import { authStore } from '../../../../store/authStore'
+import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import { loadBillingCurrency, money, statusTone, shortDate, gatewayName } from "@/helpers/billing";
+import { ReceiptText } from "lucide-vue-next";
 
-const auth = authStore
-const receipts = ref([])
-const errorMessage = ref(null)
+const auth = authStore;
+const { t, locale } = useI18n();
 
-const showModal = ref(false)
-const selectedReceipt = ref({})
+const loading = ref(true);
+const receipts = ref([]);
+const selected = ref(null);
 
-// Open modal with selected receipt
-const openModal = (receipt) => {
-  selectedReceipt.value = receipt
-  showModal.value = true
-}
+const cur = (r) => ({ code: r.currency_code });
+const paidTotals = computed(() => {
+  const by = {};
+  receipts.value.filter((r) => r.status === "processed").forEach((r) => (by[r.currency_code || ""] = (by[r.currency_code || ""] || 0) + Number(r.amount_received || 0)));
+  return Object.entries(by).map(([code, amount]) => money(amount, { code }));
+});
+const method = (r) => gatewayName(r.gateway_type);
 
-const closeModal = () => {
-  showModal.value = false
-  selectedReceipt.value = {}
-}
+const columns = computed(() => [
+  { key: "receipt_code", label: t("receiptPage.number"), class: "font-semibold text-ink" },
+  { key: "payment_date", label: t("receiptPage.paidOn"), value: (r) => shortDate(r.payment_date, locale.value) },
+  { key: "amount_received", label: t("billPage.amount"), class: "tabular-nums", value: (r) => money(r.amount_received, cur(r)) },
+  { key: "gateway_type", label: t("receiptPage.method"), value: method },
+  { key: "status", label: t("billPage.status") },
+]);
 
-const statusClass = (status) => {
-  switch (status) {
-    case 'processed':
-      return 'text-green-600 font-semibold'
-    case 'refunded':
-      return 'text-red-500 font-semibold'
-    case 'pending':
-      return 'text-yellow-600 font-semibold'
-    default:
-      return ''
-  }
-}
-
-const downloadPDF = async () => {
-  // PDF library is loaded only when someone downloads
-  const { default: html2pdf } = await import('html2pdf.js')
-  const element = document.querySelector('.max-w-2xl')
-  html2pdf()
-    .from(element)
-    .set({
-      margin: 0.5,
-      filename: `${selectedReceipt.value.receipt_code || 'receipt'}.pdf`,
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-    })
-    .save()
-}
-
-const formatDate = (dateStr) => {
-  if (!dateStr) return ''
-  const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
-  return new Date(dateStr).toLocaleDateString('en-GB', options)
-}
-
-const fetchReceipts = async () => {
-  try {
-    const response = await auth.fetchProtectedApi('/api/receipts/org-receipts')
-    receipts.value = response.status ? response.data : []
-  } catch (error) {
-    console.error('Error fetching receipts:', error)
-    errorMessage.value = 'Error loading receipts. Please try again later.'
-    receipts.value = []
-  }
-}
-
-onMounted(fetchReceipts)
+onMounted(async () => {
+  const [res] = await Promise.all([auth.fetchProtectedApi("/api/receipts/org-receipts", {}, "GET"), loadBillingCurrency()]);
+  receipts.value = res?.status ? res.data || [] : [];
+  loading.value = false;
+});
 </script>
 
-<style scoped></style>
+<template>
+  <div class="flex flex-col gap-6">
+    <AzPageHeader :title="t('accountNav.receipts')" :description="t('receiptPage.description')" />
+
+    <AzSkeleton v-if="loading" :lines="5" height="3rem" />
+
+    <template v-else>
+      <AzCard v-if="paidTotals.length">
+        <p class="text-sm text-ink-muted">{{ t('receiptPage.totalPaid') }}</p>
+        <p class="mt-1 text-3xl font-semibold tabular-nums text-ink">{{ paidTotals.join(' + ') }}</p>
+      </AzCard>
+
+      <AzCard :padded="false">
+        <AzEmptyState v-if="!receipts.length" :title="t('receiptPage.emptyTitle')" :description="t('receiptPage.emptyText')">
+          <template #icon><ReceiptText class="h-7 w-7" /></template>
+        </AzEmptyState>
+        <AzDataTable v-else :columns="columns" :rows="receipts" @row-click="(r) => (selected = r)">
+          <template #cell-status="{ row }">
+            <AzBadge :tone="statusTone(row.status)">{{ t(`billing.status_${row.status}`, row.status || '') }}</AzBadge>
+          </template>
+          <template #actions="{ row }">
+            <AzButton variant="secondary" size="sm" @click.stop="selected = row">{{ t('meetings.open') }}</AzButton>
+          </template>
+          <template #mobile="{ row }">
+            <span class="min-w-0 flex-1">
+              <span class="block truncate font-semibold text-ink">{{ money(row.amount_received, cur(row)) }}</span>
+              <span class="block truncate text-sm text-ink-muted">{{ shortDate(row.payment_date, locale) }} · {{ row.receipt_code }}</span>
+            </span>
+            <AzBadge :tone="statusTone(row.status)">{{ t(`billing.status_${row.status}`, row.status || '') }}</AzBadge>
+          </template>
+        </AzDataTable>
+      </AzCard>
+    </template>
+
+    <AzModal v-if="selected" :open="true" :title="t('receiptPage.receiptNo', { code: selected.receipt_code })" @close="selected = null">
+      <div class="flex flex-col gap-4">
+        <div>
+          <p class="text-sm text-ink-muted">{{ t('receiptPage.amountReceived') }}</p>
+          <p class="text-3xl font-semibold tabular-nums text-ink">{{ money(selected.amount_received, cur(selected)) }}</p>
+        </div>
+        <dl class="grid gap-4 border-t border-line pt-4 sm:grid-cols-2">
+          <div><dt class="text-sm text-ink-muted">{{ t('receiptPage.paidOn') }}</dt><dd class="text-ink">{{ shortDate(selected.payment_date, locale) || '—' }}</dd></div>
+          <div><dt class="text-sm text-ink-muted">{{ t('receiptPage.method') }}</dt><dd class="text-ink">{{ method(selected) }}</dd></div>
+          <div><dt class="text-sm text-ink-muted">{{ t('billPage.status') }}</dt><dd><AzBadge :tone="statusTone(selected.status)">{{ t(`billing.status_${selected.status}`, selected.status || '') }}</AzBadge></dd></div>
+          <div v-if="selected.transaction_reference"><dt class="text-sm text-ink-muted">{{ t('receiptPage.reference') }}</dt><dd class="break-all text-ink">{{ selected.transaction_reference }}</dd></div>
+          <div v-if="selected.invoice_id"><dt class="text-sm text-ink-muted">{{ t('invoicePage.invoice') }}</dt>
+            <dd><RouterLink :to="{ name: 'view-invoice', params: { id: selected.invoice_id } }" class="font-medium text-primary hover:underline">{{ t('receiptPage.openInvoice') }}</RouterLink></dd></div>
+        </dl>
+        <p v-if="selected.note" class="whitespace-pre-line border-t border-line pt-4 text-sm text-ink-2">{{ selected.note }}</p>
+      </div>
+      <template #footer>
+        <AzButton variant="secondary" @click="selected = null">{{ t('common.close') }}</AzButton>
+      </template>
+    </AzModal>
+  </div>
+</template>
