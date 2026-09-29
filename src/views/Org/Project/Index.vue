@@ -1,571 +1,214 @@
+<!-- Projects: what the organisation is working on, with who took part and the report afterwards -->
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import Swal from "sweetalert2";
-import { authStore } from "../../../store/authStore";
-import EasyDataTable from "vue3-easy-data-table";
-import "vue3-easy-data-table/dist/style.css";
-import { pdfExport } from "@/helpers/pdfExport.js";
-import { excelExport } from "@/helpers/excelExport.js";
-import { csvExport } from "@/helpers/csvExport.js";
-const showFilters = ref(false);
+import { useI18n } from "vue-i18n";
+import dayjs from "dayjs";
+import { authStore } from "@/store/authStore";
+import { useListView } from "@/composables/useListView";
+import { useListExport } from "@/composables/useListExport";
+import { useToast } from "@/composables/useToast";
+import { useConfirm } from "@/composables/useConfirm";
+import { projectState, projectStateTone, projectDates } from "@/helpers/project";
+import { Plus, Download, FolderKanban, MapPin, ClipboardList, Users, UserPlus, Pencil, Trash2, MoreVertical } from "lucide-vue-next";
 
-const router = useRouter();
 const auth = authStore;
-const recordList = ref([]);
-const projectSummary = ref([]);
-const search = ref("");
-const startDate = ref("");
-const endDate = ref("");
-const quickDateFilter = ref("");
-const loading = ref(false);
-const currentPage = ref(1);
-const rowsPerPage = ref(10);
+const router = useRouter();
+const { t } = useI18n();
+const toast = useToast();
+const confirm = useConfirm();
 
-const columnProfiles = {
-  minimal: ["title", "start_date", "status_display", "actions"],
-  detailed: ["title", "start_date", "end_date", "status_display", "actions"],
-};
-const selectedProfile = ref(
-  localStorage.getItem("selected_project_profile") || "detailed",
-);
-const visibleColumns = ref(
-  JSON.parse(localStorage.getItem("visible_project_columns")) ||
-    columnProfiles[selectedProfile.value],
-);
+const projects = ref([]);
+const summaryByProject = ref(new Map());
+const loading = ref(true);
 
-const allHeaders = [
-  { text: "Title", value: "title", sortable: true },
-  { text: "Start Date", value: "start_date", sortable: true },
-  { text: "End Date", value: "end_date", sortable: true },
-  { text: "Status", value: "status_display", sortable: true },
-  { text: "Actions", value: "actions" },
-];
+const clean = (v) => (v === null || v === undefined || v === "null" ? "" : String(v));
 
-watch(
-  [visibleColumns, selectedProfile],
-  () => {
-    localStorage.setItem(
-      "visible_project_columns",
-      JSON.stringify(visibleColumns.value),
-    );
-    localStorage.setItem("selected_project_profile", selectedProfile.value);
+async function load() {
+  const [projectRes, summaryRes] = await Promise.all([
+    auth.fetchProtectedApi("/api/projects", {}, "GET"),
+    auth.fetchProtectedApi("/api/project-summaries", {}, "GET"),
+  ]);
+  if (!projectRes?.status) {
+    toast.error(t("dashboard.loadFailed"));
+    projects.value = [];
+    return;
+  }
+  projects.value = projectRes.data.map((p) => ({
+    ...p,
+    state: projectState(p),
+    dates_text: projectDates(p, t),
+    where_text: clean(p.venue_name) || clean(p.venue_address),
+    short_description: clean(p.short_description),
+  }));
+  summaryByProject.value = new Map((summaryRes?.status ? summaryRes.data : []).map((s) => [s.project_id, s.id]));
+}
+
+const tab = ref("active");
+const tabOptions = computed(() => [
+  { value: "active", label: t("projects.activeTab") },
+  { value: "finished", label: t("projects.finished") },
+  { value: "all", label: t("meetings.all") },
+]);
+const stateLabel = (s) => t(`projects.${s}`);
+
+const columns = computed(() => [
+  { key: "title", label: t("projects.name"), sortable: true, class: "font-semibold text-ink" },
+  { key: "start_date", label: t("projects.dates"), sortable: true, value: (p) => p.dates_text },
+  { key: "where_text", label: t("meetings.where"), sortable: true },
+  { key: "conduct_type_name", label: t("meetings.how"), sortable: true },
+  { key: "short_description", label: t("events.shortDescription"), sortable: true },
+  { key: "state", label: t("member.status"), sortable: true, value: (p) => stateLabel(p.state) },
+]);
+
+const list = useListView({
+  key: "projects",
+  items: projects,
+  columns,
+  presets: {
+    detailed: ["title", "start_date", "where_text", "state"],
+    minimal: ["title", "start_date", "state"],
   },
-  { deep: true },
-);
-
-const applyProfile = () => {
-  visibleColumns.value = [...columnProfiles[selectedProfile.value]];
-};
-
-const filteredHeaders = computed(() =>
-  allHeaders.filter((h) => visibleColumns.value.includes(h.value)),
-);
-
-const filteredProjects = computed(() =>
-  recordList.value.filter((p) => {
-    if (startDate.value && p.start_date < startDate.value) return false;
-    if (endDate.value && p.end_date > endDate.value) return false;
-    if (
-      search.value &&
-      !p.title.toLowerCase().includes(search.value.toLowerCase())
-    )
-      return false;
+  searchText: (p) => [p.title, p.short_description, p.venue_name, p.venue_address],
+  filter: (p) => {
+    if (tab.value === "active" && !["ongoing", "upcoming"].includes(p.state)) return false;
+    if (tab.value === "finished" && p.state !== "finished") return false;
     return true;
-  }),
-);
-
-const totalItems = computed(() => filteredProjects.value.length);
-const totalPages = computed(() =>
-  Math.ceil(totalItems.value / rowsPerPage.value),
-);
-
-const paginatedProjects = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage.value;
-  const end = start + rowsPerPage.value;
-  return filteredProjects.value.slice(start, end);
+  },
+  filterDeps: [tab],
+  defaultSort: "start_date",
 });
 
-const goToFirst = () => (currentPage.value = 1);
-const goToPrev = () => {
-  if (currentPage.value > 1) currentPage.value--;
+const setTab = (value) => {
+  tab.value = value;
+  list.sortKey.value = "start_date";
+  list.sortDir.value = value === "active" ? "asc" : "desc";
 };
-const goToNext = () => {
-  if (currentPage.value < totalPages.value) currentPage.value++;
+
+const exportItems = useListExport({
+  columns: list.visibleColumns,
+  rows: list.sorted,
+  title: computed(() => t("projects.title")),
+  fileName: "Projects",
+});
+
+const canCreate = computed(() => auth.hasPermission("project.create") || auth.user?.type === "organisation");
+const open = (p) => router.push({ name: "view-project", params: { id: p.id } });
+
+const rowActions = (p) => {
+  const summaryId = summaryByProject.value.get(p.id);
+  return [
+    summaryId
+      ? { label: t("projects.viewReport"), icon: ClipboardList, onSelect: () => router.push({ name: "view-project-summary", params: { summaryId } }) }
+      : { label: t("events.writeReport"), icon: ClipboardList, onSelect: () => router.push({ name: "create-project-summary", params: { projectId: p.id } }) },
+    { label: t("projects.participants"), icon: Users, onSelect: () => router.push({ name: "project-attendances", params: { id: p.id } }) },
+    { label: t("meetings.guests"), icon: UserPlus, onSelect: () => router.push({ name: "project-guest-attendance", params: { id: p.id } }) },
+    { label: t("projects.edit"), icon: Pencil, onSelect: () => router.push({ name: "edit-project", params: { id: p.id } }) },
+    { label: t("projects.delete"), icon: Trash2, onSelect: () => remove(p) },
+  ];
 };
-const goToLast = () => (currentPage.value = totalPages.value);
 
-const applyQuickDateFilter = () => {
-  const today = new Date();
-  const format = (d) => d.toISOString().split("T")[0];
-
-  if (quickDateFilter.value === "last7") {
-    const start = new Date(today);
-    start.setDate(today.getDate() - 7);
-    startDate.value = format(start);
-    endDate.value = format(today);
-  } else if (quickDateFilter.value === "thisMonth") {
-    const first = new Date(today.getFullYear(), today.getMonth(), 1);
-    const last = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    startDate.value = format(first);
-    endDate.value = format(last);
+async function remove(p) {
+  const ok = await confirm({
+    title: t("meetings.deleteTitle", { name: p.title }),
+    message: t("projects.deleteText"),
+    confirmText: t("projects.delete"),
+    danger: true,
+  });
+  if (!ok) return;
+  const res = await auth.fetchProtectedApi(`/api/projects/${p.id}`, {}, "DELETE");
+  if (res?.status) {
+    projects.value = projects.value.filter((x) => x.id !== p.id);
+    toast.success(t("projects.deleted"));
   } else {
-    startDate.value = "";
-    endDate.value = "";
+    toast.error(t("projects.deleteFailed"));
   }
-};
+}
 
-const getRecords = async () => {
-  loading.value = true;
-  try {
-    const res = await auth.fetchProtectedApi("/api/projects", {}, "GET");
-    recordList.value = res.status
-      ? res.data.map((p) => ({
-          id: p.id,
-          title: p.title ?? "",
-          start_date: p.start_date ?? "",
-          end_date: p.end_date ?? "",
-          status: p.status ?? 0,
-          status_display: p.status === 1 ? "Active" : "Disabled",
-        }))
-      : [];
-  } catch (e) {
-    console.error("Error fetching projects:", e);
-    recordList.value = [];
-  } finally {
-    loading.value = false;
-  }
-};
-
-const fetchProjectSummary = async () => {
-  try {
-    const res = await auth.fetchProtectedApi(
-      "/api/project-summaries",
-      {},
-      "GET",
-    );
-    projectSummary.value = res.status ? res.data : [];
-  } catch (e) {
-    console.error("Error fetching summaries:", e);
-    projectSummary.value = [];
-  }
-};
-
-const deleteRecord = async (id) => {
-  const confirmed = await Swal.fire({
-    title: "Are you sure?",
-    text: "This action cannot be undone!",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#d33",
-    confirmButtonText: "Yes, delete it!",
-  });
-
-  if (confirmed.isConfirmed) {
-    try {
-      const res = await auth.fetchProtectedApi(
-        `/api/projects/${id}`,
-        {},
-        "DELETE",
-      );
-      if (res.status) {
-        recordList.value = recordList.value.filter((p) => p.id !== id);
-        Swal.fire("Deleted!", "Project has been deleted.", "success");
-      } else {
-        Swal.fire("Error!", "Failed to delete project.", "error");
-      }
-    } catch {
-      Swal.fire("Error!", "Failed to delete project.", "error");
-    }
-  }
-};
-
-// Export CSV with custom header/footer
-const exportCSV = async () => {
-  await csvExport({
-    headers: filteredHeaders.value,
-    rows: filteredProjects.value,
-    title: "Project List",
-    fileName: "Projects.csv",
-  });
-};
-
-// Export XLSX with custom header/footer
-const exportXLSX = async () => {
-  await excelExport({
-    headers: filteredHeaders.value,
-    rows: filteredProjects.value,
-    title: "Project List",
-    fileName: "Projects.xlsx",
-  });
-};
-
-// --- Export Projects PDF ---
-const exportPDF = () => {
-  pdfExport({
-    headers: filteredHeaders.value,
-    rows: filteredProjects.value,
-    title: "Project List",
-    fileName: "Projects.pdf",
-  });
-};
-
-onMounted(() => {
-  getRecords();
-  fetchProjectSummary();
+onMounted(async () => {
+  setTab("active");
+  await load();
+  loading.value = false;
 });
 </script>
 
 <template>
-  <div class="p-4 sm:p-6 space-y-6 bg-white shadow rounded-lg">
-    <!-- Header -->
-    <div
-      class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
-    >
-      <h2
-        class="text-lg sm:text-xl font-semibold text-gray-800 text-center sm:text-left"
-      >
-        Project List
-      </h2>
-      <div class="flex flex-wrap justify-center sm:justify-end gap-2">
-        <button
-          @click="exportCSV"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-2 sm:px-3 py-1.5 text-xs sm:text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          <FileText class="w-4 h-4" /> CSV
-        </button>
-        <button
-          @click="exportXLSX"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-2 sm:px-3 py-1.5 text-xs sm:text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          <FileSpreadsheet class="w-4 h-4" /> Excel
-        </button>
-        <button
-          @click="exportPDF"
-          class="flex items-center gap-1 border border-gray-300 bg-white px-2 sm:px-3 py-1.5 text-xs sm:text-sm rounded text-gray-700 hover:bg-gray-100"
-        >
-          <FileDown class="w-4 h-4" /> PDF
-        </button>
-        <button
-          @click="$router.push({ name: 'create-project' })"
-          class="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded text-xs sm:text-sm font-medium"
-        >
-          Add Project
-        </button>
-      </div>
+  <div class="mx-auto flex max-w-7xl flex-col gap-6">
+    <AzPageHeader :title="t('projects.title')" :description="t('projects.description')">
+      <AzMenu :label="t('list.export')" :items="exportItems">
+        <template #icon><Download class="h-[18px] w-[18px]" /></template>
+      </AzMenu>
+      <AzButton v-if="canCreate" :to="{ name: 'create-project' }">
+        <template #icon><Plus class="h-[18px] w-[18px]" /></template>
+        {{ t('projects.add') }}
+      </AzButton>
+    </AzPageHeader>
+
+    <div class="-mt-2 w-full max-w-md">
+      <AzSegmented :model-value="tab" :label="t('projects.title')" :options="tabOptions" @update:model-value="setTab" />
     </div>
 
-    <!-- Mobile-only toggle -->
-    <button
-      @click="showFilters = !showFilters"
-      type="button"
-      class="sm:hidden w-full flex items-center justify-between border rounded-lg px-4 py-2.5 my-5 bg-gray-50 text-sm font-medium text-gray-700"
-    >
-      <span class="flex items-center gap-2">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M3 4h18M6 8h12M9 12h6M11 16h2"
-          />
-        </svg>
-        Filters
-      </span>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="w-4 h-4 transition-transform duration-200"
-        :class="showFilters ? 'rotate-180' : ''"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M19 9l-7 7-7-7"
-        />
-      </svg>
-    </button>
+    <AzCard :padded="false">
+      <AzListToolbar v-model:search="list.search.value" v-model:visible-keys="list.visibleKeys.value"
+        v-model:preset="list.presetModel.value" :columns="columns" :placeholder="t('projects.searchPlaceholder')" />
 
-    <!-- Collapsible on mobile, always visible from sm: up -->
-    <div :class="showFilters ? 'block' : 'hidden'" class="sm:block space-y-4">
-      <!-- Filters -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div>
-          <label class="text-xs sm:text-sm text-gray-600">Start Date</label>
-          <input
-            type="date"
-            v-model="startDate"
-            class="w-full border rounded px-2 sm:px-3 py-1.5 text-xs sm:text-sm"
-          />
-        </div>
-        <div>
-          <label class="text-xs sm:text-sm text-gray-600">End Date</label>
-          <input
-            type="date"
-            v-model="endDate"
-            class="w-full border rounded px-2 sm:px-3 py-1.5 text-xs sm:text-sm"
-          />
-        </div>
-        <div>
-          <label class="text-xs sm:text-sm text-gray-600">Quick Filter</label>
-          <select
-            v-model="quickDateFilter"
-            @change="applyQuickDateFilter"
-            class="w-full border rounded px-2 sm:px-3 py-1.5 text-xs sm:text-sm"
-          >
-            <option value="">All</option>
-            <option value="last7">Last 7 Days</option>
-            <option value="thisMonth">This Month</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-xs sm:text-sm text-gray-600">Search</label>
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Search..."
-            class="w-full border rounded px-2 sm:px-3 py-1.5 text-xs sm:text-sm"
-          />
-        </div>
-      </div>
+      <div v-if="loading" class="p-5"><AzSkeleton :lines="5" height="2.75rem" /></div>
 
-      <!-- Column Settings -->
-      <div
-        class="bg-gray-50 border rounded p-4 flex flex-col lg:flex-row gap-6"
-      >
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >Column View:</label
-          >
-          <select
-            v-model="selectedProfile"
-            @change="applyProfile"
-            class="border rounded px-3 py-1.5 text-xs sm:text-sm w-full sm:w-48"
-          >
-            <option value="minimal">Minimal</option>
-            <option value="detailed">Detailed</option>
-          </select>
-        </div>
-        <div class="flex-1">
-          <label class="text-sm font-medium text-gray-700 mb-1 block"
-            >Visible Columns</label
-          >
-          <div class="flex flex-wrap gap-4">
-            <div
-              v-for="header in allHeaders"
-              :key="header.value"
-              class="flex items-center gap-2 text-xs sm:text-sm"
-            >
-              <input
-                type="checkbox"
-                v-model="visibleColumns"
-                :value="header.value"
-                :id="header.value"
-                class="accent-blue-600"
-              />
-              <label :for="header.value" class="text-gray-700">{{
-                header.text
-              }}</label>
+      <AzEmptyState v-else-if="!projects.length" :title="t('projects.emptyTitle')" :description="t('projects.emptyText')">
+        <template #icon><FolderKanban class="h-7 w-7" /></template>
+        <AzButton v-if="canCreate" :to="{ name: 'create-project' }">{{ t('projects.add') }}</AzButton>
+      </AzEmptyState>
+
+      <AzEmptyState v-else-if="!list.sorted.value.length && !list.search.value" :title="t('projects.noneHereTitle')"
+        :description="tab === 'active' ? t('projects.noneActiveText') : ''">
+        <AzButton variant="secondary" @click="setTab('all')">{{ t('meetings.all') }}</AzButton>
+      </AzEmptyState>
+
+      <AzEmptyState v-else-if="!list.sorted.value.length" :title="t('list.noMatchTitle')" :description="t('list.noMatchText')">
+        <AzButton variant="secondary" @click="list.search.value = ''">{{ t('list.clearFilters') }}</AzButton>
+      </AzEmptyState>
+
+      <template v-else>
+        <AzDataTable :columns="list.visibleColumns.value" :rows="list.paged.value" :sort-key="list.sortKey.value"
+          :sort-dir="list.sortDir.value" @sort="list.sortBy" @row-click="open">
+          <template #cell-title="{ row }">
+            <span class="flex items-center gap-2">
+              {{ row.title }}
+              <ClipboardList v-if="summaryByProject.has(row.id)" class="h-4 w-4 text-success" :aria-label="t('events.reportDone')" />
+            </span>
+          </template>
+          <template #cell-where_text="{ row }">
+            <span class="inline-flex items-center gap-1.5">
+              <MapPin v-if="row.where_text" class="h-4 w-4 text-ink-muted" aria-hidden="true" />{{ row.where_text || '—' }}
+            </span>
+          </template>
+          <template #cell-state="{ row }">
+            <AzBadge :tone="projectStateTone[row.state]">{{ stateLabel(row.state) }}</AzBadge>
+          </template>
+          <template #actions="{ row }">
+            <div class="flex items-center justify-end gap-1">
+              <AzButton variant="secondary" size="sm" @click="open(row)">{{ t('meetings.open') }}</AzButton>
+              <AzMenu :items="rowActions(row)" variant="quiet" :aria-label="t('meetings.more', { name: row.title })">
+                <template #icon><MoreVertical class="h-[18px] w-[18px]" /></template>
+              </AzMenu>
             </div>
-          </div>
+          </template>
+          <template #mobile="{ row }">
+            <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-primary-soft text-primary-soft-ink">
+              <FolderKanban class="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="block truncate font-semibold text-ink">{{ row.title }}</span>
+              <span class="block truncate text-sm text-ink-muted">{{ row.dates_text || t('meetings.noDate') }}{{ row.where_text ? ` · ${row.where_text}` : '' }}</span>
+            </span>
+            <AzBadge :tone="projectStateTone[row.state]">{{ stateLabel(row.state) }}</AzBadge>
+          </template>
+        </AzDataTable>
+
+        <div class="border-t border-line p-4 sm:px-5">
+          <AzPagination v-model:page="list.page.value" v-model:page-size="list.pageSize.value" :total="list.sorted.value.length" />
         </div>
-      </div>
-    </div>
-
-    <!-- Table -->
-    <div class="overflow-x-auto">
-      <EasyDataTable
-        :headers="filteredHeaders"
-        :items="paginatedProjects"
-        :loading="loading"
-        :search-value="search"
-        show-index
-        hide-footer
-        table-class="min-w-full text-xs sm:text-sm"
-        header-class="bg-gray-100"
-        body-row-class="text-xs sm:text-sm"
-        :theme-color="'#3b82f6'"
-      >
-        <template #item-status_display="{ status_display }">
-          <span
-            :class="{
-              'text-green-600 font-medium': status_display === 'Active',
-              'text-red-500 font-medium': status_display !== 'Active',
-            }"
-          >
-            {{ status_display }}
-          </span>
-        </template>
-
-        <!-- Header Alignment Fix -->
-        <template #header-actions>
-          <div class="text-right w-full pr-2">Actions</div>
-        </template>
-
-        <!-- Actions Slot -->
-        <template #item-actions="{ id }">
-          <div class="flex flex-wrap justify-end gap-2">
-            <button
-              v-if="projectSummary.find((s) => s.project_id === id)"
-              @click="
-                $router.push({
-                  name: 'view-project-summary',
-                  params: {
-                    summaryId: projectSummary.find((s) => s.project_id === id)
-                      .id,
-                  },
-                })
-              "
-              class="bg-sky-500 hover:bg-sky-600 text-white px-2 sm:px-3 py-1 rounded text-[11px] sm:text-xs"
-            >
-              Summary
-            </button>
-            <button
-              v-else
-              @click="
-                $router.push({
-                  name: 'create-project-summary',
-                  params: { projectId: id },
-                })
-              "
-              class="bg-sky-600 text-white px-2 sm:px-3 py-1 rounded text-[11px] sm:text-xs hover:bg-sky-700"
-            >
-              Add Summary
-            </button>
-            <button
-              @click="
-                $router.push({ name: 'project-attendances', params: { id } })
-              "
-              class="bg-blue-500 text-white px-2 sm:px-3 py-1 rounded text-[11px] sm:text-xs"
-            >
-              Attendance
-            </button>
-            <button
-              @click="
-                $router.push({
-                  name: 'project-guest-attendance',
-                  params: { id },
-                })
-              "
-              class="bg-blue-600 text-white px-2 sm:px-3 py-1 rounded text-[11px] sm:text-xs"
-            >
-              Guests
-            </button>
-            <button
-              @click="$router.push({ name: 'edit-project', params: { id } })"
-              class="bg-yellow-500 text-white px-2 sm:px-3 py-1 rounded text-[11px] sm:text-xs"
-            >
-              Edit
-            </button>
-            <button
-              @click="$router.push({ name: 'view-project', params: { id } })"
-              class="bg-green-600 text-white px-2 sm:px-3 py-1 rounded text-[11px] sm:text-xs"
-            >
-              View
-            </button>
-            <button
-              @click="deleteRecord(id)"
-              class="bg-red-500 text-white px-2 sm:px-3 py-1 rounded text-[11px] sm:text-xs"
-            >
-              Delete
-            </button>
-          </div>
-        </template>
-      </EasyDataTable>
-    </div>
-
-    <!-- Pagination Controls -->
-    <div
-      class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 px-2 py-3 bg-gray-50 rounded border"
-    >
-      <!-- Info -->
-      <div class="text-xs sm:text-sm text-gray-600 text-center md:text-left">
-        Items
-        {{ (currentPage - 1) * rowsPerPage + 1 }} -
-        {{ Math.min(currentPage * rowsPerPage, totalItems) }}
-        of {{ totalItems }} | Page {{ currentPage }} of {{ totalPages }}
-      </div>
-
-      <!-- Controls -->
-      <div
-        class="flex flex-col sm:flex-row sm:items-center justify-center gap-3 w-full md:w-auto"
-      >
-        <div class="flex items-center justify-center gap-1">
-          <span class="text-xs sm:text-sm text-gray-600">Items per page:</span>
-          <select
-            v-model="rowsPerPage"
-            class="border rounded px-2 py-1 text-xs sm:text-sm"
-          >
-            <option
-              v-for="size in [5, 10, 50, 100, 250, 500, 1000]"
-              :key="size"
-              :value="size"
-            >
-              {{ size }}
-            </option>
-          </select>
-        </div>
-        <div class="flex justify-center flex-wrap gap-1">
-          <button
-            @click="goToFirst"
-            :disabled="currentPage === 1"
-            class="border rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
-            :class="
-              currentPage === 1
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'hover:bg-gray-100'
-            "
-          >
-            First
-          </button>
-          <button
-            @click="goToPrev"
-            :disabled="currentPage === 1"
-            class="border rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
-            :class="
-              currentPage === 1
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'hover:bg-gray-100'
-            "
-          >
-            Prev
-          </button>
-          <button
-            @click="goToNext"
-            :disabled="currentPage === totalPages"
-            class="border rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
-            :class="
-              currentPage === totalPages
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'hover:bg-gray-100'
-            "
-          >
-            Next
-          </button>
-          <button
-            @click="goToLast"
-            :disabled="currentPage === totalPages"
-            class="border rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
-            :class="
-              currentPage === totalPages
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'hover:bg-gray-100'
-            "
-          >
-            Last
-          </button>
-        </div>
-      </div>
-    </div>
+      </template>
+    </AzCard>
   </div>
 </template>
