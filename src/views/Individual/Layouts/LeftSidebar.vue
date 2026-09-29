@@ -25,16 +25,16 @@ const props = defineProps({
 
 const emit = defineEmits(['close-mobile-menu']);
 
-// `label` is an i18n key; `permission` hides links the member cannot use in the current org
+// `label` is an i18n key. These are the member's own pages, open to every member.
 const links = [
   { label: 'nav.home', routeName: 'individual-dashboard-index', icon: HomeIcon },
   { label: 'nav.organisations', routeName: 'connected-organisations', icon: UsersIcon },
-  { permission: 'committee.read', label: 'nav.committees', routeName: 'individual-committees', icon: BriefcaseIcon },
-  { permission: 'meeting.read', label: 'nav.meetings', routeName: 'individual-meetings', icon: CalendarIcon },
-  { permission: 'event.read', label: 'nav.events', routeName: 'individual-events', icon: ClipboardListIcon },
-  { permission: 'project.read', label: 'nav.projects', routeName: 'individual-projects', icon: FolderIcon },
-  { permission: 'asset.read', label: 'nav.assets', routeName: 'individual-assets', icon: PackageIcon },
-  { permission: 'attendance.read', label: 'nav.attendances', routeName: 'individual-attendances', icon: CheckCircleIcon },
+  { label: 'nav.committees', routeName: 'individual-committees', icon: BriefcaseIcon },
+  { label: 'nav.meetings', routeName: 'individual-meetings', icon: CalendarIcon },
+  { label: 'nav.events', routeName: 'individual-events', icon: ClipboardListIcon },
+  { label: 'nav.projects', routeName: 'individual-projects', icon: FolderIcon },
+  { label: 'nav.assets', routeName: 'individual-assets', icon: PackageIcon },
+  { label: 'nav.attendances', routeName: 'individual-attendances', icon: CheckCircleIcon },
   { label: 'nav.support', routeName: 'individual-support', icon: LifeBuoyIcon },
 ];
 
