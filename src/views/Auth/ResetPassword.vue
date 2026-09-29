@@ -47,12 +47,12 @@ const resetPassword = async () => {
         'POST'
       )
     } else {
-      // ✅ Public reset (via email link) — requires a token from the email URL
-      // If your backend expects email too, include it; otherwise just token + new pw.
+      // Public reset: the email and the one-time token come from the previous steps
       res = await auth.fetchPublicApi(
         '/api/reset-password',
         {
-          token: String(resetToken.value),
+          email: sessionStorage.getItem('reset_email') || '',
+          token: String(resetToken.value || sessionStorage.getItem('reset_token') || ''),
           password: password.value,
           password_confirmation: password_confirmation.value,
         },
@@ -64,12 +64,16 @@ const resetPassword = async () => {
     const ok = res?.status === true || res?.status === 'success'
     if (!ok) {
       const firstErr =
-        res?.errors && typeof res.errors === 'object'
+        res?.errors?.message
+          ? res.errors.message
+          : res?.errors && typeof res.errors === 'object'
           ? (Object.values(res.errors)?.[0]?.[0] || 'Unable to reset password.')
           : (res?.message || 'Unable to reset password.')
       throw new Error(firstErr)
     }
 
+    sessionStorage.removeItem('reset_token')
+    sessionStorage.removeItem('reset_email')
     message.value = res?.message || (isLoggedIn.value ? 'Password set successfully.' : 'Password reset successful!')
     // optional: on success, redirect
     setTimeout(() => {

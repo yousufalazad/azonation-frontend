@@ -18,14 +18,14 @@ const submitVerifyCode = async () => {
     message.value = ""
     error.value = ""
 
-    try {
-        const response = await authStore.fetchProtectedApi('/api/verify-code', { email, code: code.value }, 'POST')
-        message.value = response.data.message || "Code verified!"
-
-        // Go to Reset Password page
+    const response = await authStore.fetchPublicApi('/api/verify-code', { email, code: code.value.trim() }, 'POST')
+    if (response?.status === true && response.reset_token) {
+        // One-time token for the next step; it lives only in this tab
+        sessionStorage.setItem('reset_token', response.reset_token)
+        message.value = response.message || "Code verified!"
         router.push('/reset-password')
-    } catch (err) {
-        error.value = err.response?.data?.message || "Invalid code. Please try again."
+    } else {
+        error.value = response?.errors?.message || "The code is wrong or has expired. Request a new code."
     }
 }
 </script>
