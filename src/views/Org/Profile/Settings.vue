@@ -1,4 +1,5 @@
-<!-- Organisation settings: money currency, language and country, plus shortcuts to related setup pages -->
+<!-- Settings: language and country for everyone; organisations also set the money currency.
+     Shortcuts to related pages and help with closing the account. -->
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -7,13 +8,14 @@ import { CurrencyService } from "@/helpers/currency";
 import { setLocale, LANGUAGES } from "@/i18n";
 import { useToast } from "@/composables/useToast";
 import { useConfirm } from "@/composables/useConfirm";
-import { Coins, Languages, Globe, ShieldCheck, IdCard, RefreshCw, Bell, UserX, ChevronRight } from "lucide-vue-next";
+import { Coins, Languages, Globe, ShieldCheck, IdCard, RefreshCw, Bell, UserX, ChevronRight, UserRound, KeyRound } from "lucide-vue-next";
 
 const auth = authStore;
 const { t } = useI18n();
 const toast = useToast();
 const confirm = useConfirm();
 
+const isOrg = computed(() => auth.user?.type === "organisation");
 const loading = ref(true);
 const saving = ref("");
 const currencies = ref([]);
@@ -29,8 +31,9 @@ const countryOptions = computed(() => countries.value.filter(on).map((c) => ({ v
 
 async function load() {
   const [cur, curPref, langs, userLang, ctrs, userCountry] = await Promise.all([
-    auth.fetchProtectedApi("/api/currencies", {}, "GET"),
-    auth.fetchProtectedApi("/api/fund-transaction-currencies", {}, "GET"),
+    isOrg.value ? auth.fetchProtectedApi("/api/currencies", {}, "GET") : null,
+    // The money currency belongs to an organisation's funds
+    isOrg.value ? auth.fetchProtectedApi("/api/fund-transaction-currencies", {}, "GET") : null,
     auth.fetchProtectedApi("/api/languages", {}, "GET"),
     auth.fetchProtectedApi("/api/user-languages/language-name/", {}, "GET"),
     auth.fetchPublicApi("/api/countries", {}, "GET"),
@@ -111,12 +114,17 @@ async function saveCountry() {
   }
 }
 
-const shortcuts = computed(() => [
+const shortcuts = computed(() => (!isOrg.value ? [
+  { to: { name: "individual-profile" }, icon: UserRound, title: t("accountNav.profile"), text: t("orgSettings.profileText") },
+  { to: { name: "individual-security" }, icon: KeyRound, title: t("accountNav.security"), text: t("orgSettings.securityText") },
+  { to: { name: "individual-notification-settings" }, icon: Bell, title: t("accountNav.notifications"), text: t("orgSettings.notificationsText") },
+] : [
   { to: { name: "administrator" }, icon: ShieldCheck, title: t("orgSettings.admins"), text: t("orgSettings.adminsText") },
   { to: { name: "org-membership-type" }, icon: IdCard, title: t("nav.membershipType"), text: t("orgSettings.typesText") },
   { to: { name: "org-membership-renewal-cycle" }, icon: RefreshCw, title: t("nav.renewalCycle"), text: t("orgSettings.cycleText") },
   { to: { name: "user-notifications" }, icon: Bell, title: t("accountNav.notifications"), text: t("orgSettings.notificationsText") },
-]);
+]));
+const supportRoute = computed(() => ({ name: isOrg.value ? "support" : "individual-support", query: { new: "account" } }));
 
 onMounted(async () => {
   await load();
@@ -126,14 +134,14 @@ onMounted(async () => {
 
 <template>
   <div class="flex flex-col gap-6">
-    <AzPageHeader :title="t('accountNav.settings')" :description="t('orgSettings.description')" />
+    <AzPageHeader :title="t('accountNav.settings')" :description="isOrg ? t('orgSettings.description') : t('orgSettings.descriptionPerson')" />
 
     <AzSkeleton v-if="loading" :lines="4" height="4rem" />
 
     <template v-else>
       <AzCard :padded="false">
         <div class="divide-y divide-line">
-          <form class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-end" @submit.prevent="saveCurrency">
+          <form v-if="isOrg" class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-end" @submit.prevent="saveCurrency">
             <div class="flex items-start gap-3 sm:w-64">
               <Coins class="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
               <div><p class="font-semibold text-ink">{{ t('orgSettings.currency') }}</p><p class="text-sm text-ink-muted">{{ t('orgSettings.currencyHelp') }}</p></div>
@@ -161,7 +169,7 @@ onMounted(async () => {
       </AzCard>
 
       <section>
-        <h2 class="mb-3 text-lg font-semibold text-ink">{{ t('orgSettings.moreSetup') }}</h2>
+        <h2 class="mb-3 text-lg font-semibold text-ink">{{ isOrg ? t('orgSettings.moreSetup') : t('orgSettings.moreSetupPerson') }}</h2>
         <ul class="grid gap-3 sm:grid-cols-2">
           <li v-for="s in shortcuts" :key="s.title">
             <RouterLink :to="s.to" class="flex h-full items-start gap-3 rounded-card border border-line bg-surface p-4 shadow-card hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
@@ -177,9 +185,9 @@ onMounted(async () => {
         <div class="flex items-start gap-3">
           <UserX class="mt-0.5 h-5 w-5 shrink-0 text-ink-muted" aria-hidden="true" />
           <div>
-            <p class="font-semibold text-ink">{{ t('orgSettings.closeTitle') }}</p>
-            <p class="text-sm text-ink-muted">{{ t('orgSettings.closeText') }}</p>
-            <AzButton class="mt-3" variant="secondary" size="sm" :to="{ name: 'support', query: { new: 'account' } }">{{ t('orgSettings.contactSupport') }}</AzButton>
+            <p class="font-semibold text-ink">{{ isOrg ? t('orgSettings.closeTitle') : t('orgSettings.closeTitlePerson') }}</p>
+            <p class="text-sm text-ink-muted">{{ isOrg ? t('orgSettings.closeText') : t('orgSettings.closeTextPerson') }}</p>
+            <AzButton class="mt-3" variant="secondary" size="sm" :to="supportRoute">{{ t('orgSettings.contactSupport') }}</AzButton>
           </div>
         </div>
       </AzCard>

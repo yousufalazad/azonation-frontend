@@ -1,4 +1,5 @@
-<!-- Organisation profile: logo, name, username, email, phone and address. Each part is edited in place. -->
+<!-- Profile for organisations (logo, organisation name) and members (photo, first and last name):
+     username, email, phone and address too. Each part is edited in place. -->
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -11,6 +12,9 @@ const { t } = useI18n();
 const toast = useToast();
 
 const userId = computed(() => auth.user?.id);
+const isOrg = computed(() => auth.user?.type === "organisation");
+const displayName = computed(() => (isOrg.value ? auth.user?.org_name : [auth.user?.first_name, auth.user?.last_name].filter(Boolean).join(" ")) || "");
+const settingsRoute = computed(() => ({ name: isOrg.value ? "settings" : "individual-settings" }));
 const editing = ref(""); // "name" | "username" | "email" | "phone" | "address" | ""
 const saving = ref(false);
 const errors = reactive({});
@@ -21,7 +25,9 @@ const logoUrl = ref("");
 const logoInput = ref(null);
 const uploadingLogo = ref(false);
 async function loadLogo() {
-  const res = await auth.fetchProtectedApi("/api/org-profile/logo", {}, "GET");
+  const res = isOrg.value
+    ? await auth.fetchProtectedApi("/api/org-profile/logo", {}, "GET")
+    : await auth.fetchProtectedApi(`/api/profileimage/${userId.value}`, {}, "GET");
   logoUrl.value = res?.status ? res.data?.image || "" : "";
 }
 async function onLogo(e) {
@@ -33,10 +39,10 @@ async function onLogo(e) {
   fd.append("image", file);
   uploadingLogo.value = true;
   try {
-    const res = await auth.uploadProtectedApi(`/api/org-profile/logo/${userId.value}`, fd, "POST");
+    const res = await auth.uploadProtectedApi(isOrg.value ? `/api/org-profile/logo/${userId.value}` : `/api/profileimage/${userId.value}`, fd, "POST");
     if (res?.status) {
       logoUrl.value = res.data.image;
-      toast.success(t("profilePage.logoSaved"));
+      toast.success(isOrg.value ? t("profilePage.logoSaved") : t("profilePage.photoSaved"));
     } else {
       toast.error(t("profilePage.saveFailed"));
     }
@@ -46,10 +52,13 @@ async function onLogo(e) {
 }
 
 // ---- Name, username, email ----
-const form = reactive({ org_name: "", username: "", email: "" });
+const form = reactive({ org_name: "", first_name: "", last_name: "", username: "", email: "" });
 function startEdit(part) {
   Object.keys(errors).forEach((k) => delete errors[k]);
-  Object.assign(form, { org_name: auth.user?.org_name || "", username: auth.user?.username || "", email: auth.user?.email || "" });
+  Object.assign(form, {
+    org_name: auth.user?.org_name || "", first_name: auth.user?.first_name || "", last_name: auth.user?.last_name || "",
+    username: auth.user?.username || "", email: auth.user?.email || "",
+  });
   if (part === "phone") Object.assign(phoneForm, phone.value);
   if (part === "address") Object.assign(addressForm, address.value);
   editing.value = part;
@@ -60,7 +69,30 @@ const firstError = (res) => {
   return e?.message || res?.message || "";
 };
 
+// Members have a first and last name instead of an organisation name
+async function savePersonName() {
+  const first = form.first_name.trim();
+  const last = form.last_name.trim();
+  if (!first) errors.first_name = t("profilePage.needFirstName");
+  if (!last) errors.last_name = t("profilePage.needLastName");
+  if (!first || !last) return;
+  saving.value = true;
+  try {
+    const res = await auth.fetchProtectedApi(`/api/update-first-last-name/${userId.value}`, { first_name: first, last_name: last }, "PUT");
+    if (res?.status) {
+      auth.user = { ...auth.user, first_name: first, last_name: last };
+      toast.success(t("profilePage.saved"));
+      editing.value = "";
+    } else {
+      errors.first_name = firstError(res) || t("profilePage.saveFailed");
+    }
+  } finally {
+    saving.value = false;
+  }
+}
+
 async function saveAccountField(part) {
+  if (part === "name" && !isOrg.value) return savePersonName();
   const map = {
     name: { url: "update-name", key: "org_name", need: "profilePage.needName" },
     username: { url: "update-username", key: "username", need: "profilePage.needUsername" },
@@ -199,7 +231,7 @@ onBeforeUnmount(() => (editing.value = ""));
 
 <template>
   <div class="flex flex-col gap-6">
-    <AzPageHeader :title="t('accountNav.profile')" :description="t('profilePage.description')" />
+    <AzPageHeader :title="t('accountNav.profile')" :description="isOrg ? t('profilePage.description') : t('profilePage.descriptionPerson')" />
 
     <AzSkeleton v-if="loading" :lines="6" height="3.5rem" />
 
@@ -208,16 +240,17 @@ onBeforeUnmount(() => (editing.value = ""));
       <AzCard>
         <div class="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
           <div class="relative">
-            <AzAvatar :src="logoUrl" :name="auth.user?.org_name" size="xl" />
+            <AzAvatar :src="logoUrl" :name="displayName" size="xl" />
             <button type="button" class="absolute -bottom-1 -right-1 grid h-9 w-9 place-items-center rounded-full border border-line bg-surface text-ink-2 shadow-card hover:text-primary"
-              :aria-label="t('profilePage.changeLogo')" :disabled="uploadingLogo" @click="logoInput?.click()">
+              :aria-label="isOrg ? t('profilePage.changeLogo') : t('profilePage.changePhoto')" :disabled="uploadingLogo" @click="logoInput?.click()">
               <Camera class="h-4 w-4" aria-hidden="true" />
             </button>
             <input ref="logoInput" type="file" accept="image/png,image/jpeg,image/webp" class="sr-only" tabindex="-1" @change="onLogo" />
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-xl font-semibold text-ink">{{ auth.user?.org_name || '—' }}</p>
-            <p class="text-sm text-ink-muted">{{ t('profilePage.logoHelp') }}</p>
+            <p class="text-xl font-semibold text-ink">{{ displayName || '—' }}</p>
+            <p v-if="!isOrg && auth.user?.azon_id" class="text-sm text-ink-2">{{ t('profilePage.azonId', { id: auth.user.azon_id }) }}</p>
+            <p class="text-sm text-ink-muted">{{ isOrg ? t('profilePage.logoHelp') : t('profilePage.photoHelp') }}</p>
           </div>
         </div>
       </AzCard>
@@ -227,14 +260,18 @@ onBeforeUnmount(() => (editing.value = ""));
         <dl class="divide-y divide-line">
           <!-- Name -->
           <div class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-start">
-            <dt class="w-44 shrink-0 text-sm font-medium text-ink-muted">{{ t('profilePage.orgName') }}</dt>
+            <dt class="w-44 shrink-0 text-sm font-medium text-ink-muted">{{ isOrg ? t('profilePage.orgName') : t('profilePage.yourName') }}</dt>
             <dd class="min-w-0 flex-1">
               <form v-if="editing === 'name'" class="flex flex-col gap-3" novalidate @submit.prevent="saveAccountField('name')">
-                <AzInput v-model="form.org_name" :label="t('profilePage.orgName')" :error="errors.org_name" maxlength="100" autocomplete="organization" />
+                <AzInput v-if="isOrg" v-model="form.org_name" :label="t('profilePage.orgName')" :error="errors.org_name" maxlength="100" autocomplete="organization" />
+                <div v-else class="grid gap-3 sm:grid-cols-2">
+                  <AzInput v-model="form.first_name" :label="t('profilePage.firstName')" :error="errors.first_name" maxlength="100" autocomplete="given-name" />
+                  <AzInput v-model="form.last_name" :label="t('profilePage.lastName')" :error="errors.last_name" maxlength="100" autocomplete="family-name" />
+                </div>
                 <div class="flex gap-2"><AzButton type="submit" size="sm" :loading="saving">{{ t('common.save') }}</AzButton><AzButton variant="quiet" size="sm" @click="editing = ''">{{ t('common.cancel') }}</AzButton></div>
               </form>
               <div v-else class="flex items-center justify-between gap-3">
-                <span class="text-[15px] text-ink">{{ auth.user?.org_name || '—' }}</span>
+                <span class="text-[15px] text-ink">{{ displayName || '—' }}</span>
                 <AzButton variant="quiet" size="sm" @click="startEdit('name')"><template #icon><Pencil class="h-4 w-4" /></template>{{ t('common.edit') }}</AzButton>
               </div>
             </dd>
@@ -272,7 +309,7 @@ onBeforeUnmount(() => (editing.value = ""));
             <dt class="w-44 shrink-0 text-sm font-medium text-ink-muted">{{ t('profilePage.country') }}</dt>
             <dd class="flex min-w-0 flex-1 items-center justify-between gap-3">
               <span class="text-[15px] text-ink">{{ country || '—' }}</span>
-              <AzButton variant="quiet" size="sm" :to="{ name: 'settings' }">{{ t('accountNav.settings') }}</AzButton>
+              <AzButton variant="quiet" size="sm" :to="settingsRoute">{{ t('accountNav.settings') }}</AzButton>
             </dd>
           </div>
         </dl>

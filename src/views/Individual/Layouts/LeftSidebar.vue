@@ -12,6 +12,7 @@ import {
   CheckCircle as CheckCircleIcon,
   UserCircle as UserCircleIcon,
   ChevronDown as ChevronDownIcon,
+  LifeBuoy as LifeBuoyIcon,
 } from 'lucide-vue-next';
 import { authStore } from '../../../store/authStore';
 
@@ -34,12 +35,14 @@ const links = [
   { permission: 'project.read', label: 'nav.projects', routeName: 'individual-projects', icon: FolderIcon },
   { permission: 'asset.read', label: 'nav.assets', routeName: 'individual-assets', icon: PackageIcon },
   { permission: 'attendance.read', label: 'nav.attendances', routeName: 'individual-attendances', icon: CheckCircleIcon },
+  { label: 'nav.support', routeName: 'individual-support', icon: LifeBuoyIcon },
 ];
 
 const profileLinks = [
   { label: 'nav.myProfile', routeName: 'individual-profile' },
   { label: 'nav.security', routeName: 'individual-security' },
   { label: 'nav.notifications', routeName: 'individual-notifications' },
+  { label: 'accountNav.settings', routeName: 'individual-settings' },
 ];
 
 const visibleLinks = computed(() => links.filter((l) => !l.permission || auth.hasPermission(l.permission)));

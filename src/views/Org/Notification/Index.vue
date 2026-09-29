@@ -5,6 +5,7 @@ import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import dayjs from "dayjs";
 import { authStore } from "@/store/authStore";
+import { useAccountRoutes } from "@/composables/useAccountRoutes";
 import { safeUrl } from "@/helpers/sanitizeHtml";
 import { useToast } from "@/composables/useToast";
 import { Bell, BellOff, CheckCheck, Settings2, ChevronDown, ExternalLink } from "lucide-vue-next";
@@ -13,6 +14,8 @@ const auth = authStore;
 const router = useRouter();
 const { t } = useI18n();
 const toast = useToast();
+const routes = useAccountRoutes();
+const isOrg = computed(() => auth.user?.type === "organisation");
 
 const notifications = ref([]);
 const loading = ref(true);
@@ -107,8 +110,8 @@ onMounted(async () => {
 
 <template>
   <div class="mx-auto flex max-w-3xl flex-col gap-6">
-    <AzPageHeader :title="t('notificationsPage.title')" :description="t('notificationsPage.description')">
-      <AzButton variant="quiet" :to="{ name: 'user-notifications' }">
+    <AzPageHeader :title="t('notificationsPage.title')" :description="isOrg ? t('notificationsPage.description') : t('notificationsPage.descriptionPerson')">
+      <AzButton variant="quiet" :to="{ name: routes.notificationSettings }">
         <template #icon><Settings2 class="h-[18px] w-[18px]" /></template>
         {{ t('notificationsPage.settings') }}
       </AzButton>
@@ -125,7 +128,7 @@ onMounted(async () => {
     <AzSkeleton v-if="loading" :lines="5" height="4rem" />
 
     <AzCard v-else-if="!notifications.length">
-      <AzEmptyState :title="t('notificationsPage.emptyTitle')" :description="t('notificationsPage.emptyText')">
+      <AzEmptyState :title="t('notificationsPage.emptyTitle')" :description="isOrg ? t('notificationsPage.emptyText') : t('notificationsPage.emptyTextPerson')">
         <template #icon><BellOff class="h-7 w-7" /></template>
       </AzEmptyState>
     </AzCard>

@@ -4,11 +4,13 @@ import { onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { authStore } from "@/store/authStore";
 import { useToast } from "@/composables/useToast";
+import { useAccountRoutes } from "@/composables/useAccountRoutes";
 import { Smartphone, MessageSquare, Mail, MessageCircle, Bell } from "lucide-vue-next";
 
 const auth = authStore;
 const { t } = useI18n();
 const toast = useToast();
+const routes = useAccountRoutes();
 
 const channels = ref([]); // notification names
 const mine = ref([]); // the channels switched on for this account
@@ -18,18 +20,18 @@ const loading = ref(true);
 // A friendly icon and explanation for the channels we know by name
 const iconFor = (name) => {
   const n = String(name || "").toLowerCase();
+  if (n.includes("whatsapp")) return MessageCircle; // before "app": WhatsApp contains it
   if (n.includes("app")) return Smartphone;
   if (n.includes("sms")) return MessageSquare;
   if (n.includes("mail")) return Mail;
-  if (n.includes("whatsapp")) return MessageCircle;
   return Bell;
 };
 const helpKey = (name) => {
   const n = String(name || "").toLowerCase();
+  if (n.includes("whatsapp")) return "notifySettings.help_whatsapp";
   if (n.includes("app")) return "notifySettings.help_app";
   if (n.includes("sms")) return "notifySettings.help_sms";
   if (n.includes("mail")) return "notifySettings.help_email";
-  if (n.includes("whatsapp")) return "notifySettings.help_whatsapp";
   return "";
 };
 
@@ -73,7 +75,7 @@ onMounted(async () => {
 <template>
   <div class="flex flex-col gap-6">
     <AzPageHeader :title="t('accountNav.notifications')" :description="t('notifySettings.description')">
-      <AzButton variant="quiet" :to="{ name: 'notifications' }">{{ t('notifySettings.seeAll') }}</AzButton>
+      <AzButton variant="quiet" :to="{ name: routes.notifications }">{{ t('notifySettings.seeAll') }}</AzButton>
     </AzPageHeader>
 
     <AzSkeleton v-if="loading" :lines="4" height="4rem" />

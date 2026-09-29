@@ -1,12 +1,16 @@
 const IndividualDashboardLayout = () => import("../views/Individual/Layouts/Layout.vue");
 const IndividualDashboardIndex = () => import("../views/Individual/Layouts/Dashboard/Index.vue");
 const HeaderNotifications = () => import("../views/Individual/Layouts/HeaderNotification.vue");
-const Notifications = () => import("../views/Individual/Notification/Index.vue");
+// Account pages shared with organisations
+const Notifications = () => import("../views/Org/Notification/Index.vue");
+const NotificationSettings = () => import("../views/Org/Notification/UserNotifications.vue");
+const Support = () => import("../views/Org/Support/Index.vue");
+const SupportRequest = () => import("../views/Org/Support/View.vue");
 const ConnectedOrganisations = () => import("../views/Individual/Organisation/Index.vue");
 //Profile
-const IndividualProfile = () => import("../views/Individual/Profile/Index.vue");
-const IndividualSecurity = () => import("../views/Individual/Profile/Security/Index.vue");
-const IndividualSettings = () => import("../views/Individual/Profile/Settings/Index.vue");
+const IndividualProfile = () => import("../views/Org/Profile/Profile.vue");
+const IndividualSecurity = () => import("../views/Org/Profile/Security.vue");
+const IndividualSettings = () => import("../views/Org/Profile/Settings.vue");
 const PastMeeting = () => import("../views/Individual/Meeting/PastMeeting.vue");
 const Committee = () => import("../views/Individual/Committee/Index.vue");
 const PastCommittee = () => import("../views/Individual/Committee/PastCommittee.vue");
@@ -74,6 +78,24 @@ const individualRoutes = [
         path: "individual-settings",
         name: "individual-settings",
         component: IndividualSettings,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "notification-settings",
+        name: "individual-notification-settings",
+        component: NotificationSettings,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "support",
+        name: "individual-support",
+        component: Support,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "support/:id",
+        name: "individual-support-request",
+        component: SupportRequest,
         meta: { requiresAuth: true },
       },
       {

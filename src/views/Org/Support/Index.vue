@@ -5,6 +5,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { authStore } from "@/store/authStore";
 import { useToast } from "@/composables/useToast";
+import { useAccountRoutes } from "@/composables/useAccountRoutes";
 import { shortDate } from "@/helpers/billing";
 import { LifeBuoy, Plus, MessageSquare } from "lucide-vue-next";
 import { CATEGORIES, statusTone } from "./support";
@@ -14,6 +15,7 @@ const route = useRoute();
 const router = useRouter();
 const { t, locale } = useI18n();
 const toast = useToast();
+const routes = useAccountRoutes();
 
 const loading = ref(true);
 const requests = ref([]);
@@ -29,7 +31,7 @@ const errors = computed(() => ({
   message: tried.value && !form.message.trim() ? t("support.messageRequired") : "",
 }));
 
-const open = (r) => router.push({ name: "support-request", params: { id: r.id } });
+const open = (r) => router.push({ name: routes.value.supportRequest, params: { id: r.id } });
 
 function newRequest(category = "") {
   Object.assign(form, { category, subject: "", message: "" });
@@ -46,7 +48,7 @@ async function submit() {
     if (res?.status) {
       showForm.value = false;
       toast.success(t("support.sent"));
-      router.push({ name: "support-request", params: { id: res.data.id } });
+      router.push({ name: routes.value.supportRequest, params: { id: res.data.id } });
     } else {
       toast.error(t("support.sendFailed"));
     }
@@ -62,7 +64,7 @@ onMounted(async () => {
   // Other pages link here with ?new=billing to start a request of that kind
   if (CATEGORIES.includes(route.query.new)) {
     newRequest(route.query.new);
-    router.replace({ name: "support" });
+    router.replace({ name: routes.value.support });
   }
 });
 </script>

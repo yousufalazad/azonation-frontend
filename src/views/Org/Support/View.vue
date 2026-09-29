@@ -6,6 +6,7 @@ import { useI18n } from "vue-i18n";
 import { authStore } from "@/store/authStore";
 import { useToast } from "@/composables/useToast";
 import { useConfirm } from "@/composables/useConfirm";
+import { useAccountRoutes } from "@/composables/useAccountRoutes";
 import { CheckCircle2, Send } from "lucide-vue-next";
 import { statusTone, dateTime } from "./support";
 
@@ -14,6 +15,7 @@ const route = useRoute();
 const { t, locale } = useI18n();
 const toast = useToast();
 const confirm = useConfirm();
+const routes = useAccountRoutes();
 
 const loading = ref(true);
 const request = ref(null);
@@ -71,7 +73,7 @@ onMounted(async () => {
 
 <template>
   <div class="mx-auto flex max-w-3xl flex-col gap-6">
-    <AzPageHeader :title="request?.subject || t('support.request')" :back="{ name: 'support' }" :back-label="t('support.title')">
+    <AzPageHeader :title="request?.subject || t('support.request')" :back="{ name: routes.support }" :back-label="t('support.title')">
       <AzButton v-if="request && request.status !== 'closed'" variant="secondary" :loading="closing" @click="markSolved">
         <template #icon><CheckCircle2 class="h-[18px] w-[18px]" /></template>
         {{ t('support.markSolved') }}
@@ -82,7 +84,7 @@ onMounted(async () => {
 
     <AzCard v-else-if="!request">
       <AzEmptyState :title="t('support.notFoundTitle')" :description="t('support.notFoundText')">
-        <AzButton variant="secondary" :to="{ name: 'support' }">{{ t('support.title') }}</AzButton>
+        <AzButton variant="secondary" :to="{ name: routes.support }">{{ t('support.title') }}</AzButton>
       </AzEmptyState>
     </AzCard>
 
