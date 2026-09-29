@@ -4,7 +4,6 @@ import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import dayjs from 'dayjs';
 import { authStore } from '../../../../store/authStore';
-import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
 import { CurrencyService } from '@/helpers/currency';
 import { useToast } from '@/composables/useToast';
 import { formatDate, membershipAge, humanize, statusTone } from '@/helpers/format';
@@ -155,8 +154,7 @@ onMounted(async () => {
                 <!-- Phones: one card per member -->
                 <ul class="divide-y divide-line md:hidden">
                     <li v-for="member in recentMembers" :key="member.id" class="flex items-center gap-3 px-5 py-4">
-                        <img :src="member.image_url || placeholderImage" :alt="t('member.photoOf', { name: memberName(member) })"
-                            class="h-11 w-11 max-w-none shrink-0 rounded-full border border-line object-cover" loading="lazy" />
+                        <AzAvatar :src="member.image_url" :name="memberName(member)" size="md" />
                         <div class="min-w-0 flex-1">
                             <p class="truncate font-semibold text-ink">{{ memberName(member) }}</p>
                             <p class="truncate text-sm text-ink-muted">
@@ -184,8 +182,7 @@ onMounted(async () => {
                         <tbody>
                             <tr v-for="member in recentMembers" :key="member.id">
                                 <td>
-                                    <img :src="member.image_url || placeholderImage" :alt="t('member.photoOf', { name: memberName(member) })"
-                                        class="h-10 w-10 max-w-none rounded-full border border-line object-cover" loading="lazy" />
+                                    <AzAvatar :src="member.image_url" :name="memberName(member)" size="md" />
                                 </td>
                                 <td class="font-semibold text-ink">{{ memberName(member) }}</td>
                                 <td class="tabular-nums">{{ member.existing_membership_id || '—' }}</td>

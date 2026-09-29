@@ -1,5 +1,6 @@
 <script setup>
 // Record a membership termination, then remove the member from the list.
+// Works for linked members (source "org") and unlinked members (source "unlinked").
 // Reasons and the primary administrator are loaded the first time the dialog opens.
 import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
@@ -8,13 +9,15 @@ import { authStore } from "@/store/authStore";
 import { useToast } from "@/composables/useToast";
 import { useConfirm } from "@/composables/useConfirm";
 import { formatDate, humanize } from "@/helpers/format";
-import placeholderImage from "@/assets/Placeholder/Azonation-profile-image.jpg";
 
 const open = defineModel("open", { type: Boolean, default: false });
 
 const props = defineProps({
   member: { type: Object, default: null },
+  source: { type: String, default: "org" }, // org | unlinked
 });
+
+const isUnlinked = computed(() => props.source === "unlinked");
 
 const emit = defineEmits(["terminated"]);
 
@@ -67,8 +70,10 @@ watch(open, (isOpen) => {
 });
 
 const memberName = computed(() => props.member?.full_name || "—");
-const email = computed(() => props.member?.individual?.email || "");
-const mobile = computed(() => props.member?.individual?.phone_number?.phone_number || "");
+const email = computed(() => (isUnlinked.value ? props.member?.email : props.member?.individual?.email) || "");
+const mobile = computed(() =>
+  (isUnlinked.value ? props.member?.mobile : props.member?.individual?.phone_number?.phone_number) || "",
+);
 const typeBefore = computed(() => props.member?.membership_type?.name || "");
 const statusBefore = computed(() => props.member?.membership_status?.name || "");
 const joinedAt = computed(() => props.member?.membership_start_date || "");
@@ -108,7 +113,9 @@ async function submit() {
   const add = (key, value) => fd.append(key, value ?? "");
   add("existing_membership_id", m.existing_membership_id);
   add("org_type_user_id", authStore.user?.id);
-  add("individual_type_user_id", m.individual?.id);
+  // Unlinked members have no user account; the API still requires an id, so the
+  // record id is sent as before (see the report: the backend needs a proper field for this)
+  add("individual_type_user_id", isUnlinked.value ? m.id : m.individual?.id);
   add("terminated_member_name", memberName.value);
   add("terminated_member_email", email.value);
   add("terminated_member_mobile", mobile.value);
@@ -132,7 +139,9 @@ async function submit() {
       return;
     }
     // The termination is recorded; now remove the member from the active list
-    const removed = await authStore.fetchProtectedApi(`/api/org-members/${m.id}`, {}, "DELETE");
+    const removed = isUnlinked.value
+      ? await authStore.uploadProtectedApi(`/api/unlink-members/${m.id}`, {}, "DELETE")
+      : await authStore.fetchProtectedApi(`/api/org-members/${m.id}`, {}, "DELETE");
     if (removed?.status) toast.success(t("terminate.done"));
     else toast.error(t("terminate.removeFailed"));
     open.value = false;
@@ -147,8 +156,7 @@ async function submit() {
   <AzModal v-model:open="open" :title="$t('terminate.title')" size="lg">
     <form v-if="member" id="member-terminate-form" class="flex flex-col gap-5" @submit.prevent="submit">
       <div class="flex items-center gap-4">
-        <img :src="member.image_url || placeholderImage" :alt="$t('member.photoOf', { name: memberName })"
-          class="h-14 w-14 max-w-none shrink-0 rounded-full border border-line object-cover" />
+        <AzAvatar :src="member.image_url" :name="memberName" size="lg" />
         <div class="min-w-0">
           <p class="truncate text-lg font-semibold text-ink">{{ memberName }}</p>
           <p class="text-sm text-ink-muted">{{ $t('member.membershipId') }}: {{ member.existing_membership_id || '—' }}</p>

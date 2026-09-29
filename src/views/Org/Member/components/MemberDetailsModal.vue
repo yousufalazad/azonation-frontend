@@ -1,7 +1,6 @@
 <script setup>
 // Read-only member summary with Edit and Terminate actions.
 import { computed } from "vue";
-import placeholderImage from "@/assets/Placeholder/Azonation-profile-image.jpg";
 import { formatDate, membershipAge, humanize, statusTone } from "@/helpers/format";
 
 const open = defineModel("open", { type: Boolean, default: false });
@@ -38,8 +37,7 @@ const rows = computed(() => {
   <AzModal v-model:open="open" :title="member?.full_name || $t('members.details')" size="md">
     <div v-if="member" class="flex flex-col gap-5">
       <div class="flex items-center gap-4">
-        <img :src="member.image_url || placeholderImage" :alt="$t('member.photoOf', { name: member.full_name })"
-          class="h-20 w-20 max-w-none shrink-0 rounded-full border border-line object-cover" />
+        <AzAvatar :src="member.image_url" :name="member.full_name" size="xl" />
         <div class="min-w-0">
           <p class="text-sm text-ink-muted">{{ $t('member.membershipId') }}</p>
           <p class="text-lg font-semibold text-ink tabular-nums">{{ member.existing_membership_id || '—' }}</p>

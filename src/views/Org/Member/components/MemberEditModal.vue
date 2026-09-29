@@ -4,7 +4,6 @@ import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { authStore } from "@/store/authStore";
 import { useToast } from "@/composables/useToast";
-import placeholderImage from "@/assets/Placeholder/Azonation-profile-image.jpg";
 
 const open = defineModel("open", { type: Boolean, default: false });
 
@@ -92,8 +91,7 @@ async function save() {
   <AzModal v-model:open="open" :title="$t('members.edit')" size="lg">
     <form v-if="member" id="member-edit-form" class="flex flex-col gap-5" @submit.prevent="save">
       <div class="flex items-center gap-4">
-        <img :src="member.image_url || placeholderImage" :alt="$t('member.photoOf', { name: member.full_name })"
-          class="h-14 w-14 max-w-none shrink-0 rounded-full border border-line object-cover" />
+        <AzAvatar :src="member.image_url" :name="member.full_name" size="lg" />
         <div class="min-w-0">
           <p class="truncate text-lg font-semibold text-ink">{{ member.full_name || '—' }}</p>
           <p class="text-sm text-ink-muted">{{ $t('members.azonId') }}: {{ member.individual?.azon_id || '—' }}</p>
