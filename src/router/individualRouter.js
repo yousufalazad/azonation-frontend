@@ -53,8 +53,8 @@ const individualRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "notifications",
-        name: "notifications",
+        path: "individual-notifications",
+        name: "individual-notifications",
         component: Notifications,
         meta: { requiresAuth: true },
       },

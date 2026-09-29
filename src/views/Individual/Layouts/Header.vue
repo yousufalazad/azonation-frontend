@@ -135,7 +135,8 @@ onBeforeUnmount(() => {
       <!-- Profile Section (unchanged) -->
       <div class="relative">
         <button ref="profileButton" @click="toggleProfileDropdown" class="flex items-center focus:outline-none">
-          <img :src="logoPath ? logoPath : placeholderImage" alt="Profile"
+          <img :src="logoPath ? `${logoPath}` : placeholderImage" alt="Profile"
+
             class="w-10 h-10 rounded-full object-cover border border-gray-300" />
         </button>
 
@@ -144,7 +145,7 @@ onBeforeUnmount(() => {
             class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-50">
 
             <div class="flex justify-center p-4 border-b">
-              <img :src="logoPath ? logoPath : placeholderImage" alt="Profile"
+              <img :src="logoPath ? `${logoPath}` : placeholderImage" alt="Profile"
                 class="rounded-lg max-h-[90px] max-w-[200px] object-contain" />
             </div>
 

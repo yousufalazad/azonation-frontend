@@ -20,7 +20,7 @@ const logoPath = ref('');
 const selectedImage = ref(null);
 
 // Org address
-const address_user_id = ref(null);
+const addressId = ref(null); // id of the logged-in user's address record (null = none saved yet)
 const address_line_one = ref('');
 const address_line_two = ref('');
 const city = ref('');
@@ -40,6 +40,7 @@ const phone_type = ref('');
 const statusPhone = ref(''); //status defined in address
 const modalVisiblePhone = ref(false);
 const isEditModePhone = ref(false);
+const phoneId = ref(null); // id of the logged-in user's phone record (null = none saved yet)
 
 const allDialingCodes = ref([]);
 
@@ -68,7 +69,7 @@ const countryChangeRequest = ref('');
 const fetchLogo = async () => {
     try {
         const response = await auth.fetchProtectedApi(`/api/org-profile/logo`, {}, 'GET');
-        if (response.status && response.data.image) {
+        if (response.status && response.data?.image) {
             logoPath.value = response.data.image;
         }
     } catch (error) {
@@ -215,18 +216,17 @@ const fetchOrgAddress = async () => {
 
         // Ensure the response status is true and data exists
         if (response.status && response.data) {
-            console.log(response.data);
+            addressId.value = response.data.id;
             address_line_one.value = response.data.address_line_one || '';  // Use default values if data is missing
             address_line_two.value = response.data.address_line_two || '';
             city.value = response.data.city || '';
             state_or_region.value = response.data.state_or_region || '';
-            postal_code.value = response.data.postal_code || '';
-        } else {
-            Swal.fire('Error', 'Failed to fetch organization address try-else', 'error');
+            postal_code.value = response.data.postcode || response.data.postal_code || ''; // DB column is `postcode`
         }
+        // else: no address saved yet (backend returns 404 "Address not found") — keep fields empty, no alert
     } catch (error) {
-        console.error("Error fetching organization address:", error);
-        Swal.fire('Error', 'Failed to fetch organization address catch', 'error');
+        console.error("Error fetching address:", error);
+        Swal.fire('Error', 'Failed to load address. Please try again later.', 'error');
     }
 };
 
@@ -245,7 +245,7 @@ const createAddress = async () => {
             Swal.fire('Error', 'Failed to created address', 'error');
         }
         closeAddressModal();
-        //fetchOrgAddress();
+        fetchOrgAddress(); // loads the new address id so the next save updates instead of creating
     } catch (error) {
         console.error("Error create address:", error);
         Swal.fire('Error', 'Failed to create address', 'error');
@@ -254,7 +254,7 @@ const createAddress = async () => {
 
 const updateAddress = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/addresses/${userId}`, {
+        const response = await auth.fetchProtectedApi(`/api/addresses/${addressId.value}`, {
             address_line_one: address_line_one.value,
             address_line_two: address_line_two.value,
             city: city.value,
@@ -276,30 +276,36 @@ const updateAddress = async () => {
 
 const fetchOrgPhoneNumber = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/phone-numbers/${userId}`, {}, 'GET');
+        // Backend resolves the logged-in user itself (Auth::id()), no user id in the URL
+        const response = await auth.fetchProtectedApi(`/api/phone-numbers/`, {}, 'GET');
         // Ensure the response status is true and data exists
         if (response.status && response.data) {
+            phoneId.value = response.data.id;
+            dialing_code_id.value = response.data.dialing_code_id || '';
             dialing_code.value = response.data.dialing_code || '';
             phone_number.value = response.data.phone_number || '';
             phone_type.value = response.data.phone_type || '';
             statusPhone.value = response.data.status || '';
-        } else {
-            Swal.fire('Error', 'Failed to fetch organization Phone Number', 'error');
         }
+        // else: no phone number saved yet (backend returns data: null) — keep fields empty, no alert
     } catch (error) {
-        console.error("Error fetching organization Phone Number:", error);
-        Swal.fire('Error', 'Failed to fetch organization Phone Number', 'error');
+        console.error("Error fetching phone number:", error);
+        Swal.fire('Error', 'Failed to load phone number. Please try again later.', 'error');
     }
 };
 
 const updateOrgPhoneNumber = async () => {
     try {
-        const response = await auth.fetchProtectedApi(`/api/phone-numbers/${userId}`, {
+        const payload = {
             dialing_code_id: dialing_code_id.value,
             phone_number: phone_number.value,
             phone_type: phone_type.value,
             status: statusPhone.value,
-        }, 'PUT');
+        };
+        // Existing record → update it by its own id; none yet → create (backend attaches the logged-in user)
+        const response = phoneId.value
+            ? await auth.fetchProtectedApi(`/api/phone-numbers/${phoneId.value}`, payload, 'PUT')
+            : await auth.fetchProtectedApi(`/api/phone-numbers/`, payload, 'POST');
         if (response.status) {
             Swal.fire('Success', 'Phone Number updated successfully', 'success');
         } else {
@@ -393,16 +399,13 @@ const updateUserEmail = async () => {
 const fetchOrgCountry = async () => {
     try {
         const response = await auth.fetchProtectedApi("/api/user-countries/country-name/", {}, 'GET');
-        console.log(response.data);
-
+        // no country saved yet → user_country_name is null; keep empty, no alert
         if (response.status && response.data) {
-            userCountry.value = response.data.user_country_name.name || '';
-        } else {
-            //Swal.fire('Error', 'Failed to fetch organization country', 'error');
+            userCountry.value = response.data.user_country_name?.name || '';
         }
     } catch (error) {
-        console.error("Error fetching organization country:", error);
-        Swal.fire('Error', 'Failed to fetch organization country', 'error');
+        console.error("Error fetching country:", error);
+        Swal.fire('Error', 'Failed to load country. Please try again later.', 'error');
     }
 };
 
@@ -415,14 +418,8 @@ const handleImageUpload = (event) => {
 //for Address
 const openAddressModal = () => {
 
-    if (address_user_id.value === null) {
-        //console.log('true', address_user_id);
-        isEditMode.value = true; // createAddress() will work 
-    } else {
-        //console.log('false', address_user_id);
-        isEditMode.value = false; // updateAddress() will work
-    }
-    //console.log('bahire', address_user_id)
+    // No saved address yet → create; otherwise → update
+    isEditMode.value = addressId.value === null; // true: createAddress(), false: updateAddress()
     modalVisibleAddress.value = true;
 };
 
@@ -432,7 +429,7 @@ const closeAddressModal = () => {
 
 //for Phone Number
 const openPhoneModal = () => {
-    isEditModePhone.value = true; //updateAddress() will work 
+    isEditModePhone.value = phoneId.value !== null; // true: "Edit", false: "Add"
     modalVisiblePhone.value = true;
 };
 
@@ -503,7 +500,7 @@ onMounted(() => {
 
                     <!-- Image Display -->
                     <div class="flex justify-center md:justify-start">
-                        <img v-if="logoPath" :src="logoPath" alt="Logo"
+                        <img v-if="logoPath" :src="logoPath ? `${logoPath}` : placeholderImage" alt="Profile"
                             class="rounded-lg w-full max-w-[250px]">
                         <img v-else src="../../../assets/Logo/Your-logo-here.png" alt="Logo"
                             class="rounded-lg w-full max-w-[250px]">
@@ -864,7 +861,7 @@ onMounted(() => {
                                 class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition">
                                 Cancel
                             </button>
-                            <button @click="isEditModePhone ? updateOrgPhoneNumber() : updateOrgPhoneNumber()"
+                            <button @click="updateOrgPhoneNumber()"
                                 class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition">
                                 {{ isEditModePhone ? 'Update' : 'Submit' }}
                             </button>

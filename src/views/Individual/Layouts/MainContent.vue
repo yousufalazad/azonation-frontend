@@ -30,7 +30,7 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
       'fixed top-16 left-0 h-[calc(100vh-64px)] w-64 bg-white shadow-md z-40',
       'transform transition-transform duration-300 ease-in-out',
       props.isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
-      'lg:translate-x-0 lg:static lg:h-[calc(100vh-64px)]',
+      'lg:translate-x-0',
       props.isSidebarExpanded ? 'lg:w-64' : 'lg:w-20'
     ]">
       <LeftSidebar :isSidebarExpanded="props.isSidebarExpanded" />

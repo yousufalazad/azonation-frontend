@@ -10,7 +10,7 @@ export const CurrencyService = reactive({
     try {
       const auth = authStore;
       const res = await auth.fetchProtectedApi(
-        "/api/accounts-transaction-currencies",
+        "/api/fund-transaction-currencies",
         {},
         "GET"
       );

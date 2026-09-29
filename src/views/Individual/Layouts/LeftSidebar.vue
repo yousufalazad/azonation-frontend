@@ -89,6 +89,10 @@ const isActive = (path) => route.path === path;
           <router-link :to="{ name: 'individual-security' }" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
             Security
           </router-link>
+          
+          <router-link :to="{ name: 'individual-notifications' }" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
+            Notifications
+          </router-link>
 
         </div>
       </transition>

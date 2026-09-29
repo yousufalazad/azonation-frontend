@@ -402,11 +402,9 @@ onMounted(() => {
                 :key="individualUser.id"
                 class="flex flex-col sm:flex-row sm:items-center gap-3 py-4"
               >
-                <img
-                  :src="`${baseURL}/storage/${individualUser.image}`"
-                  alt="Profile picture"
-                  class="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover flex-shrink-0"
-                />
+                <img v-if="individualUser.image_url" :src="individualUser.image_url ? `${individualUser.image_url}` : placeholderImage" alt="Profile picture" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover flex-shrink-0" />
+                <img v-else src="../../../assets/Logo/Your-logo-here.png" alt="Profile picture" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover flex-shrink-0" />
+                
                 <div class="flex-1 min-w-0">
                   <p class="font-medium text-base sm:text-lg text-gray-700 truncate">
                     {{ individualUser.first_name }}

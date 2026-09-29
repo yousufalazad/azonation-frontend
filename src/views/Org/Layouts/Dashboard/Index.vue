@@ -120,7 +120,7 @@ const balance = computed(() =>
 
 const fetchCurrencyPreference = async () => {
     try {
-        const res = await auth.fetchProtectedApi('/api/accounts-transaction-currencies', {}, 'GET');
+        const res = await auth.fetchProtectedApi('/api/fund-transaction-currencies', {}, 'GET');
         transactionCurrencySymbol.value = res?.data?.currency?.currency_code ?? '';
     } catch (error) {
         console.error('Failed to fetch user currency preference:', error);
@@ -173,7 +173,7 @@ const summaryCards = computed(() => [
     {
         title: 'Balance',
         value: formatCurrency(balance.value),
-        link: '/org-dashboard/accounts',
+        link: '/org-dashboard/fund-management',
         linkText: 'See all transactions',
         iconPath: 'M3 10h18M7 15h1m4 0h1M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
         iconBg: 'bg-emerald-50',
@@ -481,12 +481,7 @@ onMounted(async () => {
                     <div class="flex flex-row gap-2 justify-end w-full sm:w-auto">
                         <router-link :to="{ name: 'index-member' }">
                             <button class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100 transition">
-                                Full List
-                            </button>
-                        </router-link>
-                        <router-link :to="{ name: 'terminated-member' }">
-                            <button class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100 transition">
-                                Terminated Member
+                                Full Member List
                             </button>
                         </router-link>
                     </div>

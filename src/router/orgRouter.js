@@ -29,9 +29,7 @@ import OrgMembershipTypes from "../views/Org/Member/OrgMembershipTypes.vue";
 //Founder
 import Founders from "../views/Org/Founder/Index.vue";
 
-//Accounts
-import Accounts from "../views/Org/Accounts/Index.vue";
-import AccountsFunds from "../views/Org/Accounts/Fund.vue";
+//Fund and Fund Management
 import Fund from "../views/Org/FundManagement/Fund.vue";
 import FundManagement from "../views/Org/FundManagement/Index.vue";
 

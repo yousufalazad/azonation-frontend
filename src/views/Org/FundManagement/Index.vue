@@ -64,7 +64,7 @@ const fetchCurrencies = async () => {
 const fetchCurrencyPreference = async () => {
   try {
     const res = await auth.fetchProtectedApi(
-      "/api/accounts-transaction-currencies",
+      "/api/fund-transaction-currencies",
       {},
       "GET",
     );
@@ -92,14 +92,14 @@ const saveOrUpdateCurrency = async () => {
     if (selectedCurrencyId.value) {
       // Update
       response = await auth.fetchProtectedApi(
-        `/api/accounts-transaction-currencies/${selectedCurrencyId.value}`,
+        `/api/fund-transaction-currencies/${selectedCurrencyId.value}`,
         payload,
         "PUT",
       );
     } else {
       // Create
       response = await auth.fetchProtectedApi(
-        "/api/accounts-transaction-currencies",
+        "/api/fund-transaction-currencies",
         payload,
         "POST",
       );
