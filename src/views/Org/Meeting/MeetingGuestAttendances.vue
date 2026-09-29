@@ -1,354 +1,200 @@
-<!-- Meeting Guest Attendance -->
+<!-- Guests at a meeting: people who are not members, such as speakers or visitors -->
 <script setup>
-import { ref, onMounted } from 'vue';
-import Swal from 'sweetalert2';
-import { authStore } from '../../../store/authStore';
-import { useRoute, useRouter } from 'vue-router';
+import { computed, onMounted, reactive, ref } from "vue";
+import { useRoute } from "vue-router";
+import { useI18n } from "vue-i18n";
+import dayjs from "dayjs";
+import { authStore } from "@/store/authStore";
+import { formatDate } from "@/helpers/format";
+import { useToast } from "@/composables/useToast";
+import { useConfirm } from "@/composables/useConfirm";
+import { UserPlus, Users, Pencil, Trash2 } from "lucide-vue-next";
 
-const router = useRouter();
-const route = useRoute();
 const auth = authStore;
+const route = useRoute();
+const { t } = useI18n();
+const toast = useToast();
+const confirm = useConfirm();
 
-const guest_name = ref('');
-const about_guest = ref('');
-const attendance_type_id = ref("");
-const date = ref('');
-const time = ref('');
-const note = ref('');
-const is_active = ref('1');
-const isEditMode = ref(false);
-const selectedMeetingAttendanceId = ref(null);
+const meetingId = computed(() => route.params.id);
+const meeting = ref(null);
+const types = ref([]);
+const guests = ref([]);
+const loading = ref(true);
 
-// Selected Meeting ID
-const meetingId = ref(route.params.id);
-const meetingDetails = ref([]);
-const attendanceTypeList = ref([]);
-const meetingGuestAttendanceList = ref([]);
-const isModalOpen = ref(false);
+const open = ref(false);
+const editing = ref(null); // guest being edited, null = new
+const saving = ref(false);
+const errors = reactive({});
+const form = reactive({ guest_name: "", about_guest: "", attendance_type_id: "", time: "", note: "" });
 
-// Fetch meeting details on mount
-const fetchMeetingDetails = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/meetings/${meetingId.value}`, {}, 'GET');
-        meetingDetails.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching meetings:', error);
-        meetingDetails.value = [];
+const typeOptions = computed(() => types.value.map((ty) => ({ value: ty.id, label: ty.name })));
+
+async function loadGuests() {
+  const res = await auth.fetchProtectedApi("/api/meeting-guest-attendances", { meeting_id: meetingId.value }, "GET");
+  // Only this meeting's guests (older servers ignore the filter)
+  guests.value = (res?.status ? res.data : [])
+    .filter((g) => String(g.meeting_id) === String(meetingId.value))
+    .sort((a, b) => String(a.guest_name || "").localeCompare(String(b.guest_name || "")));
+}
+
+async function load() {
+  const [m, typeList] = await Promise.all([
+    auth.fetchProtectedApi(`/api/meetings/${meetingId.value}`, {}, "GET"),
+    auth.fetchProtectedApi("/api/attendance-types", {}, "GET"),
+    loadGuests(),
+  ]);
+  meeting.value = m?.status ? m.data : null;
+  types.value = typeList?.status ? typeList.data.filter((ty) => ty.is_active !== 0 && ty.is_active !== "0") : [];
+}
+
+function openForm(guest = null) {
+  editing.value = guest;
+  Object.keys(errors).forEach((k) => delete errors[k]);
+  Object.assign(form, {
+    guest_name: guest?.guest_name ?? "",
+    about_guest: guest?.about_guest ?? "",
+    attendance_type_id: guest?.attendance_type_id ?? types.value[0]?.id ?? "",
+    time: guest?.time ? String(guest.time).slice(0, 5) : "",
+    note: guest?.note ?? "",
+  });
+  open.value = true;
+}
+
+async function save() {
+  Object.keys(errors).forEach((k) => delete errors[k]);
+  if (!form.guest_name.trim()) errors.guest_name = t("guests.needName");
+  if (!form.attendance_type_id) errors.attendance_type_id = t("guests.needStatus");
+  if (Object.keys(errors).length || saving.value) return;
+
+  const payload = {
+    meeting_id: Number(meetingId.value),
+    guest_name: form.guest_name.trim(),
+    about_guest: form.about_guest.trim() || null,
+    attendance_type_id: form.attendance_type_id,
+    date: meeting.value?.date ? String(meeting.value.date).slice(0, 10) : null,
+    time: form.time || null,
+    note: form.note.trim() || null,
+    is_active: "1",
+  };
+  saving.value = true;
+  try {
+    const res = editing.value
+      ? await auth.fetchProtectedApi(`/api/meeting-guest-attendances/${editing.value.id}`, payload, "PUT")
+      : await auth.fetchProtectedApi("/api/meeting-guest-attendances", payload, "POST");
+    if (res?.status) {
+      toast.success(editing.value ? t("guests.updated") : t("guests.added"));
+      open.value = false;
+      await loadGuests();
+    } else {
+      toast.error(t("guests.saveFailed"));
     }
-};
+  } finally {
+    saving.value = false;
+  }
+}
 
-// Fetch attendance type list
-const getAttendanceTypeList = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/attendance-types', {}, 'GET');
-        attendanceTypeList.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching attendance types:', error);
-        attendanceTypeList.value = [];
-    }
-};
+async function remove(guest) {
+  const ok = await confirm({
+    title: t("guests.deleteTitle", { name: guest.guest_name }),
+    message: t("guests.deleteText"),
+    confirmText: t("common.delete"),
+    danger: true,
+  });
+  if (!ok) return;
+  const res = await auth.fetchProtectedApi(`/api/meeting-guest-attendances/${guest.id}`, {}, "DELETE");
+  if (res?.status) {
+    toast.success(t("guests.deleted"));
+    await loadGuests();
+  } else {
+    toast.error(t("guests.deleteFailed"));
+  }
+}
 
-// Fetch guest attendance list
-const getMeetingGuestAttendanceList = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/meeting-guest-attendances', {}, 'GET');
-        meetingGuestAttendanceList.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching meeting guest attendances:', error);
-        meetingGuestAttendanceList.value = [];
-    }
-};
+const time = (v) => (v ? dayjs(`2000-01-01 ${v}`).format("h:mm A") : "");
+const whenText = computed(() => {
+  const m = meeting.value;
+  if (!m) return "";
+  const date = m.date ? formatDate(m.date) : t("meetings.noDate");
+  return m.start_time ? `${date} · ${time(m.start_time)}` : date;
+});
 
-// Reset form
-const resetForm = () => {
-    guest_name.value = '';
-    about_guest.value = '';
-    attendance_type_id.value = "";
-    date.value = '';
-    time.value = '';
-    note.value = '';
-    is_active.value = '1';
-    selectedMeetingAttendanceId.value = null;
-    isEditMode.value = false;
-};
-
-// Open modal
-const openModal = () => {
-    resetForm();
-    isModalOpen.value = true;
-};
-
-// Close modal
-const closeModal = () => {
-    resetForm();
-    isModalOpen.value = false;
-};
-
-// Add or update guest attendance
-const submitForm = async () => {
-    const payload = {
-        meeting_id: meetingId.value,
-        guest_name: guest_name.value,
-        about_guest: about_guest.value,
-        attendance_type_id: attendance_type_id.value,
-        date: date.value,
-        time: time.value,
-        note: note.value,
-        is_active: is_active.value
-    };
-    try {
-        let apiUrl = '/api/meeting-guest-attendances';
-        let method = 'POST';
-        if (isEditMode.value && selectedMeetingAttendanceId.value) {
-            apiUrl = `/api/meeting-guest-attendances/${selectedMeetingAttendanceId.value}`;
-            method = 'PUT';
-        }
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this meeting guest attendance?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, save it!',
-            cancelButtonText: 'No, cancel!'
-        });
-
-        if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(apiUrl, payload, method);
-
-            if (response.status) {
-                await Swal.fire('Success!', `Meeting guest attendance ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
-                getMeetingGuestAttendanceList();
-                closeModal();
-            } else {
-                Swal.fire('Failed!', 'Failed to save meeting guest attendance.', 'error');
-            }
-        }
-    } catch (error) {
-        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} meeting guest attendance:`, error);
-        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} meeting guest attendance.`, 'error');
-    }
-};
-
-// Edit guest attendance
-const editMeetingAttendance = (attendance) => {
-    guest_name.value = attendance.guest_name;
-    about_guest.value = attendance.about_guest;
-    attendance_type_id.value = attendance.attendance_type_id;
-    date.value = attendance.date;
-    time.value = attendance.time;
-    note.value = attendance.note;
-    is_active.value = attendance.is_active;
-    selectedMeetingAttendanceId.value = attendance.id;
-    isEditMode.value = true;
-    isModalOpen.value = true;
-};
-
-// Delete guest attendance
-const deleteMeetingAttendance = async (id) => {
-    try {
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'Do you want to delete this meeting guest attendance?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, cancel!'
-        });
-
-        if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(`/api/meeting-guest-attendances/${id}`, {}, 'DELETE');
-            if (response.status) {
-                await Swal.fire('Deleted!', 'Meeting guest attendance has been deleted.', 'success');
-                getMeetingGuestAttendanceList();
-            } else {
-                Swal.fire('Failed!', 'Failed to delete meeting guest attendance.', 'error');
-            }
-        }
-    } catch (error) {
-        console.error('Error deleting meeting guest attendance:', error);
-        Swal.fire('Error!', 'Failed to delete meeting guest attendance.', 'error');
-    }
-};
-
-// On mount
-onMounted(() => {
-    fetchMeetingDetails();
-    getAttendanceTypeList();
-    getMeetingGuestAttendanceList();
+onMounted(async () => {
+  await load();
+  loading.value = false;
 });
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-11/12">
-        <!-- Meeting Info -->
-        <section class="mb-5">
-            <div class="bg-white shadow rounded-lg p-4 border">
-                <h5 class="text-md  text-gray-800">
-                    Name: {{ meetingDetails.name }} - Date: {{ meetingDetails.date }} - Time:
-                    {{ meetingDetails.time }}
-                </h5>
+  <div class="mx-auto flex max-w-4xl flex-col gap-6">
+    <AzPageHeader :title="t('guests.title')" :description="meeting ? `${meeting.name} — ${whenText}` : ''"
+      :back="{ name: 'view-meeting', params: { id: meetingId } }" :back-label="meeting?.name || t('meetings.title')">
+      <AzButton variant="secondary" :to="{ name: 'meeting-attendances', params: { id: meetingId } }">
+        <template #icon><Users class="h-[18px] w-[18px]" /></template>
+        {{ t('attendance.title') }}
+      </AzButton>
+      <AzButton v-if="!loading && types.length" @click="openForm()">
+        <template #icon><UserPlus class="h-[18px] w-[18px]" /></template>
+        {{ t('guests.add') }}
+      </AzButton>
+    </AzPageHeader>
+
+    <AzSkeleton v-if="loading" :lines="5" height="3.5rem" />
+
+    <AzCard v-else-if="!types.length">
+      <AzEmptyState :title="t('attendance.noTypesTitle')" :description="t('attendance.noTypesText')" />
+    </AzCard>
+
+    <AzCard v-else-if="!guests.length">
+      <AzEmptyState :title="t('guests.emptyTitle')" :description="t('guests.emptyText')">
+        <AzButton @click="openForm()">
+          <template #icon><UserPlus class="h-[18px] w-[18px]" /></template>
+          {{ t('guests.add') }}
+        </AzButton>
+      </AzEmptyState>
+    </AzCard>
+
+    <AzCard v-else :title="t('guests.count', { n: guests.length })" :padded="false">
+      <ul class="divide-y divide-line">
+        <li v-for="g in guests" :key="g.id" class="flex items-start gap-3 px-5 py-3">
+          <AzAvatar :name="g.guest_name" size="sm" class="mt-0.5" />
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-2">
+              <p class="font-medium text-ink">{{ g.guest_name }}</p>
+              <AzBadge v-if="g.attendance_types_name" tone="neutral">{{ g.attendance_types_name }}</AzBadge>
+              <span v-if="g.time" class="text-sm text-ink-muted">{{ time(g.time) }}</span>
             </div>
-        </section>
+            <p v-if="g.about_guest" class="mt-0.5 whitespace-pre-line text-sm text-ink-2">{{ g.about_guest }}</p>
+            <p v-if="g.note" class="mt-0.5 whitespace-pre-line text-sm text-ink-muted">{{ g.note }}</p>
+          </div>
+          <div class="flex shrink-0 gap-1">
+            <button type="button" class="grid h-10 w-10 place-items-center rounded-full text-ink-muted hover:bg-surface-2 hover:text-ink"
+              :aria-label="t('guests.edit', { name: g.guest_name })" @click="openForm(g)">
+              <Pencil class="h-4 w-4" aria-hidden="true" />
+            </button>
+            <button type="button" class="grid h-10 w-10 place-items-center rounded-full text-ink-muted hover:bg-surface-2 hover:text-danger"
+              :aria-label="t('guests.delete', { name: g.guest_name })" @click="remove(g)">
+              <Trash2 class="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
+        </li>
+      </ul>
+    </AzCard>
 
-        <!-- Guest Attendance List -->
-        <section class="bg-white shadow-md rounded-xl border">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b gap-3">
-
-                <!-- Title -->
-                <h5 class="text-md font-semibold text-gray-800">
-                    Guest Attendance List
-                </h5>
-
-                <!-- Actions -->
-                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    <button @click="openModal"
-                        class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-500 transition">
-                        Add Guest Attendance
-                    </button>
-                    <button @click="router.push({ name: 'index-meeting' })"
-                        class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition">
-                        Back to Meeting List
-                    </button>
-                </div>
-            </div>
-
-            <!-- Table -->
-            <div class="overflow-x-auto p-4">
-                <table class="min-w-full table-auto border-collapse border border-gray-200 text-sm text-left">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="border px-4 py-2">SL</th>
-                            <th class="py-2 px-4 border">Guest Name</th>
-                            <th class="py-2 px-4 border">About Guest</th>
-                            <th class="py-2 px-4 border">Attendance Type</th>
-                            <th class="py-2 px-4 border">Attendance Time</th>
-                            <th class="py-2 px-4 border">Active</th>
-                            <th class="py-2 px-4 border">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(attendance, index) in meetingGuestAttendanceList" :key="attendance.id"
-                            class="hover:bg-gray-50 transition">
-                            <td class="py-2 px-4 border">{{ index + 1 }}</td>
-                            <td class="py-2 px-4 border">{{ attendance.guest_name }}</td>
-                            <td class="py-2 px-4 border">{{ attendance.about_guest }}</td>
-                            <td class="py-2 px-4 border">
-                                {{ attendance.attendance_types_name }}
-                            </td>
-                            <td class="py-2 px-4 border">{{ attendance.time }}</td>
-                            <td class="py-2 px-4 border">
-                                <span :class="Number(attendance.is_active) === 0
-                                        ? 'text-red-500 font-semibold'
-                                        : 'text-green-600 font-semibold'
-                                    ">
-                                    {{ Number(attendance.is_active) === 0 ? "No" : "Yes" }}
-                                </span>
-                            </td>
-                            <td class="py-2 px-4 border flex gap-2">
-                                <button @click="editMeetingAttendance(attendance)"
-                                    class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
-                                    Edit
-                                </button>
-                                <button @click="deleteMeetingAttendance(attendance.id)"
-                                    class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
-                                    Delete
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Modal -->
-        <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl p-6 overflow-y-auto max-h-[90vh] border">
-                <div class="flex justify-between items-center border-b pb-3 mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">
-                        {{ isEditMode ? "Edit" : "Add" }} Meeting Guest Attendance
-                    </h3>
-                    <button @click="closeModal" class="text-gray-500 hover:text-gray-700">
-                        ✖
-                    </button>
-                </div>
-
-                <form @submit.prevent="submitForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Guest Name -->
-                    <div>
-                        <label for="guest_name" class="block text-gray-700 font-semibold mb-1">Guest Name</label>
-                        <input v-model="guest_name" type="text"
-                            class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring focus:ring-green-200" />
-                    </div>
-
-                    <!-- About Guest -->
-                    <div>
-                        <label for="about_guest" class="block text-gray-700 font-semibold mb-1">About Guest</label>
-                        <input v-model="about_guest" type="text"
-                            class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring focus:ring-green-200" />
-                    </div>
-
-                    <!-- Attendance Type -->
-                    <div>
-                        <label for="attendance_type_id" class="block text-gray-700 font-semibold mb-1">Type</label>
-                        <select v-model="attendance_type_id" id="attendance_type_id"
-                            class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring focus:ring-green-200">
-                            <option value="">Select Attendance Type</option>
-                            <option v-for="attendanceType in attendanceTypeList" :key="attendanceType.id"
-                                :value="attendanceType.id">
-                                {{ attendanceType.name }}
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- Date -->
-                    <div>
-                        <label for="date" class="block text-gray-700 font-semibold mb-1">Date</label>
-                        <input v-model="date" type="date"
-                            class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring focus:ring-green-200" />
-                    </div>
-
-                    <!-- Time -->
-                    <div>
-                        <label for="time" class="block text-gray-700 font-semibold mb-1">Time</label>
-                        <input v-model="time" type="time"
-                            class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring focus:ring-green-200" />
-                    </div>
-
-                    <!-- Note -->
-                    <div>
-                        <label for="note" class="block text-gray-700 font-semibold mb-1">Note</label>
-                        <input v-model="note" type="text"
-                            class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring focus:ring-green-200" />
-                    </div>
-
-                    <!-- Active -->
-                    <div>
-                        <label for="is_active" class="block text-gray-700 font-semibold mb-1">Active</label>
-                        <select v-model="is_active" id="is_active"
-                            class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring focus:ring-green-200">
-                            <option value="">Select</option>
-                            <option value="1">Yes</option>
-                            <option value="0">No</option>
-                        </select>
-                    </div>
-
-                    <!-- Buttons -->
-                    <div class="col-span-full flex justify-end gap-3 mt-4">
-                        <button type="submit"
-                            class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-500 transition">
-                            {{ isEditMode ? "Update" : "Add" }}
-                        </button>
-                        <button type="button" @click="resetForm"
-                            class="bg-yellow-600 text-white px-4 py-2 rounded-lg shadow hover:bg-yellow-700 transition">
-                            Reset
-                        </button>
-                        <button type="button" @click="closeModal"
-                            class="bg-gray-500 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-600 transition">
-                            Close
-                        </button>
-                    </div>
-                </form>
-            </div>
+    <AzModal v-model:open="open" :title="editing ? t('guests.editTitle') : t('guests.add')">
+      <form id="guest-form" class="flex flex-col gap-5" novalidate @submit.prevent="save">
+        <AzInput v-model="form.guest_name" :label="t('guests.name')" :error="errors.guest_name" required maxlength="255" autocomplete="off" />
+        <AzTextarea v-model="form.about_guest" :label="t('guests.about')" :help="t('guests.aboutHelp')" rows="2" />
+        <div class="grid gap-5 sm:grid-cols-2">
+          <AzSelect v-model="form.attendance_type_id" :label="t('guests.status')" :options="typeOptions" :error="errors.attendance_type_id" required />
+          <AzInput v-model="form.time" type="time" :label="t('guests.arrived')" />
         </div>
-    </div>
+        <AzTextarea v-model="form.note" :label="t('meetingView.note')" rows="2" />
+      </form>
+      <template #footer>
+        <AzButton variant="quiet" @click="open = false">{{ t('common.cancel') }}</AzButton>
+        <AzButton type="submit" form="guest-form" :loading="saving">{{ t('common.save') }}</AzButton>
+      </template>
+    </AzModal>
+  </div>
 </template>
