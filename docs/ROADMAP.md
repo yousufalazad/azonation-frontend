@@ -43,15 +43,18 @@ Design system: **Azonation Calm** (see each repo's CLAUDE.md).
 | 1 | Accounts & Access | Sign-in, sign-up, Google login, roles & permissions, language, theme |
 | 2 | Organisation | Profile, logo, administrator, founders, history, recognition, success stories |
 | 3 | Member area | Member home, my organisations, profile, My family (member-owned, private by default) |
-| 4 | Membership | Members, unlinked/former, membership types, renewals, "paid until", shared family numbers |
-| 5 | Committees | Committees, members, role titles |
+| 4 | Membership | Members, unlinked/former, membership types, renewals, "paid until", shared family numbers; **online membership application** (organisation's own join fields, photo/documents, approve/reject → creates the member and, with Collections, the fee request); **basic digital membership card** (photo, number, type, valid until, QR code to verify; card designs in higher plans, printed cards via Shop) |
+| 5 | Committees | Committees, members, role titles; **committee handover** after an election (access passes to new officers, old officers' access ends, handover checklist) |
 | 6 | Meetings | Meetings, attendance, guests, minutes |
 | 7 | Documents | Office documents (limited by storage) |
-| 8 | Notifications | In-app, email, reminders; **email to members** (all, a membership type, a committee, fees overdue, chosen people), replies to the organisation, send history, **monthly email allowance per plan** (extra packs as add-on) |
+| 8 | Notifications | In-app, email, reminders; **email to members** (all, a membership type, a committee, fees overdue, chosen people), replies to the organisation, send history, **monthly email allowance per plan** (extra packs as add-on); **noticeboard** (one-way announcements in the member area, no comments) |
 | 9 | Reports (basic) | Summary reports; advanced reports in higher plans |
 | 10 | Support (basic) | Help centre, tickets, contact. Priority support = flag on the top plan |
 | 11 | Billing | Plans (bands), regional prices, entitlements, add-ons, invoices, receipts, storage limits, referral credits |
 | 12 | Super Admin | Platform settings, customers, billing admin, support inbox, roles, module switches |
+| 13 | Tasks | Action points from minutes become tasks with a person and due date; automatic reminders |
+| 14 | Calendar | One calendar of meetings, events, deadlines, renewals; add to Google/Outlook (iCal) |
+| 15 | Audit log & data tools | Who changed what and when; member data export and deletion requests (UK GDPR) |
 
 ### Optional modules (per organisation; in a plan or bought as an add-on)
 
@@ -71,12 +74,36 @@ Design system: **Azonation Calm** (see each repo's CLAUDE.md).
 | 12 | Ideas board | Anyone posts community project/event ideas with impact and budget; organisations adopt them into Projects | Free |
 | 13 | Community (small) | Public organisation pages, **organisation directory**, follow an organisation, public event listing. **No social feed.** | Free |
 | 14 | Newsletters | Designed issues with the organisation's logo, sections, content pulled from Azonation (events, projects, new members), schedule, drafts, test send, non-member subscribers with sign-up form, open/click counts, public archive (can show on Web) | Included from middle/top plan or add-on; uses the email allowance |
+| 15 | Forms & surveys | Build a form (sign-ups, feedback, RSVP, applications), share a link, see answers as a table or chart | In plans or add-on |
+| 16 | Certificates | Automatic PDF certificates (membership, event participation, volunteering, appreciation) with a QR code to verify | In plans; can come with Events/Projects |
+| 17 | Approvals & e-signatures | Committee members approve or sign minutes, resolutions, expense claims in the app; record of who signed and when | In higher plans or add-on |
 
 ### Azonation's own
 
 | Module | Summary |
 |---|---|
 | Shop | Only Azonation (Super Admin) sells digital or physical products (ID cards, badges, certificates, templates), paid into Azonation's account. Existing shop to be reshaped. |
+
+### Platform features (not modules)
+
+**Phone app (PWA):** install Azonation on a phone like an app, push notifications, faster loading.
+
+### Later ideas (not scheduled yet)
+
+| Idea | Fits in |
+|---|---|
+| QR check-in at meetings and events (attendance marks itself) | Meetings / Events |
+| Event tickets with QR codes | Events + Collections |
+| Expense claims (photo of receipt → treasurer approves → Finance records) | Finance |
+| Donor and fundraising (donor records, receipts, campaigns, UK Gift Aid) | New module: Fundraising |
+| Volunteering (shifts, sign-ups, hours → Certificates) | New module (with Projects, Ideas) |
+| Room and equipment booking | Assets |
+| Branches and chapters (national organisation with district branches) | New module, large organisations |
+| Birthday and anniversary greetings | Secretarial automation |
+| Integrations: Zoom/Meet links, Xero/QuickBooks export, calendar sync, API for top plans | Platform |
+| AI helper (draft minutes, summarise, translate English ↔ Bangla, answer members' questions) | New paid module, AI credits |
+
+Keep optional modules to about 18: fold small features into existing modules rather than adding more.
 
 ### Shared building blocks (never sold)
 
@@ -178,6 +205,9 @@ directory is made public); **no bulk export by members**; former members disappe
 | 7 | Voting module | todo |
 | 8 | Directory module (member + business) and organisation directory in Community | todo |
 | 8a | Email to members (core) with allowance + sending service; then Newsletters module | todo |
+| 8b | Core additions: online membership application, basic digital card, tasks, calendar, committee handover, noticeboard, audit log & data tools | todo |
+| 8c | Phone app (PWA) with push notifications | todo |
+| 8d | Forms & surveys, Certificates, Approvals & e-signatures modules | todo |
 | 9 | Secretarial automation | todo |
 | 10 | Collections (Stripe Connect + bring-your-own-gateway) — after legal check | todo |
 | 11 | Ideas board | todo |
@@ -209,3 +239,4 @@ plans, renewal cycles…) — seeders or data export still to be set up.
 | 2026-09-30 | No stored procedures |
 | 2026-09-30 | Directory module: member + business directory; organisation directory in Community |
 | 2026-09-30 | Email to members = core feature with monthly allowance; Newsletters = optional module; SMS/WhatsApp later as credits |
+| 2026-10-01 | Paperless additions: core (membership application, digital card, tasks, calendar, committee handover, noticeboard, audit log), modules (Forms & surveys, Certificates, Approvals & e-signatures), PWA; later-ideas list kept |
