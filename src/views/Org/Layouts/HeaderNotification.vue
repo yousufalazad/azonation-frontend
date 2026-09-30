@@ -1,255 +1,155 @@
+<!-- The bell in the header: unread count, the latest notifications, mark all read, and a link to all.
+     Shared by organisations, members and the Super Admin. -->
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { authStore } from '@/store/authStore';
-import { useAccountRoutes } from '@/composables/useAccountRoutes';
-import { Bell } from 'lucide-vue-next';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import { useAccountRoutes } from "@/composables/useAccountRoutes";
+import { Bell } from "lucide-vue-next";
 
 const auth = authStore;
 const route = useRoute();
 const router = useRouter();
-
-// Organisations, members and the Super Admin each have their own notifications page
+const { t, locale } = useI18n();
 const accountRoutes = useAccountRoutes();
+
 const MAX_ITEMS = 10;
-
 const notifications = ref([]);
-const isDropdownOpen = ref(false);
-const activeTab = ref('all'); // 'all' | 'unread'
+const open = ref(false);
+const tab = ref("all");
+const panel = ref(null);
+const button = ref(null);
 
-const dropdownRef = ref(null);
-const buttonRef = ref(null);
-
-const unreadCount = computed(() => notifications.value.filter(n => n.read_at === null).length);
-const badgeText = computed(() => (unreadCount.value > 99 ? '99+' : unreadCount.value));
-
-const titleOf = (n) => n?.data?.title || n?.title || n?.data?.data || n?.message || 'Notification';
-const messageOf = (n) => n?.data?.data || n?.data?.message || n?.message || '';
+const unreadCount = computed(() => notifications.value.filter((n) => n.read_at === null).length);
+const badge = computed(() => (unreadCount.value > 99 ? "99+" : unreadCount.value));
+const titleOf = (n) => n?.data?.title || n?.title || n?.data?.message || t("notificationsPage.untitled");
+const messageOf = (n) => {
+  const m = n?.data?.message || n?.data?.data || n?.message || "";
+  return typeof m === "string" && m !== titleOf(n) ? m : "";
+};
+const tabOptions = computed(() => [{ value: "all", label: t("headerNotify.all") }, { value: "unread", label: t("headerNotify.unread", { n: unreadCount.value }) }]);
 
 const timeAgo = (value) => {
-  if (!value) return '';
+  if (!value) return "";
   const diff = Math.floor((Date.now() - new Date(value).getTime()) / 1000);
-  if (diff < 60) return 'just now';
-  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} h ago`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)} d ago`;
-  return new Date(value).toLocaleDateString();
+  if (diff < 60) return t("headerNotify.justNow");
+  if (diff < 3600) return t("headerNotify.minutes", { n: Math.floor(diff / 60) });
+  if (diff < 86400) return t("headerNotify.hours", { n: Math.floor(diff / 3600) });
+  if (diff < 604800) return t("headerNotify.days", { n: Math.floor(diff / 86400) });
+  return new Date(value).toLocaleDateString(locale.value === "bn" ? "bn-BD" : "en-GB");
 };
 
-// Unread first, then newest first; filter for "Unread" tab; limit to MAX_ITEMS
-const displayedNotifications = computed(() => {
-  const list = [...notifications.value].sort((a, b) => {
-    const aUnread = a.read_at === null ? 0 : 1;
-    const bUnread = b.read_at === null ? 0 : 1;
-    if (aUnread !== bUnread) return aUnread - bUnread;
-    const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
-    const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
-    return bTime - aTime;
-  });
-
-  const filtered = activeTab.value === 'unread' ? list.filter(n => n.read_at === null) : list;
-  return filtered.slice(0, MAX_ITEMS);
+// Unread first, then newest
+const shown = computed(() => {
+  const list = [...notifications.value].sort((a, b) => (a.read_at === null ? 0 : 1) - (b.read_at === null ? 0 : 1)
+    || new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  return (tab.value === "unread" ? list.filter((n) => n.read_at === null) : list).slice(0, MAX_ITEMS);
 });
 
-const fetchNotifications = async () => {
-  try {
-    const response = await auth.fetchProtectedApi(`/api/notifications/get-all`, {}, 'GET');
-    notifications.value = Array.isArray(response?.data) ? response.data : [];
-  } catch (error) {
-    console.error('Error fetching notifications:', error);
+async function load() {
+  const res = await auth.fetchProtectedApi("/api/notifications/get-all", {}, "GET");
+  notifications.value = Array.isArray(res?.data) ? res.data : [];
+}
+async function markAll() {
+  const res = await auth.fetchProtectedApi("/api/notifications/mark-all-as-read", {}, "POST");
+  if (res?.status === true) {
+    const now = new Date().toISOString();
+    notifications.value = notifications.value.map((n) => ({ ...n, read_at: n.read_at || now }));
+  }
+}
+function markOne(id) {
+  notifications.value = notifications.value.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n));
+  auth.fetchProtectedApi(`/api/notifications/mark-as-read/${id}`, {}, "POST");
+}
+
+// Go to what the notification is about when it has an in-app link, otherwise to the notifications page
+function openItem(n) {
+  if (!n.read_at) markOne(n.id);
+  open.value = false;
+  const url = n?.data?.url || n?.data?.link;
+  if (typeof url === "string" && url.startsWith("/")) router.push(url);
+  else router.push({ name: accountRoutes.value.notifications, query: { id: n.id } });
+}
+
+function toggle() {
+  open.value = !open.value;
+  if (open.value) load();
+}
+const onOutside = (e) => {
+  if (open.value && !panel.value?.contains(e.target) && !button.value?.contains(e.target)) open.value = false;
+};
+const onKey = (e) => {
+  if (e.key === "Escape" && open.value) {
+    open.value = false;
+    button.value?.focus();
   }
 };
 
-const markAllAsRead = async () => {
-  try {
-    const response = await auth.fetchProtectedApi(`/api/notifications/mark-all-as-read`, {}, 'POST');
-    if (response?.status === true) {
-      const now = new Date().toISOString();
-      notifications.value = notifications.value.map(n => ({ ...n, read_at: n.read_at || now }));
-    }
-  } catch (error) {
-    console.error('Error marking all as read:', error);
-  }
-};
-
-const markAsRead = async (notificationId) => {
-  try {
-    const response = await auth.fetchProtectedApi(`/api/notifications/mark-as-read/${notificationId}`, {}, 'POST');
-    if (response?.status === true) {
-      notifications.value = notifications.value.map(n =>
-        n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n
-      );
-    }
-  } catch (error) {
-    console.error('Error marking as read:', error);
-  }
-};
-
-const toggleDropdown = () => {
-  isDropdownOpen.value = !isDropdownOpen.value;
-  if (isDropdownOpen.value) fetchNotifications(); // খুললেই fresh data
-};
-
-const closeDropdown = () => { isDropdownOpen.value = false; };
-
-// Click a notification → mark read + go to details page (right panel)
-const openNotification = (n) => {
-  if (!n.read_at) markAsRead(n.id);
-  closeDropdown();
-  router.push({ name: accountRoutes.value.notifications, query: { id: n.id } });
-};
-
-const handleClickOutside = (event) => {
-  if (
-    dropdownRef.value && !dropdownRef.value.contains(event.target) &&
-    buttonRef.value && !buttonRef.value.contains(event.target)
-  ) {
-    closeDropdown();
-  }
-};
-
-// পেজ বদলালে dropdown বন্ধ + badge sync
-watch(() => route.fullPath, () => {
-  closeDropdown();
-  fetchNotifications();
+// Keep the count fresh when moving between pages
+watch(() => route.name, () => {
+  open.value = false;
+  load();
 });
-
 onMounted(() => {
-  fetchNotifications();
-  document.addEventListener('mousedown', handleClickOutside);
+  load();
+  document.addEventListener("mousedown", onOutside);
+  document.addEventListener("keydown", onKey);
 });
 onBeforeUnmount(() => {
-  document.removeEventListener('mousedown', handleClickOutside);
+  document.removeEventListener("mousedown", onOutside);
+  document.removeEventListener("keydown", onKey);
 });
 </script>
 
 <template>
   <div class="relative">
-    <!-- Notification Button -->
-    <button
-      ref="buttonRef"
-      @click="toggleDropdown"
-      class="relative text-gray-600 hover:text-blue-700 focus:outline-none p-1"
-      aria-label="Notifications"
-    >
-      <Bell class="w-6 h-6 mt-1" />
-      <span
-        v-if="unreadCount > 0"
-        class="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 bg-red-500 text-white text-[10px] min-w-[1.1rem] h-[1.1rem] px-[3px]
-               rounded-full flex items-center justify-center font-medium ring-2 ring-white pointer-events-none"
-      >
-        {{ badgeText }}
-      </span>
+    <button ref="button" type="button" class="relative flex h-10 w-10 items-center justify-center rounded-full text-ink-2 hover:bg-surface-2 hover:text-ink"
+      :aria-label="unreadCount ? t('headerNotify.buttonUnread', { n: unreadCount }) : t('notificationsPage.title')" :aria-expanded="open" @click="toggle">
+      <Bell class="h-6 w-6" aria-hidden="true" />
+      <span v-if="unreadCount" class="pointer-events-none absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-danger px-1 text-[10px] font-semibold text-white ring-2 ring-surface">{{ badge }}</span>
     </button>
 
-    <!-- Mobile backdrop -->
     <transition name="fade">
-      <div v-if="isDropdownOpen" class="fixed inset-0 z-40 bg-black/20 sm:hidden" @click="closeDropdown" />
+      <div v-if="open" class="fixed inset-0 z-40 bg-overlay/30 sm:hidden" @click="open = false" />
     </transition>
 
-    <!-- Dropdown -->
     <transition name="fade">
-      <div
-        v-if="isDropdownOpen"
-        ref="dropdownRef"
-        class="fixed left-4 right-4 top-16 z-50 max-h-[75vh] flex flex-col bg-white shadow-lg rounded-xl
-               sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-96 sm:max-h-[28rem]"
-      >
-        <!-- Header -->
-        <div class="px-4 pt-3 pb-2 border-b shrink-0">
+      <div v-if="open" ref="panel" role="dialog" :aria-label="t('notificationsPage.title')"
+        class="fixed left-4 right-4 top-16 z-50 flex max-h-[75vh] flex-col rounded-card border border-line bg-surface shadow-pop sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-96 sm:max-h-[28rem]">
+        <div class="shrink-0 border-b border-line px-4 pb-3 pt-3">
           <div class="flex items-center justify-between gap-2">
-            <span class="font-semibold text-sm">Notifications</span>
-            <button
-              v-if="unreadCount > 0"
-              @click="markAllAsRead"
-              class="text-xs text-blue-600 hover:underline whitespace-nowrap"
-            >
-              Mark all as read
-            </button>
+            <span class="font-semibold text-ink">{{ t('notificationsPage.title') }}</span>
+            <button v-if="unreadCount" type="button" class="text-sm font-medium text-primary hover:underline" @click="markAll">{{ t('headerNotify.markAll') }}</button>
           </div>
-
-          <!-- Tabs -->
-          <div class="mt-3 flex gap-2">
-            <button
-              class="px-3 py-1.5 rounded-full text-xs"
-              :class="activeTab === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-              @click="activeTab = 'all'"
-            >
-              All
-            </button>
-            <button
-              class="px-3 py-1.5 rounded-full text-xs inline-flex items-center"
-              :class="activeTab === 'unread' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-              @click="activeTab = 'unread'"
-            >
-              Unread
-              <span
-                v-if="unreadCount"
-                class="ml-1.5 min-w-[1rem] h-4 px-1 text-[10px] rounded-full inline-flex items-center justify-center"
-                :class="activeTab === 'unread' ? 'bg-white/25 text-white' : 'bg-blue-100 text-blue-700'"
-              >
-                {{ badgeText }}
-              </span>
-            </button>
-          </div>
+          <div class="mt-3"><AzSegmented v-model="tab" :label="t('notificationsPage.title')" :options="tabOptions" /></div>
         </div>
 
-        <!-- List (scrollable) -->
         <div class="flex-1 overflow-y-auto">
-          <div v-if="displayedNotifications.length === 0" class="p-4 text-sm text-gray-500 italic">
-            No notifications
-          </div>
-
-          <ul v-else class="p-2 space-y-1">
-            <li v-for="n in displayedNotifications" :key="n.id">
-              <button
-                type="button"
-                @click="openNotification(n)"
-                class="w-full text-left flex items-start gap-3 px-3 py-2 rounded-lg hover:bg-gray-50"
-              >
-                <div class="w-9 h-9 rounded-full bg-gray-200 overflow-hidden shrink-0 flex items-center justify-center">
-                  <img v-if="n.data?.avatar" :src="n.data.avatar" class="w-full h-full object-cover" alt="" />
-                  <Bell v-else class="w-4 h-4 text-gray-500" />
-                </div>
-
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center">
-                    <span
-                      class="text-sm truncate"
-                      :class="n.read_at ? 'font-medium text-gray-700' : 'font-semibold text-gray-900'"
-                    >
-                      {{ titleOf(n) }}
-                    </span>
-                    <span v-if="!n.read_at" class="ml-auto pl-2 shrink-0" aria-hidden="true">
-                      <span class="block w-2.5 h-2.5 rounded-full bg-blue-600" />
-                    </span>
-                  </div>
-
-                  <p class="text-[13px] text-gray-600 mt-0.5 line-clamp-2">{{ messageOf(n) }}</p>
-
-                  <p
-                    v-if="n.created_at"
-                    class="text-[11px] mt-1"
-                    :class="n.read_at ? 'text-gray-400' : 'text-blue-600 font-medium'"
-                  >
-                    {{ timeAgo(n.created_at) }}
-                  </p>
-                </div>
+          <p v-if="!shown.length" class="p-5 text-center text-sm text-ink-muted">{{ tab === 'unread' ? t('headerNotify.noneUnread') : t('headerNotify.none') }}</p>
+          <ul v-else class="flex flex-col gap-0.5 p-2">
+            <li v-for="n in shown" :key="n.id">
+              <button type="button" class="flex w-full items-start gap-3 rounded-control px-3 py-2 text-left hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none" @click="openItem(n)">
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-soft text-primary-soft-ink">
+                  <img v-if="n.data?.avatar" :src="n.data.avatar" class="h-full w-full object-cover" alt="" />
+                  <Bell v-else class="h-4 w-4" aria-hidden="true" />
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="flex items-center gap-2">
+                    <span class="truncate text-sm" :class="n.read_at ? 'text-ink-2' : 'font-semibold text-ink'">{{ titleOf(n) }}</span>
+                    <span v-if="!n.read_at" class="ml-auto h-2.5 w-2.5 shrink-0 rounded-full bg-primary" :aria-label="t('headerNotify.new')" />
+                  </span>
+                  <span v-if="messageOf(n)" class="line-clamp-2 block text-[13px] text-ink-muted">{{ messageOf(n) }}</span>
+                  <span class="mt-0.5 block text-[11px]" :class="n.read_at ? 'text-ink-muted' : 'font-medium text-primary'">{{ timeAgo(n.created_at) }}</span>
+                </span>
               </button>
             </li>
           </ul>
         </div>
 
-        <!-- Footer: See all -->
-        <div class="border-t shrink-0">
-          <router-link
-            :to="{ name: accountRoutes.notifications }"
-            @click="closeDropdown"
-            class="block text-center text-sm text-blue-600 hover:bg-gray-50 py-2.5 rounded-b-xl"
-          >
-            See all notifications
-          </router-link>
-        </div>
+        <RouterLink :to="{ name: accountRoutes.notifications }" class="block shrink-0 rounded-b-card border-t border-line py-2.5 text-center text-sm font-medium text-primary hover:bg-surface-2" @click="open = false">
+          {{ t('headerNotify.seeAll') }}
+        </RouterLink>
       </div>
     </transition>
   </div>
@@ -258,7 +158,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.15s ease;
 }
 .fade-enter-from,
 .fade-leave-to {

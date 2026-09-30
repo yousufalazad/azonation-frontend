@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router';
 import { authStore } from '../../../store/authStore';
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
 import dayjs from 'dayjs';
-import Notification from './HeaderNotification.vue';
+import Notification from '@/views/Org/Layouts/HeaderNotification.vue';
 
 const emit = defineEmits(['toggle-mobile-sidebar', 'toggle-sidebar', 'close-mobile-sidebar']); // ⬅️ allow explicit close
 

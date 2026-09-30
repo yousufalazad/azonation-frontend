@@ -1,6 +1,5 @@
 const IndividualDashboardLayout = () => import("../views/Individual/Layouts/Layout.vue");
 const IndividualDashboardIndex = () => import("../views/Individual/Layouts/Dashboard/Index.vue");
-const HeaderNotifications = () => import("../views/Individual/Layouts/HeaderNotification.vue");
 // Account pages shared with organisations
 const Notifications = () => import("../views/Org/Notification/Index.vue");
 const NotificationSettings = () => import("../views/Org/Notification/UserNotifications.vue");
@@ -34,12 +33,7 @@ const individualRoutes = [
         component: IndividualDashboardIndex,
         meta: { requiresAuth: true },
       },
-      {
-        path: "header-notifications",
-        name: "header-notifications",
-        component: HeaderNotifications,
-        meta: { requiresAuth: true },
-      },
+      { path: "header-notifications", name: "header-notifications", redirect: { name: "individual-notifications" } },
       {
         path: "individual-notifications",
         name: "individual-notifications",
