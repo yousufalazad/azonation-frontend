@@ -2458,4 +2458,12 @@ export default {
     text: "Your account is not allowed to open this. If you think it should be, ask your organisation's administrator.",
     back: "Go back",
   },
+  authMessages: {
+    denied: "You do not have permission to do that.",
+    loginFailed: "The email or password is not right. Check them and try again.",
+    logoutTitle: "Log out?",
+    logoutText: "You will need your email and password to log in again.",
+    loggedOut: "You have logged out",
+    switchFailed: "Could not switch organisation. Please try again.",
+  },
 };
