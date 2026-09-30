@@ -24,16 +24,12 @@ const menu = [
   {
     id: "billing", label: "adminNav.billing", icon: ReceiptIcon,
     children: [
-      { label: "adminNav.packages", to: { name: "super-admin-packages" } },
-      { label: "adminNav.prices", to: { name: "index-price" } },
-      { label: "adminNav.subscriptions", to: { name: "super-admin-subscription-list" } },
-      { label: "adminNav.priceRates", to: { name: "user-price-rate" } },
-      { label: "adminNav.dailyMembers", to: { name: "super-admin-every-day-member-count-and-bill-list" } },
-      { label: "adminNav.dailyStorage", to: { name: "super-admin-everyday-storage-billing-list" } },
       { label: "adminNav.monthlyBills", to: { name: "super-admin-management-and-storage-billing-list" } },
       { label: "adminNav.invoices", to: { name: "super-admin-invoice-list" } },
-      { label: "adminNav.receipts", to: { name: "super-admin-receipt-list" } },
       { label: "adminNav.payments", to: { name: "super-admin-payment-log-list" } },
+      { label: "adminNav.dailyUsage", to: { name: "super-admin-every-day-member-count-and-bill-list" } },
+      { label: "adminNav.packages", to: { name: "super-admin-packages" } },
+      { label: "adminNav.subscriptions", to: { name: "super-admin-subscription-list" } },
     ],
   },
   {
@@ -73,7 +69,9 @@ const pathOf = (to) => {
     return "";
   }
 };
-const isActive = (to) => route.path === pathOf(to) || (to.name === "superadmin-settings" && route.name === "superadmin-lookup");
+const isActive = (to) => route.path === pathOf(to)
+  || (to.name === "superadmin-settings" && route.name === "superadmin-lookup")
+  || (to.name === "super-admin-invoice-list" && route.name === "superadmin-invoice");
 const sectionHasActive = (item) => item.children?.some((c) => isActive(c.to));
 const toggleSection = (id) => {
   openSections.value = openSections.value.includes(id) ? openSections.value.filter((s) => s !== id) : [...openSections.value, id];

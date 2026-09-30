@@ -55,5 +55,5 @@ export const monthName = (date, locale) =>
   date.toLocaleDateString(locale === "bn" ? "bn-BD" : "en-GB", { month: "long", year: "numeric" });
 
 // Payment gateways by their proper names
-const GATEWAYS = { stripe: "Stripe", paypal: "PayPal", sslcommerze: "SSLCommerz", bkash: "bKash", rocket: "Rocket", upi: "UPI", alipay: "Alipay", applepay: "Apple Pay", gpay: "Google Pay" };
+const GATEWAYS = { bank_transfer: "Bank transfer", cash: "Cash", cheque: "Cheque", card: "Card", other: "Other", stripe: "Stripe", paypal: "PayPal", sslcommerze: "SSLCommerz", bkash: "bKash", rocket: "Rocket", upi: "UPI", alipay: "Alipay", applepay: "Apple Pay", gpay: "Google Pay" };
 export const gatewayName = (g) => (g ? GATEWAYS[String(g).toLowerCase()] || String(g).replace(/_/g, " ") : "—");
