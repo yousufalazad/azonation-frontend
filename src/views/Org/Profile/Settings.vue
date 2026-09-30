@@ -8,6 +8,7 @@ import { CurrencyService } from "@/helpers/currency";
 import { setLocale, LANGUAGES } from "@/i18n";
 import { useToast } from "@/composables/useToast";
 import { useConfirm } from "@/composables/useConfirm";
+import { useAccountRoutes } from "@/composables/useAccountRoutes";
 import { Coins, Languages, Globe, ShieldCheck, IdCard, RefreshCw, Bell, UserX, ChevronRight, UserRound, KeyRound } from "lucide-vue-next";
 
 const auth = authStore;
@@ -16,6 +17,7 @@ const toast = useToast();
 const confirm = useConfirm();
 
 const isOrg = computed(() => auth.user?.type === "organisation");
+const routes = useAccountRoutes();
 const loading = ref(true);
 const saving = ref("");
 const currencies = ref([]);
@@ -115,16 +117,18 @@ async function saveCountry() {
 }
 
 const shortcuts = computed(() => (!isOrg.value ? [
-  { to: { name: "individual-profile" }, icon: UserRound, title: t("accountNav.profile"), text: t("orgSettings.profileText") },
-  { to: { name: "individual-security" }, icon: KeyRound, title: t("accountNav.security"), text: t("orgSettings.securityText") },
-  { to: { name: "individual-notification-settings" }, icon: Bell, title: t("accountNav.notifications"), text: t("orgSettings.notificationsText") },
+  { to: { name: routes.value.profile }, icon: UserRound, title: t("accountNav.profile"), text: t("orgSettings.profileText") },
+  { to: { name: routes.value.security }, icon: KeyRound, title: t("accountNav.security"), text: t("orgSettings.securityText") },
+  { to: { name: routes.value.notificationSettings }, icon: Bell, title: t("accountNav.notifications"), text: t("orgSettings.notificationsText") },
 ] : [
   { to: { name: "administrator" }, icon: ShieldCheck, title: t("orgSettings.admins"), text: t("orgSettings.adminsText") },
   { to: { name: "org-membership-type" }, icon: IdCard, title: t("nav.membershipType"), text: t("orgSettings.typesText") },
   { to: { name: "org-membership-renewal-cycle" }, icon: RefreshCw, title: t("nav.renewalCycle"), text: t("orgSettings.cycleText") },
   { to: { name: "user-notifications" }, icon: Bell, title: t("accountNav.notifications"), text: t("orgSettings.notificationsText") },
 ]));
-const supportRoute = computed(() => ({ name: isOrg.value ? "support" : "individual-support", query: { new: "account" } }));
+const supportRoute = computed(() => ({ name: routes.value.support, query: { new: "account" } }));
+// Super Admins close accounts themselves, so they do not see the "contact support" card
+const isSuperAdmin = computed(() => auth.user?.type === "superadmin");
 
 onMounted(async () => {
   await load();
@@ -181,7 +185,7 @@ onMounted(async () => {
         </ul>
       </section>
 
-      <AzCard>
+      <AzCard v-if="!isSuperAdmin">
         <div class="flex items-start gap-3">
           <UserX class="mt-0.5 h-5 w-5 shrink-0 text-ink-muted" aria-hidden="true" />
           <div>

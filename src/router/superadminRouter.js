@@ -1,8 +1,11 @@
 const SuperadminDashboardLayout = () => import("../views/SuperAdmin/Layouts/Layout.vue");
 const SuperadminDashboardIndex = () => import("../views/SuperAdmin/Layouts/Dashboard/Index.vue");
-const SuperAdminProfileUpdate = () => import("../views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue");
+// Account pages shared with organisations and members
+const SuperAdminProfileUpdate = () => import("@/views/Org/Profile/Profile.vue");
+const AccountSecurity = () => import("@/views/Org/Profile/Security.vue");
+const AccountSettings = () => import("@/views/Org/Profile/Settings.vue");
+const NotificationSettings = () => import("@/views/Org/Notification/UserNotifications.vue");
 //SuperAdmin Master Setting
-const UserCountry = () => import("../views/SuperAdmin/MasterSetting/UserCountry.vue");
 //Currency
 //Package
 //Price
@@ -30,7 +33,6 @@ const OrderCreate = () => import("../views/SuperAdmin/E-commerce/order/Create.vu
 const OrderEdit = () => import("../views/SuperAdmin/E-commerce/order/Edit.vue");
 const OrderView = () => import("../views/SuperAdmin/E-commerce/order/View.vue");
 const Roles = () => import("@/views/RolePermission/Roles.vue");
-const Permissions = () => import("@/views/RolePermission/Permissions.vue");
 const UserRoleAssign = () => import("@/views/RolePermission/UserRoleAssign.vue");
 const SupportInbox = () => import("@/views/SuperAdmin/Support/Index.vue");
 const Plans = () => import("@/views/SuperAdmin/Billing/Plans.vue");
@@ -91,13 +93,7 @@ const superadminRoutes = [
         meta: { requiresAuth: true},
         // meta: { requiresAuth: true, permission: "manage_roles" },
       },
-      {
-        path: "permissions",
-        name: "permissions",
-        component: Permissions,
-        meta: { requiresAuth: true},
-        // meta: { requiresAuth: true, permission: "manage_permissions" },
-      },
+      { path: "permissions", name: "permissions", redirect: { name: "roles", query: { tab: "permissions" } } },
       {
         path: "superadmin-user-role-assign",
         name: "superadmin-user-role-assign",
@@ -105,6 +101,9 @@ const superadminRoutes = [
         meta: { requiresAuth: true},
         // meta: { requiresAuth: true, permission: "assign_roles" },
       },
+      { path: "security", name: "superadmin-security", component: AccountSecurity, meta: { requiresAuth: true } },
+      { path: "account-settings", name: "superadmin-account-settings", component: AccountSettings, meta: { requiresAuth: true } },
+      { path: "notification-settings", name: "superadmin-notification-settings", component: NotificationSettings, meta: { requiresAuth: true } },
       {
         path: "super-admin-profile-update",
         name: "super-admin-profile-update",
@@ -115,12 +114,7 @@ const superadminRoutes = [
       { path: "region", name: "region", redirect: { name: "superadmin-lookup", params: { key: "regions" } } },
       { path: "region-currency", name: "region-currency", redirect: { name: "superadmin-lookup", params: { key: "region-currencies" } } },
       { path: "country-region", name: "country-region", redirect: { name: "superadmin-lookup", params: { key: "country-regions" } } },
-      {
-        path: "user-country",
-        name: "user-country",
-        component: UserCountry,
-        meta: { requiresAuth: true },
-      },
+      { path: "user-country", name: "user-country", redirect: { name: "superadmin-lookup", params: { key: "account-countries" } } },
       { path: "dialing-code", name: "dialing-code", redirect: { name: "superadmin-lookup", params: { key: "dialing-codes" } } },
       { path: "conduct-type", name: "conduct-type", redirect: { name: "superadmin-lookup", params: { key: "conduct-types" } } },
       { path: "attendance-type", name: "attendance-type", redirect: { name: "superadmin-lookup", params: { key: "attendance-types" } } },

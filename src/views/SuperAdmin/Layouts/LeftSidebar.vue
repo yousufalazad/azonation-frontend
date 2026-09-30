@@ -48,7 +48,6 @@ const menu = [
     id: "access", label: "adminNav.access", icon: KeyIcon,
     children: [
       { label: "adminNav.roles", to: { name: "roles" } },
-      { label: "adminNav.permissions", to: { name: "permissions" } },
       { label: "adminNav.assignRoles", to: { name: "superadmin-user-role-assign" } },
     ],
   },

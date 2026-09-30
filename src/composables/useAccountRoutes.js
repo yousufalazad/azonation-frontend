@@ -6,6 +6,7 @@ import { authStore } from "@/store/authStore";
 const NAMES = {
   organisation: {
     profile: "profile",
+    security: "security",
     settings: "settings",
     support: "support",
     supportRequest: "support-request",
@@ -14,14 +15,16 @@ const NAMES = {
   },
   superadmin: {
     profile: "super-admin-profile-update",
-    settings: "superadmin-settings",
+    security: "superadmin-security",
+    settings: "superadmin-account-settings",
     support: "superadmin-support",
     supportRequest: "superadmin-support",
     notifications: "superadmin-notifications",
-    notificationSettings: "superadmin-notifications",
+    notificationSettings: "superadmin-notification-settings",
   },
   individual: {
     profile: "individual-profile",
+    security: "individual-security",
     settings: "individual-settings",
     support: "individual-support",
     supportRequest: "individual-support-request",

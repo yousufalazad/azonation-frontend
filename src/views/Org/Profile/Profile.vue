@@ -5,6 +5,7 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { authStore } from "@/store/authStore";
 import { useToast } from "@/composables/useToast";
+import { useAccountRoutes } from "@/composables/useAccountRoutes";
 import { Camera, Pencil } from "lucide-vue-next";
 
 const auth = authStore;
@@ -14,7 +15,8 @@ const toast = useToast();
 const userId = computed(() => auth.user?.id);
 const isOrg = computed(() => auth.user?.type === "organisation");
 const displayName = computed(() => (isOrg.value ? auth.user?.org_name : [auth.user?.first_name, auth.user?.last_name].filter(Boolean).join(" ")) || "");
-const settingsRoute = computed(() => ({ name: isOrg.value ? "settings" : "individual-settings" }));
+const accountRoutes = useAccountRoutes();
+const settingsRoute = computed(() => ({ name: accountRoutes.value.settings }));
 const editing = ref(""); // "name" | "username" | "email" | "phone" | "address" | ""
 const saving = ref(false);
 const errors = reactive({});

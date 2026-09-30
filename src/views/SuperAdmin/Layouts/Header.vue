@@ -53,6 +53,12 @@ onBeforeUnmount(() => document.removeEventListener("mousedown", onOutside));
               <li>
                 <RouterLink :to="{ name: 'super-admin-profile-update' }" class="flex min-h-[44px] items-center px-4 hover:bg-surface-2" @click="open = false">{{ $t('nav.myProfile') }}</RouterLink>
               </li>
+              <li>
+                <RouterLink :to="{ name: 'superadmin-security' }" class="flex min-h-[44px] items-center px-4 hover:bg-surface-2" @click="open = false">{{ $t('accountNav.security') }}</RouterLink>
+              </li>
+              <li>
+                <RouterLink :to="{ name: 'superadmin-account-settings' }" class="flex min-h-[44px] items-center px-4 hover:bg-surface-2" @click="open = false">{{ $t('accountNav.settings') }}</RouterLink>
+              </li>
               <li class="mt-2 border-t border-line pt-2">
                 <button class="flex min-h-[44px] w-full items-center px-4 text-left font-semibold text-primary hover:bg-surface-2" @click="auth.logout()">{{ $t('account.logout') }}</button>
               </li>

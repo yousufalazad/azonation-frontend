@@ -8,7 +8,7 @@
 const active = { key: "is_active", type: "switch", default: 1 };
 
 export const GROUPS = [
-  { key: "places", items: ["countries", "regions", "country-regions", "dialing-codes", "time-zones"] },
+  { key: "places", items: ["countries", "regions", "country-regions", "dialing-codes", "time-zones", "account-countries"] },
   { key: "money", items: ["currencies", "region-currencies", "tax-rates"] },
   { key: "membership", items: ["membership-types", "membership-statuses", "renewal-cycles", "designations"] },
   { key: "activities", items: ["attendance-types", "attendance-statuses", "conduct-types", "privacy"] },
@@ -56,6 +56,16 @@ export const LOOKUPS = {
     ],
     columns: ["name", "dialing_code"],
     sortBy: "name",
+  },
+  "account-countries": {
+    endpoint: "/api/user-countries",
+    fields: [
+      { key: "user_id", type: "select", required: true, options: { endpoint: "/api/get-user-list", value: "id", label: "name" } },
+      { key: "country_id", type: "select", required: true, options: { endpoint: "/api/countries", value: "id", label: "name" } },
+      active,
+    ],
+    columns: ["user_name", "country_name", "user_type"],
+    sortBy: "user_name",
   },
   "time-zones": {
     endpoint: "/api/time-zone-setups",
