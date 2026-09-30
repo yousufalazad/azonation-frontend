@@ -3,7 +3,7 @@
 // attended (the default status, Present, is set for you); change the status only for exceptions
 // such as Late or Absent. Changes are saved together from a bar at the bottom.
 // endpoint: e.g. "/api/meeting-attendances" (with /bulk for saving); parentKey: e.g. "meeting_id".
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { onBeforeRouteLeave } from "vue-router";
 import { useI18n } from "vue-i18n";
 import dayjs from "dayjs";
@@ -142,10 +142,19 @@ onBeforeRouteLeave(async () => {
   });
 });
 
+// Closing or reloading the tab with unsaved marks: let the browser ask first
+const warnUnsaved = (e) => {
+  if (!changed.value.length) return;
+  e.preventDefault();
+  e.returnValue = "";
+};
+
 onMounted(async () => {
+  window.addEventListener("beforeunload", warnUnsaved);
   await load();
   loading.value = false;
 });
+onBeforeUnmount(() => window.removeEventListener("beforeunload", warnUnsaved));
 </script>
 
 <template>

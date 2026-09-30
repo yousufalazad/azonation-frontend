@@ -1646,6 +1646,8 @@ export default {
     noAssets: "You are not holding any items.",
   },
   memberOrgs: {
+    paidUntil: "Membership fee paid until {date}",
+    feeEnded: "Membership fee ended {date}: time to renew",
     title: "My organisations",
     description: "The organisations you belong to, and your membership in each.",
     joinTitle: "Joining another organisation?",

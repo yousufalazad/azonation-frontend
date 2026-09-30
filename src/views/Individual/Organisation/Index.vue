@@ -33,6 +33,8 @@ onMounted(async () => {
   rows.value = res?.status ? res.data || [] : [];
   loading.value = false;
 });
+// Fee dates are compared as YYYY-MM-DD
+const today = new Date().toISOString().slice(0, 10);
 </script>
 
 <template>
@@ -69,6 +71,9 @@ onMounted(async () => {
               <p class="truncate font-semibold text-ink">{{ o.org_name }}</p>
               <p class="truncate text-sm text-ink-muted">
                 {{ [o.membership_type, o.membership_id ? t('memberHome.memberNo', { id: o.membership_id }) : '', o.member_since ? t('memberHome.since', { date: shortDate(o.member_since, locale) }) : ''].filter(Boolean).join(' · ') }}
+              </p>
+              <p v-if="o.paid_until" class="truncate text-sm" :class="o.paid_until < today ? 'text-danger' : 'text-success'">
+                {{ t(o.paid_until < today ? 'memberOrgs.feeEnded' : 'memberOrgs.paidUntil', { date: shortDate(o.paid_until, locale) }) }}
               </p>
             </div>
             <AzBadge v-if="o.membership_status" :tone="statusTone(o.membership_status)">{{ o.membership_status }}</AzBadge>
