@@ -47,7 +47,7 @@ Design system: **Azonation Calm** (see each repo's CLAUDE.md).
 | 5 | Committees | Committees, members, role titles |
 | 6 | Meetings | Meetings, attendance, guests, minutes |
 | 7 | Documents | Office documents (limited by storage) |
-| 8 | Notifications | In-app, email, reminders |
+| 8 | Notifications | In-app, email, reminders; **email to members** (all, a membership type, a committee, fees overdue, chosen people), replies to the organisation, send history, **monthly email allowance per plan** (extra packs as add-on) |
 | 9 | Reports (basic) | Summary reports; advanced reports in higher plans |
 | 10 | Support (basic) | Help centre, tickets, contact. Priority support = flag on the top plan |
 | 11 | Billing | Plans (bands), regional prices, entitlements, add-ons, invoices, receipts, storage limits, referral credits |
@@ -70,6 +70,7 @@ Design system: **Azonation Calm** (see each repo's CLAUDE.md).
 | 11 | Directory | Member directory + business/professional directory (see §6) | Included from middle plan |
 | 12 | Ideas board | Anyone posts community project/event ideas with impact and budget; organisations adopt them into Projects | Free |
 | 13 | Community (small) | Public organisation pages, **organisation directory**, follow an organisation, public event listing. **No social feed.** | Free |
+| 14 | Newsletters | Designed issues with the organisation's logo, sections, content pulled from Azonation (events, projects, new members), schedule, drafts, test send, non-member subscribers with sign-up form, open/click counts, public archive (can show on Web) | Included from middle/top plan or add-on; uses the email allowance |
 
 ### Azonation's own
 
@@ -79,7 +80,11 @@ Design system: **Azonation Calm** (see each repo's CLAUDE.md).
 
 ### Shared building blocks (never sold)
 
-Payments layer (gateways) · Entitlements · Storage service · Azonation Calm components · translations.
+Payments layer (gateways) · Entitlements · Storage service · Email sending service (provider such as Amazon SES / Postmark / Mailgun, allowance counting, bounce and complaint tracking) · Azonation Calm components · translations.
+
+### Add-ons (not modules)
+
+Extra email packs · sending from the organisation's own domain (SPF/DKIM; pairs with Web own domain) · later **SMS / WhatsApp message credits** (used by email-to-members, Newsletters and Secretarial reminders).
 
 ### One-off service
 
@@ -147,7 +152,19 @@ directory is made public); **no bulk export by members**; former members disappe
 
 ---
 
-## 7. Build order
+## 7. Email rules (decided)
+
+- Newsletters always carry an unsubscribe link (UK PECR/GDPR and similar laws). Service messages
+  (meeting notices, fee reminders) follow the member's notification settings, separate from newsletters.
+- Non-member subscribers need clear consent: tick box + confirmation email. No uploading lists of
+  people who never agreed.
+- Default sender: Azonation's sending domain on behalf of the organisation ("Dhaka Alumni via
+  Azonation"), reply-to the organisation. Own-domain sending is a paid add-on.
+- Track bounces and spam complaints; Super Admin can pause an organisation's sending.
+
+---
+
+## 8. Build order
 
 | # | Step | Status |
 |---|---|---|
@@ -160,6 +177,7 @@ directory is made public); **no bulk export by members**; former members disappe
 | 6 | Web module | todo |
 | 7 | Voting module | todo |
 | 8 | Directory module (member + business) and organisation directory in Community | todo |
+| 8a | Email to members (core) with allowance + sending service; then Newsletters module | todo |
 | 9 | Secretarial automation | todo |
 | 10 | Collections (Stripe Connect + bring-your-own-gateway) — after legal check | todo |
 | 11 | Ideas board | todo |
@@ -175,7 +193,7 @@ plans, renewal cycles…) — seeders or data export still to be set up.
 
 ---
 
-## 8. Decision log
+## 9. Decision log
 
 | Date | Decision |
 |---|---|
@@ -190,3 +208,4 @@ plans, renewal cycles…) — seeders or data export still to be set up.
 | 2026-09-30 | Pricing = member bands, regional monthly prices, no daily counting |
 | 2026-09-30 | No stored procedures |
 | 2026-09-30 | Directory module: member + business directory; organisation directory in Community |
+| 2026-09-30 | Email to members = core feature with monthly allowance; Newsletters = optional module; SMS/WhatsApp later as credits |
