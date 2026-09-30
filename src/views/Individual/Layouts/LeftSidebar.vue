@@ -10,6 +10,7 @@ import {
   Folder as FolderIcon,
   Package as PackageIcon,
   CheckCircle as CheckCircleIcon,
+  Heart as HeartIcon,
   UserCircle as UserCircleIcon,
   ChevronDown as ChevronDownIcon,
   LifeBuoy as LifeBuoyIcon,
@@ -37,6 +38,7 @@ const links = [
   { label: 'nav.projects', routeName: 'individual-projects', icon: FolderIcon },
   { label: 'nav.assets', routeName: 'individual-assets', icon: PackageIcon },
   { label: 'nav.attendances', routeName: 'individual-attendances', icon: CheckCircleIcon },
+  { label: 'nav.myFamily', routeName: 'individual-family', icon: HeartIcon },
   { label: 'nav.support', routeName: 'individual-support', icon: LifeBuoyIcon },
 ];
 

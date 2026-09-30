@@ -9,7 +9,9 @@ import { formatDate } from "@/helpers/format";
 import { safeUrl } from "@/helpers/sanitizeHtml";
 import { useToast } from "@/composables/useToast";
 import { useConfirm } from "@/composables/useConfirm";
-import { CalendarDays, Clock, MapPin, ClipboardList, Users, UserPlus, Pencil, Trash2, Paperclip } from "lucide-vue-next";
+import FamilyTotals from "@/components/family/FamilyTotals.vue";
+import { canOpenOrgRoute } from "@/router/orgAccess";
+import { CalendarDays, Clock, MapPin, ClipboardList, Users, UserPlus, Pencil, Trash2, Paperclip, HeartHandshake } from "lucide-vue-next";
 
 const auth = authStore;
 const route = useRoute();
@@ -19,6 +21,7 @@ const toast = useToast();
 const confirm = useConfirm();
 
 const id = computed(() => route.params.id);
+const canSeeFamilies = computed(() => canOpenOrgRoute(router.resolve({ name: "member-families" })));
 const event = ref(null);
 const summaryId = ref(null);
 const loading = ref(true);
@@ -151,6 +154,19 @@ onMounted(async () => {
           {{ summaryId ? t('events.viewReport') : t('events.writeReport') }}
         </AzButton>
       </section>
+
+      <AzCard v-if="event.family_estimate">
+        <template #header>
+          <h2 class="flex items-center gap-2 text-lg font-semibold text-ink">
+            <HeartHandshake class="h-5 w-5 text-primary" aria-hidden="true" />{{ t('family.eventTitle') }}
+          </h2>
+        </template>
+        <FamilyTotals :totals="event.family_estimate" headcount />
+        <p class="mt-3 text-sm text-ink-muted">
+          {{ t('family.eventNote') }}
+          <RouterLink v-if="canSeeFamilies" :to="{ name: 'member-families' }" class="font-medium text-primary hover:underline">{{ t('family.seeFamilies') }}</RouterLink>
+        </p>
+      </AzCard>
 
       <AzCard v-for="section in textSections" :key="section.label" :title="t(section.label)">
         <p class="whitespace-pre-line text-[15px] leading-relaxed text-ink-2">{{ section.value }}</p>

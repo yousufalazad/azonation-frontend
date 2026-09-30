@@ -7,7 +7,7 @@ import { useI18n } from "vue-i18n";
 import { authStore } from "@/store/authStore";
 import { shortDate } from "@/helpers/billing";
 import { richTextHtml, safeUrl, vSafeHtml } from "@/helpers/sanitizeHtml";
-import { CalendarDays, Clock, MapPin, Video, CheckCircle2, XCircle } from "lucide-vue-next";
+import { CalendarDays, Clock, MapPin, Video, CheckCircle2, XCircle, HeartHandshake } from "lucide-vue-next";
 
 const props = defineProps({
   kind: { type: String, required: true }, // meetings | events | projects
@@ -92,6 +92,13 @@ onMounted(async () => {
           <a v-if="link" :href="link" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 font-medium text-primary hover:underline">
             <Video class="h-5 w-5" aria-hidden="true" />{{ t('memberActivity.joinOnline') }}
           </a>
+          <div v-if="item.family_welcome" class="flex flex-col gap-1 border-t border-line pt-3">
+            <p class="flex items-center gap-2 font-medium text-ink"><HeartHandshake class="h-5 w-5 text-primary" aria-hidden="true" />{{ t('family.welcomeBadge') }}</p>
+            <p v-if="item.my_family_sharing === 'none'" class="text-sm text-ink-2">
+              {{ t('family.welcomeNudge', { org: item.org_name }) }}
+              <RouterLink :to="{ name: 'individual-family' }" class="font-medium text-primary hover:underline">{{ t('family.title') }}</RouterLink>
+            </p>
+          </div>
           <div v-if="item.my_attendance" class="flex items-center gap-2 border-t border-line pt-3">
             <CheckCircle2 v-if="item.my_attendance.attended" class="h-5 w-5 text-success" aria-hidden="true" />
             <XCircle v-else class="h-5 w-5 text-ink-muted" aria-hidden="true" />

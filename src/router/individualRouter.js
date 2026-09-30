@@ -13,6 +13,7 @@ const IndividualSettings = () => import("../views/Org/Profile/Settings.vue");
 const Committee = () => import("../views/Individual/Committee/Index.vue");
 const Asset = () => import("../views/Individual/Asset/Index.vue");
 const Attendance = () => import("../views/Individual/Attendance/Index.vue");
+const MyFamily = () => import("../views/Individual/Family/Index.vue");
 // add near the other imports
 const Event = () => import("../views/Individual/Event/Index.vue");
 const ViewIndividualEvent = () => import("../views/Individual/Event/View.vue");
@@ -97,6 +98,7 @@ const individualRoutes = [
       { path: "assets", name: "individual-assets", component: Asset, meta: { requiresAuth: true } },
       { path: "past-assets", name: "past-individual-assets", redirect: { name: "individual-assets", query: { tab: "past" } } },
       { path: "attendances", name: "individual-attendances", component: Attendance, meta: { requiresAuth: true } },
+      { path: "family", name: "individual-family", component: MyFamily, meta: { requiresAuth: true } },
 
     ],
   },

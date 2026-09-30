@@ -41,6 +41,7 @@ const menu = [
       { label: 'nav.membershipRenewal', to: { name: 'org-membership-renewal' } },
       { label: 'nav.renewalCycle', to: { name: 'org-membership-renewal-cycle' } },
       { label: 'nav.membershipType', to: { name: 'org-membership-type' } },
+      { label: 'nav.memberFamilies', to: { name: 'member-families' } },
     ],
   },
   { label: 'nav.committees', to: '/org-dashboard/committees', icon: BriefcaseIcon },

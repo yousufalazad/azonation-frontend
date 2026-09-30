@@ -19,7 +19,7 @@ const OrgMembershipRenewalCycle = () => import("../views/Org/Financial/Renewal/O
 const OrgMembershipRenewal = () => import("../views/Org/Financial/Renewal/OrgMembershipRenewal.vue");
 const CreateMember = () => import("../views/Org/Member/Create.vue");
 const IndexMember = () => import("../views/Org/Member/Index.vue");
-const FamilyMember = () => import("../views/Org/Member/FamilyMember.vue");
+const MemberFamilies = () => import("../views/Org/Member/MemberFamilies.vue");
 // terminated-members
 const TerminatedMember = () => import("../views/Org/Member/TerminatedMember.vue");
 const OrgMembershipTypes = () => import("../views/Org/Member/OrgMembershipTypes.vue");
@@ -195,11 +195,12 @@ const orgRoutes = [
         meta: { requiresAuth: true, permission: "org-membership-renewal.read" },
       },
       {
-        path: "family-member",
-        name: "family-member",
-        component: FamilyMember,
-        meta: { requiresAuth: true },
+        path: "member-families",
+        name: "member-families",
+        component: MemberFamilies,
+        meta: { requiresAuth: true, permission: "member-family.read" },
       },
+      { path: "family-member", name: "family-member", redirect: { name: "member-families" } },
       {
         path: "founders",
         name: "founders",

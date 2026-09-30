@@ -31,6 +31,7 @@ const form = reactive({
   requirements: "",
   note: "",
   active: true, // saved as status: 0 = active, 1 = switched off
+  family_welcome: false, // members' families are invited too
 });
 
 const conductTypes = ref([]);
@@ -64,6 +65,7 @@ async function load() {
   const e = event.data;
   Object.keys(form).forEach((k) => {
     if (k === "active") form.active = Number(e.status) !== 1;
+    else if (k === "family_welcome") form.family_welcome = !!Number(e.family_welcome);
     else if (k === "time") form.time = e.time ? String(e.time).slice(0, 5) : "";
     else if (k === "date") form.date = e.date ? String(e.date).slice(0, 10) : "";
     else if (k === "conduct_type") form.conduct_type = e.conduct_type ?? "";
@@ -85,6 +87,7 @@ async function save() {
   const fd = new FormData();
   Object.entries(form).forEach(([k, v]) => {
     if (k === "active") fd.append("status", v ? "0" : "1");
+    else if (k === "family_welcome") fd.append("family_welcome", v ? "1" : "0");
     else fd.append(k, typeof v === "string" ? v.trim() : v ?? "");
   });
   newImages.value.forEach((img, i) => fd.append(`images[${i}]`, img.file));
@@ -167,6 +170,7 @@ onMounted(async () => {
           <AzTextarea v-model="form.description" :label="t('events.about')" :help="t('events.maxChars', { n: 255 })" rows="3" maxlength="255" />
           <AzTextarea v-model="form.requirements" :label="t('meetingView.requirements')" rows="2" maxlength="255" />
           <AzTextarea v-model="form.note" :label="t('meetingView.note')" :help="t('meetingForm.noteHelp')" rows="2" maxlength="255" />
+          <AzCheckbox v-model="form.family_welcome" :label="t('family.welcomeLabel')" :help="t('family.welcomeHelp')" />
           <AzCheckbox v-model="form.active" :label="t('events.active')" :help="t('events.activeHelp')" />
         </div>
       </AzCard>
