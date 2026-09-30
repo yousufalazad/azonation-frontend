@@ -2,13 +2,15 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { authStore } from '@/store/authStore';
+import { useAccountRoutes } from '@/composables/useAccountRoutes';
 import { Bell } from 'lucide-vue-next';
 
 const auth = authStore;
 const route = useRoute();
 const router = useRouter();
 
-const NOTIFICATION_ROUTE = 'notifications'; // orgRouter.js-এর route name
+// Organisations, members and the Super Admin each have their own notifications page
+const accountRoutes = useAccountRoutes();
 const MAX_ITEMS = 10;
 
 const notifications = ref([]);
@@ -94,7 +96,7 @@ const closeDropdown = () => { isDropdownOpen.value = false; };
 const openNotification = (n) => {
   if (!n.read_at) markAsRead(n.id);
   closeDropdown();
-  router.push({ name: NOTIFICATION_ROUTE, query: { id: n.id } });
+  router.push({ name: accountRoutes.value.notifications, query: { id: n.id } });
 };
 
 const handleClickOutside = (event) => {
@@ -241,7 +243,7 @@ onBeforeUnmount(() => {
         <!-- Footer: See all -->
         <div class="border-t shrink-0">
           <router-link
-            :to="{ name: NOTIFICATION_ROUTE }"
+            :to="{ name: accountRoutes.notifications }"
             @click="closeDropdown"
             class="block text-center text-sm text-blue-600 hover:bg-gray-50 py-2.5 rounded-b-xl"
           >

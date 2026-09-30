@@ -72,7 +72,7 @@ onMounted(loadList);
 </script>
 
 <template>
-  <div class="mx-auto flex max-w-7xl flex-col gap-6 p-4 sm:p-6">
+  <div class="mx-auto flex max-w-7xl flex-col gap-6">
     <AzPageHeader :title="t('supportInbox.title')" :description="t('supportInbox.description')" />
     <div class="max-w-xl">
       <AzSegmented v-model="tab" :label="t('supportInbox.title')" :options="tabOptions" />

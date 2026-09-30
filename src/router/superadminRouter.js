@@ -2,24 +2,8 @@ const SuperadminDashboardLayout = () => import("../views/SuperAdmin/Layouts/Layo
 const SuperadminDashboardIndex = () => import("../views/SuperAdmin/Layouts/Dashboard/Index.vue");
 const SuperAdminProfileUpdate = () => import("../views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue");
 //SuperAdmin Master Setting
-const Country = () => import("../views/SuperAdmin/MasterSetting/Country.vue");
-const Region = () => import("../views/SuperAdmin/MasterSetting/Region.vue");
-const RegionCurrency = () => import("../views/SuperAdmin/MasterSetting/RegionCurrency.vue");
-const CountryRegion = () => import("../views/SuperAdmin/MasterSetting/CountryRegion.vue");
 const UserCountry = () => import("../views/SuperAdmin/MasterSetting/UserCountry.vue");
-const DialingCode = () => import("../views/SuperAdmin/MasterSetting/DialingCode.vue");
-const AttendanceType = () => import("../views/SuperAdmin/MasterSetting/AttendanceType.vue");
-const ConductType = () => import("../views/SuperAdmin/MasterSetting/ConductType.vue");
-const MembershipType = () => import("../views/SuperAdmin/MasterSetting/MembershipType.vue");
-const MembershipStatuses = () => import("../views/SuperAdmin/MasterSetting/MembershipStatuses.vue");
-const MembershipRenewalCycle = () => import("../views/SuperAdmin/MasterSetting/MembershipRenewalCycle.vue");
-const Designation = () => import("../views/SuperAdmin/MasterSetting/Designation.vue");
-const Language = () => import("../views/SuperAdmin/MasterSetting/Language.vue");
-const TimeZoneSetup = () => import("../views/SuperAdmin/MasterSetting/TimeZoneSetup.vue");
-const PrivacySetup = () => import("../views/SuperAdmin/MasterSetting/PrivacySetup.vue");
-const RegionalTaxRate = () => import("../views/SuperAdmin/MasterSetting/RegionalTaxRate.vue");
 //Currency
-const IndexCurrency = () => import("../views/SuperAdmin/Financial/Currency/Index.vue");
 //Package
 const IndexPackage = () => import("../views/SuperAdmin/Financial/Package/Index.vue");
 const EditPackage = () => import("../views/SuperAdmin/Financial/Package/Edit.vue");
@@ -89,6 +73,9 @@ const Roles = () => import("@/views/RolePermission/Roles.vue");
 const Permissions = () => import("@/views/RolePermission/Permissions.vue");
 const UserRoleAssign = () => import("@/views/RolePermission/UserRoleAssign.vue");
 const SupportInbox = () => import("@/views/SuperAdmin/Support/Index.vue");
+const PlatformSettings = () => import("@/views/SuperAdmin/Settings/Index.vue");
+const LookupPage = () => import("@/views/SuperAdmin/Settings/LookupPage.vue");
+const Notifications = () => import("@/views/Org/Notification/Index.vue");
 const superadminRoutes = [
   {
     path: "/superadmin-dashboard",
@@ -103,6 +90,24 @@ const superadminRoutes = [
         path: "index",
         name: "superadmin-dashboard-index",
         component: SuperadminDashboardIndex,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "settings",
+        name: "superadmin-settings",
+        component: PlatformSettings,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "settings/:key",
+        name: "superadmin-lookup",
+        component: LookupPage,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "notifications",
+        name: "superadmin-notifications",
+        component: Notifications,
         meta: { requiresAuth: true },
       },
       {
@@ -139,108 +144,28 @@ const superadminRoutes = [
         component: SuperAdminProfileUpdate,
         meta: { requiresAuth: true },
       },
-      {
-        path: "country",
-        name: "country",
-        component: Country,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "region",
-        name: "region",
-        component: Region,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "region-currency",
-        name: "region-currency",
-        component: RegionCurrency,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "country-region",
-        name: "country-region",
-        component: CountryRegion,
-        meta: { requiresAuth: true },
-      },
+      { path: "country", name: "country", redirect: { name: "superadmin-lookup", params: { key: "countries" } } },
+      { path: "region", name: "region", redirect: { name: "superadmin-lookup", params: { key: "regions" } } },
+      { path: "region-currency", name: "region-currency", redirect: { name: "superadmin-lookup", params: { key: "region-currencies" } } },
+      { path: "country-region", name: "country-region", redirect: { name: "superadmin-lookup", params: { key: "country-regions" } } },
       {
         path: "user-country",
         name: "user-country",
         component: UserCountry,
         meta: { requiresAuth: true },
       },
-      {
-        path: "dialing-code",
-        name: "dialing-code",
-        component: DialingCode,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "conduct-type",
-        name: "conduct-type",
-        component: ConductType,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "attendance-type",
-        name: "attendance-type",
-        component: AttendanceType,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "membership-type",
-        name: "membership-type",
-        component: MembershipType,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "membership-statuses",
-        name: "membership-statuses",
-        component: MembershipStatuses,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "membership-renewal-cycle",
-        name: "membership-renewal-cycle",
-        component: MembershipRenewalCycle,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "designation",
-        name: "designation",
-        component: Designation,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "language",
-        name: "language",
-        component: Language,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "time-zone-setup",
-        name: "time-zone-setup",
-        component: TimeZoneSetup,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "privacy-setup",
-        name: "privacy-setup",
-        component: PrivacySetup,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "regional-tax-rate",
-        name: "regional-tax-rate",
-        component: RegionalTaxRate,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "index-currency",
-        name: "index-currency",
-        component: IndexCurrency,
-        meta: { requiresAuth: true },
-      },
+      { path: "dialing-code", name: "dialing-code", redirect: { name: "superadmin-lookup", params: { key: "dialing-codes" } } },
+      { path: "conduct-type", name: "conduct-type", redirect: { name: "superadmin-lookup", params: { key: "conduct-types" } } },
+      { path: "attendance-type", name: "attendance-type", redirect: { name: "superadmin-lookup", params: { key: "attendance-types" } } },
+      { path: "membership-type", name: "membership-type", redirect: { name: "superadmin-lookup", params: { key: "membership-types" } } },
+      { path: "membership-statuses", name: "membership-statuses", redirect: { name: "superadmin-lookup", params: { key: "membership-statuses" } } },
+      { path: "membership-renewal-cycle", name: "membership-renewal-cycle", redirect: { name: "superadmin-lookup", params: { key: "renewal-cycles" } } },
+      { path: "designation", name: "designation", redirect: { name: "superadmin-lookup", params: { key: "designations" } } },
+      { path: "language", name: "language", redirect: { name: "superadmin-lookup", params: { key: "languages" } } },
+      { path: "time-zone-setup", name: "time-zone-setup", redirect: { name: "superadmin-lookup", params: { key: "time-zones" } } },
+      { path: "privacy-setup", name: "privacy-setup", redirect: { name: "superadmin-lookup", params: { key: "privacy" } } },
+      { path: "regional-tax-rate", name: "regional-tax-rate", redirect: { name: "superadmin-lookup", params: { key: "tax-rates" } } },
+      { path: "index-currency", name: "index-currency", redirect: { name: "superadmin-lookup", params: { key: "currencies" } } },
       {
         path: "super-admin-packages",
         name: "super-admin-packages",

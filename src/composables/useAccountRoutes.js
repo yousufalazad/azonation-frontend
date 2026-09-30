@@ -12,6 +12,14 @@ const NAMES = {
     notifications: "notifications",
     notificationSettings: "user-notifications",
   },
+  superadmin: {
+    profile: "super-admin-profile-update",
+    settings: "superadmin-settings",
+    support: "superadmin-support",
+    supportRequest: "superadmin-support",
+    notifications: "superadmin-notifications",
+    notificationSettings: "superadmin-notifications",
+  },
   individual: {
     profile: "individual-profile",
     settings: "individual-settings",

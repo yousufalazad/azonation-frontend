@@ -1,15 +1,54 @@
 <script setup>
+import { onMounted, watch } from 'vue';
+import { ref } from 'vue';
 import Header from './Header.vue';
-import Footer from './Footer.vue';
 import MainContent from './MainContent.vue';
+import { useResponsiveSidebar } from '@/composables/useResponsiveSidebar';
+
+const SIDEBAR_KEY = 'azonation_admin_sidebar';
+
+const { isMobileMenuOpen } = useResponsiveSidebar();
+const isSidebarExpanded = ref(true);
+
+// Load sidebar state from localStorage on mount
+onMounted(() => {
+  const saved = localStorage.getItem(SIDEBAR_KEY);
+  if (saved !== null) {
+    isSidebarExpanded.value = saved === 'true';
+  }
+});
+
+// Watch sidebar state and persist to localStorage
+watch(isSidebarExpanded, (val) => {
+  localStorage.setItem(SIDEBAR_KEY, val.toString());
+});
+
+const toggleMobileMenu = () => {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value;
+};
+
+const toggleSidebar = () => {
+  isSidebarExpanded.value = !isSidebarExpanded.value;
+};
+
+const closeMobileMenu = () => {
+  isMobileMenuOpen.value = false;
+};
 </script>
 
 <template>
-    <div class="h-screen flex flex-col">
-        <Header />
-        <main-content />
-        <Footer />
-    </div>
+  <div class="min-h-screen">
+    <!-- Header -->
+    <Header
+      @toggle-mobile-sidebar="toggleMobileMenu"
+      @toggle-sidebar="toggleSidebar"
+    />
+
+    <!-- Main Content -->
+    <MainContent
+      :isMobileMenuOpen="isMobileMenuOpen"
+      :isSidebarExpanded="isSidebarExpanded"
+      @close-mobile-menu="closeMobileMenu"
+    />
+  </div>
 </template>
-
-
