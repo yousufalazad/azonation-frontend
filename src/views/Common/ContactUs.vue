@@ -4,8 +4,7 @@
 import { computed, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { authStore } from "@/store/authStore";
-import Header from "./Header.vue";
-import Footer from "./Footer.vue";
+import PublicPage from "@/components/public/PublicPage.vue";
 import { CheckCircle2, Mail } from "lucide-vue-next";
 
 const auth = authStore;
@@ -42,12 +41,8 @@ async function submit() {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-canvas">
-    <Header />
-
-    <main class="flex-grow px-4 pt-[100px]">
-      <div class="mx-auto flex max-w-2xl flex-col gap-6 py-10">
-        <AzPageHeader :title="t('contactPage.title')" :description="t('contactPage.description')" />
+  <PublicPage narrow :title="t('contactPage.title')" :description="t('contactPage.description')">
+      <div class="flex flex-col gap-6">
 
         <AzCard v-if="isOrg">
           <p class="text-sm text-ink-2">{{ t('contactPage.signedIn') }}</p>
@@ -82,8 +77,5 @@ async function submit() {
           </form>
         </AzCard>
       </div>
-    </main>
-
-    <Footer />
-  </div>
+  </PublicPage>
 </template>
