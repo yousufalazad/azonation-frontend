@@ -1,4 +1,8 @@
-# Azonation — frontend
+# Azonation — frontend (frozen)
+
+> **This repo is frozen.** New work happens in `../../azonation-app` (Vue) and
+> `../../azonation-api` (Laravel). Use this repo only as the reference when moving
+> features (roadmap §2 parity rule). Fix something here only if it blocks the move.
 
 Vue 3 (script setup) + Vite + Tailwind + vue-router + vue-i18n. Backend is the sibling repo
 `../azonation-backend` (Laravel). **Read `docs/ROADMAP.md` first** (decisions, modules,

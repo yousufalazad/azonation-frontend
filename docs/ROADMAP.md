@@ -1,8 +1,19 @@
 # Azonation roadmap
 
-The single source of truth for decisions and the build order. Both repos use it
-(frontend: `azonation-frontend`, backend: `azonation-backend`, side by side in
-`D:\xampp\htdocs\Azonation\azonation`). Update the status and the decision log as work lands.
+The single source of truth for decisions and the build order. Update the status and the
+decision log as work lands.
+
+**Repos**
+
+| Repo | What | Where | State |
+|---|---|---|---|
+| `azonation-frontend` | Current Vue app | `D:\xampp\htdocs\Azonation\azonation\azonation-frontend` | **Frozen** (reference only, no new features) |
+| `azonation-backend` | Current Laravel API | `D:\xampp\htdocs\Azonation\azonation\azonation-backend` | **Frozen** (reference only) |
+| `azonation-api` | New Laravel API, modular | `D:\xampp\htdocs\Azonation\azonation-api` | To create |
+| `azonation-app` | New Vue app, modular | `D:\xampp\htdocs\Azonation\azonation-app` | To create |
+| `azonation-site` | Marketing site (Nuxt) | `D:\xampp\htdocs\Azonation\azonation-site` | After the app foundation |
+
+This roadmap moves to `azonation-app/docs/ROADMAP.md` when that repo exists.
 
 Status keys: `todo` · `doing` · `done` · `later`
 
@@ -15,7 +26,7 @@ alumni groups, charities, professional bodies). UK is the origin and headquarter
 other country is an operating area. Prices are set per region.
 
 Users are often non-technical volunteers on phones: plain words, big tap targets, one main
-action per screen, English and Bangla (more languages later), light and dark mode.
+action per screen, light and dark mode, **10 languages** (§2a).
 Design system: **Azonation Calm** (see each repo's CLAUDE.md).
 
 ---
@@ -30,7 +41,42 @@ Design system: **Azonation Calm** (see each repo's CLAUDE.md).
 | Module rule | A module never reads or writes another module's tables. It uses the other module's service class or Laravel events. | Makes switching modules off safe |
 | Switching | **Entitlements**: per organisation, per module: on/off + limits + source (plan / add-on / trial / manual). Plus a platform-wide switch per module. Checked on every server route and in the menu. Data is kept when off. | Sell modules, trials, emergency off switch |
 | Stored procedures | **Not used.** Logic stays in Laravel. Use constraints, indexes, transactions, views or summary tables when needed. | Keeps tenant checks, modules and notifications in one place |
-| Frameworks | Upgrade to latest Laravel (13, needs PHP 8.3+), Vue 3.5.x, Vite, Tailwind 4 **before** the restructure | Cheapest now, pre-launch |
+| Frameworks | **New projects** on the latest Laravel (13, PHP 8.3+), Vue 3.5.x, Vite, Tailwind 4 — no in-place upgrade | Pre-launch, demo data only |
+| Move strategy | Features are **moved and adapted** module by module from the frozen repos, not rewritten. Database tidied as each module moves (true booleans, consistent names such as `org_id`). Only reference data is seeded; demo data is not moved. | Keeps the security fixes and the Azonation Calm redesign |
+| **Parity rule** | Every current feature must exist in the new projects. A **feature inventory** (every page, API route, permission, schedule, email/notification, setting) is written first and ticked per module, with its security checks, 10 languages, dark mode and phone layout. Old repos are retired only when every item is ticked. | Owner: "don't miss my current features" |
+| Authentication | **Sanctum session cookies** for the browser app (HttpOnly cookie, CSRF, instant logout/access removal). Later: Sanctum tokens for native phone apps; short-lived **signed JWT (RS256)** issued by Laravel for service-to-service calls if microservices are added; Laravel Passport (OAuth2) or scoped tokens for a public API (top-plan "API access"). Identity lives in its own core part (Accounts & Access). | Most secure for browsers; JWT/OAuth can be added alongside later |
+| Sign-in methods | Email + password, **Google, Microsoft (personal + work/school), Apple** from the start (Socialite + socialiteproviders). Link a provider to an existing account only when the provider confirms the email. Several methods per person, managed in Security. Apple: save the name on first sign-in; allow "Hide My Email" addresses. | Owner has Apple Developer Program and owns azonation.com |
+
+### 2a. Languages (from the start)
+
+English (source), Bangla, Arabic, Urdu, Hindi, Spanish, French, Portuguese, German, Italian.
+
+- Arabic and Urdu are **right to left**: layouts use start/end (not left/right), icons and arrows mirror.
+- Fonts: Noto Sans, Noto Sans Bengali, Noto Sans Arabic, Noto Nastaliq Urdu (taller lines), Noto Sans Devanagari.
+- Missing translation falls back to English. Translation files per module per language.
+- AI drafts translations; native speakers review key screens (sign-up, billing, membership, emails) before launch in a country.
+- Person's app language and the **organisation's language** (emails, newsletters, certificates) are separate.
+- German words are long: buttons and labels must wrap.
+
+### 2b. Domains and addresses
+
+| Address | Use |
+|---|---|
+| `azonation.com` | Marketing site (`azonation-site`, Nuxt, pre-built pages in all 10 languages: `azonation.com/bn/…`) |
+| `app.azonation.com` | The app (`azonation-app`) |
+| `api.azonation.com` | The API (`azonation-api`); same parent domain as the app so Sanctum cookies work |
+| `org-name.azonation.org` | Organisation websites (Web module); own domain as a paid option |
+| `files.azonation.net` | Uploaded files (kept off the main domain for security) |
+| `mail.azonation.net` | Email sending domain (protects azonation.com's reputation) |
+| Later | `status.azonation.com`, `staging-app.azonation.com` |
+
+### 2c. Marketing site (azonation-site)
+
+Landing page: headline + Start free / See pricing → who it's for → what it does (by job) →
+3 steps → trust (data belongs to the organisation, privacy, UK company, GDPR, payments go
+straight to the organisation) → 10 languages → pricing teaser (local currency) → stories →
+FAQ → Start free. Other pages: one page per feature/module, solutions by organisation type,
+Pricing, For members, About, Contact, Help, Blog, Legal. Shares Azonation Calm colours and fonts.
 
 ---
 
@@ -67,7 +113,7 @@ Design system: **Azonation Calm** (see each repo's CLAUDE.md).
 | 5 | Assets | Equipment, holder, handover history (exists) | In plans |
 | 6 | Planning | Strategic plans, year plans (exists) | Included from middle plan, not sold alone |
 | 7 | Voting | Polls, motions, elections (secret ballot, eligibility, proxy, tamper-proof results) | Polls included; elections per election by voter band |
-| 8 | Web | Public site at azonation.com/web/org-name from public data; own domain (CNAME + auto SSL) | Basic free with badge; own domain + no badge paid |
+| 8 | Web | Public site at `org-name.azonation.org` from public data; own domain (CNAME + auto SSL) | Basic free with badge; own domain + no badge paid |
 | 9 | Secretarial — automation | Automatic announcements, reminders, fee chasing | Monthly add-on |
 | 10 | Secretarial — human service | In person / virtual assistant under written authorisation, action log | Packages or hours (later) |
 | 11 | Directory | Member directory + business/professional directory (see §6) | Included from middle plan |
@@ -197,10 +243,13 @@ directory is made public); **no bulk export by members**; former members disappe
 |---|---|---|
 | 0 | Redesign (Azonation Calm), security fixes, member families, migrations synced with DB | done |
 | 1 | Write roadmap + CLAUDE.md + handoff notes | done |
-| 2 | **Band billing + member limits** on current code (monthly price per package per region, limit checks, Billing page, Super Admin plans, Pricing page) | todo |
-| 3 | **Module switches** on current code: Super Admin → Modules (platform), Organisation → Modules (per org), entitlement checks in routes and menu, audit log | todo |
-| 4 | Upgrade Laravel, PHP, Vue, Vite, Tailwind; full test pass | todo |
-| 5 | Restructure into modules (backend `nwidart/laravel-modules`, frontend `src/modules`) | todo |
+| 2 | **Feature inventory** of the current apps (parity checklist: pages, routes, permissions, schedules, emails, settings), grouped by target module | todo |
+| 3 | **Create `azonation-api` + `azonation-app`**: latest Laravel/Vue/Vite/Tailwind 4, `nwidart/laravel-modules`, `src/modules`, Sanctum, permissions, 10-language i18n with RTL, Azonation Calm components copied, CLAUDE.md, tests, seeders for reference data | todo |
+| 4 | **Foundation**: Accounts & Access (email, Google, Microsoft, Apple), organisations, current-organisation security, entitlements + module switches (Super Admin → Modules, per organisation), audit log, Super Admin basics | todo |
+| 5 | **Move core parts** (tick the inventory): Membership → Committees → Meetings → Documents → Notifications → **Billing with band pricing + member limits** → Support → Member area (incl. My family) → Reports | todo |
+| 5a | **Move existing modules**: Finance, Events (incl. family headcount), Projects, Assets, Planning | todo |
+| 5b | **Switch over**: full workflow test as organisation, member, Super Admin; inventory fully ticked; old repos archived | todo |
+| 5c | `azonation-site` marketing site (Nuxt) | todo |
 | 6 | Web module | todo |
 | 7 | Voting module | todo |
 | 8 | Directory module (member + business) and organisation directory in Community | todo |
@@ -215,8 +264,7 @@ directory is made public); **no bulk export by members**; former members disappe
 | 13 | Shop reshaped (Azonation-only) | todo |
 | 14 | Secretarial human service | later |
 
-Deployment checklist (before first launch): merge `phase-0-security` (frontend) and
-`security/tenant-authorization` (backend); `php artisan migrate`; cron
+Deployment checklist (before first launch, now for the new repos): `php artisan migrate`; cron
 `* * * * * php artisan schedule:run`; `APP_DEBUG=false`; change mail password; delete local
 test accounts; limit the app's DB user to data rights only; seed reference data (countries,
 plans, renewal cycles…) — seeders or data export still to be set up.
@@ -239,4 +287,8 @@ plans, renewal cycles…) — seeders or data export still to be set up.
 | 2026-09-30 | No stored procedures |
 | 2026-09-30 | Directory module: member + business directory; organisation directory in Community |
 | 2026-09-30 | Email to members = core feature with monthly allowance; Newsletters = optional module; SMS/WhatsApp later as credits |
+| 2026-10-01 | New repos `azonation-api` + `azonation-app` (+ `azonation-site` later) in `D:\xampp\htdocs\Azonation\`; old repos frozen; move module by module with a feature-inventory parity checklist; DB tidied per module |
+| 2026-10-01 | Auth: Sanctum session cookies; JWT for services and Passport/tokens for public API later. Sign-in: email, Google, Microsoft, Apple from the start |
+| 2026-10-01 | 10 languages from the start (en, bn, ar, ur, hi, es, fr, pt, de, it), RTL included |
+| 2026-10-01 | Domains: azonation.com (site, app., api.), azonation.org (organisation websites), azonation.net (files, mail) |
 | 2026-10-01 | Paperless additions: core (membership application, digital card, tasks, calendar, committee handover, noticeboard, audit log), modules (Forms & surveys, Certificates, Approvals & e-signatures), PWA; later-ideas list kept |
