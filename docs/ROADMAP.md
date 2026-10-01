@@ -243,7 +243,7 @@ directory is made public); **no bulk export by members**; former members disappe
 |---|---|---|
 | 0 | Redesign (Azonation Calm), security fixes, member families, migrations synced with DB | done |
 | 1 | Write roadmap + CLAUDE.md + handoff notes | done |
-| 2 | **Feature inventory** of the current apps (parity checklist: pages, routes, permissions, schedules, emails, settings), grouped by target module | todo |
+| 2 | **Feature inventory** of the current apps (parity checklist: pages, routes, permissions, schedules, emails, settings), grouped by target module — `docs/FEATURE-INVENTORY.md` | done |
 | 3 | **Create `azonation-api` + `azonation-app`**: latest Laravel/Vue/Vite/Tailwind 4, `nwidart/laravel-modules`, `src/modules`, Sanctum, permissions, 10-language i18n with RTL, Azonation Calm components copied, CLAUDE.md, tests, seeders for reference data | todo |
 | 4 | **Foundation**: Accounts & Access (email, Google, Microsoft, Apple), organisations, current-organisation security, entitlements + module switches (Super Admin → Modules, per organisation), audit log, Super Admin basics | todo |
 | 5 | **Move core parts** (tick the inventory): Membership → Committees → Meetings → Documents → Notifications → **Billing with band pricing + member limits** → Support → Member area (incl. My family) → Reports | todo |
