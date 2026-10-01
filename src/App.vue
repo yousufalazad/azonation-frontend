@@ -19,9 +19,16 @@ onMounted(() => {
 </script>
 
 <template>
+  <!-- Keyboard users can jump past the menu straight to the page -->
+  <a href="#main-content"
+    class="sr-only z-[1200] rounded-control bg-primary px-4 py-3 font-semibold text-primary-on focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
+    {{ $t("common.skipToContent") }}
+  </a>
   <TopLoader ref="topLoader" />
   <Loader ref="loaderRef" />
-  <main>
+  <main id="main-content" tabindex="-1" class="outline-none">
     <router-view />
   </main>
+  <AzToastHost />
+  <AzConfirmHost />
 </template>

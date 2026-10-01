@@ -1,185 +1,31 @@
+<!-- Events of your organisations: upcoming and past, with your attendance -->
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { authStore } from '@/store/authStore';
-import { useRouter } from 'vue-router';
-import Swal from 'sweetalert2';
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
+import { canOpenOrgRoute } from "@/router/orgAccess";
+import { shortDate } from "@/helpers/billing";
+import { PartyPopper } from "lucide-vue-next";
+import ActivityList from "../components/ActivityList.vue";
 
-const auth = authStore;
 const router = useRouter();
-const isLoading = ref(true);
-const allEvents = ref([]);
+const { t, locale } = useI18n();
+const time = (v) => (v ? String(v).slice(0, 5) : "");
+// Role-holders add records in the organisation dashboard
+const createRoute = computed(() => (canOpenOrgRoute(router.resolve({ name: "create-event" })) ? { name: "create-event" } : null));
 
-const canCreate = computed(() => auth.hasPermission('event.create'));
-
-const canManage = (event) =>
-  event.org_id === auth.currentOrgId && auth.hasPermission('event.update');
-
-const canRemove = (event) =>
-  event.org_id === auth.currentOrgId && auth.hasPermission('event.delete');
-
-const activeOrgName = computed(() => {
-  const org = auth.orgAccess.find(o => o.org_type_user_id === auth.currentOrgId);
-  return org?.org_name || 'Unknown';
-});
-
-const fetchEventsData = async () => {
-  try {
-    const response = await auth.fetchProtectedApi('/api/individual/events', {}, 'GET');
-    if (response.status) {
-      const orgEvents = response.data || [];
-      allEvents.value = orgEvents.flatMap(org =>
-        (org.events || []).map(event => ({
-          ...event,
-          org_id: org.org_type_user_id, // ⚠️ confirm this key matches your API response
-          org_name: org.org_name || 'Unknown Organisation',
-        }))
-      );
-    }
-  } catch (error) {
-    console.error('Failed to load events data:', error);
-  } finally {
-    isLoading.value = false;
-  }
+const row = {
+  title: (r) => r.title,
+  date: (r) => r.date,
+  when: (r) => [shortDate(r.date, locale.value), time(r.time)].filter(Boolean).join(" · "),
+  place: (r) => r.venue_name,
+  badge: (r) => (r.my_attendance ? { tone: r.my_attendance.attended ? "success" : "neutral", text: r.my_attendance.status || t("memberActivity.attended") } : null),
 };
-
-const goToCreateEvent = () => router.push({ name: 'create-individual-event' });
-const goToEditEvent = (id) => router.push({ name: 'edit-individual-event', params: { id } });
-
-const deleteRecord = async (eventId) => {
-  const confirmed = await Swal.fire({
-    title: 'Are you sure?',
-    text: 'This action cannot be undone!',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Yes, delete it!'
-  });
-
-  if (!confirmed.isConfirmed) return;
-
-  try {
-    const response = await auth.fetchProtectedApi(`/api/events/${eventId}`, {}, 'DELETE');
-    if (response.status) {
-      allEvents.value = allEvents.value.filter(e => e.id !== eventId);
-      Swal.fire('Deleted!', 'Event has been deleted.', 'success');
-    } else {
-      Swal.fire('Error!', 'Failed to delete event.', 'error');
-    }
-  } catch (e) {
-    console.error(e);
-    Swal.fire('Error!', 'Failed to delete event.', 'error');
-  }
-};
-
-onMounted(() => {
-  fetchEventsData();
-});
 </script>
 
 <template>
-  <div class="space-y-8">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-800">Upcoming Events</h1>
-        <p v-if="canCreate" class="text-xs text-gray-500 mt-1">
-          Creating for: <span class="font-medium">{{ activeOrgName }}</span>
-        </p>
-      </div>
-      <div class="flex flex-wrap gap-2">
-        <button v-if="canCreate" @click="goToCreateEvent"
-          class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
-          Add Event
-        </button>
-        <button @click="$router.push({ name: 'past-individual-events' })"
-          class="bg-gray-500 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300">
-          Past Event List
-        </button>
-      </div>
-    </div>
-
-    <!-- Loading -->
-    <div v-if="isLoading" class="text-gray-500">Loading...</div>
-
-    <!-- Empty State -->
-    <div v-else-if="!allEvents.length" class="text-gray-500 italic">
-      No upcoming events found.
-    </div>
-
-    <!-- Data -->
-    <div v-else>
-      <h2 class="text-lg font-semibold text-gray-800 mb-4">All Upcoming Events</h2>
-
-      <!-- Mobile Cards -->
-      <div class="sm:hidden space-y-3">
-        <div v-for="(event, index) in allEvents" :key="event.id"
-          class="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
-          <div class="text-xs text-gray-500 mb-2 font-semibold">
-            # {{ index + 1 }}
-          </div>
-          <table class="text-sm w-full border-collapse border-0" style="border-spacing: 0;">
-            <tbody>
-              <tr class="border-0 border-b-0">
-                <td class="text-gray-600 w-[100px] pr-2 font-medium">Organisation</td>
-                <td class="w-3 text-center">:</td>
-                <td class="text-gray-800 break-words">{{ event.org_name || '—' }}</td>
-              </tr>
-              <tr class="border-0 border-b-0">
-                <td class="text-gray-600 w-[100px] pr-2 font-medium">Event Name</td>
-                <td class="w-3 text-center">:</td>
-                <td class="text-gray-800 break-words">{{ event.name || '—' }}</td>
-              </tr>
-              <tr class="border-0 border-b-0">
-                <td class="text-gray-600 w-[100px] pr-2 font-medium">Event Date</td>
-                <td class="w-3 text-center">:</td>
-                <td class="text-gray-800">{{ event.date || '—' }}</td>
-              </tr>
-              <tr class="border-0 border-b-0">
-                <td class="text-gray-600 w-[100px] pr-2 font-medium">Time</td>
-                <td class="w-3 text-center">:</td>
-                <td class="text-gray-800">{{ event.time || '—' }}</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div v-if="canManage(event) || canRemove(event)" class="flex justify-end gap-3 mt-3 pt-2 border-t">
-            <button v-if="canManage(event)" @click="goToEditEvent(event.id)" class="text-yellow-600 text-xs font-medium">Edit</button>
-            <button v-if="canRemove(event)" @click="deleteRecord(event.id)" class="text-red-600 text-xs font-medium">Delete</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Desktop Table -->
-      <div class="hidden sm:block overflow-x-auto">
-        <table class="min-w-full bg-white shadow rounded-md">
-          <thead class="bg-gray-100 text-gray-700 text-sm uppercase">
-            <tr>
-              <th class="px-4 py-3 text-left">#</th>
-              <th class="px-4 py-3 text-left">Organisation</th>
-              <th class="px-4 py-3 text-left">Event Name</th>
-              <th class="px-4 py-3 text-left">Event Date</th>
-              <th class="px-4 py-3 text-left">Time</th>
-              <th class="px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(event, index) in allEvents" :key="event.id"
-              class="border-t text-sm text-gray-800 hover:bg-gray-50">
-              <td class="px-4 py-3">{{ index + 1 }}</td>
-              <td class="px-4 py-3">{{ event.org_name }}</td>
-              <td class="px-4 py-3">{{ event.name || '—' }}</td>
-              <td class="px-4 py-3">{{ event.date || '—' }}</td>
-              <td class="px-4 py-3">{{ event.time || '—' }}</td>
-              <td class="px-4 py-3 text-right">
-                <span v-if="!canManage(event) && !canRemove(event)" class="text-gray-400 text-xs">—</span>
-                <button v-if="canManage(event)" @click="goToEditEvent(event.id)" class="text-yellow-600 mr-3 hover:underline">Edit</button>
-                <button v-if="canRemove(event)" @click="deleteRecord(event.id)" class="text-red-600 hover:underline">Delete</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+  <ActivityList kind="events" :icon="PartyPopper" :title="t('memberActivity.event_title')" :description="t('memberActivity.event_description')"
+    :tabs="[t('memberActivity.event_current'), t('memberActivity.event_past')]"
+    :empty="[[t('memberActivity.event_emptyTitle'), t('memberActivity.event_emptyText')], [t('memberActivity.event_pastEmptyTitle'), t('memberActivity.event_pastEmptyText')]]"
+    detail-route="view-individual-event" :create-route="createRoute" :row="row" />
 </template>

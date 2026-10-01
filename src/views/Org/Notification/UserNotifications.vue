@@ -1,191 +1,107 @@
+<!-- How you want to be told about things: switch each channel (app, SMS, email, WhatsApp) on or off -->
 <script setup>
-import { ref, onMounted } from 'vue';
-import Swal from 'sweetalert2';
-import { authStore } from '../../../store/authStore';
+import { onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import { useToast } from "@/composables/useToast";
+import { useAccountRoutes } from "@/composables/useAccountRoutes";
+import { Smartphone, MessageSquare, Mail, MessageCircle, Bell } from "lucide-vue-next";
+
 const auth = authStore;
-// notification-names
-const notificationNames = ref([]);
-const fetchNotificationNames = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/notification-names', {}, 'GET');
-        notificationNames.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching notification names:', error);
-    }
-};
-// user-notifications
-const userNotifications = ref([]);
-const fetchUserNotifications = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/user-notifications', {}, 'GET');
-        userNotifications.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching user notifications:', error);
-    }
-};
-// check if notification is enabled for user
-const isNotificationEnabled = (notificationNameId) => {
-    return userNotifications.value.some(item => item.notification_name_id === notificationNameId);
-};
-// get user notification by name id
-const getUserNotificationByNameId = (notificationNameId) => {
-    return userNotifications.value.find(item => item.notification_name_id === notificationNameId);
-};
-// toggle notification for user
-const handleToggleNotification = async (notification) => {
-    const isEnabled = isNotificationEnabled(notification.id);
-    const userNotification = getUserNotificationByNameId(notification.id);
+const { t } = useI18n();
+const toast = useToast();
+const routes = useAccountRoutes();
 
-    if (!isEnabled) {
-        const method = 'POST';
-        const apiUrl = '/api/user-notifications';
+const channels = ref([]); // notification names
+const mine = ref([]); // the channels switched on for this account
+const busy = ref(null);
+const loading = ref(true);
 
-        const payload = {
-            notification_name_id: notification.id,
-            is_active: 1
-        };
+// A friendly icon and explanation for the channels we know by name
+const iconFor = (name) => {
+  const n = String(name || "").toLowerCase();
+  if (n.includes("whatsapp")) return MessageCircle; // before "app": WhatsApp contains it
+  if (n.includes("app")) return Smartphone;
+  if (n.includes("sms")) return MessageSquare;
+  if (n.includes("mail")) return Mail;
+  return Bell;
+};
+const helpKey = (name) => {
+  const n = String(name || "").toLowerCase();
+  if (n.includes("whatsapp")) return "notifySettings.help_whatsapp";
+  if (n.includes("app")) return "notifySettings.help_app";
+  if (n.includes("sms")) return "notifySettings.help_sms";
+  if (n.includes("mail")) return "notifySettings.help_email";
+  return "";
+};
 
-        try {
-            const result = await Swal.fire({
-                title: 'Are you sure?',
-                text: `Do you want to enable this notification?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, proceed!',
-                cancelButtonText: 'Cancel'
-            });
+const recordFor = (channelId) => mine.value.find((m) => String(m.notification_name_id) === String(channelId));
 
-            if (result.isConfirmed) {
-                const response = await auth.fetchProtectedApi(apiUrl, payload, method);
-                if (response.status) {
-                    await Swal.fire('Success!', `Notification enabled successfully.`, 'success');
-                    fetchUserNotifications();
-                } else {
-                    Swal.fire('Failed!', 'An error occurred. Please try again.', 'error');
-                }
-            }
-        } catch (error) {
-            console.error('Error handling toggle:', error);
-            Swal.fire('Error!', 'An error occurred. Please try again.', 'error');
-        }
+async function load() {
+  const [names, subs] = await Promise.all([
+    auth.fetchProtectedApi("/api/notification-names", {}, "GET"),
+    auth.fetchProtectedApi("/api/user-notifications", {}, "GET"),
+  ]);
+  channels.value = names?.status ? names.data : [];
+  mine.value = subs?.status ? subs.data : [];
+}
+
+// Switching changes straight away (no Save button)
+async function toggle(channel) {
+  if (busy.value) return;
+  busy.value = channel.id;
+  const rec = recordFor(channel.id);
+  try {
+    const res = rec
+      ? await auth.fetchProtectedApi(`/api/user-notifications/${rec.id}`, {}, "DELETE")
+      : await auth.fetchProtectedApi("/api/user-notifications", { notification_name_id: channel.id, is_active: 1 }, "POST");
+    if (res?.status) {
+      await load();
+      toast.success(rec ? t("notifySettings.turnedOff", { name: channel.name }) : t("notifySettings.turnedOn", { name: channel.name }));
     } else {
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: `Do you want to disable this notification?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, disable it!',
-            cancelButtonText: 'Cancel'
-        });
-
-        if (result.isConfirmed) {
-            await deleteUserNotification(userNotification.id);
-        }
+      toast.error(t("profilePage.saveFailed"));
     }
-};
+  } finally {
+    busy.value = null;
+  }
+}
 
-// Delete User Notification
-const deleteUserNotification = async (userNotificationID) => {
-    try {
-        Swal.fire({
-            title: 'Deleting...',
-            text: 'Please wait while we remove the notification.',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading()
-            }
-        });
-
-        const response = await auth.fetchProtectedApi(`/api/user-notifications/${userNotificationID}`, {}, 'DELETE');
-
-        if (response.status) {
-            await fetchUserNotifications();
-            Swal.fire({
-                icon: 'success',
-                title: 'Deleted!',
-                text: 'Notification deleted successfully.',
-                timer: 1500,
-                showConfirmButton: false
-            });
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: 'Failed to delete notification.',
-                timer: 2000,
-                showConfirmButton: false
-            });
-        }
-    } catch (error) {
-        console.error(error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: 'An error occurred.',
-            timer: 2000,
-            showConfirmButton: false
-        });
-    }
-};
-// Load data on mount
-onMounted(() => {
-    fetchUserNotifications();
-    fetchNotificationNames();
+onMounted(async () => {
+  await load();
+  loading.value = false;
 });
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-11/12">
-        <section class="bg-white shadow-md rounded-xl border">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b gap-3">
-                <h5 class="text-lg font-semibold text-gray-700">User Notifications</h5>
-            </div>
-            <div class="overflow-x-auto p-4">
-                <table class="min-w-full table-auto border-collapse border border-gray-200 text-sm text-left">
-                    <thead class="bg-gray-100">
-                        <tr class="text-gray-700">
-                            <th class="border px-4 py-2">Notification Name</th>
-                            <th class="border px-4 py-2">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="notification in notificationNames" :key="notification.id">
-                            <td class="py-2 px-4 border">{{ notification.name }}</td>
-                            <td class="py-2 px-4 border">
-                                <!-- <label class="inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" :checked="isNotificationEnabled(notification.id)"
-                                        @change="handleToggleNotification(notification)" class="sr-only peer" />
-                                    <div class="relative w-11 h-6 bg-green-500 rounded-full peer peer-checked:bg-gray-200">
-                                        <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-5"></div>
-                                    </div>
-                                    <span class="ml-2 text-sm">
-                                        {{ isNotificationEnabled(notification.id) ? 'Enabled' : 'Disabled' }}
-                                    </span>
-                                </label> -->
-                                <label class="inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" :checked="isNotificationEnabled(notification.id)"
-                                        @change="handleToggleNotification(notification)" class="sr-only" />
-                                    <!-- Toggle -->
-                                    <div class="relative w-11 h-6 rounded-full transition-colors duration-200" :class="isNotificationEnabled(notification.id)
-                                        ? 'bg-green-500'
-                                        : 'bg-gray-200'">
-                                        <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full
-                   transition-transform duration-200" :class="isNotificationEnabled(notification.id)
-                    ? 'translate-x-5'
-                    : 'translate-x-0'"></div>
-                                    </div>
-                                    <!-- Text -->
-                                    <span class="ml-2 text-sm font-medium" :class="isNotificationEnabled(notification.id)
-                                        ? 'text-green-600'
-                                        : 'text-gray-700'">
-                                        {{ isNotificationEnabled(notification.id) ? 'Enabled' : 'Disabled' }}
-                                    </span>
-                                </label>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </div>
+  <div class="flex flex-col gap-6">
+    <AzPageHeader :title="t('accountNav.notifications')" :description="t('notifySettings.description')">
+      <AzButton variant="quiet" :to="{ name: routes.notifications }">{{ t('notifySettings.seeAll') }}</AzButton>
+    </AzPageHeader>
+
+    <AzSkeleton v-if="loading" :lines="4" height="4rem" />
+
+    <AzCard v-else-if="!channels.length">
+      <AzEmptyState :title="t('notifySettings.noneTitle')" :description="t('notifySettings.noneText')" />
+    </AzCard>
+
+    <AzCard v-else :padded="false">
+      <ul class="divide-y divide-line">
+        <li v-for="c in channels" :key="c.id" class="flex items-center gap-4 px-5 py-4">
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary-soft-ink">
+            <component :is="iconFor(c.name)" class="h-5 w-5" aria-hidden="true" />
+          </span>
+          <span class="min-w-0 flex-1">
+            <span :id="`channel-${c.id}`" class="block font-medium text-ink">{{ c.name }}</span>
+            <span v-if="helpKey(c.name)" class="block text-sm text-ink-muted">{{ t(helpKey(c.name)) }}</span>
+          </span>
+          <!-- Switch -->
+          <button type="button" role="switch" :aria-checked="!!recordFor(c.id)" :aria-labelledby="`channel-${c.id}`" :disabled="busy === c.id"
+            class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-60"
+            :class="recordFor(c.id) ? 'bg-primary' : 'bg-line-strong'" @click="toggle(c)">
+            <span class="inline-block h-5 w-5 rounded-full bg-white shadow transition-transform" :class="recordFor(c.id) ? 'translate-x-6' : 'translate-x-1'" />
+          </button>
+        </li>
+      </ul>
+    </AzCard>
+  </div>
 </template>

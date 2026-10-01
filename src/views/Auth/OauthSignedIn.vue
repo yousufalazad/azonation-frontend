@@ -1,33 +1,30 @@
+<!-- Google sends people here after signing in; the session cookie is already set -->
 <script setup>
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
-import Swal from "sweetalert2";
+import { useI18n } from "vue-i18n";
 import { authStore as auth } from "@/store/authStore";
+import { useToast } from "@/composables/useToast";
+import { Loader2 } from "lucide-vue-next";
 
 const router = useRouter();
+const { t } = useI18n();
+const toast = useToast();
+const DASHBOARDS = { individual: "individual-dashboard-index", organisation: "org-dashboard-index", superadmin: "superadmin-dashboard-index" };
 
 onMounted(async () => {
-  // No token in URL. Use session cookie to call /api/me
   auth._initPromise = auth.fetchUser();
-  const ok = await auth._initPromise;
-
-  if (!ok) {
-    await Swal.fire({ icon: "error", title: "Couldn’t sign you in", text: "Please try again." });
+  if (!(await auth._initPromise)) {
+    toast.error(t("signup.googleFailed"));
     router.replace({ name: "login" });
     return;
   }
-
-  const routes = {
-    individual: "individual-dashboard-index",
-    organisation: "org-dashboard-index",
-    superadmin: "superadmin-dashboard-index",
-  };
-  router.replace({ name: routes[auth.user.type] || "login" });
+  router.replace({ name: DASHBOARDS[auth.user.type] || "login" });
 });
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center">
-    <p class="text-sm text-gray-600">Signing you in…</p>
+  <div class="flex min-h-screen items-center justify-center gap-3 bg-canvas text-ink-2" role="status">
+    <Loader2 class="h-5 w-5 animate-spin" aria-hidden="true" />{{ t('signup.signingIn') }}
   </div>
 </template>

@@ -1,246 +1,228 @@
-<!-- meeting view -->
-
+<!-- One meeting: when and where, agenda, attachments, and links to attendance and minutes -->
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { authStore } from '../../../store/authStore';
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import dayjs from "dayjs";
+import { authStore } from "../../../store/authStore";
+import { formatDate, humanize } from "@/helpers/format";
+import { safeUrl } from "@/helpers/sanitizeHtml";
+import { useToast } from "@/composables/useToast";
+import { useConfirm } from "@/composables/useConfirm";
+import { CalendarDays, Clock, MapPin, Video, FileText, Users, UserPlus, Pencil, Trash2, Paperclip } from "lucide-vue-next";
 
-const router = useRouter();
 const auth = authStore;
 const route = useRoute();
-const record = ref({});
+const router = useRouter();
+const { t } = useI18n();
+const toast = useToast();
+const confirm = useConfirm();
 
-// Selected Record ID
-const selectedRecordId = ref(route.params.id);
+const id = computed(() => route.params.id);
+const meeting = ref(null);
+const minutesId = ref(null);
+const loading = ref(true);
+const notFound = ref(false);
 
-// Fetch meeting details on mount
-const fetchMeetingDetails = async () => {
+async function load() {
+  const [res, minutes] = await Promise.all([
+    auth.fetchProtectedApi(`/api/meetings/${id.value}`, {}, "GET"),
+    auth.fetchProtectedApi("/api/meeting-minutes", {}, "GET"),
+  ]);
+  if (!res?.status) {
+    notFound.value = true;
+    return;
+  }
+  meeting.value = res.data;
+  minutesId.value = (minutes?.status ? minutes.data : []).find((m) => String(m.meeting_id) === String(id.value))?.id ?? null;
+}
+
+const time = (v) => (v ? dayjs(`2000-01-01 ${v}`).format("h:mm A") : "");
+const timeText = computed(() => {
+  const m = meeting.value;
+  if (!m) return "";
+  const s = time(m.start_time);
+  const e = time(m.end_time);
+  return s ? (e ? `${s} – ${e}` : s) : t("meetings.noTime");
+});
+
+const state = computed(() => {
+  const m = meeting.value;
+  if (!m) return null;
+  if (m.is_active === 0 || m.is_active === false) return "inactive";
+  if (!m.date) return "upcoming";
+  const d = dayjs(m.date).startOf("day");
+  const today = dayjs().startOf("day");
+  return d.isSame(today) ? "today" : d.isAfter(today) ? "upcoming" : "past";
+});
+const stateTone = { today: "warning", upcoming: "info", past: "neutral", inactive: "neutral" };
+
+const asList = (v) => {
+  if (!v) return [];
+  if (Array.isArray(v)) return v;
   try {
-    const response = await auth.fetchProtectedApi(`/api/meetings/${selectedRecordId.value}`, {}, 'GET');
-    record.value = response.status ? response.data : {};
-  } catch (error) {
-    console.error('Error fetching meetings:', error);
-    record.value = {};
+    const parsed = JSON.parse(v);
+    return Array.isArray(parsed) ? parsed : [String(v)];
+  } catch {
+    return String(v).split(",").map((s) => s.trim()).filter(Boolean);
   }
 };
 
-// Fetch the meeting details on component mount
-onMounted(() => {
-  fetchMeetingDetails();
+const details = computed(() => {
+  const m = meeting.value;
+  if (!m) return [];
+  return [
+    { label: "meetingView.shortName", value: m.short_name },
+    { label: "meetingView.subject", value: m.subject },
+    { label: "meetingView.how", value: m.conduct_type_name },
+    { label: "meetingView.type", value: m.meeting_type ? humanize(m.meeting_type) : "" },
+    { label: "meetingView.mode", value: m.meeting_mode ? humanize(m.meeting_mode) : "" },
+    { label: "meetingView.priority", value: m.priority ? humanize(m.priority) : "" },
+    { label: "meetingView.duration", value: m.duration ? t("meetingView.minutes", { n: m.duration }) : "" },
+    { label: "meetingView.reminder", value: m.reminder_time ? t("meetingView.minutesBefore", { n: m.reminder_time }) : "" },
+    { label: "meetingView.repeat", value: m.repeat_frequency ? humanize(m.repeat_frequency) : "" },
+    { label: "meetingView.host", value: m.meeting_host },
+    { label: "meetingView.tags", value: asList(m.tags).join(", ") },
+  ].filter((r) => r.value);
+});
+
+const textSections = computed(() => {
+  const m = meeting.value;
+  if (!m) return [];
+  return [
+    { label: "meetingView.agenda", value: m.agenda },
+    { label: "meetingView.descriptionLabel", value: m.description },
+    { label: "meetingView.requirements", value: m.requirements },
+    { label: "meetingView.note", value: m.note },
+  ].filter((s) => s.value);
+});
+
+const videoLink = computed(() => safeUrl(meeting.value?.video_conference_link));
+
+async function remove() {
+  const ok = await confirm({
+    title: t("meetings.deleteTitle", { name: meeting.value.name }),
+    message: t("meetings.deleteText"),
+    confirmText: t("meetings.delete"),
+    danger: true,
+  });
+  if (!ok) return;
+  const res = await auth.fetchProtectedApi(`/api/meetings/${id.value}`, {}, "DELETE");
+  if (res?.status) {
+    toast.success(t("meetings.deleted"));
+    router.push({ name: "index-meeting" });
+  } else {
+    toast.error(t("meetings.deleteFailed"));
+  }
+}
+
+onMounted(async () => {
+  await load();
+  loading.value = false;
 });
 </script>
 
 <template>
-  <div class="container mx-auto max-w-7xl w-10/12 p-6 bg-white rounded-lg shadow-md mt-10">
-    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-      <h5 class="text-xl font-semibold text-center sm:text-left">
-        Meeting Details
-      </h5>
+  <div class="mx-auto flex max-w-5xl flex-col gap-6">
+    <AzSkeleton v-if="loading" :lines="6" height="2.5rem" />
 
-      <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-        <button @click="router.push({ name: 'edit-meeting', params: { selectedRecordId } })"
-          class="btn-primary mr-2 w-full sm:w-auto">
-          Meeting Edit
-        </button>
+    <AzCard v-else-if="notFound">
+      <AzEmptyState :title="t('meetingView.notFound')" :description="t('meetingView.notFoundText')">
+        <AzButton :to="{ name: 'index-meeting' }">{{ t('meetings.title') }}</AzButton>
+      </AzEmptyState>
+    </AzCard>
 
-        <button @click="router.push({ name: 'index-meeting' })" class="btn-primary w-full sm:w-auto">
-          Back to Meeting List
-        </button>
-      </div>
-    </div>
+    <template v-else-if="meeting">
+      <AzPageHeader :title="meeting.name" :back="{ name: 'index-meeting' }" :back-label="t('meetings.title')">
+        <AzButton variant="danger" @click="remove">
+          <template #icon><Trash2 class="h-[18px] w-[18px]" /></template>
+          {{ t('common.delete') }}
+        </AzButton>
+        <AzButton :to="{ name: 'edit-meeting', params: { id: meeting.id } }">
+          <template #icon><Pencil class="h-[18px] w-[18px]" /></template>
+          {{ t('meetings.edit') }}
+        </AzButton>
+      </AzPageHeader>
 
+      <!-- When and where -->
+      <section class="-mt-2 grid gap-4 md:grid-cols-3">
+        <div class="flex items-start gap-3 rounded-card border border-line bg-surface p-4 shadow-card">
+          <CalendarDays class="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+          <div class="min-w-0">
+            <p class="text-sm text-ink-muted">{{ t('meetingView.date') }}</p>
+            <p class="font-semibold text-ink">{{ meeting.date ? formatDate(meeting.date) : t('meetings.noDate') }}</p>
+            <AzBadge v-if="state" class="mt-1" :tone="stateTone[state]">{{ t(`meetings.${state}`) }}</AzBadge>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 rounded-card border border-line bg-surface p-4 shadow-card">
+          <Clock class="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+          <div class="min-w-0">
+            <p class="text-sm text-ink-muted">{{ t('meetingView.time') }}</p>
+            <p class="font-semibold text-ink">{{ timeText }}</p>
+            <p v-if="meeting.timezone" class="text-sm text-ink-muted">{{ meeting.timezone }}</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 rounded-card border border-line bg-surface p-4 shadow-card">
+          <component :is="meeting.venue ? MapPin : Video" class="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+          <div class="min-w-0">
+            <p class="text-sm text-ink-muted">{{ t('meetings.where') }}</p>
+            <p class="break-words font-semibold text-ink">{{ meeting.venue || (videoLink ? t('meetings.online') : '—') }}</p>
+            <a v-if="videoLink" :href="videoLink" target="_blank" rel="noopener noreferrer" class="text-sm font-semibold text-primary hover:underline">
+              {{ t('meetingView.joinOnline') }}
+            </a>
+            <p v-if="meeting.access_code" class="text-sm text-ink-muted">{{ t('meetingView.accessCode') }}: <span class="font-mono text-ink">{{ meeting.access_code }}</span></p>
+          </div>
+        </div>
+      </section>
 
-    <div class="overflow-x-auto">
-      <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-        <tbody class="text-gray-600 text-md font-medium">
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Sl</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.id }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Name</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.name }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Short Name</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.short_name }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Date</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.date }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Start Time</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.start_time }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">End Time</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.end_time }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Meeting Type</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.meeting_type }}</td>
-          </tr>
+      <!-- Next steps for this meeting -->
+      <section class="grid gap-3 sm:grid-cols-3">
+        <AzButton variant="secondary" block :to="{ name: 'meeting-attendances', params: { id: meeting.id } }">
+          <template #icon><Users class="h-[18px] w-[18px]" /></template>
+          {{ t('meetings.attendance') }}
+        </AzButton>
+        <AzButton variant="secondary" block :to="{ name: 'meeting-guest-attendance', params: { id: meeting.id } }">
+          <template #icon><UserPlus class="h-[18px] w-[18px]" /></template>
+          {{ t('meetings.guests') }}
+        </AzButton>
+        <AzButton variant="secondary" block
+          :to="minutesId ? { name: 'view-meeting-minutes', params: { id: minutesId } } : { name: 'create-meeting-minutes', params: { meetingId: meeting.id } }">
+          <template #icon><FileText class="h-[18px] w-[18px]" /></template>
+          {{ minutesId ? t('meetings.viewMinutes') : t('meetings.addMinutes') }}
+        </AzButton>
+      </section>
 
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Meeting Mode</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.meeting_mode }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Duration</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.duration }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Priority</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.priority }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">RSVP Status</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.rsvp_status }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Video Conference Link</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.video_conference_link }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Access Code</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.access_code }}</td>
-          </tr>
+      <AzCard v-for="section in textSections" :key="section.label" :title="t(section.label)">
+        <p class="whitespace-pre-line text-[15px] leading-relaxed text-ink-2">{{ section.value }}</p>
+      </AzCard>
 
-          <!-- <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Subject</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.subject }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Timezone</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.timezone }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Recording Link</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.recording_link }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Meeting Host</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.meeting_host }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Requirements</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.requirements }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Max Participants</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.max_participants }}</td>
-          </tr> -->
+      <AzCard v-if="details.length" :title="t('meetingView.details')" :padded="false">
+        <dl class="divide-y divide-line">
+          <div v-for="row in details" :key="row.label" class="flex flex-wrap justify-between gap-x-4 gap-y-1 px-5 py-3">
+            <dt class="text-sm text-ink-muted">{{ t(row.label) }}</dt>
+            <dd class="max-w-full break-words text-[15px] font-medium text-ink">{{ row.value }}</dd>
+          </div>
+        </dl>
+      </AzCard>
 
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Address</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.address }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Description</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.description }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Agenda</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.agenda }}</td>
-          </tr>
-
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Reminder Time</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.reminder_time }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Repeat Frequency</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.repeat_frequency }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Conduct Type</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.conduct_type_name }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Note</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.note }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Tags</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ record.tags }}</td>
-          </tr>
-
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Images</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">
-              <div v-if="record.images && record.images.length">
-                <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <img v-for="(img, index) in record.images" :key="img.id || index" :src="img.image_url"
-                    alt="History Image" class="max-w-full rounded-lg" />
-                </div>
-              </div>
-              <div v-else>
-                <p class="text-gray-700">No images available</p>
-              </div>
-            </td>
-          </tr>
-
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Documents</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">
-              <div v-if="record.documents && record.documents.length">
-                <ul class="mt-2 list-disc list-inside text-blue-600">
-                  <li v-for="(doc, index) in record.documents" :key="doc.id || index">
-                    <a :href="doc.document_url" target="_blank" class="hover:text-blue-800">
-                      {{ doc.file_name || 'Download Document' }}
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <AzCard v-if="meeting.images?.length || meeting.documents?.length" :title="t('meetingView.attachments')">
+        <div class="flex flex-col gap-4">
+          <div v-if="meeting.images?.length" class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <a v-for="img in meeting.images" :key="img.id" :href="safeUrl(img.image_url)" target="_blank" rel="noopener noreferrer">
+              <img :src="img.image_url" :alt="img.file_name || t('meetingView.attachments')"
+                class="aspect-[4/3] w-full max-w-none rounded-control border border-line object-cover hover:opacity-90" loading="lazy" />
+            </a>
+          </div>
+          <ul v-if="meeting.documents?.length" class="flex flex-col gap-2">
+            <li v-for="doc in meeting.documents" :key="doc.id" class="flex items-center gap-2">
+              <Paperclip class="h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />
+              <a :href="safeUrl(doc.document_url)" target="_blank" rel="noopener noreferrer" class="truncate text-[15px] text-primary hover:underline">
+                {{ doc.file_name || t('meetingView.document') }}
+              </a>
+            </li>
+          </ul>
+        </div>
+      </AzCard>
+    </template>
   </div>
 </template>
-
-<style scoped>
-.btn-primary {
-  background-color: #3b82f6;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-weight: 600;
-  transition: background-color 0.3s;
-}
-
-.btn-primary:hover {
-  background-color: #2563eb;
-}
-</style>

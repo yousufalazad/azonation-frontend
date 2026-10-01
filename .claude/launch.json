@@ -6,6 +6,18 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 5173
+    },
+    {
+      "name": "azonation-app",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "D:/xampp/htdocs/Azonation/azonation-app", "run", "dev"],
+      "port": 5174
+    },
+    {
+      "name": "azonation-api",
+      "runtimeExecutable": "D:/php-8.5.11/php.exe",
+      "runtimeArgs": ["D:/xampp/htdocs/Azonation/azonation-api/artisan", "serve", "--port=8001"],
+      "port": 8001
     }
   ]
 }

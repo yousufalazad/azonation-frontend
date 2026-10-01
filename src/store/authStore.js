@@ -1,7 +1,13 @@
 import { reactive } from "vue";
 import router from "../router/router";
 import axios from "axios";
-import Swal from "sweetalert2";
+import { i18n } from "@/i18n";
+import { useToast } from "@/composables/useToast";
+import { useConfirm } from "@/composables/useConfirm";
+
+const toast = useToast();
+const confirmDialog = useConfirm();
+const t = (...args) => i18n.global.t(...args);
 import functions from "../global/cookie";
 
 const api = axios.create({
@@ -39,7 +45,8 @@ api.interceptors.request.use(
     // ❌ Bearer token আর নেই। শুধু active org header
     const activeOrg =
       authStore.currentOrgId || localStorage.getItem("active_org");
-    if (activeOrg) {
+    // A request may name its own org (e.g. switchOrg); otherwise use the active one
+    if (activeOrg && !config.headers["X-Org-Id"]) {
       config.headers["X-Org-Id"] = activeOrg;
     }
     return config;
@@ -71,18 +78,69 @@ api.interceptors.response.use(
 
     // 🔴 403 → permission error
     if (status === 403) {
-      Swal.fire({
-        icon: "error",
-        title: "Access Denied",
-        text:
-          error.response?.data?.message ||
-          "You don't have permission to perform this action.",
-      });
+      toast.error(t("authMessages.denied"));
     }
 
     return Promise.reject(error);
   },
 );
+
+// ============================
+// JSON REQUEST HELPER
+// ============================
+const BODY_METHODS = ["POST", "PUT", "PATCH", "DELETE"];
+
+// Identical GET requests made at the same moment (e.g. header and page both
+// loading the same list) share one network call.
+const inflightGets = new Map();
+
+function toResult(error) {
+  return {
+    status: false,
+    errors: error.response?.data?.errors || error.response?.data || error.message,
+  };
+}
+
+// Each caller gets its own copy, so one component changing the data
+// cannot change what another component shows.
+function copyOf(data) {
+  try {
+    return structuredClone(data);
+  } catch {
+    return data;
+  }
+}
+
+async function jsonRequest(endPoint, params, requestType, logLabel) {
+  const method = String(requestType || "GET").toUpperCase();
+  const send = () =>
+    api({
+      method,
+      url: endPoint,
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      data: BODY_METHODS.includes(method) ? params : null,
+      params: method === "GET" ? params : null,
+    }).then((response) => response.data);
+
+  try {
+    if (method !== "GET") return await send();
+
+    const key = `${authStore.currentOrgId ?? ""}|${endPoint}|${JSON.stringify(params ?? {})}`;
+    let pending = inflightGets.get(key);
+    if (!pending) {
+      pending = send().finally(() => inflightGets.delete(key));
+      inflightGets.set(key, pending);
+    }
+    return copyOf(await pending);
+  } catch (error) {
+    console.error(logLabel, error);
+    return toResult(error);
+  }
+}
+
+// Browser storage keys that can hold personal data; cleared on logout
+// (reset_email is kept: it lives in sessionStorage only for the password-reset flow)
+const PERSONAL_DATA_KEYS = ["azonation:user", "user"];
 
 // ============================
 // AUTH STORE
@@ -121,6 +179,11 @@ const authStore = reactive({
     this.orgAccess = [];
     this.currentOrgId = null;
     localStorage.removeItem("active_org");
+    // Personal data cached by profile pages must not outlive the session
+    PERSONAL_DATA_KEYS.forEach((key) => {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    });
     functions.deleteCookie("auth");
     functions.deleteCookie("user");
   },
@@ -186,56 +249,15 @@ const authStore = reactive({
   },
 
   // ============================
-  async fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
-    try {
-      const response = await api({
-        method: requestType.toUpperCase(),
-        url: endPoint,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        data: ["POST", "PUT"].includes(requestType.toUpperCase())
-          ? params
-          : null,
-        params: requestType.toUpperCase() === "GET" ? params : null,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Public API error:", error);
-      return {
-        status: false,
-        errors:
-          error.response?.data?.errors || error.response?.data || error.message,
-      };
-    }
+  // Public and protected calls share one implementation: the session cookie is
+  // sent on every request, and the backend decides what each route allows.
+  fetchPublicApi(endPoint = "", params = {}, requestType = "GET") {
+    return jsonRequest(endPoint, params, requestType, "Public API error:");
   },
 
   // ============================
-  async fetchProtectedApi(endPoint = "", params = {}, requestType = "GET") {
-    try {
-      const response = await api({
-        method: requestType.toUpperCase(),
-        url: endPoint,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-        data: ["POST", "PUT"].includes(requestType.toUpperCase())
-          ? params
-          : null,
-        params: requestType.toUpperCase() === "GET" ? params : null,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Protected API error:", error);
-      return {
-        status: false,
-        errors:
-          error.response?.data?.errors || error.response?.data || error.message,
-      };
-    }
+  fetchProtectedApi(endPoint = "", params = {}, requestType = "GET") {
+    return jsonRequest(endPoint, params, requestType, "Protected API error:");
   },
 
   // ============================
@@ -286,66 +308,34 @@ const authStore = reactive({
             router.push({ name: "login" });
         }
 
-        Swal.fire({
-          icon: "success",
-          title: "Login Successful",
-          text: "You have successfully logged in.",
-          timer: 1500,
-          showConfirmButton: false,
-        });
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Login failed",
-          text: response.message || "Invalid login credentials.",
-        });
+        const tooMany = /too many/i.test(String(response?.errors?.message || response?.errors || ""));
+        toast.error(t(tooMany ? "authPages.tooMany" : "authMessages.loginFailed"));
       }
     } catch (error) {
       console.error("Login error:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Login error",
-        text: "An unexpected error occurred. Please try again.",
-      });
+      toast.error(t("authPages.genericError"));
     }
   },
 
   // ============================
-  logout() {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "You will be logged out.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, log out!",
-      cancelButtonText: "Cancel",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await this.fetchProtectedApi("/api/logout", {}, "POST");
-
-          this.clearSession();
-          this._initPromise = null;
-
-          router.push({ name: "login" });
-
-          Swal.fire({
-            icon: "success",
-            title: "Logged Out",
-            text: "You have been logged out successfully.",
-            timer: 2000,
-            showConfirmButton: false,
-          });
-        } catch (error) {
-          console.error("Logout failed:", error);
-          Swal.fire({
-            icon: "error",
-            title: "Logout Failed",
-            text: "There was an issue logging out. Please try again.",
-          });
-        }
-      }
+  async logout() {
+    const ok = await confirmDialog({
+      title: t("authMessages.logoutTitle"),
+      message: t("authMessages.logoutText"),
+      confirmText: t("account.logout"),
     });
+    if (!ok) return;
+    try {
+      await this.fetchProtectedApi("/api/logout", {}, "POST");
+      this.clearSession();
+      this._initPromise = null;
+      router.push({ name: "login" });
+      toast.success(t("authMessages.loggedOut"));
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast.error(t("authPages.genericError"));
+    }
   },
 
   getUserType() {
@@ -363,7 +353,10 @@ const authStore = reactive({
       this.isSwitchingOrg = true;
 
       // API call to validate + get fresh permissions
-      const res = await this.fetchProtectedApi("/api/org/switch");
+      // Ask for the permissions of the org being switched TO (the backend reads X-Org-Id)
+      const { data: res } = await api.get("/api/org/switch", {
+        headers: { "X-Org-Id": orgId },
+      });
 
       if (res.status) {
         const updatedOrg = res.data;
@@ -384,11 +377,7 @@ const authStore = reactive({
       }
     } catch (err) {
       console.error("Org switch failed:", err);
-      Swal.fire({
-        icon: "error",
-        title: "Switch Failed",
-        text: "Unable to switch organization",
-      });
+      toast.error(t("authMessages.switchFailed"));
     } finally {
       // 🔥 Stop loading
       this.isSwitchingOrg = false;

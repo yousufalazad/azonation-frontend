@@ -1,182 +1,174 @@
+<!-- Renewal settings: the renewal periods the organisation offers (and when they fall due),
+     and the fee for each membership type and period -->
 <script setup>
-import { ref, onMounted } from 'vue';
-import Swal from 'sweetalert2';
-import { authStore } from '../../../../store/authStore';
+import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import { useToast } from "@/composables/useToast";
+import { useConfirm } from "@/composables/useConfirm";
+import { CurrencyService } from "@/helpers/currency";
+import { money, shortDate } from "@/helpers/billing";
+import { CalendarClock, Coins, Plus, MoreVertical, Pencil, Trash2 } from "lucide-vue-next";
+import CycleFormModal from "./components/CycleFormModal.vue";
+import FeeFormModal from "./components/FeeFormModal.vue";
 
 const auth = authStore;
-const renewalCycles = ref([]); // Available membership renewal cycles
-const orgRenewalCycleList = ref([]); // Organisation-specific renewal cycles
+const { t, locale } = useI18n();
+const toast = useToast();
+const confirm = useConfirm();
 
-// Fetch available membership renewal cycles
-const fetchRenewalCycles = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/membership-renewal-cycles', {}, 'GET');
-        renewalCycles.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching renewal cycles:', error);
-    }
+const loading = ref(true);
+const cycles = ref([]);
+const fees = ref([]);
+const types = ref([]);
+const platformCycles = ref([]);
+const editingCycle = ref(undefined); // undefined = closed, null = new
+const editingFee = ref(undefined);
+
+const isOrg = computed(() => auth.user?.type === "organisation");
+const can = (p) => isOrg.value || auth.hasPermission(p);
+
+const monthName = (m) => new Date(2026, m - 1, 1).toLocaleDateString(locale.value === "bn" ? "bn-BD" : "en-GB", { month: "long" });
+const whenText = (c) => (c.alignment === "member_anniversary" || !c.anchor_month
+  ? t("renewals.align_member_anniversary")
+  : t("renewals.everyYearOn", { day: c.anchor_day, month: monthName(c.anchor_month) }));
+const typeName = (f) => f.org_membership_type?.membership_type?.name || "—";
+const cycleName = (f) => f.org_membership_renewal_cycle?.member_renewal_cycle?.name || "—";
+const validText = (f) => {
+  if (!f.valid_from && !f.valid_to) return t("renewals.alwaysValid");
+  return `${shortDate(f.valid_from, locale.value) || "…"} – ${shortDate(f.valid_to, locale.value) || "…"}`;
 };
+const expired = (f) => f.valid_to && String(f.valid_to).slice(0, 10) < new Date().toISOString().slice(0, 10);
 
-// Fetch Org Membership Renewal Cycles
-const fetchOrgRenewalCycles = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/org-membership-renewal-cycles', {}, 'GET');
-        orgRenewalCycleList.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching organisation renewal cycles:', error);
-    }
-};
+async function load() {
+  const [c, f, ty, pc] = await Promise.all([
+    auth.fetchProtectedApi("/api/org-membership-renewal-cycles", {}, "GET"),
+    auth.fetchProtectedApi("/api/org-membership-renewal-prices", {}, "GET"),
+    auth.fetchProtectedApi("/api/org-membership-types", {}, "GET"),
+    auth.fetchProtectedApi("/api/membership-renewal-cycles", {}, "GET"),
+  ]);
+  cycles.value = c?.status ? c.data || [] : [];
+  fees.value = f?.status ? f.data || [] : [];
+  types.value = ty?.status ? (ty.data || []).filter((x) => x.is_active !== false && x.is_active !== 0) : [];
+  platformCycles.value = pc?.status ? (pc.data || []).filter((x) => Number(x.is_active) === 1) : [];
+}
 
-// Check if already added
-const isAlreadyAdded = (renewalCycleId) => {
-    return orgRenewalCycleList.value.some(item => item.member_renewal_cycle_id === renewalCycleId);
-};
+async function removeCycle(c) {
+  const ok = await confirm({ title: t("renewals.removePeriodTitle"), message: t("renewals.removePeriodText", { name: c.member_renewal_cycle?.name }), confirmText: t("common.delete"), danger: true });
+  if (!ok) return;
+  const res = await auth.fetchProtectedApi(`/api/org-membership-renewal-cycles/${c.id}`, {}, "DELETE");
+  if (res?.status) {
+    toast.success(t("renewals.removed"));
+    await load();
+  } else {
+    toast.error(res?.errors?.message || t("profilePage.saveFailed"));
+  }
+}
 
-// Get Org Renewal Cycle ID
-const getOrgRenewalCycleID = (renewalCycleId) => {
-    const found = orgRenewalCycleList.value.find(item => item.member_renewal_cycle_id === renewalCycleId);
-    return found ? found.id : null;
-};
+async function removeFee(f) {
+  const ok = await confirm({ title: t("renewals.removeFeeTitle"), message: t("renewals.removeFeeText", { type: typeName(f), period: cycleName(f) }), confirmText: t("common.delete"), danger: true });
+  if (!ok) return;
+  const res = await auth.fetchProtectedApi(`/api/org-membership-renewal-prices/${f.id}`, {}, "DELETE");
+  if (res?.status) {
+    toast.success(t("renewals.removed"));
+    await load();
+  } else {
+    toast.error(t("profilePage.saveFailed"));
+  }
+}
 
-// Handle Toggle
-const handleToggle = async (cycle) => {
-    const alreadyAdded = isAlreadyAdded(cycle.id);
-    const orgRenewalCycleID = getOrgRenewalCycleID(cycle.id);
+const cycleActions = (c) => [
+  ...(can("org-membership-renewal-cycle.update") ? [{ label: t("common.edit"), icon: Pencil, onSelect: () => (editingCycle.value = c) }] : []),
+  ...(can("org-membership-renewal-cycle.delete") ? [{ label: t("common.delete"), icon: Trash2, separatorBefore: true, onSelect: () => removeCycle(c) }] : []),
+];
+const feeActions = (f) => [
+  ...(can("org-membership-renewal-price.update") ? [{ label: t("common.edit"), icon: Pencil, onSelect: () => (editingFee.value = f) }] : []),
+  ...(can("org-membership-renewal-price.delete") ? [{ label: t("common.delete"), icon: Trash2, separatorBefore: true, onSelect: () => removeFee(f) }] : []),
+];
 
-    if (!alreadyAdded) {
-        const method = 'POST';
-        const apiUrl = '/api/org-membership-renewal-cycles';
+async function saved() {
+  editingCycle.value = undefined;
+  editingFee.value = undefined;
+  await load();
+}
 
-        const payload = {
-            member_renewal_cycle_id: cycle.id,
-            is_active: 1
-        };
-
-        try {
-            const result = await Swal.fire({
-                title: 'Are you sure?',
-                text: `Do you want to add this renewal cycle?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, proceed!',
-                cancelButtonText: 'Cancel'
-            });
-
-            if (result.isConfirmed) {
-                const response = await auth.fetchProtectedApi(apiUrl, payload, method);
-                if (response.status) {
-                    await Swal.fire('Success!', `Renewal cycle added successfully.`, 'success');
-                    fetchOrgRenewalCycles();
-                } else {
-                    Swal.fire('Failed!', 'An error occurred. Please try again.', 'error');
-                }
-            }
-        } catch (error) {
-            console.error('Error handling toggle:', error);
-            Swal.fire('Error!', 'An error occurred. Please try again.', 'error');
-        }
-    } else {
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: `Do you want to remove this renewal cycle?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'Cancel'
-        });
-
-        if (result.isConfirmed) {
-            await deleteRenewalCycle(orgRenewalCycleID);
-        }
-    }
-};
-
-// Delete Org Renewal Cycle
-const deleteRenewalCycle = async (orgRenewalCycleID) => {
-    try {
-        Swal.fire({
-            title: 'Deleting...',
-            text: 'Please wait while we remove the renewal cycle.',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading()
-            }
-        });
-
-        const response = await auth.fetchProtectedApi(`/api/org-membership-renewal-cycles/${orgRenewalCycleID}`, {}, 'DELETE');
-
-        if (response.status) {
-            await fetchRenewalCycles();
-            await fetchOrgRenewalCycles();
-            Swal.fire({
-                icon: 'success',
-                title: 'Deleted!',
-                text: 'Renewal cycle deleted successfully.',
-                timer: 1500,
-                showConfirmButton: false
-            });
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: 'Failed to delete renewal cycle.',
-                timer: 2000,
-                showConfirmButton: false
-            });
-        }
-    } catch (error) {
-        console.error(error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: 'An error occurred.',
-            timer: 2000,
-            showConfirmButton: false
-        });
-    }
-};
-
-// Load data on mount
-onMounted(() => {
-    fetchRenewalCycles();
-    fetchOrgRenewalCycles();
+onMounted(async () => {
+  await Promise.all([load(), CurrencyService.code ? null : CurrencyService.load()]);
+  loading.value = false;
 });
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-11/12">
-        <section class="bg-white shadow-md rounded-xl border">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b gap-3">
-                <h5 class="text-lg font-semibold text-gray-700">Organisation Membership Renewal Cycles</h5>
-            </div>
+  <div class="mx-auto flex max-w-4xl flex-col gap-6">
+    <AzPageHeader :title="t('renewals.settingsTitle')" :description="t('renewals.settingsDescription')" :back="{ name: 'org-membership-renewal' }" :back-label="t('renewals.title')" />
 
-            <div class="overflow-x-auto p-4">
-                <table class="min-w-full table-auto border-collapse border border-gray-200 text-sm text-left">
-                    <thead class="bg-gray-100">
-                        <tr class="text-gray-700">
-                            <th class="border px-4 py-2">Renewal Cycle</th>
-                            <th class="border px-4 py-2">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="cycle in renewalCycles" :key="cycle.id">
-                            <td class="py-2 px-4 border">{{ cycle.name }} ({{ cycle.duration_in_months }} months)</td>
-                            <td class="py-2 px-4 border">
-                                <label class="inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" :checked="!isAlreadyAdded(cycle.id)"
-                                        @change="handleToggle(cycle)" class="sr-only peer" />
-                                    <div class="relative w-11 h-6 bg-green-500 rounded-full peer peer-checked:bg-gray-200">
-                                        <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-5"></div>
-                                    </div>
-                                    <span class="ml-2 text-sm">
-                                        {{ isAlreadyAdded(cycle.id) ? 'Active' : '' }}
-                                    </span>
-                                </label>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+    <AzSkeleton v-if="loading" :lines="6" height="3rem" />
+
+    <template v-else>
+      <!-- Renewal periods -->
+      <AzCard :padded="false">
+        <template #header>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="flex items-center gap-2 text-lg font-semibold text-ink"><CalendarClock class="h-5 w-5 text-primary" aria-hidden="true" />{{ t('renewals.periods') }}</h2>
+            <AzButton v-if="can('org-membership-renewal-cycle.create') && cycles.length < platformCycles.length" variant="secondary" size="sm" @click="editingCycle = null">
+              <template #icon><Plus class="h-4 w-4" /></template>
+              {{ t('renewals.addPeriod') }}
+            </AzButton>
+          </div>
+        </template>
+        <AzEmptyState v-if="!cycles.length" :title="t('renewals.noPeriodsTitle')" :description="t('renewals.noPeriodsText')">
+          <AzButton v-if="can('org-membership-renewal-cycle.create')" @click="editingCycle = null">{{ t('renewals.addPeriod') }}</AzButton>
+        </AzEmptyState>
+        <ul v-else class="divide-y divide-line">
+          <li v-for="c in cycles" :key="c.id" class="flex items-center gap-3 px-5 py-4">
+            <div class="min-w-0 flex-1">
+              <p class="font-semibold text-ink">{{ t('renewals.cycleLabel', { name: c.member_renewal_cycle?.name, months: Number(c.member_renewal_cycle?.duration_in_months) }) }}</p>
+              <p class="text-sm text-ink-muted">
+                {{ whenText(c) }}<template v-if="c.grace_days"> · {{ t('renewals.graceText', { n: c.grace_days }, c.grace_days) }}</template>
+              </p>
             </div>
-        </section>
-    </div>
+            <AzMenu v-if="cycleActions(c).length" :items="cycleActions(c)" variant="quiet" :aria-label="t('meetings.more', { name: c.member_renewal_cycle?.name })">
+              <template #icon><MoreVertical class="h-[18px] w-[18px]" /></template>
+            </AzMenu>
+          </li>
+        </ul>
+      </AzCard>
+
+      <!-- Fees -->
+      <AzCard :padded="false">
+        <template #header>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="flex items-center gap-2 text-lg font-semibold text-ink"><Coins class="h-5 w-5 text-primary" aria-hidden="true" />{{ t('renewals.fees') }}</h2>
+            <AzButton v-if="can('org-membership-renewal-price.create') && cycles.length && types.length" variant="secondary" size="sm" @click="editingFee = null">
+              <template #icon><Plus class="h-4 w-4" /></template>
+              {{ t('renewals.addFee') }}
+            </AzButton>
+          </div>
+        </template>
+        <AzEmptyState v-if="!types.length" :title="t('renewals.noTypesTitle')" :description="t('renewals.noTypesText')">
+          <AzButton variant="secondary" :to="{ name: 'org-membership-type' }">{{ t('renewals.goToTypes') }}</AzButton>
+        </AzEmptyState>
+        <AzEmptyState v-else-if="!fees.length" :title="t('renewals.noFeesTitle')" :description="cycles.length ? t('renewals.noFeesText') : t('renewals.addPeriodFirst')" />
+        <ul v-else class="divide-y divide-line">
+          <li v-for="f in fees" :key="f.id" class="flex items-center gap-3 px-5 py-4" :class="expired(f) ? 'opacity-60' : ''">
+            <div class="min-w-0 flex-1">
+              <p class="font-semibold text-ink">{{ typeName(f) }} · {{ cycleName(f) }}</p>
+              <p class="text-sm text-ink-muted">
+                {{ validText(f) }}<template v-if="expired(f)"> · {{ t('renewals.expired') }}</template><template v-if="f.org_notes"> · {{ f.org_notes }}</template>
+              </p>
+            </div>
+            <p class="font-semibold tabular-nums text-ink">{{ money(f.unit_amount_minor / 100, { code: f.currency }) }}</p>
+            <AzMenu v-if="feeActions(f).length" :items="feeActions(f)" variant="quiet" :aria-label="t('meetings.more', { name: typeName(f) })">
+              <template #icon><MoreVertical class="h-[18px] w-[18px]" /></template>
+            </AzMenu>
+          </li>
+        </ul>
+      </AzCard>
+    </template>
+
+    <CycleFormModal v-if="editingCycle !== undefined" :cycle="editingCycle" :platform-cycles="platformCycles"
+      :used-cycle-ids="cycles.map((c) => c.member_renewal_cycle_id)" @close="editingCycle = undefined" @saved="saved" />
+    <FeeFormModal v-if="editingFee !== undefined" :fee="editingFee" :types="types" :cycles="cycles" :currency="CurrencyService.code"
+      @close="editingFee = undefined" @saved="saved" />
+  </div>
 </template>

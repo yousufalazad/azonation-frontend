@@ -1,267 +1,87 @@
+<!-- A member's own attendance: how many meetings, events and projects they attended,
+     and each record with its status, across their organisations -->
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
-import { authStore } from '../../../store/authStore';
-import { format } from 'date-fns';
-import Swal from 'sweetalert2';
+import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import { shortDate } from "@/helpers/billing";
+import { CalendarDays, PartyPopper, FolderKanban, CheckCircle2 } from "lucide-vue-next";
 
 const auth = authStore;
+const router = useRouter();
+const { t, locale } = useI18n();
 
-const attendanceStats = ref({
-  meetings_attended: 0,
-  events_attended: 0,
-  projects_participated: 0,
-});
+const loading = ref(true);
+const stats = ref({ meetings: 0, events: 0, projects: 0 });
+const records = ref([]);
+const kind = ref("all");
 
-const pastAttendances = ref([]);
-const pastAttendancesAbsent = ref([]);
+const ICONS = { meeting: CalendarDays, event: PartyPopper, project: FolderKanban };
+const DETAIL = { meeting: "view-individual-meeting", event: "view-individual-event", project: "view-individual-project" };
+const kindOptions = computed(() => [
+  { value: "all", label: t("memberActivity.all") },
+  { value: "meeting", label: t("memberActivity.meetings_title") },
+  { value: "event", label: t("memberActivity.events_title") },
+  { value: "project", label: t("memberActivity.projects_title") },
+]);
+const shown = computed(() => records.value.filter((r) => kind.value === "all" || r.kind === kind.value));
+const manyOrgs = computed(() => new Set(records.value.map((r) => r.org_id)).size > 1);
+const cards = computed(() => [
+  { key: "meetings", icon: CalendarDays, value: stats.value.meetings },
+  { key: "events", icon: PartyPopper, value: stats.value.events },
+  { key: "projects", icon: FolderKanban, value: stats.value.projects },
+]);
 
-const itemsPerPageOptions = [10, 20, 50, 100, 250];
-
-// Attendance pagination
-const currentPageAttended = ref(1);
-const itemsPerPageAttended = ref(10);
-
-// Absences pagination
-const currentPageAbsent = ref(1);
-const itemsPerPageAbsent = ref(10);
-
-// Computed paginated data for attendance
-const paginatedPastAttendances = computed(() => {
-  const start = (currentPageAttended.value - 1) * itemsPerPageAttended.value;
-  return pastAttendances.value.slice(start, start + itemsPerPageAttended.value);
-});
-
-// Computed paginated data for absences
-const paginatedPastAbsences = computed(() => {
-  const start = (currentPageAbsent.value - 1) * itemsPerPageAbsent.value;
-  return pastAttendancesAbsent.value.slice(start, start + itemsPerPageAbsent.value);
-});
-
-// Total pages for pagination
-const totalPagesAttended = computed(() =>
-  Math.ceil(pastAttendances.value.length / itemsPerPageAttended.value)
-);
-const totalPagesAbsent = computed(() =>
-  Math.ceil(pastAttendancesAbsent.value.length / itemsPerPageAbsent.value)
-);
-
-// Reset to page 1 on items per page change
-watch(itemsPerPageAttended, () => {
-  currentPageAttended.value = 1;
-});
-watch(itemsPerPageAbsent, () => {
-  currentPageAbsent.value = 1;
-});
-
-// Format date safely
-const formatDate = (dateStr) => {
-  if (!dateStr) return '—';
-  try {
-    return format(new Date(dateStr), 'dd MMM yyyy');
-  } catch {
-    return '—';
+onMounted(async () => {
+  const res = await auth.fetchProtectedApi("/api/individual/attendance", {}, "GET");
+  if (res?.status) {
+    stats.value = res.data.stats;
+    records.value = res.data.records || [];
   }
-};
-
-// Fetch attendance data
-const fetchAttendanceData = async () => {
-  try {
-    const response = await auth.fetchProtectedApi('/api/individual/attendance', {}, 'GET');
-    attendanceStats.value = response.stats;
-    pastAttendances.value = response.past;
-    pastAttendancesAbsent.value = response.past_absent;
-  } catch (err) {
-    console.error('Failed to fetch attendance data:', err);
-    Swal.fire('Error', 'Unable to load attendance data', 'error');
-  }
-};
-
-onMounted(fetchAttendanceData);
+  loading.value = false;
+});
 </script>
 
 <template>
-  <div class="space-y-8">
-    <!-- Attendance Overview -->
-    <div class="p-6 bg-white rounded-xl shadow-lg mt-8">
-      <h2 class="text-3xl font-semibold text-gray-800 mb-8">Attendance Overview</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
-        <div class="bg-blue-50 rounded-lg p-5 text-center shadow-sm">
-          <p class="text-3xl font-bold text-blue-800">{{ attendanceStats.meetings_attended }}</p>
-          <p class="text-sm text-gray-700 mt-1">Meetings Attended</p>
-        </div>
-        <div class="bg-green-50 rounded-lg p-5 text-center shadow-sm">
-          <p class="text-3xl font-bold text-green-800">{{ attendanceStats.events_attended }}</p>
-          <p class="text-sm text-gray-700 mt-1">Events Attended</p>
-        </div>
-        <div class="bg-yellow-50 rounded-lg p-5 text-center shadow-sm">
-          <p class="text-3xl font-bold text-yellow-800">{{ attendanceStats.projects_participated }}</p>
-          <p class="text-sm text-gray-700 mt-1">Projects Participated</p>
-        </div>
-      </div>
-    </div>
+  <div class="mx-auto flex max-w-4xl flex-col gap-6">
+    <AzPageHeader :title="t('memberActivity.attendance_title')" :description="t('memberActivity.attendance_description')" />
 
-    <!-- Past Attendances -->
-    <div class="p-6 bg-white rounded-xl shadow-lg mt-8">
-      <h3 class="text-xl font-semibold text-gray-700 mb-3">Attendances</h3>
+    <AzSkeleton v-if="loading" :lines="5" height="3.5rem" />
 
-      <!-- Mobile Cards -->
-      <div class="sm:hidden space-y-3">
-        <div
-          v-for="(item, index) in paginatedPastAttendances"
-          :key="item.id"
-          class="bg-white rounded-lg shadow-sm p-3 border border-gray-200"
-        >
-          <div class="text-xs text-gray-500 mb-2 font-semibold">
-            # {{ (currentPageAttended - 1) * itemsPerPageAttended + index + 1 }}
+    <template v-else>
+      <div class="grid gap-4 sm:grid-cols-3">
+        <AzCard v-for="c in cards" :key="c.key">
+          <div class="flex items-center gap-3">
+            <span class="flex h-10 w-10 items-center justify-center rounded-full bg-primary-soft text-primary-soft-ink"><component :is="c.icon" class="h-5 w-5" aria-hidden="true" /></span>
+            <div>
+              <p class="text-sm text-ink-muted">{{ t(`memberActivity.attended_${c.key}`) }}</p>
+              <p class="text-2xl font-semibold tabular-nums text-ink">{{ c.value }}</p>
+            </div>
           </div>
-          <table class="text-sm w-full border-collapse" style="border-spacing: 0;">
-            <tbody>
-              <tr class="border-0 border-b-0">
-                <td class="text-gray-600 w-[110px] pr-2 font-medium">Type</td>
-                <td class="w-3 text-center">:</td>
-                <td class="text-gray-800 break-words">{{ item.type || '—' }}</td>
-              </tr>
-              <tr class="border-0 border-b-0">
-                <td class="text-gray-600 w-[110px] pr-2 font-medium">Title</td>
-                <td class="w-3 text-center">:</td>
-                <td class="text-gray-800 break-words">{{ item.title || '—' }}</td>
-              </tr>
-              <tr class="border-0 border-b-0">
-                <td class="text-gray-600 w-[110px] pr-2 font-medium">Date</td>
-                <td class="w-3 text-center">:</td>
-                <td class="text-gray-800">{{ formatDate(item.date) || '—' }}</td>
-              </tr>
-              <tr class="border-0 border-b-0">
-                <td class="text-gray-600 w-[110px] pr-2 font-medium">Status</td>
-                <td class="w-3 text-center">:</td>
-                <td
-                  :class="{
-                    'text-green-600 font-semibold': item.status === 'attended',
-                    'text-red-500 font-semibold': item.status === 'absent',
-                    'text-gray-500': item.status === 'scheduled',
-                  }"
-                >
-                  {{
-                    item.status === 'attended'
-                      ? 'Attended'
-                      : item.status === 'absent'
-                      ? 'Absent'
-                      : 'Scheduled'
-                  }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        </AzCard>
       </div>
 
-      <!-- Desktop List -->
-      <div class="hidden sm:block space-y-4">
-        <div
-          v-for="(item, index) in paginatedPastAttendances"
-          :key="item.id"
-          class="flex justify-between items-center bg-gray-50 p-4 rounded-lg shadow-sm"
-        >
-          <div>
-            <p class="font-medium text-gray-800">
-              {{ (currentPageAttended - 1) * itemsPerPageAttended + index + 1 }}. {{ item.type }} – {{
-                item.title
-              }}
-            </p>
-            <p class="text-sm text-gray-500">{{ formatDate(item.date) }}</p>
-          </div>
-          <span
-            :class="{
-              'text-green-600 font-semibold': item.status === 'attended',
-              'text-red-500 font-semibold': item.status === 'absent',
-              'text-gray-500': item.status === 'scheduled',
-            }"
-          >
-            {{
-              item.status === 'attended'
-                ? 'Attended'
-                : item.status === 'absent'
-                ? 'Absent'
-                : 'Scheduled'
-            }}
-          </span>
-        </div>
-      </div>
+      <div class="max-w-xl"><AzSegmented v-model="kind" :label="t('memberActivity.attendance_title')" :options="kindOptions" /></div>
 
-      <!-- Pagination Controls -->
-      <PaginationControls
-        :current-page.sync="currentPageAttended"
-        :items-per-page.sync="itemsPerPageAttended"
-        :total-items="pastAttendances.length"
-        :items-per-page-options="itemsPerPageOptions"
-      />
-    </div>
-
-    <!-- Past Absences -->
-    <div class="p-6 bg-white rounded-xl shadow-lg mt-8">
-      <h3 class="text-xl font-semibold text-gray-700 mb-3">Absences</h3>
-
-      <!-- Mobile Cards -->
-      <div class="sm:hidden space-y-3">
-        <div
-          v-for="(item, index) in paginatedPastAbsences"
-          :key="item.id"
-          class="bg-white rounded-lg shadow-sm p-3 border border-gray-200"
-        >
-          <div class="text-xs text-gray-500 mb-2 font-semibold">
-            # {{ (currentPageAbsent - 1) * itemsPerPageAbsent + index + 1 }}
-          </div>
-          <table class="text-sm w-full border-collapse" style="border-spacing: 0;">
-            <tbody>
-              <tr class="border-0 border-b-0">
-                <td class="text-gray-600 w-[110px] pr-2 font-medium">Type</td>
-                <td class="w-3 text-center">:</td>
-                <td class="text-gray-800 break-words">{{ item.type || '—' }}</td>
-              </tr>
-              <tr class="border-0 border-b-0">
-                <td class="text-gray-600 w-[110px] pr-2 font-medium">Title</td>
-                <td class="w-3 text-center">:</td>
-                <td class="text-gray-800 break-words">{{ item.title || '—' }}</td>
-              </tr>
-              <tr class="border-0 border-b-0">
-                <td class="text-gray-600 w-[110px] pr-2 font-medium">Date</td>
-                <td class="w-3 text-center">:</td>
-                <td class="text-gray-800">{{ formatDate(item.date) || '—' }}</td>
-              </tr>
-              <tr class="border-0 border-b-0">
-                <td class="text-gray-600 w-[110px] pr-2 font-medium">Status</td>
-                <td class="w-3 text-center">:</td>
-                <td class="text-red-600 font-semibold">Absent</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Desktop List -->
-      <div class="hidden sm:block space-y-4">
-        <div
-          v-for="(item, index) in paginatedPastAbsences"
-          :key="item.id"
-          class="flex justify-between items-center bg-gray-50 p-4 rounded-lg shadow-sm"
-        >
-          <div>
-            <p class="font-medium text-gray-800">
-              {{ (currentPageAbsent - 1) * itemsPerPageAbsent + index + 1 }}. {{ item.type }} – {{ item.title }}
-            </p>
-            <p class="text-sm text-gray-500">{{ formatDate(item.date) }}</p>
-          </div>
-          <span class="text-red-600 font-semibold">Absent</span>
-        </div>
-      </div>
-
-      <!-- Pagination Controls -->
-      <PaginationControls
-        :current-page.sync="currentPageAbsent"
-        :items-per-page.sync="itemsPerPageAbsent"
-        :total-items="pastAttendancesAbsent.length"
-        :items-per-page-options="itemsPerPageOptions"
-      />
-    </div>
+      <AzCard :padded="false">
+        <AzEmptyState v-if="!shown.length" :title="t('memberActivity.attendance_emptyTitle')" :description="t('memberActivity.attendance_emptyText')">
+          <template #icon><CheckCircle2 class="h-7 w-7" /></template>
+        </AzEmptyState>
+        <ul v-else class="divide-y divide-line">
+          <li v-for="r in shown" :key="`${r.kind}-${r.id}`">
+            <button type="button" class="flex w-full items-center gap-4 px-5 py-3 text-left hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none"
+              @click="router.push({ name: DETAIL[r.kind], params: { id: r.id } })">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-2 text-ink-2"><component :is="ICONS[r.kind]" class="h-5 w-5" aria-hidden="true" /></span>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate font-medium text-ink">{{ r.title }}</span>
+                <span class="block truncate text-sm text-ink-muted">{{ [shortDate(r.date, locale), r.how, manyOrgs ? r.org_name : ''].filter(Boolean).join(' · ') }}</span>
+              </span>
+              <AzBadge :tone="r.attended ? 'success' : 'neutral'">{{ r.status || t('memberActivity.attended') }}</AzBadge>
+            </button>
+          </li>
+        </ul>
+      </AzCard>
+    </template>
   </div>
 </template>

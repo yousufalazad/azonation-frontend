@@ -1,11 +1,11 @@
 <template>
     <transition name="fade">
-        <div v-if="visible" class="fixed inset-0 bg-white flex items-center justify-center z-[99999]">
+        <div v-if="visible" class="fixed inset-0 bg-canvas flex items-center justify-center z-[99999]" role="status">
             <div class="relative flex flex-col items-center">
-                <img src="@/assets/Logo/Azonation-Logo.png" alt="Azonation ..." class="w-20 h-20 animate-smooth-scale" />
+                <AzLogoMark :title="$t('common.loading')" class="w-20 h-20 animate-smooth-scale" />
 
-                <div class="mt-3 h-[3px] w-24 bg-gray-200 overflow-hidden rounded">
-                    <div class="h-full bg-indigo-600 animate-loading-stripe"></div>
+                <div class="mt-3 h-[3px] w-24 bg-line overflow-hidden rounded">
+                    <div class="h-full bg-primary animate-loading-stripe"></div>
                 </div>
             </div>
         </div>

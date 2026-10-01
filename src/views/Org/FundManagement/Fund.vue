@@ -1,208 +1,144 @@
+<!-- Funds: separate pots of money, each with its own balance -->
 <script setup>
-import { ref, onMounted } from 'vue';
-import Swal from 'sweetalert2';
-import { authStore } from '../../../store/authStore';
-import { useRouter } from 'vue-router';
+import { ref, reactive, computed, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
+import { authStore } from "../../../store/authStore";
+import { CurrencyService } from "@/helpers/currency";
+import { useToast } from "@/composables/useToast";
+import { Plus, Wallet, Pencil } from "lucide-vue-next";
 
-const router = useRouter();
 const auth = authStore;
+const { t } = useI18n();
+const toast = useToast();
 
-// Form fields
-const name = ref('');
-const is_active = ref('1'); // Default Active
-const isEditMode = ref(false);
-const selectedFundId = ref(null);
-const fundList = ref([]);
+const funds = ref([]);
+const transactions = ref([]);
+const loading = ref(true);
 
-// Modal control
-const showModal = ref(false);
+async function load() {
+  const [fundRes, trxRes] = await Promise.all([
+    auth.fetchProtectedApi("/api/funds", {}, "GET"),
+    auth.fetchProtectedApi("/api/fund-transactions", {}, "GET"),
+    CurrencyService.load(),
+  ]);
+  if (!fundRes?.status) toast.error(t("dashboard.loadFailed"));
+  funds.value = fundRes?.status ? fundRes.data : [];
+  transactions.value = trxRes?.status ? trxRes.data : [];
+}
 
-// Fetch all funds
-const getFunds = async () => {
-    try {
-        const response = await auth.fetchProtectedApi('/api/funds', {}, 'GET');
-        fundList.value = response.status ? response.data : [];
-    } catch (error) {
-        console.error('Error fetching funds:', error);
-        fundList.value = [];
+// Balance and number of transactions per fund
+const stats = computed(() => {
+  const map = new Map();
+  for (const tr of transactions.value) {
+    const s = map.get(tr.fund_id) || { balance: 0, count: 0 };
+    s.balance += (tr.type === "expense" ? -1 : 1) * (Number(tr.amount) || 0);
+    s.count += 1;
+    map.set(tr.fund_id, s);
+  }
+  return map;
+});
+
+const rows = computed(() =>
+  funds.value
+    .map((f) => ({ ...f, active: Number(f.is_active) !== 0, ...(stats.value.get(f.id) || { balance: 0, count: 0 }) }))
+    .sort((a, b) => Number(b.active) - Number(a.active) || a.name.localeCompare(b.name)),
+);
+
+/* ================= FORM ================= */
+const formOpen = ref(false);
+const editing = ref(null);
+const form = reactive({ name: "", active: true });
+const nameError = ref("");
+const saving = ref(false);
+
+const openForm = (fund = null) => {
+  editing.value = fund;
+  form.name = fund?.name ?? "";
+  form.active = fund ? fund.active : true;
+  nameError.value = "";
+  formOpen.value = true;
+};
+
+async function save() {
+  nameError.value = form.name.trim() ? "" : t("funds.needFundName");
+  if (nameError.value || saving.value) return;
+  saving.value = true;
+  try {
+    const payload = { name: form.name.trim(), is_active: form.active ? 1 : 0 };
+    const res = editing.value
+      ? await auth.fetchProtectedApi(`/api/funds/${editing.value.id}`, payload, "PUT")
+      : await auth.fetchProtectedApi("/api/funds", payload, "POST");
+    if (res?.status) {
+      toast.success(t("funds.fundSaved"));
+      formOpen.value = false;
+      await load();
+    } else {
+      toast.error(t("funds.fundSaveFailed"));
     }
-};
+  } finally {
+    saving.value = false;
+  }
+}
 
-// Reset form
-const resetForm = () => {
-    name.value = '';
-    is_active.value = '1';
-    selectedFundId.value = null;
-    isEditMode.value = false;
-};
-
-// Open modal for Add/Edit
-const openModal = (fund = null) => {
-    resetForm();
-    if (fund) {
-        name.value = fund.name;
-        is_active.value = fund.is_active.toString();
-        selectedFundId.value = fund.id;
-        isEditMode.value = true;
-    }
-    showModal.value = true;
-};
-
-// Close modal
-const closeModal = () => {
-    resetForm();
-    showModal.value = false;
-};
-
-// Submit (Add/Update)
-const submitForm = async () => {
-    const payload = { name: name.value, is_active: is_active.value };
-    try {
-        let apiUrl = '/api/funds';
-        let method = 'POST';
-
-        if (isEditMode.value && selectedFundId.value) {
-            apiUrl = `/api/funds/${selectedFundId.value}`;
-            method = 'PUT';
-        }
-
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: `Do you want to ${isEditMode.value ? 'update' : 'add'} this fund?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, save it!',
-            cancelButtonText: 'No, cancel!'
-        });
-
-        if (result.isConfirmed) {
-            const response = await auth.fetchProtectedApi(apiUrl, payload, method);
-
-            if (response.status) {
-                await Swal.fire('Success!', `Fund ${isEditMode.value ? 'updated' : 'added'} successfully.`, 'success');
-                getFunds();
-                closeModal();
-            } else {
-                Swal.fire('Failed!', 'Failed to save fund.', 'error');
-            }
-        }
-    } catch (error) {
-        console.error(`Error ${isEditMode.value ? 'updating' : 'adding'} fund:`, error);
-        Swal.fire('Error!', `Failed to ${isEditMode.value ? 'update' : 'add'} fund.`, 'error');
-    }
-};
-
-// Navigate back to accounts
-const goToAccounts = () => {
-    router.push({ name: 'fund-management' });
-};
-
-// Fetch on mount
-onMounted(() => {
-    getFunds();
+onMounted(async () => {
+  CurrencyService.showSymbol = false;
+  await load();
+  loading.value = false;
 });
 </script>
 
 <template>
-    <div class="max-w-7xl mx-auto w-11/12">
-        <!-- Attendance List -->
-        <section class="bg-white shadow-md rounded-xl border">
-            <!-- Header -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b gap-3">
-                <h5 class="text-lg font-semibold text-gray-700">Funds Management</h5>
+  <div class="mx-auto flex max-w-5xl flex-col gap-6">
+    <AzPageHeader :title="t('funds.fundsTitle')" :description="t('funds.fundsDescription')"
+      :back="{ name: 'fund-management' }" :back-label="t('funds.backToTransactions')">
+      <AzButton @click="openForm()">
+        <template #icon><Plus class="h-[18px] w-[18px]" /></template>
+        {{ t('funds.addFund') }}
+      </AzButton>
+    </AzPageHeader>
 
-                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    <button @click="openModal()"
-                        class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-500 w-full sm:w-auto">
-                        Add Fund
-                    </button>
-                    <button @click="goToAccounts"
-                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 w-full sm:w-auto">
-                        Back to Funds Management
-                    </button>
-                </div>
-            </div>
+    <AzSkeleton v-if="loading" :lines="3" height="5rem" />
 
-            <!-- Table -->
-            <div class="overflow-x-auto p-4">
-                <table class="min-w-full table-auto border-collapse border border-gray-200 text-sm text-left">
-                    <thead class="bg-gray-100">
-                        <tr class="text-gray-700">
-                            <th class="border px-4 py-2">SL</th>
-                            <th class="py-2 px-4 border border-gray-300">Name</th>
-                            <th class="py-2 px-4 border border-gray-300">Active Status</th>
-                            <th class="py-2 px-4 border border-gray-300">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(fund, index) in fundList" :key="fund.id">
-                            <td class="py-2 px-4 border">{{ index + 1 }}</td>
-                            <td class="py-2 px-4 border">{{ fund.name }}</td>
-                            <td class="py-2 px-4 border">
-                                <span :class="Number(fund.is_active) === 0 ? 'text-red-500' : 'text-green-500'">
-                                    {{ Number(fund.is_active) === 0 ? 'Inactive' : 'Active' }}
-                                </span>
-                            </td>
-                            <td class="py-2 px-4 border flex gap-2">
-                                <button @click="openModal(fund)"
-                                    class="bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-md py-1 px-3">
-                                    Edit</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+    <AzCard v-else-if="!rows.length">
+      <AzEmptyState :title="t('funds.noFundsTitle')" :description="t('funds.noFundsText')">
+        <template #icon><Wallet class="h-7 w-7" /></template>
+        <AzButton @click="openForm()">{{ t('funds.addFund') }}</AzButton>
+      </AzEmptyState>
+    </AzCard>
 
-        <!-- Modal -->
-        <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-            <div
-                class="bg-white rounded-xl shadow-lg w-full max-w-3xl sm:max-w-xl md:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto p-6">
-                <!-- Header -->
-                <div class="flex justify-between items-center border-b pb-3 mb-4">
-                    <h5 class="text-lg font-semibold">{{ isEditMode ? 'Edit' : 'Add' }} Fund</h5>
-                    <button @click="closeModal" class="text-gray-500 hover:text-gray-700">✖</button>
-                </div>
-
-                <!-- Form -->
-                <form @submit.prevent="submitForm" class="space-y-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-4">
-                        <!-- Fund Name -->
-                        <div class="col-span-6">
-                            <label class="block text-gray-700 font-semibold mb-1">Name</label>
-                            <input v-model="name" type="text" class="w-full border border-gray-300 rounded-md py-2 px-3"
-                                required />
-                        </div>
-
-                        <!-- Active Status -->
-                        <div class="col-span-6">
-                            <label class="block text-gray-700 font-semibold mb-1">Active Status</label>
-                            <select v-model="is_active" class="w-full border border-gray-300 rounded-md p-2">
-                                <option value="1">Active</option>
-                                <option value="0">Inactive</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Buttons -->
-                    <div class="flex justify-end gap-3 mt-4">
-                        <button type="submit" class="bg-green-600 text-white rounded-md py-2 px-4 hover:bg-green-500">
-                            {{ isEditMode ? 'Update' : 'Submit' }}
-                        </button>
-                        <button type="button" @click="resetForm"
-                            class="bg-yellow-600 text-white rounded-md py-2 px-4 hover:bg-yellow-700">Reset</button>
-                        <button type="button" @click="closeModal"
-                            class="bg-gray-500 text-white rounded-md py-2 px-4 hover:bg-gray-600">Cancel</button>
-                    </div>
-                </form>
-            </div>
+    <ul v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <li v-for="fund in rows" :key="fund.id"
+        class="flex flex-col gap-3 rounded-card border border-line bg-surface p-5 shadow-card" :class="fund.active ? '' : 'opacity-75'">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <h2 class="truncate text-lg font-semibold text-ink">{{ fund.name }}</h2>
+            <p class="text-sm text-ink-muted">{{ t('funds.transactions', { n: fund.count }) }}</p>
+          </div>
+          <AzBadge :tone="fund.active ? 'success' : 'neutral'">{{ fund.active ? t('funds.active') : t('funds.inactive') }}</AzBadge>
         </div>
+        <div>
+          <p class="text-sm text-ink-2">{{ t('funds.balance') }}</p>
+          <p class="text-2xl font-bold tabular-nums" :class="fund.balance < 0 ? 'text-danger' : 'text-ink'">{{ CurrencyService.format(fund.balance) }}</p>
+        </div>
+        <div class="mt-auto flex flex-wrap gap-2">
+          <AzButton variant="secondary" size="sm" @click="openForm(fund)">
+            <template #icon><Pencil class="h-4 w-4" /></template>
+            {{ t('common.edit') }}
+          </AzButton>
+        </div>
+      </li>
+    </ul>
 
-    </div>
+    <AzModal v-model:open="formOpen" :title="editing ? t('funds.editFund') : t('funds.addFund')" size="sm">
+      <form id="fund-form" class="flex flex-col gap-4" novalidate @submit.prevent="save">
+        <AzInput v-model="form.name" :label="t('funds.fundName')" :placeholder="t('funds.fundNamePlaceholder')"
+          :error="nameError" maxlength="255" required autocomplete="off" />
+        <AzCheckbox v-model="form.active" :label="t('funds.fundActive')" :help="t('funds.fundActiveHelp')" />
+      </form>
+      <template #footer>
+        <AzButton variant="quiet" @click="formOpen = false">{{ t('common.cancel') }}</AzButton>
+        <AzButton type="submit" form="fund-form" :loading="saving">{{ t('common.save') }}</AzButton>
+      </template>
+    </AzModal>
+  </div>
 </template>
-
-<style scoped>
-.left-color-shade {
-    background-color: rgba(76, 175, 80, 0.1);
-}
-</style>

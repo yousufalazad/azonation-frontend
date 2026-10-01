@@ -1,146 +1,117 @@
-import OrgDashboardLayout from "../views/Org/Layouts/Layout.vue";
-import OrgDashboardIndex from "@/views/Org/Layouts/Dashboard/Index.vue";
-import HeaderNotifications from "../views/Org/Layouts/HeaderNotification.vue";
-import Notifications from "../views/Org/Notification/Index.vue";
-
+const OrgDashboardLayout = () => import("../views/Org/Layouts/Layout.vue");
+const OrgDashboardIndex = () => import("@/views/Org/Layouts/Dashboard/Index.vue");
+const HeaderNotifications = () => import("../views/Org/Layouts/HeaderNotification.vue");
+const Notifications = () => import("../views/Org/Notification/Index.vue");
 // Org Profile
-import MyAccount from "../views/Org/Profile/MyAccount.vue";
-import Profile from "../views/Org/Profile/Profile.vue";
-import fundamentalInfo from "../views/Org/Profile/FundamentalInfo.vue";
-import Security from "../views/Org/Profile/Security.vue";
-import Settings from "../views/Org/Profile/Settings.vue";
-
+const MyAccount = () => import("../views/Org/Profile/MyAccount.vue");
+const Profile = () => import("../views/Org/Profile/Profile.vue");
+const fundamentalInfo = () => import("../views/Org/Profile/FundamentalInfo.vue");
+const Security = () => import("../views/Org/Profile/Security.vue");
+const Settings = () => import("../views/Org/Profile/Settings.vue");
 //Administrator
-import Administrator from "@/views/Org/Profile/Administrator.vue";
-import UserNotifications from "../views/Org/Notification/UserNotifications.vue";
-
+const Administrator = () => import("@/views/Org/Profile/Administrator.vue");
+const Support = () => import("@/views/Org/Support/Index.vue");
+const SupportRequest = () => import("@/views/Org/Support/View.vue");
+const UserNotifications = () => import("../views/Org/Notification/UserNotifications.vue");
 //Org Member
-import UnlinkMember from "../views/Org/Member/UnlinkMember.vue";
-import OrgMembershipRenewalCycle from "../views/Org/Financial/Renewal/OrgMembershipRenewalCycle.vue";
-import OrgMembershipRenewalPrice from "../views/Org/Financial/Renewal/OrgMembershipRenewalPrice.vue";
-import OrgMembershipRenewal from "../views/Org/Financial/Renewal/OrgMembershipRenewal.vue";
-import CreateMember from "../views/Org/Member/Create.vue";
-import IndexMember from "../views/Org/Member/Index.vue";
-import FamilyMember from "../views/Org/Member/FamilyMember.vue";
+const UnlinkMember = () => import("../views/Org/Member/UnlinkMember.vue");
+const OrgMembershipRenewalCycle = () => import("../views/Org/Financial/Renewal/OrgMembershipRenewalCycle.vue");
+const OrgMembershipRenewal = () => import("../views/Org/Financial/Renewal/OrgMembershipRenewal.vue");
+const CreateMember = () => import("../views/Org/Member/Create.vue");
+const IndexMember = () => import("../views/Org/Member/Index.vue");
+const MemberFamilies = () => import("../views/Org/Member/MemberFamilies.vue");
 // terminated-members
-import TerminatedMember from "../views/Org/Member/TerminatedMember.vue";
-import OrgMembershipTypes from "../views/Org/Member/OrgMembershipTypes.vue";
-
+const TerminatedMember = () => import("../views/Org/Member/TerminatedMember.vue");
+const OrgMembershipTypes = () => import("../views/Org/Member/OrgMembershipTypes.vue");
 //Founder
-import Founders from "../views/Org/Founder/Index.vue";
-
+const Founders = () => import("../views/Org/Founder/Index.vue");
 //Fund and Fund Management
-import Fund from "../views/Org/FundManagement/Fund.vue";
-import FundManagement from "../views/Org/FundManagement/Index.vue";
-
+const Fund = () => import("../views/Org/FundManagement/Fund.vue");
+const FundManagement = () => import("../views/Org/FundManagement/Index.vue");
 //Asset Management
-import AssetManagement from "../views/Org/Asset/Index.vue";
-import CreateAsset from "../views/Org/Asset/Create.vue";
-import EditAsset from "../views/Org/Asset/Edit.vue";
-import ViewAsset from "../views/Org/Asset/View.vue";
-
+const AssetManagement = () => import("../views/Org/Asset/Index.vue");
+const CreateAsset = () => import("../views/Org/Asset/Create.vue");
+const EditAsset = () => import("../views/Org/Asset/Edit.vue");
+const ViewAsset = () => import("../views/Org/Asset/View.vue");
 //Committee
-import CommitteeList from "../views/Org/Committee/Index.vue";
-import FormerCommitteeList from "../views/Org/Committee/FormerCommitteeList.vue";
-import CommitteeMember from "../views/Org/Committee/CommitteeMember.vue";
-
+const CommitteeList = () => import("../views/Org/Committee/Index.vue");
+const CommitteeMember = () => import("../views/Org/Committee/CommitteeMember.vue");
 //Event
-import IndexEvent from "../views/Org/Event/Index.vue";
-import CreateEvent from "../views/Org/Event/Create.vue";
-import EditEvent from "../views/Org/Event/Edit.vue";
-import ViewEvent from "../views/Org/Event/View.vue";
-import UpcomingEvents from "../views/Org/Event/EventList.vue";
-
-import IndexEventSummary from "../views/Org/Event/EventSummary/Index.vue";
-import CreateEventSummary from "../views/Org/Event/EventSummary/Create.vue";
-import EditEventSummary from "../views/Org/Event/EventSummary/Edit.vue";
-import ViewEventSummary from "../views/Org/Event/EventSummary/View.vue";
-import EventAttendances from "../views/Org/Event/EventAttendances.vue";
-import EventGuestAttendance from "../views/Org/Event/EventGuestAttendance.vue";
-
+const IndexEvent = () => import("../views/Org/Event/Index.vue");
+const CreateEvent = () => import("../views/Org/Event/Create.vue");
+const EditEvent = () => import("../views/Org/Event/Edit.vue");
+const ViewEvent = () => import("../views/Org/Event/View.vue");
+const IndexEventSummary = () => import("../views/Org/Event/EventSummary/Index.vue");
+const CreateEventSummary = () => import("../views/Org/Event/EventSummary/Create.vue");
+const EditEventSummary = () => import("../views/Org/Event/EventSummary/Edit.vue");
+const ViewEventSummary = () => import("../views/Org/Event/EventSummary/View.vue");
+const EventAttendances = () => import("../views/Org/Event/EventAttendances.vue");
+const EventGuestAttendance = () => import("../views/Org/Event/EventGuestAttendance.vue");
 //History
-import History from "../views/Org/History/Index.vue";
-import CreateHistory from "../views/Org/History/Create.vue";
-import EditHistory from "../views/Org/History/Edit.vue";
-import ViewHistory from "../views/Org/History/View.vue";
-
+const History = () => import("../views/Org/History/Index.vue");
+const CreateHistory = () => import("../views/Org/History/Create.vue");
+const EditHistory = () => import("../views/Org/History/Edit.vue");
+const ViewHistory = () => import("../views/Org/History/View.vue");
 //Meeting
-import IndexMeeting from "../views/Org/Meeting/Index.vue";
-import CreateMeeting from "../views/Org/Meeting/Create.vue";
-import EditMeeting from "../views/Org/Meeting/Edit.vue";
-import ViewMeeting from "../views/Org/Meeting/View.vue";
-
-import IndexMeetingMinutes from "../views/Org/Meeting/MeetingMinutes/Index.vue";
-import CreateMeetingMinutes from "../views/Org/Meeting/MeetingMinutes/Create.vue";
-import EditMeetingMinutes from "../views/Org/Meeting/MeetingMinutes/Edit.vue";
-import ViewMeetingMinutes from "../views/Org/Meeting/MeetingMinutes/View.vue";
-import MeetingAttendances from "../views/Org/Meeting/MeetingAttendances.vue";
-import MeetingGuestAttendance from "@/views/Org/Meeting/MeetingGuestAttendances.vue";
-
+const IndexMeeting = () => import("../views/Org/Meeting/Index.vue");
+const CreateMeeting = () => import("../views/Org/Meeting/Create.vue");
+const EditMeeting = () => import("../views/Org/Meeting/Edit.vue");
+const ViewMeeting = () => import("../views/Org/Meeting/View.vue");
+const IndexMeetingMinutes = () => import("../views/Org/Meeting/MeetingMinutes/Index.vue");
+const CreateMeetingMinutes = () => import("../views/Org/Meeting/MeetingMinutes/Create.vue");
+const EditMeetingMinutes = () => import("../views/Org/Meeting/MeetingMinutes/Edit.vue");
+const ViewMeetingMinutes = () => import("../views/Org/Meeting/MeetingMinutes/View.vue");
+const MeetingAttendances = () => import("../views/Org/Meeting/MeetingAttendances.vue");
+const MeetingGuestAttendance = () => import("@/views/Org/Meeting/MeetingGuestAttendances.vue");
 //Office Document
-import OfficeDocument from "../views/Org/OfficeDocument/Index.vue";
-import CreateDocument from "../views/Org/OfficeDocument/Create.vue";
-import EditDocument from "../views/Org/OfficeDocument/Edit.vue";
-import ViewDocument from "../views/Org/OfficeDocument/View.vue";
-
+const OfficeDocument = () => import("../views/Org/OfficeDocument/Index.vue");
+const CreateDocument = () => import("../views/Org/OfficeDocument/Create.vue");
+const EditDocument = () => import("../views/Org/OfficeDocument/Edit.vue");
+const ViewDocument = () => import("../views/Org/OfficeDocument/View.vue");
 //Project and Project Summary
-import IndexProject from "../views/Org/Project/Index.vue";
-import CreateProject from "../views/Org/Project/Create.vue";
-import EditProject from "../views/Org/Project/Edit.vue";
-import ViewProject from "../views/Org/Project/View.vue";
-
-import ProjectAttendances from "../views/Org/Project/ProjectAttendances.vue";
-import ProjectGuestAttendance from "@/views/Org/Project/ProjectGuestAttendance.vue";
-
-import IndexProjectSummary from "../views/Org/Project/ProjectSummary/Index.vue";
-import CreateProjectSummary from "../views/Org/Project/ProjectSummary/Create.vue";
-import EditProjectSummary from "../views/Org/Project/ProjectSummary/Edit.vue";
-import ViewProjectSummary from "../views/Org/Project/ProjectSummary/View.vue";
-
+const IndexProject = () => import("../views/Org/Project/Index.vue");
+const CreateProject = () => import("../views/Org/Project/Create.vue");
+const EditProject = () => import("../views/Org/Project/Edit.vue");
+const ViewProject = () => import("../views/Org/Project/View.vue");
+const ProjectAttendances = () => import("../views/Org/Project/ProjectAttendances.vue");
+const ProjectGuestAttendance = () => import("@/views/Org/Project/ProjectGuestAttendance.vue");
+const IndexProjectSummary = () => import("../views/Org/Project/ProjectSummary/Index.vue");
+const CreateProjectSummary = () => import("../views/Org/Project/ProjectSummary/Create.vue");
+const EditProjectSummary = () => import("../views/Org/Project/ProjectSummary/Edit.vue");
+const ViewProjectSummary = () => import("../views/Org/Project/ProjectSummary/View.vue");
 //Recognition
-import Recognition from "../views/Org/Recognition/Index.vue";
-import CreateRecognition from "../views/Org/Recognition/Create.vue";
-import EditRecognition from "../views/Org/Recognition/Edit.vue";
-import ViewRecognition from "../views/Org/Recognition/View.vue";
-
+const Recognition = () => import("../views/Org/Recognition/Index.vue");
+const CreateRecognition = () => import("../views/Org/Recognition/Create.vue");
+const EditRecognition = () => import("../views/Org/Recognition/Edit.vue");
+const ViewRecognition = () => import("../views/Org/Recognition/View.vue");
 //Report
-import OrgReport from "../views/Org/Report/Index.vue";
-import OrgExpenseReport from "../views/Org/Report/Expense.vue";
-
+const OrgReport = () => import("../views/Org/Report/Index.vue");
 //StrategicPlan
-import StrategicPlan from "../views/Org/StrategicPlan/Index.vue";
-import CreateStrategicPlan from "../views/Org/StrategicPlan/Create.vue";
-import EditStrategicPlan from "../views/Org/StrategicPlan/Edit.vue";
-import ViewStrategicPlan from "../views/Org/StrategicPlan/View.vue";
-
+const StrategicPlan = () => import("../views/Org/StrategicPlan/Index.vue");
+const CreateStrategicPlan = () => import("../views/Org/StrategicPlan/Create.vue");
+const EditStrategicPlan = () => import("../views/Org/StrategicPlan/Edit.vue");
+const ViewStrategicPlan = () => import("../views/Org/StrategicPlan/View.vue");
 //Success Story
-import SuccessStory from "../views/Org/SuccessStory/Index.vue";
-import CreateSuccessStory from "../views/Org/SuccessStory/Create.vue";
-import EditSuccessStory from "../views/Org/SuccessStory/Edit.vue";
-import ViewSuccessStory from "../views/Org/SuccessStory/View.vue";
-
+const SuccessStory = () => import("../views/Org/SuccessStory/Index.vue");
+const CreateSuccessStory = () => import("../views/Org/SuccessStory/Create.vue");
+const EditSuccessStory = () => import("../views/Org/SuccessStory/Edit.vue");
+const ViewSuccessStory = () => import("../views/Org/SuccessStory/View.vue");
 //Year plan
-import YearPlan from "../views/Org/YearPlan/Index.vue";
-import CreateYearPlan from "../views/Org/YearPlan/Create.vue";
-import EditYearPlan from "../views/Org/YearPlan/Edit.vue";
-import ViewYearPlan from "../views/Org/YearPlan/View.vue";
-
+const YearPlan = () => import("../views/Org/YearPlan/Index.vue");
+const CreateYearPlan = () => import("../views/Org/YearPlan/Create.vue");
+const EditYearPlan = () => import("../views/Org/YearPlan/Edit.vue");
+const ViewYearPlan = () => import("../views/Org/YearPlan/View.vue");
 //Referral
-import Referral from "../views/Org/Referral/Referral.vue";
-
+const Referral = () => import("../views/Org/Referral/Referral.vue");
 //Billing
-import Package from "../views/Org/Financial/Package.vue";
-import Subscription from "../views/Org/Financial/Subscription.vue";
-import BillCalculation from "@/views/Org/Financial/BillCalculation.vue";
-import BillList from "../views/Org/Financial/ManagementAndStorageBilling/Index.vue";
-import ViewBilling from "../views/Org/Financial/ManagementAndStorageBilling/View.vue";
-
-import Invoices from "../views/Org/Financial/Invoice/Index.vue";
-import ViewInvoice from "../views/Org/Financial/Invoice/View.vue";
-import OrgReceiptIndex from "../views/Org/Financial/Receipt/Index.vue";
+const Subscription = () => import("../views/Org/Financial/Subscription.vue");
+const BillCalculation = () => import("@/views/Org/Financial/BillCalculation.vue");
+const ViewBilling = () => import("../views/Org/Financial/ManagementAndStorageBilling/View.vue");
+const Invoices = () => import("../views/Org/Financial/Invoice/Index.vue");
+const ViewInvoice = () => import("../views/Org/Financial/Invoice/View.vue");
+const OrgReceiptIndex = () => import("../views/Org/Financial/Receipt/Index.vue");
 //  import UnlinkMember from "../views/Org/Member/UnlinkMember.vue";
-import UserRoleAssign from "@/views/RolePermission/OrgUserRoleAssign.vue";
-
+const UserRoleAssign = () => import("@/views/RolePermission/OrgUserRoleAssign.vue");
 const orgRoutes = [
   {
     path: "/org-dashboard",
@@ -174,12 +145,6 @@ const orgRoutes = [
         path: "notifications",
         name: "notifications",
         component: Notifications,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "fundamental-info",
-        name: "fundamental-info",
-        component: fundamentalInfo,
         meta: { requiresAuth: true },
       },
       {
@@ -221,15 +186,8 @@ const orgRoutes = [
           permission: "org-membership-renewal-cycle.read",
         },
       },
-      {
-        path: "org-membership-renewal-price",
-        name: "org-membership-renewal-price",
-        component: OrgMembershipRenewalPrice,
-        meta: {
-          requiresAuth: true,
-          permission: "org-membership-renewal-price.read",
-        },
-      },
+      // Fees are set on the renewal settings page
+      { path: "org-membership-renewal-price", name: "org-membership-renewal-price", redirect: { name: "org-membership-renewal-cycle" } },
       {
         path: "org-membership-renewal",
         name: "org-membership-renewal",
@@ -237,11 +195,12 @@ const orgRoutes = [
         meta: { requiresAuth: true, permission: "org-membership-renewal.read" },
       },
       {
-        path: "family-member",
-        name: "family-member",
-        component: FamilyMember,
-        meta: { requiresAuth: true },
+        path: "member-families",
+        name: "member-families",
+        component: MemberFamilies,
+        meta: { requiresAuth: true, permission: "member-family.read" },
       },
+      { path: "family-member", name: "family-member", redirect: { name: "member-families" } },
       {
         path: "founders",
         name: "founders",
@@ -304,8 +263,8 @@ const orgRoutes = [
       {
         path: "former-committee-list",
         name: "former-committee-list",
-        component: FormerCommitteeList,
-        meta: { requiresAuth: true, permission: "former-committee.read" },
+        // Former committees are a tab on the Committees page
+        redirect: { name: "committees", query: { tab: "former" } },
       },
       {
         path: "events",
@@ -336,8 +295,8 @@ const orgRoutes = [
       {
         path: "upcoming-events",
         name: "upcoming-events",
-        component: UpcomingEvents,
-        meta: { requiresAuth: true, permission: "event.read" },
+        // The Events list opens on upcoming events
+        redirect: { name: "index-event" },
       },
       {
         path: "event-summary",
@@ -604,8 +563,8 @@ const orgRoutes = [
       {
         path: "org-expense-report",
         name: "org-expense-report",
-        component: OrgExpenseReport,
-        meta: { requiresAuth: true },
+        // Income and spending are now on one Reports page
+        redirect: { name: "org-report" },
       },
       {
         path: "strategic-plan",
@@ -685,39 +644,6 @@ const orgRoutes = [
         meta: { requiresAuth: true },
         props: true,
       },
-       {
-            path: "org-membership-type",
-            name: "org-membership-type",
-            component: OrgMembershipTypes,
-            meta: {
-              requiresAuth: true,
-              permission: "org-membership-type.read",
-            },
-          },
-      {
-            path: "org-membership-renewal-cycle",
-            name: "org-membership-renewal-cycle",
-            component: OrgMembershipRenewalCycle,
-            meta: {
-              requiresAuth: true,
-              permission: "org-membership-renewal-cycle.read",
-            },
-          },
-          {
-            path: "org-membership-renewal-price",
-            name: "org-membership-renewal-price",
-            component: OrgMembershipRenewalPrice,
-            meta: { requiresAuth: true },
-          },
-          {
-            path: "org-membership-renewal",
-            name: "org-membership-renewal",
-            component: OrgMembershipRenewal,
-            meta: {
-              requiresAuth: true,
-              permission: "org-membership-renewal.read",
-            },
-          },
       {
         path: "administrator",
         name: "administrator",
@@ -725,15 +651,30 @@ const orgRoutes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "settings",
-        name: "settings",
-        component: Settings,
+        path: "support",
+        name: "support",
+        component: Support,
         meta: { requiresAuth: true },
+      },
+      {
+        path: "support/:id",
+        name: "support-request",
+        component: SupportRequest,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "fundamental-info",
+        redirect: { name: "fundamental-info" },
+      },
+      {
+        path: "settings",
+        redirect: { name: "settings" },
       },
       {
         path: "my-account",
         name: "my-account",
         component: MyAccount,
+        redirect: { name: "profile" },
         meta: { requiresAuth: true },
         children: [
           {
@@ -749,6 +690,18 @@ const orgRoutes = [
           //   meta: { requiresAuth: true },
           // },
           {
+            path: "fundamental-info",
+            name: "fundamental-info",
+            component: fundamentalInfo,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: "settings",
+            name: "settings",
+            component: Settings,
+            meta: { requiresAuth: true },
+          },
+          {
             path: "security",
             name: "security",
             component: Security,
@@ -760,12 +713,8 @@ const orgRoutes = [
           //   component: Settings,
           //   meta: { requiresAuth: true },
           // },
-          {
-            path: "package",
-            name: "package",
-            component: Package,
-            meta: { requiresAuth: true },
-          },
+          // Plans are compared on the Subscription page
+          { path: "package", name: "package", redirect: { name: "subscription" } },
           {
             path: "subscription",
             name: "subscription",
@@ -778,12 +727,8 @@ const orgRoutes = [
             component: BillCalculation,
             meta: { requiresAuth: true },
           },
-          {
-            path: "bill-list",
-            name: "bill-list",
-            component: BillList,
-            meta: { requiresAuth: true },
-          },
+          // Monthly bills are listed on the Bill page
+          { path: "bill-list", name: "bill-list", redirect: { name: "bill-calculation" } },
           {
             path: "view-billing/:id",
             name: "view-billing",
@@ -819,7 +764,7 @@ const orgRoutes = [
             path: "referral",
             name: "referral",
             component: Referral,
-            meta: { requiresAuth: false },
+            meta: { requiresAuth: true },
           },
         ],
       },

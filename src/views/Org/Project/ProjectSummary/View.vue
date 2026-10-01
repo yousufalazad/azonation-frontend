@@ -1,193 +1,147 @@
+<!-- Read the report on a project; print-friendly -->
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import Swal from 'sweetalert2';
-import { authStore } from '../../../../store/authStore';
+import { computed, onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import { formatDate } from "@/helpers/format";
+import { safeUrl } from "@/helpers/sanitizeHtml";
+import { useToast } from "@/composables/useToast";
+import { useConfirm } from "@/composables/useConfirm";
+import { Pencil, Trash2, Printer, Paperclip, Users } from "lucide-vue-next";
 
 const auth = authStore;
-const router = useRouter();
 const route = useRoute();
+const router = useRouter();
+const { t, n } = useI18n();
+const toast = useToast();
+const confirm = useConfirm();
 
-const summaryId = ref(route.params.summaryId || null);
-const projectSummary = ref(null);
-const errorMessage = ref('');
+const record = ref(null);
+const loading = ref(true);
+const notFound = ref(false);
 
-// Fetch Project Summary Details
-const fetchProjectSummaryDetails = async () => {
-  try {
-    const response = await auth.fetchProtectedApi(`/api/project-summaries/${summaryId.value}`);
-    if (response.status) {
-      projectSummary.value = response.data;
-    } else {
-      Swal.fire('Error!', 'Failed to load project summary details.', 'error');
-    }
-  } catch (error) {
-    Swal.fire('Error!', 'An error occurred. Please try again.', 'error');
+const sections = computed(() => {
+  const r = record.value;
+  if (!r) return [];
+  return [
+    { label: "eventReport.summary", value: r.summary },
+    { label: "eventReport.highlights", value: r.highlights },
+    { label: "projectReport.outcomes", value: r.outcomes },
+    { label: "eventReport.challenges", value: r.challenges },
+    { label: "eventReport.feedback", value: r.feedback },
+    { label: "eventReport.suggestions", value: r.suggestions },
+    { label: "minutes.nextSteps", value: r.next_steps },
+    { label: "eventReport.financialOverview", value: r.financial_overview },
+  ].filter((s) => s.value);
+});
+
+const stats = computed(() => {
+  const r = record.value;
+  if (!r) return [];
+  return [
+    { label: "eventReport.members", value: n(Number(r.total_member_participation || 0)) },
+    { label: "eventReport.guests", value: n(Number(r.total_guest_participation || 0)) },
+    { label: "projectReport.beneficiaries", value: n(Number(r.total_beneficial_person || 0)) },
+    { label: "projectReport.communities", value: n(Number(r.total_communities_impacted || 0)) },
+    { label: "eventReport.totalExpense", value: n(Number(r.total_expense || 0)) },
+  ];
+});
+
+const printPage = () => window.print();
+
+async function remove() {
+  const ok = await confirm({
+    title: t("eventReport.deleteTitle"),
+    message: t("eventReport.deleteText"),
+    confirmText: t("common.delete"),
+    danger: true,
+  });
+  if (!ok) return;
+  const res = await auth.fetchProtectedApi(`/api/project-summaries/${route.params.summaryId}`, {}, "DELETE");
+  if (res?.status) {
+    toast.success(t("eventReport.deleted"));
+    router.push({ name: "view-project", params: { id: record.value.project_id } });
+  } else {
+    toast.error(t("eventReport.deleteFailed"));
   }
-};
+}
 
-// Back to List
-const goBack = () => {
-  router.push({ name: 'index-project-summary' });
-};
-
-onMounted(() => {
-  if (summaryId.value) fetchProjectSummaryDetails();
+onMounted(async () => {
+  const res = await auth.fetchProtectedApi(`/api/project-summaries/${route.params.summaryId}`, {}, "GET");
+  if (res?.status) record.value = res.data;
+  else notFound.value = true;
+  loading.value = false;
 });
 </script>
 
 <template>
-  <div class="container mx-auto max-w-7xl p-6 bg-white rounded-lg shadow-md mt-10">
-    <div class="flex justify-between items-center mb-6">
-      <h5 class="text-xl font-semibold">View Project Summary</h5>
-      <div>
-        <button @click="$router.push({ name: 'edit-project-summary', params: { summaryId: projectSummary.id } })"
-          class="bg-yellow-500 hover:bg-yellow-600 text-white p-2 m-2 rounded">Project Summary Edit </button>
+  <div class="mx-auto flex max-w-3xl flex-col gap-6">
+    <AzSkeleton v-if="loading" :lines="8" height="2.5rem" />
 
-        <button @click="$router.push({ name: 'index-project' })"
-          class="bg-blue-500 text-white font-semibold py-2 px-2 rounded-md">Back Project List
-        </button>
+    <AzCard v-else-if="notFound">
+      <AzEmptyState :title="t('projectReport.notFound')" :description="t('meetingView.notFoundText')">
+        <AzButton :to="{ name: 'index-project-summary' }">{{ t('projectReport.title') }}</AzButton>
+      </AzEmptyState>
+    </AzCard>
+
+    <template v-else-if="record">
+      <AzPageHeader :title="t('eventReport.of', { name: record.project_title })"
+        :description="record.project_start_date ? formatDate(record.project_start_date) : ''"
+        :back="{ name: 'view-project', params: { id: record.project_id } }" :back-label="record.project_title" class="print:hidden">
+        <AzButton variant="danger" @click="remove">
+          <template #icon><Trash2 class="h-[18px] w-[18px]" /></template>
+          {{ t('common.delete') }}
+        </AzButton>
+        <AzButton variant="secondary" @click="printPage">
+          <template #icon><Printer class="h-[18px] w-[18px]" /></template>
+          {{ t('minutes.print') }}
+        </AzButton>
+        <AzButton :to="{ name: 'edit-project-summary', params: { summaryId: record.id } }">
+          <template #icon><Pencil class="h-[18px] w-[18px]" /></template>
+          {{ t('eventReport.editTitle') }}
+        </AzButton>
+      </AzPageHeader>
+
+      <h1 class="hidden text-2xl font-semibold text-ink print:block">{{ t('eventReport.of', { name: record.project_title }) }}</h1>
+
+      <div class="-mt-2 flex flex-wrap items-center gap-2">
+        <AzBadge v-if="Number(record.is_publish) === 1" tone="info">{{ t('minutes.shared') }}</AzBadge>
+        <AzBadge v-if="record.privacy_setup_name" tone="neutral">{{ record.privacy_setup_name }}</AzBadge>
+        <AzButton variant="quiet" size="sm" class="print:hidden" :to="{ name: 'project-attendances', params: { id: record.project_id } }">
+          <template #icon><Users class="h-4 w-4" /></template>
+          {{ t('projects.participants') }}
+        </AzButton>
       </div>
-    </div>
 
-    <!-- Show Details -->
-    <div v-if="projectSummary">
-      <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-        <tbody class="text-gray-600 text-md font-medium">
-          <!-- Participation Details -->
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Total Member Participation</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.total_member_participation }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Total Guest Participation</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.total_guest_participation }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Total Participation</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.total_participation }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Total Beneficial Person</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.total_beneficial_person }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Total Communities Impacted</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.total_communities_impacted }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Total Expense</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.total_expense }}</td>
-          </tr>
+      <section class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div v-for="s in stats" :key="s.label" class="rounded-card border border-line bg-surface p-4 shadow-card">
+          <p class="text-sm text-ink-muted">{{ t(s.label) }}</p>
+          <p class="text-2xl font-semibold text-ink">{{ s.value }}</p>
+        </div>
+      </section>
 
-          <!-- Textual Fields -->
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Summary</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.summary }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Highlights</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.highlights }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Feedback</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.feedback }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Challenges</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.challenges }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Suggestions</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.suggestions }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Financial Overview</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.financial_overview }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Next Steps</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.next_steps }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Outcomes</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.outcomes }}</td>
-          </tr>
-          <!-- Status Fields -->
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Privacy Setup</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.privacy_setup_name }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Publish Status</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.is_publish === 1 ? 'Yes' : 'No' }}</td>
-          </tr>
-          <tr>
-            <td class="px-2 py-2 text-left font-semibold w-36">Status</td>
-            <td>:</td>
-            <td class="px-2 py-2 text-left">{{ projectSummary.is_active === 1 ? 'Active' : 'Inactive' }}</td>
-          </tr>
-          <tr>
-          <td class="px-2 py-2 text-left font-semibold w-36">Images</td>
-          <td>:</td>
-          <td class="px-2 py-2 text-left">
-            <div v-if="projectSummary.images && projectSummary.images.length">
-              <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-4">
-                <img v-for="(img, index) in projectSummary.images" :key="img.id || index" :src="img.image_url"
-                  alt="History Image" class="max-w-full rounded-lg" />
-              </div>
-            </div>
-            <div v-else>
-              <p class="text-gray-700">No images available</p>
-            </div>
-          </td>
-        </tr>
+      <AzCard v-for="section in sections" :key="section.label" :title="t(section.label)">
+        <p class="whitespace-pre-line text-[15px] leading-relaxed text-ink-2">{{ section.value }}</p>
+      </AzCard>
 
-        <tr>
-          <td class="px-2 py-2 text-left font-semibold w-36">Documents</td>
-          <td>:</td>
-          <td class="px-2 py-2 text-left">
-            <div v-if="projectSummary.documents && projectSummary.documents.length">
-              <ul class="mt-2 list-disc list-inside text-blue-600">
-                <li v-for="(doc, index) in projectSummary.documents" :key="doc.id || index">
-                  <a :href="doc.document_url" target="_blank" class="hover:text-blue-800">
-                    {{ doc.file_name || 'Download Document' }}
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Error Message -->
-    <!-- <div v-else>
-      <p class="text-red-500">Unable to load project summary details.</p>
-    </div> -->
+      <AzCard v-if="record.images?.length || record.documents?.length" :title="t('meetingView.attachments')">
+        <div class="flex flex-col gap-4">
+          <div v-if="record.images?.length" class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <a v-for="img in record.images" :key="img.id" :href="safeUrl(img.image_url)" target="_blank" rel="noopener noreferrer">
+              <img :src="img.image_url" :alt="img.file_name || ''" class="aspect-[4/3] w-full max-w-none rounded-control border border-line object-cover" loading="lazy" />
+            </a>
+          </div>
+          <ul v-if="record.documents?.length" class="flex flex-col gap-2">
+            <li v-for="doc in record.documents" :key="doc.id" class="flex items-center gap-2">
+              <Paperclip class="h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />
+              <a :href="safeUrl(doc.document_url)" target="_blank" rel="noopener noreferrer" class="truncate text-[15px] text-primary hover:underline">
+                {{ doc.file_name || t('meetingView.document') }}
+              </a>
+            </li>
+          </ul>
+        </div>
+      </AzCard>
+    </template>
   </div>
 </template>
-
-<style scoped>
-p {
-  margin-top: 0.25rem;
-  font-size: 0.875rem;
-}
-</style>

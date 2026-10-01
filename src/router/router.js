@@ -1,34 +1,31 @@
 // router/router.js
+import { canOpenOrgRoute, isActingForOrg } from "./orgAccess";
 import { createRouter, createWebHistory } from "vue-router";
 import superadminRoutes from "./superadminRouter";
 import individualRoutes from "./individualRouter";
 import orgRoutes from "./orgRouter";
-import functions from "@/global/cookie";
 
 // Auth views
-import Signup from "@/views/Auth/Signup.vue";
+const Signup = () => import("@/views/Auth/Signup.vue");
 import Login from "@/views/Auth/Login.vue";
-import ForgotPassword from "@/views/Auth/ForgotPassword.vue";
-import VerifyCode from "@/views/Auth/VerifyCode.vue";
-import ResetPassword from "@/views/Auth/ResetPassword.vue";
-
+const ForgotPassword = () => import("@/views/Auth/ForgotPassword.vue");
+const VerifyCode = () => import("@/views/Auth/VerifyCode.vue");
+const ResetPassword = () => import("@/views/Auth/ResetPassword.vue");
 // OAuth
-import OauthComplete from "@/views/Auth/OauthComplete.vue";
-import OauthSignedIn from "@/views/Auth/OauthSignedIn.vue";
-
+const OauthComplete = () => import("@/views/Auth/OauthComplete.vue");
+const OauthSignedIn = () => import("@/views/Auth/OauthSignedIn.vue");
 // Common views
-import Individual from "@/views/Common/IndividualAccountOverview.vue";
-import Organisation from "@/views/Common/OrganisationAccountOverview.vue";
-import Pricing from "@/views/Common/Pricing.vue";
-import Help from "@/views/Common/HelpCenter.vue";
-import NotFound from "@/views/Common/NotFound.vue";
-import Cookies from "@/views/Common/Cookies.vue";
-import PrivacyPolicy from "@/views/Common/PrivacyPolicy.vue";
-import TermsOfService from "@/views/Common/TermsOfService.vue";
-import AboutUs from "@/views/Common/AboutUs.vue";
-import ContactUs from "@/views/Common/ContactUs.vue";
-import Unauthorized from "@/views/Common/Unauthorized.vue";
-
+const Individual = () => import("@/views/Common/IndividualAccountOverview.vue");
+const Organisation = () => import("@/views/Common/OrganisationAccountOverview.vue");
+const Pricing = () => import("@/views/Common/Pricing.vue");
+const Help = () => import("@/views/Common/HelpCenter.vue");
+const NotFound = () => import("@/views/Common/NotFound.vue");
+const Cookies = () => import("@/views/Common/Cookies.vue");
+const PrivacyPolicy = () => import("@/views/Common/PrivacyPolicy.vue");
+const TermsOfService = () => import("@/views/Common/TermsOfService.vue");
+const AboutUs = () => import("@/views/Common/AboutUs.vue");
+const ContactUs = () => import("@/views/Common/ContactUs.vue");
+const Unauthorized = () => import("@/views/Common/Unauthorized.vue");
 /* ===========================================================
    TOP LOADER REGISTER
 =========================================================== */
@@ -84,6 +81,11 @@ const baseRoutes = [
   { path: "/about-us", name: "about-us", component: AboutUs },
   { path: "/contact-us", name: "contact-us", component: ContactUs },
 
+  // Design system reference (development builds only)
+  ...(import.meta.env.DEV
+    ? [{ path: "/style-guide", name: "style-guide", component: () => import("@/views/Common/StyleGuide.vue") }]
+    : []),
+
   // 404
   { path: "/:pathMatch(.*)*", name: "not-found", component: NotFound },
 ];
@@ -137,6 +139,15 @@ router.beforeEach(async (to, from, next) => {
       return next({ name: "login" });
     }
 
+    // Members with a role may use parts of the organisation dashboard for that organisation
+    if (to.meta.requiresAuth && to.meta.type === "organisation" && authStore.getUserType() === "individual") {
+      if (canOpenOrgRoute(to)) return next();
+      try {
+        topLoaderRef?.finish?.();
+      } catch (e) {}
+      return next(isActingForOrg() ? { name: "unauthorized" } : { name: "individual-dashboard-index" });
+    }
+
     // Wrong user type
     if (
       to.meta.requiresAuth &&
@@ -162,8 +173,27 @@ router.beforeEach(async (to, from, next) => {
     try {
       topLoaderRef?.finish?.();
     } catch (e) {}
-    return next();
+    // Fail closed: if the session check breaks, never open a protected page
+    return to.meta.requiresAuth ? next({ name: "login" }) : next();
   }
+});
+
+/* ===========================================================
+   STALE CHUNK RECOVERY
+   After a new deploy, an open tab may request page files that no longer
+   exist. Reload once to get the new version instead of showing a blank page.
+=========================================================== */
+router.onError((error, to) => {
+  const chunkFailed = /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module/i.test(
+    error?.message || "",
+  );
+  if (!chunkFailed) return;
+  const key = "azonation_chunk_reload";
+  try {
+    if (sessionStorage.getItem(key) === to.fullPath) return;
+    sessionStorage.setItem(key, to.fullPath);
+  } catch (e) {}
+  window.location.assign(to.fullPath);
 });
 
 /* ===========================================================

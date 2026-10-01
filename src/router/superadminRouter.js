@@ -1,109 +1,50 @@
-import SuperadminDashboardLayout from "../views/SuperAdmin/Layouts/Layout.vue";
-import SuperadminDashboardIndex from "../views/SuperAdmin/Layouts/Dashboard/Index.vue";
-import SuperAdminProfileUpdate from "../views/SuperAdmin/Profile/SuperAdminProfileUpdate.vue";
-
+const SuperadminDashboardLayout = () => import("../views/SuperAdmin/Layouts/Layout.vue");
+const SuperadminDashboardIndex = () => import("../views/SuperAdmin/Layouts/Dashboard/Index.vue");
+// Account pages shared with organisations and members
+const SuperAdminProfileUpdate = () => import("@/views/Org/Profile/Profile.vue");
+const AccountSecurity = () => import("@/views/Org/Profile/Security.vue");
+const AccountSettings = () => import("@/views/Org/Profile/Settings.vue");
+const NotificationSettings = () => import("@/views/Org/Notification/UserNotifications.vue");
 //SuperAdmin Master Setting
-import Country from "../views/SuperAdmin/MasterSetting/Country.vue";
-import Region from "../views/SuperAdmin/MasterSetting/Region.vue";
-import RegionCurrency from "../views/SuperAdmin/MasterSetting/RegionCurrency.vue";
-import CountryRegion from "../views/SuperAdmin/MasterSetting/CountryRegion.vue";
-import UserCountry from "../views/SuperAdmin/MasterSetting/UserCountry.vue";
-import DialingCode from "../views/SuperAdmin/MasterSetting/DialingCode.vue";
-import AttendanceType from "../views/SuperAdmin/MasterSetting/AttendanceType.vue";
-import ConductType from "../views/SuperAdmin/MasterSetting/ConductType.vue";
-import MembershipType from "../views/SuperAdmin/MasterSetting/MembershipType.vue";
-import MembershipStatuses from "../views/SuperAdmin/MasterSetting/MembershipStatuses.vue";
-import MembershipRenewalCycle from "../views/SuperAdmin/MasterSetting/MembershipRenewalCycle.vue";
-import Designation from "../views/SuperAdmin/MasterSetting/Designation.vue";
-import Language from "../views/SuperAdmin/MasterSetting/Language.vue";
-import TimeZoneSetup from "../views/SuperAdmin/MasterSetting/TimeZoneSetup.vue";
-import PrivacySetup from "../views/SuperAdmin/MasterSetting/PrivacySetup.vue";
-import RegionalTaxRate from "../views/SuperAdmin/MasterSetting/RegionalTaxRate.vue";
-
 //Currency
-import IndexCurrency from "../views/SuperAdmin/Financial/Currency/Index.vue";
 //Package
-import IndexPackage from "../views/SuperAdmin/Financial/Package/Index.vue";
-import EditPackage from "../views/SuperAdmin/Financial/Package/Edit.vue";
-import ViewPackage from "../views/SuperAdmin/Financial/Package/View.vue";
 //Price
-import EditPrice from "../views/SuperAdmin/Financial/Price/Edit.vue";
-import IndexPrice from "../views/SuperAdmin/Financial/Price/Index.vue";
-import ViewPrice from "../views/SuperAdmin/Financial/Price/View.vue";
-
 //Subscription
-import EditSubscription from "../views/SuperAdmin/Financial/Subscription/Edit.vue";
-//import IndexSubscription from "../views/SuperAdmin/Financial/Subscription/Index.vue";
-import ViewSubscription from "../views/SuperAdmin/Financial/Subscription/View.vue";
-import SuperAdminSubscriptionList from "../views/SuperAdmin/Financial/Subscription/Index.vue";
-
 //UserPrice
-import UserPriceRate from "../views/SuperAdmin/Financial/UserPriceRate/Index.vue";
-
 //Billing
-import SuperAdminBillingList from "../views/SuperAdmin/Financial/Billing/Index.vue";
-import SuperAdminBillingCreate from "../views/SuperAdmin/Financial/Billing/Create.vue";
-import SuperAdminBillingEdit from "../views/SuperAdmin/Financial/Billing/Edit.vue";
-import SuperAdminBillingView from "../views/SuperAdmin/Financial/Billing/View.vue";
-
 //Everyday member count and billing
-import SuperAdminEverydayMemberCountAndBillingList from "../views/SuperAdmin/Financial/EverydayMemberCountAndBilling/Index.vue";
-import SuperAdminEverydayMemberCountAndBillingCreate from "../views/SuperAdmin/Financial/EverydayMemberCountAndBilling/Create.vue";
-import SuperAdminEverydayMemberCountAndBillingEdit from "../views/SuperAdmin/Financial/EverydayMemberCountAndBilling/Edit.vue";
-import SuperAdminEverydayMemberCountAndBillingView from "../views/SuperAdmin/Financial/EverydayMemberCountAndBilling/View.vue";
-
 // EverydayStorageBilling
-import SuperAdminEverydayStorageBillingList from "../views/SuperAdmin/Financial/EverydayStorageBilling/Index.vue";
-import SuperAdminEverydayStorageBillingCreate from "../views/SuperAdmin/Financial/EverydayStorageBilling/Create.vue";
-import SuperAdminEverydayStorageBillingEdit from "../views/SuperAdmin/Financial/EverydayStorageBilling/Edit.vue";
-import SuperAdminEverydayStorageBillingView from "../views/SuperAdmin/Financial/EverydayStorageBilling/View.vue";
-
 //ManagementAndStorageBilling
-import SuperAdminManagementAndStorageBillingList from "../views/SuperAdmin/Financial/ManagementAndStorageBilling/Index.vue";
-import SuperAdminManagementAndStorageBillingCreate from "../views/SuperAdmin/Financial/ManagementAndStorageBilling/Create.vue";
-import SuperAdminManagementAndStorageBillingEdit from "../views/SuperAdmin/Financial/ManagementAndStorageBilling/Edit.vue";
-import SuperAdminManagementAndStorageBillingView from "../views/SuperAdmin/Financial/ManagementAndStorageBilling/View.vue";
-
 //Invoice
-import SuperAdminInvoiceList from "../views/SuperAdmin/Financial/Invoice/Index.vue";
-import SuperAdminInvoiceCreate from "../views/SuperAdmin/Financial/Invoice/Create.vue";
-import SuperAdminInvoiceEdit from "../views/SuperAdmin/Financial/Invoice/Edit.vue";
-import SuperAdminInvoiceView from "../views/SuperAdmin/Financial/Invoice/View.vue";
-
 //Receipt
-import SuperAdminReceiptList from "@/views/SuperAdmin/Financial/Receipt/Index.vue";
-import SuperAdminReceiptCreate from "@/views/SuperAdmin/Financial/Receipt/Create.vue";
-import SuperAdminReceiptEdit from "@/views/SuperAdmin/Financial/Receipt/Edit.vue";
-import SuperAdminReceiptView from "@/views/SuperAdmin/Financial/Receipt/View.vue";
-
 //Payment Log
-import SuperAdminPaymentLog from "../views/SuperAdmin/Financial/PaymentLog/Index.vue";
-import SuperAdminPaymentLogList from "../views/SuperAdmin/Financial/PaymentLog/Index.vue";
-import SuperAdminPaymentLogCreate from "../views/SuperAdmin/Financial/PaymentLog/Create.vue";
-import SuperAdminPaymentLogEdit from "../views/SuperAdmin/Financial/PaymentLog/Edit.vue";
-import SuperAdminPaymentLogView from "../views/SuperAdmin/Financial/PaymentLog/View.vue";
-
 //SuperAdmin E-commerce Setting
-import IndexBusinessType from "../views/SuperAdmin/E-commerce/BusinessType.vue";
-import IndexCategory from "../views/SuperAdmin/E-commerce/Category.vue";
-import IndexSubCategory from "../views/SuperAdmin/E-commerce/SubCategory.vue";
-import IndexSubSubCategory from "../views/SuperAdmin/E-commerce/SubSubCategory.vue";
-import IndexBrand from "../views/SuperAdmin/E-commerce/Brand.vue";
-
-import ProductList from "../views/SuperAdmin/E-commerce/product/Index.vue";
-import ProductCreate from "../views/SuperAdmin/E-commerce/product/Create.vue";
-import ProductEdit from "../views/SuperAdmin/E-commerce/product/Edit.vue";
-import ProductView from "../views/SuperAdmin/E-commerce/product/View.vue";
-
-import OrderList from "../views/SuperAdmin/E-commerce/order/Index.vue";
-import OrderCreate from "../views/SuperAdmin/E-commerce/order/Create.vue";
-import OrderEdit from "../views/SuperAdmin/E-commerce/order/Edit.vue";
-import OrderView from "../views/SuperAdmin/E-commerce/order/View.vue";
-
-import Roles from "@/views/RolePermission/Roles.vue";
-import Permissions from "@/views/RolePermission/Permissions.vue";
-import UserRoleAssign from "@/views/RolePermission/UserRoleAssign.vue";
-
+const IndexBusinessType = () => import("../views/SuperAdmin/E-commerce/BusinessType.vue");
+const IndexCategory = () => import("../views/SuperAdmin/E-commerce/Category.vue");
+const IndexSubCategory = () => import("../views/SuperAdmin/E-commerce/SubCategory.vue");
+const IndexSubSubCategory = () => import("../views/SuperAdmin/E-commerce/SubSubCategory.vue");
+const IndexBrand = () => import("../views/SuperAdmin/E-commerce/Brand.vue");
+const ProductList = () => import("../views/SuperAdmin/E-commerce/product/Index.vue");
+const ProductCreate = () => import("../views/SuperAdmin/E-commerce/product/Create.vue");
+const ProductEdit = () => import("../views/SuperAdmin/E-commerce/product/Edit.vue");
+const ProductView = () => import("../views/SuperAdmin/E-commerce/product/View.vue");
+const OrderList = () => import("../views/SuperAdmin/E-commerce/order/Index.vue");
+const OrderCreate = () => import("../views/SuperAdmin/E-commerce/order/Create.vue");
+const OrderEdit = () => import("../views/SuperAdmin/E-commerce/order/Edit.vue");
+const OrderView = () => import("../views/SuperAdmin/E-commerce/order/View.vue");
+const Roles = () => import("@/views/RolePermission/Roles.vue");
+const UserRoleAssign = () => import("@/views/RolePermission/UserRoleAssign.vue");
+const SupportInbox = () => import("@/views/SuperAdmin/Support/Index.vue");
+const Plans = () => import("@/views/SuperAdmin/Billing/Plans.vue");
+const Subscriptions = () => import("@/views/SuperAdmin/Billing/Subscriptions.vue");
+const Bills = () => import("@/views/SuperAdmin/Billing/Bills.vue");
+const Invoices = () => import("@/views/SuperAdmin/Billing/Invoices.vue");
+const InvoiceView = () => import("@/views/SuperAdmin/Billing/InvoiceView.vue");
+const Payments = () => import("@/views/SuperAdmin/Billing/Payments.vue");
+const Daily = () => import("@/views/SuperAdmin/Billing/Daily.vue");
+const PlatformSettings = () => import("@/views/SuperAdmin/Settings/Index.vue");
+const LookupPage = () => import("@/views/SuperAdmin/Settings/LookupPage.vue");
+const Notifications = () => import("@/views/Org/Notification/Index.vue");
 const superadminRoutes = [
   {
     path: "/superadmin-dashboard",
@@ -120,6 +61,30 @@ const superadminRoutes = [
         component: SuperadminDashboardIndex,
         meta: { requiresAuth: true },
       },
+      {
+        path: "settings",
+        name: "superadmin-settings",
+        component: PlatformSettings,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "settings/:key",
+        name: "superadmin-lookup",
+        component: LookupPage,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "notifications",
+        name: "superadmin-notifications",
+        component: Notifications,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "support",
+        name: "superadmin-support",
+        component: SupportInbox,
+        meta: { requiresAuth: true },
+      },
       // Role & Permission routes
       {
         path: "roles",
@@ -128,13 +93,7 @@ const superadminRoutes = [
         meta: { requiresAuth: true},
         // meta: { requiresAuth: true, permission: "manage_roles" },
       },
-      {
-        path: "permissions",
-        name: "permissions",
-        component: Permissions,
-        meta: { requiresAuth: true},
-        // meta: { requiresAuth: true, permission: "manage_permissions" },
-      },
+      { path: "permissions", name: "permissions", redirect: { name: "roles", query: { tab: "permissions" } } },
       {
         path: "superadmin-user-role-assign",
         name: "superadmin-user-role-assign",
@@ -142,351 +101,73 @@ const superadminRoutes = [
         meta: { requiresAuth: true},
         // meta: { requiresAuth: true, permission: "assign_roles" },
       },
+      { path: "security", name: "superadmin-security", component: AccountSecurity, meta: { requiresAuth: true } },
+      { path: "account-settings", name: "superadmin-account-settings", component: AccountSettings, meta: { requiresAuth: true } },
+      { path: "notification-settings", name: "superadmin-notification-settings", component: NotificationSettings, meta: { requiresAuth: true } },
       {
         path: "super-admin-profile-update",
         name: "super-admin-profile-update",
         component: SuperAdminProfileUpdate,
         meta: { requiresAuth: true },
       },
-      {
-        path: "country",
-        name: "country",
-        component: Country,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "region",
-        name: "region",
-        component: Region,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "region-currency",
-        name: "region-currency",
-        component: RegionCurrency,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "country-region",
-        name: "country-region",
-        component: CountryRegion,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "user-country",
-        name: "user-country",
-        component: UserCountry,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "dialing-code",
-        name: "dialing-code",
-        component: DialingCode,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "conduct-type",
-        name: "conduct-type",
-        component: ConductType,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "attendance-type",
-        name: "attendance-type",
-        component: AttendanceType,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "membership-type",
-        name: "membership-type",
-        component: MembershipType,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "membership-statuses",
-        name: "membership-statuses",
-        component: MembershipStatuses,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "membership-renewal-cycle",
-        name: "membership-renewal-cycle",
-        component: MembershipRenewalCycle,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "designation",
-        name: "designation",
-        component: Designation,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "language",
-        name: "language",
-        component: Language,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "time-zone-setup",
-        name: "time-zone-setup",
-        component: TimeZoneSetup,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "privacy-setup",
-        name: "privacy-setup",
-        component: PrivacySetup,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "regional-tax-rate",
-        name: "regional-tax-rate",
-        component: RegionalTaxRate,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "index-currency",
-        name: "index-currency",
-        component: IndexCurrency,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-packages",
-        name: "super-admin-packages",
-        component: IndexPackage,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "edit-package",
-        name: "edit-package",
-        component: EditPackage,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "view-package",
-        name: "view-package",
-        component: ViewPackage,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "edit-price",
-        name: "edit-price",
-        component: EditPrice,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "index-price",
-        name: "index-price",
-        component: IndexPrice,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "view-price",
-        name: "view-price",
-        component: ViewPrice,
-        meta: { requiresAuth: true },
-      },
-
-      {
-        path: "edit-subscription",
-        name: "edit-subscription",
-        component: EditSubscription,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-subscription-list",
-        name: "super-admin-subscription-list",
-        component: SuperAdminSubscriptionList,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-view-subscription",
-        name: "super-admin-view-subscription",
-        component: ViewSubscription,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "user-price-rate",
-        name: "user-price-rate",
-        component: UserPriceRate,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-billing-list",
-        name: "super-admin-billing-list",
-        component: SuperAdminBillingList,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-billing-create",
-        name: "super-admin-billing-create",
-        component: SuperAdminBillingCreate,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-billing-edit/:id",
-        name: "super-admin-billing-edit",
-        component: SuperAdminBillingEdit,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-billing-view/:id",
-        name: "super-admin-billing-view",
-        component: SuperAdminBillingView,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-every-day-member-count-and-bill-list",
-        name: "super-admin-every-day-member-count-and-bill-list",
-        component: SuperAdminEverydayMemberCountAndBillingList,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-every-day-member-count-and-bill-create",
-        name: "super-admin-every-day-member-count-and-bill-create",
-        component: SuperAdminEverydayMemberCountAndBillingCreate,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-every-day-member-count-and-bill-edit/:id",
-        name: "super-admin-every-day-member-count-and-bill-edit",
-        component: SuperAdminEverydayMemberCountAndBillingEdit,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-every-day-member-count-and-bill-view/:id",
-        name: "super-admin-every-day-member-count-and-bill-view",
-        component: SuperAdminEverydayMemberCountAndBillingView,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-everyday-storage-billing-list",
-        name: "super-admin-everyday-storage-billing-list",
-        component: SuperAdminEverydayStorageBillingList,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-everyday-storage-billing-create",
-        name: "super-admin-everyday-storage-billing-create",
-        component: SuperAdminEverydayStorageBillingCreate,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-everyday-storage-billing-edit/:id",
-        name: "super-admin-everyday-storage-billing-edit",
-        component: SuperAdminEverydayStorageBillingEdit,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-everyday-storage-billing-view/:id",
-        name: "super-admin-everyday-storage-billing-view",
-        component: SuperAdminEverydayStorageBillingView,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-management-and-storage-billing-list",
-        name: "super-admin-management-and-storage-billing-list",
-        component: SuperAdminManagementAndStorageBillingList,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-management-and-storage-billing-create",
-        name: "super-admin-management-and-storage-billing-create",
-        component: SuperAdminManagementAndStorageBillingCreate,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-management-and-storage-billing-edit/:id",
-        name: "super-admin-management-and-storage-billing-edit",
-        component: SuperAdminManagementAndStorageBillingEdit,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-management-and-storage-billing-view/:id",
-        name: "super-admin-management-and-storage-billing-view",
-        component: SuperAdminManagementAndStorageBillingView,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-invoice-list",
-        name: "super-admin-invoice-list",
-        component: SuperAdminInvoiceList,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-invoice-create",
-        name: "super-admin-invoice-create",
-        component: SuperAdminInvoiceCreate,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-invoice-edit/:id",
-        name: "super-admin-invoice-edit",
-        component: SuperAdminInvoiceEdit,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-invoice-view/:id",
-        name: "super-admin-invoice-view",
-        component: SuperAdminInvoiceView,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-receipt-list",
-        name: "super-admin-receipt-list",
-        component: SuperAdminReceiptList,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-receipt-create",
-        name: "super-admin-receipt-create",
-        component: SuperAdminReceiptCreate,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-receipt-edit/:id",
-        name: "super-admin-receipt-edit",
-        component: SuperAdminReceiptEdit,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-receipt-view/:id",
-        name: "super-admin-receipt-view",
-        component: SuperAdminReceiptView,
-        meta: { requiresAuth: true },
-      },
-
-      {
-        path: "super-admin-payment-log",
-        name: "super-admin-payment-log",
-        component: SuperAdminPaymentLog,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-payment-log-list",
-        name: "super-admin-payment-log-list",
-        component: SuperAdminPaymentLogList,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-payment-log-create",
-        name: "super-admin-payment-log-create",
-        component: SuperAdminPaymentLogCreate,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-payment-log-edit/:id",
-        name: "super-admin-payment-log-edit",
-        component: SuperAdminPaymentLogEdit,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "super-admin-payment-log-view/:id",
-        name: "super-admin-payment-log-view",
-        component: SuperAdminPaymentLogView,
-        meta: { requiresAuth: true },
-      },
-
+      { path: "country", name: "country", redirect: { name: "superadmin-lookup", params: { key: "countries" } } },
+      { path: "region", name: "region", redirect: { name: "superadmin-lookup", params: { key: "regions" } } },
+      { path: "region-currency", name: "region-currency", redirect: { name: "superadmin-lookup", params: { key: "region-currencies" } } },
+      { path: "country-region", name: "country-region", redirect: { name: "superadmin-lookup", params: { key: "country-regions" } } },
+      { path: "user-country", name: "user-country", redirect: { name: "superadmin-lookup", params: { key: "account-countries" } } },
+      { path: "dialing-code", name: "dialing-code", redirect: { name: "superadmin-lookup", params: { key: "dialing-codes" } } },
+      { path: "conduct-type", name: "conduct-type", redirect: { name: "superadmin-lookup", params: { key: "conduct-types" } } },
+      { path: "attendance-type", name: "attendance-type", redirect: { name: "superadmin-lookup", params: { key: "attendance-types" } } },
+      { path: "membership-type", name: "membership-type", redirect: { name: "superadmin-lookup", params: { key: "membership-types" } } },
+      { path: "membership-statuses", name: "membership-statuses", redirect: { name: "superadmin-lookup", params: { key: "membership-statuses" } } },
+      { path: "membership-renewal-cycle", name: "membership-renewal-cycle", redirect: { name: "superadmin-lookup", params: { key: "renewal-cycles" } } },
+      { path: "designation", name: "designation", redirect: { name: "superadmin-lookup", params: { key: "designations" } } },
+      { path: "language", name: "language", redirect: { name: "superadmin-lookup", params: { key: "languages" } } },
+      { path: "time-zone-setup", name: "time-zone-setup", redirect: { name: "superadmin-lookup", params: { key: "time-zones" } } },
+      { path: "privacy-setup", name: "privacy-setup", redirect: { name: "superadmin-lookup", params: { key: "privacy" } } },
+      { path: "regional-tax-rate", name: "regional-tax-rate", redirect: { name: "superadmin-lookup", params: { key: "tax-rates" } } },
+      { path: "index-currency", name: "index-currency", redirect: { name: "superadmin-lookup", params: { key: "currencies" } } },
+      // Billing (views/SuperAdmin/Billing); older addresses lead to the new pages
+      { path: "super-admin-packages", name: "super-admin-packages", component: Plans, meta: { requiresAuth: true } },
+      { path: "edit-package", name: "edit-package", redirect: { name: "super-admin-packages" } },
+      { path: "view-package", name: "view-package", redirect: { name: "super-admin-packages" } },
+      { path: "edit-price", name: "edit-price", redirect: { name: "super-admin-packages" } },
+      { path: "index-price", name: "index-price", redirect: { name: "super-admin-packages" } },
+      { path: "view-price", name: "view-price", redirect: { name: "super-admin-packages" } },
+      { path: "edit-subscription", name: "edit-subscription", redirect: { name: "super-admin-subscription-list" } },
+      { path: "super-admin-subscription-list", name: "super-admin-subscription-list", component: Subscriptions, meta: { requiresAuth: true } },
+      { path: "super-admin-view-subscription", name: "super-admin-view-subscription", redirect: { name: "super-admin-subscription-list" } },
+      { path: "user-price-rate", name: "user-price-rate", redirect: { name: "super-admin-subscription-list" } },
+      { path: "super-admin-billing-list", name: "super-admin-billing-list", redirect: { name: "super-admin-management-and-storage-billing-list" } },
+      { path: "super-admin-billing-create", name: "super-admin-billing-create", redirect: { name: "super-admin-management-and-storage-billing-list" } },
+      { path: "super-admin-billing-edit/:id", name: "super-admin-billing-edit", redirect: { name: "super-admin-management-and-storage-billing-list" } },
+      { path: "super-admin-billing-view/:id", name: "super-admin-billing-view", redirect: { name: "super-admin-management-and-storage-billing-list" } },
+      { path: "super-admin-every-day-member-count-and-bill-list", name: "super-admin-every-day-member-count-and-bill-list", component: Daily, meta: { requiresAuth: true } },
+      { path: "super-admin-every-day-member-count-and-bill-create", name: "super-admin-every-day-member-count-and-bill-create", redirect: { name: "super-admin-every-day-member-count-and-bill-list" } },
+      { path: "super-admin-every-day-member-count-and-bill-edit/:id", name: "super-admin-every-day-member-count-and-bill-edit", redirect: { name: "super-admin-every-day-member-count-and-bill-list" } },
+      { path: "super-admin-every-day-member-count-and-bill-view/:id", name: "super-admin-every-day-member-count-and-bill-view", redirect: { name: "super-admin-every-day-member-count-and-bill-list" } },
+      { path: "super-admin-everyday-storage-billing-list", name: "super-admin-everyday-storage-billing-list", redirect: { name: "super-admin-every-day-member-count-and-bill-list" } },
+      { path: "super-admin-everyday-storage-billing-create", name: "super-admin-everyday-storage-billing-create", redirect: { name: "super-admin-every-day-member-count-and-bill-list" } },
+      { path: "super-admin-everyday-storage-billing-edit/:id", name: "super-admin-everyday-storage-billing-edit", redirect: { name: "super-admin-every-day-member-count-and-bill-list" } },
+      { path: "super-admin-everyday-storage-billing-view/:id", name: "super-admin-everyday-storage-billing-view", redirect: { name: "super-admin-every-day-member-count-and-bill-list" } },
+      { path: "super-admin-management-and-storage-billing-list", name: "super-admin-management-and-storage-billing-list", component: Bills, meta: { requiresAuth: true } },
+      { path: "super-admin-management-and-storage-billing-create", name: "super-admin-management-and-storage-billing-create", redirect: { name: "super-admin-payment-log-list" } },
+      { path: "super-admin-management-and-storage-billing-edit/:id", name: "super-admin-management-and-storage-billing-edit", redirect: { name: "super-admin-payment-log-list" } },
+      { path: "super-admin-management-and-storage-billing-view/:id", name: "super-admin-management-and-storage-billing-view", redirect: { name: "super-admin-payment-log-list" } },
+      { path: "super-admin-invoice-list", name: "super-admin-invoice-list", component: Invoices, meta: { requiresAuth: true } },
+      { path: "super-admin-invoice-create", name: "super-admin-invoice-create", redirect: { name: "super-admin-invoice-list" } },
+      { path: "super-admin-invoice-edit/:id", name: "super-admin-invoice-edit", redirect: { name: "super-admin-invoice-list" } },
+      { path: "super-admin-invoice-view/:id", name: "super-admin-invoice-view", redirect: (to) => ({ name: "superadmin-invoice", params: { id: to.params.id } }) },
+      { path: "super-admin-receipt-list", name: "super-admin-receipt-list", redirect: { name: "super-admin-payment-log-list" } },
+      { path: "super-admin-receipt-create", name: "super-admin-receipt-create", redirect: { name: "super-admin-payment-log-list" } },
+      { path: "super-admin-receipt-edit/:id", name: "super-admin-receipt-edit", redirect: { name: "super-admin-payment-log-list" } },
+      { path: "super-admin-receipt-view/:id", name: "super-admin-receipt-view", redirect: { name: "super-admin-payment-log-list" } },
+      { path: "super-admin-payment-log", name: "super-admin-payment-log", redirect: { name: "super-admin-payment-log-list" } },
+      { path: "super-admin-payment-log-list", name: "super-admin-payment-log-list", component: Payments, meta: { requiresAuth: true } },
+      { path: "super-admin-payment-log-create", name: "super-admin-payment-log-create", redirect: { name: "super-admin-payment-log-list" } },
+      { path: "super-admin-payment-log-edit/:id", name: "super-admin-payment-log-edit", redirect: { name: "super-admin-payment-log-list" } },
+      { path: "super-admin-payment-log-view/:id", name: "super-admin-payment-log-view", redirect: { name: "super-admin-payment-log-list" } },
+      { path: "billing/invoices/:id", name: "superadmin-invoice", component: InvoiceView, meta: { requiresAuth: true } },
       {
         path: "index-business-type",
         name: "index-business-type",

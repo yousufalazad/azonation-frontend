@@ -1,318 +1,133 @@
-<template>
-  <div class="h-screen flex overflow-hidden bg-gray-100">
-    <!-- Sidebar -->
-    <aside :class="{ 'w-64': isSidebarExpanded, 'w-20': !isSidebarExpanded }"
-      class="transition-width duration-200 bg-white shadow h-full overflow-y-auto">
-      <div class="h-full flex flex-col">
-        <!-- Sidebar Menu -->
-        <nav class="flex-1 px-2 py-4 space-y-2">
-          <!-- v-if="auth.isAuthenticated && userType == 'superadmin'" -->
-          <!-- Static Links -->
-          <!-- <router-link to="/superadmin-dashboard/initial-content"
-            class="block px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
-            <span v-if="isSidebarExpanded">SuperAdmin Dashboard</span>
-            <span v-else class="hidden">SuperAdmin Dashboard</span>
-          </router-link> -->
-          
-          <!-- Org Reporting -->
-          <div>
-            <button @click="toggleSection('org-reporting')"
-              class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
-              <span v-if="isSidebarExpanded">Roles Permissions</span>
-              <svg v-if="isSectionOpen('org-reporting')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-              </svg>
-            </button>
-            <div v-if="isSectionOpen('org-reporting') && isSidebarExpanded" class="space-y-1">
+<!-- Super Admin menu: same look and behaviour as the organisation menu -->
+<script setup>
+import { ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import {
+  Home as HomeIcon,
+  LifeBuoy as LifeBuoyIcon,
+  Receipt as ReceiptIcon,
+  ShoppingBag as ShopIcon,
+  KeyRound as KeyIcon,
+  SlidersHorizontal as SettingsIcon,
+  ChevronDown as ChevronDownIcon,
+} from "lucide-vue-next";
 
-              <router-link to="/superadmin-dashboard/roles" class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Roles</router-link>
-              <router-link to="/superadmin-dashboard/permissions" class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Permissions</router-link>
-              <router-link to="/superadmin-dashboard/superadmin-user-role-assign" class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">User Role Assign</router-link>
-            </div>
-          </div>
+const props = defineProps({ isSidebarExpanded: Boolean });
+const emit = defineEmits(["close-mobile-menu"]);
+const route = useRoute();
+const router = useRouter();
 
-          <!-- Financial section -->
-          <div>
-            <button @click="toggleSection('financial')"
-              class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
-              <span v-if="isSidebarExpanded">Financial</span>
-              <svg v-if="isSectionOpen('financial')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-              </svg>
-            </button>
-            <div v-if="isSectionOpen('financial') && isSidebarExpanded" class="space-y-1">
-
-              <router-link to="/superadmin-dashboard/super-admin-payment-log-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Payment</router-link>
-
-              <router-link to="/superadmin-dashboard/super-admin-subscription-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Subscription</router-link>
-
-              <router-link to="/superadmin-dashboard/user-price-rate"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">User price rate</router-link>
-
-              <router-link to="/superadmin-dashboard/super-admin-billing-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100"> Billing</router-link>
-              <router-link to="/superadmin-dashboard/super-admin-every-day-member-count-and-bill-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Every Day Member Count </router-link>
-              <router-link to="/superadmin-dashboard/super-admin-everyday-storage-billing-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Everyday Storage Billing </router-link>
-              <router-link to="/superadmin-dashboard/super-admin-management-and-storage-billing-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Management and Storage Billing </router-link>
-
-              <router-link to="/superadmin-dashboard/super-admin-invoice-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Invoice</router-link>
-
-              <router-link to="/superadmin-dashboard/super-admin-receipt-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Receipt</router-link>
-
-              <router-link to="/superadmin-dashboard/super-admin-packages"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Package</router-link>
-
-              <router-link to="/superadmin-dashboard/index-price"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Price</router-link>
-
-              <router-link to="/superadmin-dashboard/index-currency"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Currency</router-link>
-              <router-link to="/superadmin-dashboard/region-currency"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Region Currency</router-link>
-              <router-link to="/superadmin-dashboard/regional-tax-rate"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Region Tax Rate</router-link>
-
-            </div>
-          </div>
-
-          <!-- Org Reporting -->
-          <div>
-            <button @click="toggleSection('org-reporting')"
-              class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
-              <span v-if="isSidebarExpanded">Org Reporting</span>
-              <svg v-if="isSectionOpen('org-reporting')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-              </svg>
-            </button>
-            <div v-if="isSectionOpen('org-reporting') && isSidebarExpanded" class="space-y-1">
-
-              <router-link to="/superadmin-dashboard/subscription-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Subscription</router-link>
-            </div>
-          </div>
-
-          <!-- Individual Reporting -->
-          <div>
-            <button @click="toggleSection('individual-reporting')"
-              class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
-              <span v-if="isSidebarExpanded">Individual Reporting</span>
-              <svg v-if="isSectionOpen('individual-reporting')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-              </svg>
-            </button>
-            <div v-if="isSectionOpen('individual-reporting') && isSidebarExpanded" class="space-y-1">
-
-              <router-link to="/superadmin-dashboard/subscription-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Subscription</router-link>
-
-              
-            </div>
-          </div>
-
-          <!-- Master Settings section -->
-          <div>
-            <button @click="toggleSection('masterSetting')"
-              class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
-              <span v-if="isSidebarExpanded">Master Settings</span>
-              <svg v-if="isSectionOpen('masterSetting')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-              </svg>
-            </button>
-            <div v-if="isSectionOpen('masterSetting') && isSidebarExpanded" class="space-y-1">
-              <router-link to="/superadmin-dashboard/country"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Country
-              </router-link>
-              <router-link to="/superadmin-dashboard/user-country"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">User Country
-              </router-link>
-              <router-link to="/superadmin-dashboard/dialing-code"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Dialing Code
-              </router-link>
-
-              <router-link to="/superadmin-dashboard/conduct-type"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Conduct Type
-              </router-link>
-              <router-link to="/superadmin-dashboard/attendance-type"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Attendance Type
-              </router-link>
-              <router-link to="/superadmin-dashboard/membership-type"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Membership Type
-              </router-link>
-              <router-link to="/superadmin-dashboard/membership-renewal-cycle"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Membership Renewal Cycle
-              </router-link>
-              <router-link to="/superadmin-dashboard/designation"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Designation
-              </router-link>
-              <router-link to="/superadmin-dashboard/language-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Language List
-              </router-link>
-              <router-link to="/superadmin-dashboard/time-zone-setup"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Time Zone Setup
-              </router-link>
-
-              <router-link to="/superadmin-dashboard/region"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Region
-              </router-link>
-              <router-link to="/superadmin-dashboard/country-region"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Country Region
-              </router-link>
-
-              <router-link to="/superadmin-dashboard/privacy-setup"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Privacy Setup
-              </router-link>
-            </div>
-          </div>
-
-
-          <!-- E-commerce Settings section -->
-          <div>
-            <button @click="toggleSection('e-commerce')"
-              class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
-              <span v-if="isSidebarExpanded">E-commerce</span>
-              <svg v-if="isSectionOpen('e-commerce')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-              </svg>
-            </button>
-            <div v-if="isSectionOpen('e-commerce') && isSidebarExpanded" class="space-y-1">
-              <router-link to="/superadmin-dashboard/index-business-type"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Business Type
-              </router-link>
-              <router-link to="/superadmin-dashboard/index-category"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Category
-              </router-link>
-              <router-link to="/superadmin-dashboard/index-sub-category"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Sub Category
-              </router-link>
-              <router-link to="/superadmin-dashboard/index-sub-sub-category"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Sub Sub Category
-              </router-link>
-              <router-link to="/superadmin-dashboard/index-brand"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Brand
-              </router-link>
-              <router-link to="/superadmin-dashboard/products-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Products
-              </router-link>
-              <router-link to="/superadmin-dashboard/orders-list"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Orders
-              </router-link>
-
-            </div>
-          </div>
-
-          <!-- Profile section -->
-          <div>
-            <button @click="toggleSection('profile')"
-              class="w-full text-left px-4 py-2 flex items-center justify-between text-gray-600 hover:bg-gray-100 rounded-md">
-              <span v-if="isSidebarExpanded">Profile</span>
-              <svg v-if="isSectionOpen('profile')" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-              </svg>
-            </button>
-            <div v-if="isSectionOpen('profile') && isSidebarExpanded" class="space-y-1">
-              <router-link to="/superadmin-dashboard/super-admin-profile-update"
-                class="block px-4 ml-2 text-gray-500 py-2 hover:bg-gray-100">Profile
-              </router-link>
-            </div>
-          </div>
-          
-        </nav>
-        <!-- Example target section -->
-        <div class="py-10"></div>
-      </div>
-    </aside>
-
-    <!-- Main content -->
-    <main class="flex-1 overflow-y-auto flex flex-col">
-      <div class="py-6 flex-1 overflow-y-auto">
-        <div class="max-w-7xl mx-auto px-4">
-          <router-view />
-          <!-- Example target section -->
-          <div class="py-10"></div>
-        </div>
-      </div>
-      <!-- Footer -->
-    </main>
-  </div>
-</template>
-
-<script>
-export default {
-  data() {
-    return {
-      isSidebarExpanded: true,
-      openSections: [],
-    };
+// `label` is an i18n key. Items with `children` open and close.
+const menu = [
+  { label: "adminNav.home", to: { name: "superadmin-dashboard-index" }, icon: HomeIcon },
+  { label: "adminNav.support", to: { name: "superadmin-support" }, icon: LifeBuoyIcon },
+  {
+    id: "billing", label: "adminNav.billing", icon: ReceiptIcon,
+    children: [
+      { label: "adminNav.monthlyBills", to: { name: "super-admin-management-and-storage-billing-list" } },
+      { label: "adminNav.invoices", to: { name: "super-admin-invoice-list" } },
+      { label: "adminNav.payments", to: { name: "super-admin-payment-log-list" } },
+      { label: "adminNav.dailyUsage", to: { name: "super-admin-every-day-member-count-and-bill-list" } },
+      { label: "adminNav.packages", to: { name: "super-admin-packages" } },
+      { label: "adminNav.subscriptions", to: { name: "super-admin-subscription-list" } },
+    ],
   },
-  methods: {
-    toggleSidebar() {
-      this.isSidebarExpanded = !this.isSidebarExpanded;
-    },
-    toggleSection(section) {
-      if (this.openSections.includes(section)) {
-        this.openSections = this.openSections.filter(s => s !== section);
-      } else {
-        this.openSections.push(section);
-      }
-    },
-    isSectionOpen(section) {
-      return this.openSections.includes(section);
-    },
+  {
+    id: "shop", label: "adminNav.shop", icon: ShopIcon,
+    children: [
+      { label: "adminNav.products", to: { name: "products-list" } },
+      { label: "adminNav.orders", to: { name: "orders-list" } },
+      { label: "adminNav.categories", to: { name: "index-category" } },
+      { label: "adminNav.subCategories", to: { name: "index-sub-category" } },
+      { label: "adminNav.subSubCategories", to: { name: "index-sub-sub-category" } },
+      { label: "adminNav.brands", to: { name: "index-brand" } },
+      { label: "adminNav.businessTypes", to: { name: "index-business-type" } },
+    ],
+  },
+  {
+    id: "access", label: "adminNav.access", icon: KeyIcon,
+    children: [
+      { label: "adminNav.roles", to: { name: "roles" } },
+      { label: "adminNav.assignRoles", to: { name: "superadmin-user-role-assign" } },
+    ],
+  },
+  {
+    id: "settings", label: "adminNav.settings", icon: SettingsIcon,
+    children: [
+      { label: "adminNav.platformLists", to: { name: "superadmin-settings" } },
+      { label: "adminNav.userCountries", to: { name: "user-country" } },
+    ],
+  },
+];
+
+const openSections = ref([]);
+const pathOf = (to) => {
+  try {
+    return router.resolve(to).path;
+  } catch {
+    return "";
   }
 };
+const isActive = (to) => route.path === pathOf(to)
+  || (to.name === "superadmin-settings" && route.name === "superadmin-lookup")
+  || (to.name === "super-admin-invoice-list" && route.name === "superadmin-invoice");
+const sectionHasActive = (item) => item.children?.some((c) => isActive(c.to));
+const toggleSection = (id) => {
+  openSections.value = openSections.value.includes(id) ? openSections.value.filter((s) => s !== id) : [...openSections.value, id];
+};
+const isOpen = (id) => openSections.value.includes(id) && props.isSidebarExpanded;
+
+watch(() => route.path, () => {
+  menu.forEach((item) => {
+    if (sectionHasActive(item) && !openSections.value.includes(item.id)) openSections.value = [...openSections.value, item.id];
+  });
+}, { immediate: true });
+
+const handleLinkClick = () => {
+  if (window.innerWidth < 1024) emit("close-mobile-menu");
+};
+const itemClass = (active) => [
+  "flex min-h-[44px] w-full items-center gap-3 rounded-control px-3 text-[15px] transition-colors whitespace-nowrap",
+  active ? "bg-primary-soft font-semibold text-primary-soft-ink" : "text-ink-2 hover:bg-surface-2 hover:text-ink",
+];
 </script>
 
-<style scoped>
-/* Custom styles */
-aside {
-  transition: width 0.2s;
-}
+<template>
+  <nav class="h-full overflow-y-auto overscroll-y-contain p-3" :aria-label="$t('common.menu')">
+    <ul class="flex flex-col gap-1">
+      <li v-for="item in menu" :key="item.label">
+        <router-link v-if="!item.children" :to="item.to" :class="itemClass(isActive(item.to))"
+          :aria-current="isActive(item.to) ? 'page' : undefined"
+          :title="!props.isSidebarExpanded ? $t(item.label) : undefined" @click="handleLinkClick">
+          <component :is="item.icon" class="h-5 w-5 shrink-0" aria-hidden="true" />
+          <span v-if="props.isSidebarExpanded" class="truncate">{{ $t(item.label) }}</span>
+        </router-link>
+        <template v-else>
+          <button type="button" :class="itemClass(sectionHasActive(item) && !isOpen(item.id))"
+            :aria-expanded="isOpen(item.id)" :title="!props.isSidebarExpanded ? $t(item.label) : undefined" @click="toggleSection(item.id)">
+            <component :is="item.icon" class="h-5 w-5 shrink-0" aria-hidden="true" />
+            <span v-if="props.isSidebarExpanded" class="truncate">{{ $t(item.label) }}</span>
+            <ChevronDownIcon v-if="props.isSidebarExpanded" class="ml-auto h-4 w-4 shrink-0 transition-transform" :class="{ 'rotate-180': isOpen(item.id) }" aria-hidden="true" />
+          </button>
+          <ul v-show="isOpen(item.id)" class="ml-5 mt-1 flex flex-col gap-0.5 border-l border-line pl-3">
+            <li v-for="child in item.children" :key="child.label">
+              <router-link :to="child.to" @click="handleLinkClick" :aria-current="isActive(child.to) ? 'page' : undefined"
+                class="flex min-h-[40px] items-center rounded-control px-3 text-[14px] transition-colors"
+                :class="isActive(child.to) ? 'bg-primary-soft font-semibold text-primary-soft-ink' : 'text-ink-muted hover:bg-surface-2 hover:text-ink'">
+                {{ $t(child.label) }}
+              </router-link>
+            </li>
+          </ul>
+        </template>
+      </li>
+    </ul>
+  </nav>
+</template>
 
-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+<style scoped>
+nav {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--az-line-strong)) transparent;
 }
 </style>

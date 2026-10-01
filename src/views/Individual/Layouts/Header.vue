@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router';
 import { authStore } from '../../../store/authStore';
 import placeholderImage from '@/assets/Placeholder/Azonation-profile-image.jpg';
 import dayjs from 'dayjs';
-import Notification from './HeaderNotification.vue';
+import Notification from '@/views/Org/Layouts/HeaderNotification.vue';
 
 const emit = defineEmits(['toggle-mobile-sidebar', 'toggle-sidebar', 'close-mobile-sidebar']); // ⬅️ allow explicit close
 
@@ -85,45 +85,45 @@ onBeforeUnmount(() => {
 
 <template>
   <header v-if="auth.isAuthenticated && userType === 'individual'"
-    class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-white shadow px-4 py-3">
+    class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between border-b border-line bg-surface px-4 py-3">
     <!-- Left Section -->
-    <div class="flex items-center gap-2 sm:gap-4 min-w-04">
-      <button @click="emit('toggle-mobile-sidebar')" class="lg:hidden text-gray-600">
+    <div class="flex min-w-0 items-center gap-2 sm:gap-4">
+      <button @click="emit('toggle-mobile-sidebar')" class="lg:hidden flex h-10 w-10 items-center justify-center rounded-full text-ink-2 hover:bg-surface-2" :aria-label="$t('common.menu')">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
 
-      <button @click="emit('toggle-sidebar')" class="hidden lg:block text-gray-600">
+      <button @click="emit('toggle-sidebar')" class="hidden lg:flex h-10 w-10 items-center justify-center rounded-full text-ink-2 hover:bg-surface-2" :aria-label="$t('common.menu')">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6h18M3 12h18M3 18h18" />
         </svg>
       </button>
 
       <a href="/individual-dashboard/index"
-        class="text-base sm:text-lg font-semibold text-gray-800 hover:text-blue-700 max-w-[200px] sm:max-w-none truncate">
+        class="text-base sm:text-lg font-semibold text-ink hover:text-primary max-w-[160px] sm:max-w-none truncate">
         {{ individualFirstName }} {{ individualLastName }}
       </a>
 
     </div>
 
     <!-- Right Section -->
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-2 sm:gap-4">
 
-      <!-- Custom Select Wrapper -->
+      <!-- Organisation switcher -->
       <div v-if="auth.orgAccess.length > 0" class="relative">
-      
-        <select v-model="auth.currentOrgId" @change="auth.switchOrg(auth.currentOrgId)" :disabled="auth.isSwitchingOrg"
-                  class="appearance-none bg-white border border-gray-300 text-gray-700 text-sm rounded-lg px-4 py-2 pr-10 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+        <label for="org-switcher" class="sr-only">{{ $t('account.switchOrg') }}</label>
+        <select id="org-switcher" v-model="auth.currentOrgId" @change="auth.switchOrg(auth.currentOrgId)" :disabled="auth.isSwitchingOrg"
+                  class="az-control max-w-[9rem] appearance-none py-0 pr-9 text-sm sm:max-w-[14rem]">
           <option v-for="org in auth.orgAccess" :key="org.org_type_user_id" :value="org.org_type_user_id">
-            Org {{ org.org_type_user_id }}
+            {{ org.org_name || `${$t('account.organisation')} ${org.org_type_user_id}` }}
           </option>
         </select>
         <!-- optional loading spinner -->
           <!--<span v-if="auth.isSwitchingOrg">Switching org...</span> -->
 
         <!-- Custom Dropdown Icon -->
-        <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
+        <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-ink-muted">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
@@ -134,47 +134,53 @@ onBeforeUnmount(() => {
 
       <!-- Profile Section (unchanged) -->
       <div class="relative">
-        <button ref="profileButton" @click="toggleProfileDropdown" class="flex items-center focus:outline-none">
+        <button ref="profileButton" @click="toggleProfileDropdown" class="flex items-center rounded-full"
+          :aria-label="$t('account.openMenu')" :aria-expanded="isProfileDropdownOpen">
           <img :src="logoPath ? `${logoPath}` : placeholderImage" alt="Profile"
 
-            class="w-10 h-10 rounded-full object-cover border border-gray-300" />
+            class="w-10 h-10 rounded-full object-cover border border-line-strong" />
         </button>
 
         <transition name="fade">
           <div v-if="isProfileDropdownOpen" ref="profileMenu"
-            class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-50">
+            class="absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-5rem)] overflow-y-auto rounded-card border border-line bg-surface shadow-pop z-50">
 
-            <div class="flex justify-center p-4 border-b">
+            <div class="flex justify-center p-4 border-b border-line">
               <img :src="logoPath ? `${logoPath}` : placeholderImage" alt="Profile"
                 class="rounded-lg max-h-[90px] max-w-[200px] object-contain" />
             </div>
 
-            <div class="p-4 border-b">
-              <p class="font-semibold text-gray-800">{{ userEmail }}</p>
-              <p class="text-xs text-gray-500 mt-1">Username: {{ username }}</p>
-              <p class="text-xs text-gray-500">Azon ID: {{ azonId }}</p>
-              <p class="text-xs text-gray-500">Joined: {{ createdAtDate }}</p>
+            <div class="p-4 border-b border-line">
+              <p class="font-semibold text-ink break-all">{{ userEmail }}</p>
+              <p class="text-xs text-ink-muted mt-1">{{ $t('account.username') }}: {{ username }}</p>
+              <p class="text-xs text-ink-muted">{{ $t('account.azonId') }}: {{ azonId }}</p>
+              <p class="text-xs text-ink-muted">{{ $t('account.joined') }}: {{ createdAtDate }}</p>
             </div>
 
-            <ul class="py-2 text-sm text-gray-700">
+            <!-- Language and theme -->
+            <div class="p-4 border-b border-line">
+              <AzAppearanceSettings />
+            </div>
+
+            <ul class="py-2 text-[15px] text-ink-2">
               <li>
-                <router-link :to="{ name: 'individual-profile' }" class="block px-4 py-2 hover:bg-gray-100"
-                  @click.native="onDropdownLinkClick">
-                  My Account
+                <router-link :to="{ name: 'individual-profile' }" class="flex min-h-[44px] items-center px-4 hover:bg-surface-2"
+                  @click="onDropdownLinkClick">
+                  {{ $t('account.myAccount') }}
                 </router-link>
               </li>
 
               <li>
-                <router-link :to="{ name: 'individual-security' }" class="block px-4 py-2 hover:bg-gray-100"
-                  @click.native="onDropdownLinkClick">
-                  Security
+                <router-link :to="{ name: 'individual-security' }" class="flex min-h-[44px] items-center px-4 hover:bg-surface-2"
+                  @click="onDropdownLinkClick">
+                  {{ $t('account.security') }}
                 </router-link>
               </li>
 
-              <li class="border-t mt-2">
+              <li class="border-t border-line mt-2 pt-2">
                 <button @click="auth.logout()"
-                  class="w-full text-left px-4 py-2 text-blue-600 hover:bg-gray-100 font-semibold">
-                  Logout
+                  class="flex min-h-[44px] w-full items-center px-4 text-left font-semibold text-primary hover:bg-surface-2">
+                  {{ $t('account.logout') }}
                 </button>
               </li>
             </ul>

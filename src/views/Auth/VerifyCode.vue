@@ -1,74 +1,95 @@
+<!-- Step 2 of 3 of resetting a password: type the 6-digit code from the email -->
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { authStore } from '../../store/authStore'
-// import axios from "axios"; // Uncomment if not globally injected
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import { useToast } from "@/composables/useToast";
+import AuthCard from "@/components/auth/AuthCard.vue";
+import { apiError } from "@/components/auth/authErrors";
 
-const auth = authStore
+const router = useRouter();
+const { t } = useI18n();
+const toast = useToast();
 
+const RESEND_SECONDS = 60;
+const email = sessionStorage.getItem("reset_email") || "";
+const code = ref("");
+const checking = ref(false);
+const error = ref("");
+const wait = ref(RESEND_SECONDS);
+let timer = null;
 
-const code = ref("")
-const message = ref("")
-const error = ref("")
-const router = useRouter()
-
-const email = localStorage.getItem('reset_email')
-
-const submitVerifyCode = async () => {
-    message.value = ""
-    error.value = ""
-
-    try {
-        const response = await authStore.fetchProtectedApi('/api/verify-code', { email, code: code.value }, 'POST')
-        message.value = response.data.message || "Code verified!"
-
-        // Go to Reset Password page
-        router.push('/reset-password')
-    } catch (err) {
-        error.value = err.response?.data?.message || "Invalid code. Please try again."
-    }
+function startCountdown() {
+  wait.value = RESEND_SECONDS;
+  clearInterval(timer);
+  timer = setInterval(() => {
+    if (--wait.value <= 0) clearInterval(timer);
+  }, 1000);
 }
+
+// Keep digits only, so pasting "123 456" works
+watch(code, (value) => {
+  const digits = value.replace(/\D/g, "").slice(0, 6);
+  if (digits !== value) code.value = digits;
+  error.value = "";
+});
+
+async function verify() {
+  if (checking.value) return;
+  if (code.value.length !== 6) {
+    error.value = t("authPages.codeLength");
+    return;
+  }
+  checking.value = true;
+  const res = await authStore.fetchPublicApi("/api/verify-code", { email, code: code.value }, "POST");
+  checking.value = false;
+  if (res?.status === true && res.reset_token) {
+    // One-time token for the next step; it lives only in this tab
+    sessionStorage.setItem("reset_token", res.reset_token);
+    router.push({ name: "reset-password" });
+  } else {
+    error.value = res?.errors?.status === false ? t("authPages.codeWrong") : apiError(res, t);
+  }
+}
+
+async function resend() {
+  if (wait.value > 0) return;
+  const res = await authStore.fetchPublicApi("/api/forgot-password", { email }, "POST");
+  if (res?.status === true) {
+    toast.success(t("authPages.codeResent"));
+    code.value = "";
+    startCountdown();
+  } else {
+    toast.error(apiError(res, t));
+  }
+}
+
+onMounted(() => {
+  if (!email) router.replace({ name: "forgot-password" });
+  else startCountdown();
+});
+onBeforeUnmount(() => clearInterval(timer));
 </script>
 
 <template>
-    <header class="fixed top-0 left-0 w-full bg-white z-50 shadow-sm">
-        <div class="container mx-auto flex justify-between items-center py-4 px-6">
-            <div>
-                <img src="../../assets/Logo/Azonation.png" alt="Azonation" class="w-40">
-            </div>
-            <div class="hidden md:flex">
-                <ul class="flex space-x-6">
-                    <li>
-                        <router-link to="/login"
-                            class="text-sm border border-black px-4 py-2 rounded-full font-medium hover:bg-black hover:text-white">
-                            Log In
-                        </router-link>
-                    </li>
-
-                </ul>
-            </div>
-        </div>
-    </header>
-
-    <main class="flex items-center justify-center pt-24 bg-gray-50">
-        <div class="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
-            <h2 class="text-2xl font-bold text-center mb-6">Verify Code</h2>
-            <form @submit.prevent="submitVerifyCode" class="space-y-5">
-                <div>
-                    <label class="block mb-1 text-sm font-semibold text-gray-700">Enter Code</label>
-                    <input type="text" v-model="code" required maxlength="6"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none"
-                        placeholder="Enter 6-digit code" />
-                </div>
-
-                <button type="submit"
-                    class="w-full py-2 px-4 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition duration-300">
-                    Verify Code
-                </button>
-
-                <div v-if="message" class="text-green-600 text-center text-sm">{{ message }}</div>
-                <div v-if="error" class="text-red-600 text-center text-sm">{{ error }}</div>
-            </form>
-        </div>
-    </main>
+  <AuthCard :title="t('authPages.codeTitle')">
+    <p class="-mt-4 mb-6 text-[15px] text-ink-2">
+      <i18n-t keypath="authPages.codeText" scope="global">
+        <template #email><strong class="break-all text-ink">{{ email }}</strong></template>
+      </i18n-t>
+    </p>
+    <form class="flex flex-col gap-5" @submit.prevent="verify">
+      <AzInput v-model="code" :label="t('authPages.code')" inputmode="numeric" autocomplete="one-time-code" placeholder="123456"
+        class="text-center text-xl tracking-[0.5em]" :error="error" required autofocus />
+      <AzButton type="submit" block :loading="checking" :loading-text="t('authPages.checking')">{{ t('authPages.verify') }}</AzButton>
+    </form>
+    <div class="mt-6 flex flex-col items-center gap-2 text-sm text-ink-2">
+      <p>{{ t('authPages.noCode') }}</p>
+      <button type="button" class="font-medium text-primary hover:underline disabled:cursor-not-allowed disabled:text-ink-muted disabled:no-underline" :disabled="wait > 0" @click="resend">
+        {{ wait > 0 ? t('authPages.resendIn', { n: wait }) : t('authPages.resend') }}
+      </button>
+      <RouterLink :to="{ name: 'forgot-password' }" class="font-medium text-primary hover:underline">{{ t('authPages.otherEmail') }}</RouterLink>
+    </div>
+  </AuthCard>
 </template>

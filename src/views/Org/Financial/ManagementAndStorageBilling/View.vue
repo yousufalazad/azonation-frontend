@@ -1,123 +1,100 @@
+<!-- One monthly bill: the period, members counted and the amounts for management and storage -->
 <script setup>
-import { ref, onMounted } from 'vue';
-import Swal from 'sweetalert2';
-import { useRoute } from 'vue-router';
-import { authStore } from '../../../../store/authStore';
+import { computed, onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import { loadBillingCurrency, money, statusTone, shortDate, monthName } from "@/helpers/billing";
+import { Printer } from "lucide-vue-next";
 
-const route = useRoute();
 const auth = authStore;
+const route = useRoute();
+const { t, locale } = useI18n();
 
-// Record data
-const management_and_storage_bill = ref({});
+const loading = ref(true);
+const printPage = () => window.print();
+const bill = ref(null);
 
-const billingId = route.params.id; // Assume the billing ID is passed as a route parameter
+const cur = computed(() => ({ code: bill.value?.currency_code }));
+const total = computed(() => Number(bill.value?.total_management_bill_amount || 0) + Number(bill.value?.total_storage_bill_amount || 0));
+const title = computed(() => {
+  const b = bill.value;
+  if (!b) return t("billPage.billTitle");
+  const month = b.period_start ? monthName(new Date(`${String(b.period_start).slice(0, 10)}T00:00:00`), locale.value) : `${b.service_month || ""} ${b.service_year || ""}`.trim();
+  return t("billPage.billFor", { month });
+});
 
-// Fetch management_and_storage_bill
-const getRecord = async () => {
-  try {
-    const response = await auth.fetchProtectedApi(`/api/management-and-storage-billings/${billingId}`, {}, 'GET');
-    if (response.status) {
-      management_and_storage_bill.value = response.data;
-    } else {
-      Swal.fire('Error!', 'Failed to fetch billing data.', 'error');
-    }
-  } catch (error) {
-    console.error('Error fetching management_and_storage_bill:', error);
-    Swal.fire('Error!', 'An error occurred while fetching data.', 'error');
-  }
-};
-
-onMounted(() => {
-  getRecord();
+onMounted(async () => {
+  const [res] = await Promise.all([auth.fetchProtectedApi(`/api/management-and-storage-billings/${route.params.id}`, {}, "GET"), loadBillingCurrency()]);
+  bill.value = res?.status ? res.data : null;
+  loading.value = false;
 });
 </script>
 
 <template>
-  <div class="container mx-auto max-w-7xl w-10/12 p-8 bg-white rounded-lg shadow-lg mt-12">
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-8">
-      <h2 class="text-2xl font-bold text-gray-800">View Billing Details</h2>
-      <button @click="$router.push({ name: 'bill-list' })"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-lg shadow focus:ring-2 focus:ring-blue-300 focus:outline-none">
-        Back to Billing List
-      </button>
-    </div>
+  <div class="mx-auto flex max-w-3xl flex-col gap-6">
+    <AzPageHeader :title="title" :back="{ name: 'bill-calculation' }" :back-label="t('billPage.title')">
+      <AzButton v-if="bill" variant="secondary" class="print:hidden" @click="printPage">
+        <template #icon><Printer class="h-[18px] w-[18px]" /></template>
+        {{ t('billing.print') }}
+      </AzButton>
+    </AzPageHeader>
 
-    <!-- Table -->
-    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-      <tbody class="text-gray-600 text-md font-medium">
-        <tr>
-          <td class="p-2 text-left font-semibold w-36">Billing Code</td>
-          <td class="p-2">:</td>
-          <td class="p-2">{{ management_and_storage_bill.billing_code }}</td>
-        </tr>
-        <tr>
-          <td class="p-2 text-left font-semibold w-36">Period Start</td>
-          <td class="p-2">:</td>
-          <td class="p-2">{{ management_and_storage_bill.period_start }}</td>
-        </tr>
-        <tr>
-          <td class="p-2 text-left font-semibold w-36">Period End</td>
-          <td class="p-2">:</td>
-          <td class="p-2">{{ management_and_storage_bill.period_end }}</td>
-        </tr>
-        <tr>
-          <td class="p-2 text-left font-semibold w-36">Service Month</td>
-          <td class="p-2">:</td>
-          <td class="p-2">{{ management_and_storage_bill.service_month }}</td>
-        </tr>
-        <tr>
-          <td class="p-2 text-left font-semibold w-36">Service Year</td>
-          <td class="p-2">:</td>
-          <td class="p-2">{{ management_and_storage_bill.service_year }}</td>
-        </tr>
-        <tr>
-          <td class="p-2 text-left font-semibold w-36">Billing Month</td>
-          <td class="p-2">:</td>
-          <td class="p-2">{{ management_and_storage_bill.billing_month }}</td>
-        </tr>
-        <tr>
-          <td class="p-2 text-left font-semibold w-36">Billing Year</td>
-          <td class="p-2">:</td>
-          <td class="p-2">{{ management_and_storage_bill.billing_year }}</td>
-        </tr>
-        <tr>
-          <td class="p-2 text-left font-semibold w-36">Total Member</td>
-          <td class="p-2">:</td>
-          <td class="p-2">{{ management_and_storage_bill.total_member }}</td>
-        </tr>
-        <tr>
-          <td class="p-2 text-left font-semibold w-36">Total Managemen Bill Amount</td>
-          <td class="p-2">:</td>
-          <td class="p-2">{{ management_and_storage_bill.total_management_bill_amount }}</td>
-        </tr>
-        <tr>
-          <td class="p-2 text-left font-semibold w-36">Total Storage Bill
-            Amount</td>
-          <td class="p-2">:</td>
-          <td class="p-2">{{ management_and_storage_bill.total_storage_bill_amount }}</td>
-        </tr>
-        <tr>
-          <td class="p-2 text-left font-semibold w-36">Currency Code</td>
-          <td class="p-2">:</td>
-          <td class="p-2">{{ management_and_storage_bill.currency_code }}</td>
-        </tr>
-        <tr>
-          <td class="p-2 text-left font-semibold w-36"> Bill Status</td>
-          <td class="p-2">:</td>
-          <td class="p-2">{{ management_and_storage_bill.bill_status }}</td>
-        </tr>
-        <tr>
-          <td class="p-2 text-left font-semibold w-36">Admin Notes</td>
-          <td class="p-2">:</td>
-          <td class="p-2">{{ management_and_storage_bill.admin_note }}</td>
-        </tr>
-        <tr>
-          <td class="p-2 text-left font-semibold w-36">Active</td>
-          <td class="p-2">:</td>
-          <td class="p-2">{{ management_and_storage_bill.is_active ? 'Inactive' : 'Active' }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <AzSkeleton v-if="loading" :lines="5" height="3rem" />
+
+    <AzCard v-else-if="!bill">
+      <AzEmptyState :title="t('billPage.notFoundTitle')" :description="t('billPage.notFoundText')">
+        <AzButton variant="secondary" :to="{ name: 'bill-calculation' }">{{ t('billPage.title') }}</AzButton>
+      </AzEmptyState>
+    </AzCard>
+
+    <AzCard v-else>
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p class="text-sm text-ink-muted">{{ t('billPage.billNumber') }}</p>
+          <p class="font-semibold text-ink">{{ bill.billing_code || '—' }}</p>
+        </div>
+        <AzBadge :tone="statusTone(bill.bill_status)">{{ t(`billing.status_${bill.bill_status}`, bill.bill_status) }}</AzBadge>
+      </div>
+
+      <dl class="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-2">
+        <div>
+          <dt class="text-sm text-ink-muted">{{ t('billPage.period') }}</dt>
+          <dd class="font-medium text-ink">{{ shortDate(bill.period_start, locale) }} – {{ shortDate(bill.period_end, locale) }}</dd>
+        </div>
+        <div>
+          <dt class="text-sm text-ink-muted">{{ t('billPage.billedIn') }}</dt>
+          <dd class="font-medium text-ink">{{ `${bill.billing_month || ''} ${bill.billing_year || ''}`.trim() || '—' }}</dd>
+        </div>
+        <div>
+          <dt class="text-sm text-ink-muted">{{ t('billPage.organisation') }}</dt>
+          <dd class="font-medium text-ink">{{ bill.org_name || '—' }}</dd>
+        </div>
+        <div>
+          <dt class="text-sm text-ink-muted">{{ t('billPage.memberDaysLabel') }}</dt>
+          <dd class="font-medium tabular-nums text-ink">{{ bill.total_member ?? '—' }}</dd>
+        </div>
+      </dl>
+
+      <table class="mt-6 w-full text-sm">
+        <tbody class="divide-y divide-line border-y border-line">
+          <tr>
+            <td class="py-3 text-ink-2">{{ t('billPage.management') }}</td>
+            <td class="py-3 text-right tabular-nums text-ink">{{ money(bill.total_management_bill_amount, cur) }}</td>
+          </tr>
+          <tr>
+            <td class="py-3 text-ink-2">{{ t('billPage.storage') }}</td>
+            <td class="py-3 text-right tabular-nums text-ink">{{ money(bill.total_storage_bill_amount, cur) }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td class="pt-3 font-semibold text-ink">{{ t('billing.total') }}</td>
+            <td class="pt-3 text-right text-lg font-semibold tabular-nums text-ink">{{ money(total, cur) }}</td>
+          </tr>
+        </tfoot>
+      </table>
+      <p class="mt-5 text-sm text-ink-muted">{{ t('billPage.invoiceNote') }}</p>
+    </AzCard>
   </div>
 </template>

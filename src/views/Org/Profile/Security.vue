@@ -1,343 +1,92 @@
- 
-
+<!-- Sign-in and security: change the password. The email address is changed on the Profile page. -->
 <script setup>
-import { ref } from 'vue';
-import { authStore } from '../../../store/authStore';
-import Swal from "sweetalert2";
+import { computed, reactive, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import { useToast } from "@/composables/useToast";
+import { Check, Eye, EyeOff, KeyRound } from "lucide-vue-next";
 
 const auth = authStore;
-const userId = auth.user.id;
-const email = auth.user.email;
-const statusEmail = ref(1); // Placeholder: Replace with your actual logic
+const { t } = useI18n();
+const toast = useToast();
 
-const modalVisibleUserEmail = ref(false);
-const newEmail = ref('');
+const form = reactive({ old_password: "", password: "", password_confirmation: "" });
+const errors = reactive({});
+const saving = ref(false);
+const show = ref(false);
 
-//for password change
-const newPassword = ref('');
-const confirmPassword = ref('');
-const confirmPasswordError = ref('');
-const showNewPassword = ref(false);
-const showConfirmPassword = ref(false);
+const rules = computed(() => [
+  { key: "length", ok: form.password.length >= 8 },
+  { key: "upper", ok: /[A-Z]/.test(form.password) },
+  { key: "lower", ok: /[a-z]/.test(form.password) },
+  { key: "number", ok: /\d/.test(form.password) },
+  { key: "symbol", ok: /[^A-Za-z0-9]/.test(form.password) },
+]);
+const score = computed(() => rules.value.filter((r) => r.ok).length);
+const strength = computed(() => (!form.password ? "" : score.value <= 2 ? "weak" : score.value <= 4 ? "fair" : "strong"));
+const strengthTone = { weak: "bg-danger", fair: "bg-warning", strong: "bg-success" };
 
-const oldPassword = ref('');
-const showOldPassword = ref(false);
-const oldPasswordError = ref(''); // Add a new state for the old password error
-
-
-const modalVisibleUserPassword = ref(false);
-
-// Password strength logic
-const passwordStrengthMessage = ref('');
-const passwordStrengthColor = ref('');
-const passwordRequirements = ref({
-    length: false,
-    uppercase: false,
-    lowercase: false,
-    number: false,
-    special: false,
-});
-
-const checkPasswordStrength = () => {
-    const password = newPassword.value;
-    passwordRequirements.value.length = password.length >= 8;
-    passwordRequirements.value.uppercase = /[A-Z]/.test(password);
-    passwordRequirements.value.lowercase = /[a-z]/.test(password);
-    passwordRequirements.value.number = /\d/.test(password);
-    passwordRequirements.value.special = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-    const metRequirements = Object.values(passwordRequirements.value).filter(Boolean).length;
-
-    if (metRequirements <= 2) {
-        passwordStrengthMessage.value = 'Weak';
-        passwordStrengthColor.value = 'text-red-500';
-    } else if (metRequirements === 3 || metRequirements === 4) {
-        passwordStrengthMessage.value = 'Moderate';
-        passwordStrengthColor.value = 'text-yellow-500';
-    } else if (metRequirements === 5) {
-        passwordStrengthMessage.value = 'Strong';
-        passwordStrengthColor.value = 'text-green-500';
+async function save() {
+  Object.keys(errors).forEach((k) => delete errors[k]);
+  if (score.value < 5) errors.password = t("security.needStrong");
+  if (form.password !== form.password_confirmation) errors.password_confirmation = t("security.noMatch");
+  if (Object.keys(errors).length) return;
+  saving.value = true;
+  try {
+    const res = await auth.fetchProtectedApi(`/api/update-password/${auth.user?.id}`, { ...form }, "POST");
+    if (res?.status) {
+      toast.success(t("security.changed"));
+      Object.assign(form, { old_password: "", password: "", password_confirmation: "" });
+    } else {
+      const e = res?.errors;
+      const fieldErrors = e?.errors || (e && !e.message ? e : null);
+      if (fieldErrors?.old_password) errors.old_password = fieldErrors.old_password[0];
+      else if (fieldErrors?.password) errors.password = fieldErrors.password[0];
+      else errors.old_password = e?.message || res?.message || t("security.failed");
     }
-};
-
-// Email update logic
-const updateUserEmail = async () => {
-    try {
-        const response = await auth.fetchProtectedApi(`/api/update-email/${userId}`, {
-            email: newEmail.value,
-        }, 'PUT');
-        if (response.status) {
-            Swal.fire('Success', 'Email updated successfully', 'success');
-            closeEmailModal();
-            let user = JSON.parse(sessionStorage.getItem('user'));
-            if (user) {
-                user.email = newEmail.value;
-                sessionStorage.setItem('user', JSON.stringify(user));
-            }
-            window.location.reload();
-        }
-    } catch (error) {
-        console.log(error);
-        Swal.fire('Error', 'Failed to update email', 'error');
-    }
-};
-
-const updateUserPassword = async () => {
-    if (!oldPassword.value) {
-        Swal.fire('Error', 'Current password is required.', 'error');
-        return;
-    }
-
-    // Check if all conditions are met for the new password
-    if (!passwordRequirements.value.length || !passwordRequirements.value.uppercase ||
-        !passwordRequirements.value.lowercase || !passwordRequirements.value.number ||
-        !passwordRequirements.value.special) {
-        Swal.fire('Error', 'New password must meet all requirements.', 'error');
-        return;
-    }
-
-    if (newPassword.value !== confirmPassword.value) {
-        confirmPasswordError.value = 'Passwords do not match.';
-        return;
-    }
-
-    confirmPasswordError.value = '';
-
-    try {
-        const response = await auth.fetchProtectedApi(`/api/update-password/${userId}`, {
-            old_password: oldPassword.value,  // Pass old password for validation
-            password: newPassword.value,       // New password
-            password_confirmation: confirmPassword.value,  // Pass password confirmation
-        }, 'PUT');
-
-        if (response.status) {
-            Swal.fire('Success', 'Password updated successfully', 'success');
-            closePasswordModal();
-        }
-    } catch (error) {
-        //Handle old password mismatch
-        if (error.response && error.response.status === 422 && error.response.data.errors?.oldPassword) {
-            Swal.fire('Error', error.response.data.errors.oldPassword[0], 'error');
-        } else {
-            Swal.fire('Error', 'Failed to update password', 'error');
-        }
-
-        // In the catch block
-        // if (error.response && error.response.status === 422 && error.response.data.errors?.oldPassword) {
-        //     oldPasswordError.value = error.response.data.errors.oldPassword[0];
-        // } else {
-        //     oldPasswordError.value = 'Failed to update password'; // Default error message
-        // }
-    }
-};
-
-
-//------------Working -------------------------
-// const updateUserPassword = async () => {
-//     if (!oldPassword.value) {
-//         Swal.fire('Error', 'Current password is required.', 'error');
-//         return;
-//     }
-
-//     // Check if all conditions are met for the new password
-//     if (!passwordRequirements.value.length || !passwordRequirements.value.uppercase ||
-//         !passwordRequirements.value.lowercase || !passwordRequirements.value.number ||
-//         !passwordRequirements.value.special) {
-//         Swal.fire('Error', 'New password must meet all requirements.', 'error');
-//         return;
-//     }
-
-//     if (newPassword.value !== confirmPassword.value) {
-//         confirmPasswordError.value = 'Passwords do not match.';
-//         return;
-//     }
-
-//     confirmPasswordError.value = '';
-
-//     try {
-//         const response = await auth.fetchProtectedApi(`/api/update-password/${userId}`, {
-//             old_password: oldPassword.value,  // Pass old password for validation
-//             password: newPassword.value,       // New password
-//             password_confirmation: confirmPassword.value,  // Pass password confirmation
-//         }, 'PUT');
-
-//         if (response.status) {
-//             Swal.fire('Success', 'Password updated successfully', 'success');
-//             closePasswordModal();
-//         }
-//     } catch (error) {
-//         console.log(error);
-//         Swal.fire('Error', 'Failed to update password', 'error');
-//     }
-// };
-
-//--
-
-
-// const updateUserPassword = async () => {
-//     // Check if all conditions are met
-//     if (!passwordRequirements.value.length || !passwordRequirements.value.uppercase ||
-//         !passwordRequirements.value.lowercase || !passwordRequirements.value.number ||
-//         !passwordRequirements.value.special) {
-//         Swal.fire('Error', 'Password must meet all requirements.', 'error');
-//         return;
-//     }
-
-//     if (newPassword.value !== confirmPassword.value) {
-//         confirmPasswordError.value = 'Passwords do not match.';
-//         return;
-//     }
-
-//     confirmPasswordError.value = '';
-
-//     try {
-//         const response = await auth.fetchProtectedApi(`/api/update-password/${userId}`, {
-//             password: newPassword.value,
-//         }, 'PUT');
-//         if (response.status) {
-//             Swal.fire('Success', 'Password updated successfully', 'success');
-//             closePasswordModal();
-//         }
-//     } catch (error) {
-//         console.log(error);
-//         Swal.fire('Error', 'Failed to update password', 'error');
-//     }
-// };
-
-// Toggle function for showing/hiding the old password
-const toggleShowOldPassword = () => {
-    showOldPassword.value = !showOldPassword.value;
-};
-
-const toggleShowNewPassword = () => {
-    showNewPassword.value = !showNewPassword.value;
-};
-
-const toggleShowConfirmPassword = () => {
-    showConfirmPassword.value = !showConfirmPassword.value;
-};
-
-const openPasswordModal = () => {
-    modalVisibleUserPassword.value = true;
-    oldPassword.value = '';
-    newPassword.value = '';
-    confirmPassword.value = '';
-    oldPasswordError.value = '';
-};
-
-const closePasswordModal = () => {
-    modalVisibleUserPassword.value = false;
-    oldPassword.value = '';
-    newPassword.value = '';
-    confirmPassword.value = '';
-    oldPasswordError.value = ''; // Reset errors on close
-};
-
-// Status Message for email (replace with actual logic dynamically)
-const getStatusMessage = (status) => {
-    return status === 1 ? 'Verified' : 'Not Verified';
-};
-
-const openEmailModal = () => {
-    modalVisibleUserEmail.value = true;
-};
-
-const closeEmailModal = () => {
-    modalVisibleUserEmail.value = false;
-};
+  } finally {
+    saving.value = false;
+  }
+}
 </script>
 
 <template>
-    <!-- User Email Section -->
-    <!-- <section class="mb-8">
-      <div class="bg-white rounded-lg shadow-sm p-6">
-        <div class="flex justify-between items-center">
-          <div>
-            <h3 class="text-lg font-semibold text-gray-800">Email</h3>
-            <p class="text-sm text-gray-600 mt-1">
-              {{ email }}
-              <span class="ml-4 text-xs text-gray-500">Status: {{ getStatusMessage(statusEmail) }}</span>
-            </p>
-          </div>
-          <button @click="openEmailModal()" class="text-sm text-blue-600 hover:underline">Edit</button>
-        </div>
-      </div>
-  
-      <div v-if="modalVisibleUserEmail" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-          <h2 class="text-xl font-semibold text-center text-gray-800 mb-4">Edit Email</h2>
-  
-          <div class="mb-4">
-            <label for="newEmail" class="text-sm text-gray-600">New Email</label>
-            <input v-model="newEmail" type="email" id="newEmail" class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <p v-if="auth.errors?.newEmail" class="text-sm text-red-500 mt-1">{{ auth.errors?.newEmail[0] }}</p>
-          </div>
-  
-          <div class="flex justify-end space-x-2">
-            <button @click="closeEmailModal" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Cancel</button>
-            <button @click="updateUserEmail" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">Update</button>
-          </div>
-        </div>
-      </div>
-    </section> -->
-  
-    <!-- Change Password Section -->
-    <section>
-      <div class="bg-white rounded-lg shadow-sm p-6">
-        <div class="flex justify-between items-center">
-          <div>
-            <h3 class="text-lg font-semibold text-gray-800">Change password</h3>
-            <p class="text-sm text-gray-600 mt-1">********</p>
-          </div>
-          <button @click="openPasswordModal" class="text-sm text-blue-600 hover:underline">Change</button>
-        </div>
-      </div>
-  
-      <!-- Password Modal -->
-      <div v-if="modalVisibleUserPassword" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-          <h2 class="text-xl font-semibold text-center text-gray-800 mb-4">Update Password</h2>
-  
-          <!-- Old Password -->
-          <div class="mb-4 relative">
-            <label for="oldPassword" class="text-sm text-gray-600">Current Password</label>
-            <input :type="showOldPassword ? 'text' : 'password'" v-model="oldPassword" id="oldPassword" class="w-full mt-1 border border-gray-300 rounded-md p-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <button type="button" @click="toggleShowOldPassword" class="absolute right-3 top-8 text-sm text-gray-500 hover:text-gray-700">{{ showOldPassword ? 'Hide' : 'Show' }}</button>
-            <p v-if="auth.errors?.oldPassword" class="text-sm text-red-500 mt-1">{{ auth.errors?.oldPassword[0] }}</p>
-          </div>
-  
-          <!-- New Password -->
-          <div class="mb-4 relative">
-            <label for="newPassword" class="text-sm text-gray-600">New Password</label>
-            <input :type="showNewPassword ? 'text' : 'password'" v-model="newPassword" id="newPassword" class="w-full mt-1 border border-gray-300 rounded-md p-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" @input="checkPasswordStrength" />
-            <button type="button" @click="toggleShowNewPassword" class="absolute right-3 top-8 text-sm text-gray-500 hover:text-gray-700">{{ showNewPassword ? 'Hide' : 'Show' }}</button>
-            <p v-if="auth.errors?.newPassword" class="text-sm text-red-500 mt-1">{{ auth.errors?.newPassword[0] }}</p>
-            <p class="text-xs mt-1" :class="passwordStrengthColor">{{ passwordStrengthMessage }}</p>
-            <ul class="text-xs mt-2 space-y-1">
-              <li :class="passwordRequirements.length ? 'text-green-600' : 'text-gray-400'">● At least 8 characters</li>
-              <li :class="passwordRequirements.uppercase ? 'text-green-600' : 'text-gray-400'">● One uppercase letter</li>
-              <li :class="passwordRequirements.lowercase ? 'text-green-600' : 'text-gray-400'">● One lowercase letter</li>
-              <li :class="passwordRequirements.number ? 'text-green-600' : 'text-gray-400'">● One number</li>
-              <li :class="passwordRequirements.special ? 'text-green-600' : 'text-gray-400'">● One special character</li>
-            </ul>
-          </div>
-  
-          <!-- Confirm Password -->
-          <div class="mb-6 relative">
-            <label for="confirmPassword" class="text-sm text-gray-600">Confirm Password</label>
-            <input :type="showConfirmPassword ? 'text' : 'password'" v-model="confirmPassword" id="confirmPassword" class="w-full mt-1 border border-gray-300 rounded-md p-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            <button type="button" @click="toggleShowConfirmPassword" class="absolute right-3 top-8 text-sm text-gray-500 hover:text-gray-700">{{ showConfirmPassword ? 'Hide' : 'Show' }}</button>
-            <p v-if="confirmPasswordError" class="text-sm text-red-500 mt-1">{{ confirmPasswordError }}</p>
-          </div>
-  
-          <!-- Action Buttons -->
-          <div class="flex justify-end space-x-2">
-            <button @click="closePasswordModal" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Cancel</button>
-            <button @click="updateUserPassword" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">Update</button>
-          </div>
-        </div>
-      </div>
-    </section>
-  </template>
+  <div class="flex flex-col gap-6">
+    <AzPageHeader :title="t('accountNav.security')" :description="t('security.description')" />
 
-<style scoped></style>
+    <AzCard>
+      <template #header>
+        <h2 class="flex items-center gap-2 text-lg font-semibold text-ink"><KeyRound class="h-5 w-5 text-primary" aria-hidden="true" />{{ t('security.changePassword') }}</h2>
+      </template>
+      <form class="flex max-w-md flex-col gap-5" novalidate @submit.prevent="save">
+        <!-- Lets password managers match the account -->
+        <input type="text" class="sr-only" :value="auth.user?.email" autocomplete="username" tabindex="-1" aria-hidden="true" readonly />
+        <AzInput v-model="form.old_password" :type="show ? 'text' : 'password'" :label="t('security.current')" :help="t('security.currentHelp')"
+          :error="errors.old_password" autocomplete="current-password" />
+        <div class="flex flex-col gap-2">
+          <AzInput v-model="form.password" :type="show ? 'text' : 'password'" :label="t('security.new')" :error="errors.password" autocomplete="new-password">
+            <template #suffix>
+              <button type="button" class="grid h-9 w-9 place-items-center rounded-full text-ink-muted hover:text-ink" :aria-label="show ? t('security.hide') : t('security.show')"
+                :aria-pressed="show" @click="show = !show">
+                <EyeOff v-if="show" class="h-4 w-4" aria-hidden="true" /><Eye v-else class="h-4 w-4" aria-hidden="true" />
+              </button>
+            </template>
+          </AzInput>
+          <div v-if="form.password" class="flex items-center gap-2" aria-live="polite">
+            <div class="flex h-1.5 flex-1 gap-1">
+              <span v-for="i in 5" :key="i" class="flex-1 rounded-full" :class="i <= score ? strengthTone[strength] : 'bg-surface-2'" />
+            </div>
+            <span class="text-sm font-medium text-ink-2">{{ t(`security.strength_${strength}`) }}</span>
+          </div>
+          <ul class="grid gap-1 text-sm sm:grid-cols-2">
+            <li v-for="r in rules" :key="r.key" class="flex items-center gap-1.5" :class="r.ok ? 'text-success' : 'text-ink-muted'">
+              <Check class="h-4 w-4" :class="r.ok ? '' : 'opacity-30'" aria-hidden="true" />{{ t(`security.rule_${r.key}`) }}
+            </li>
+          </ul>
+        </div>
+        <AzInput v-model="form.password_confirmation" :type="show ? 'text' : 'password'" :label="t('security.confirm')" :error="errors.password_confirmation" autocomplete="new-password" />
+        <div><AzButton type="submit" :loading="saving">{{ t('security.save') }}</AzButton></div>
+      </form>
+    </AzCard>
+  </div>
+</template>

@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Azonation Work Plan</title>
+<style>
+  :root {
+    --canvas: #f6f8fb; --surface: #ffffff; --surface-2: #eef2f7; --line: #dde3eb;
+    --ink: #111827; --ink-2: #374151; --muted: #6b7280;
+    --primary: #0b63d1; --primary-soft: #e6f0fd; --primary-soft-ink: #0a4fa8;
+    --success: #15803d; --success-soft: #e7f6ec; --warning: #b45309; --warning-soft: #fdf3e2;
+    --radius: 14px; --shadow: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --canvas: #0f141b; --surface: #161d27; --surface-2: #1d2633; --line: #2a3442;
+      --ink: #e8edf3; --ink-2: #c4ccd7; --muted: #8e99a8;
+      --primary: #5aa2ff; --primary-soft: #16263d; --primary-soft-ink: #9cc6ff;
+      --success: #4ade80; --success-soft: #13261b; --warning: #fbbf24; --warning-soft: #2a2110;
+      --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--canvas); color: var(--ink);
+    font: 16px/1.55 "Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 64px; }
+  header h1 { font-size: 30px; line-height: 1.2; margin: 8px 0 6px; }
+  header p { color: var(--ink-2); margin: 0; font-size: 17px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--primary-soft-ink); background: var(--primary-soft); padding: 3px 10px; border-radius: 999px; }
+  h2 { font-size: 21px; margin: 40px 0 12px; }
+  h3 { font-size: 17px; margin: 0 0 4px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 18px 20px; }
+  .grid { display: grid; gap: 12px; }
+  @media (min-width: 720px) { .grid.two { grid-template-columns: 1fr 1fr; } .grid.three { grid-template-columns: 1fr 1fr 1fr; } }
+  .muted { color: var(--muted); }
+  .small { font-size: 14px; }
+  ul { margin: 6px 0 0; padding-left: 20px; } li { margin: 3px 0; }
+  .phase { display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 18px 20px; }
+  .num { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 700;
+    background: var(--primary-soft); color: var(--primary-soft-ink); }
+  .phase + .phase { margin-top: 12px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 4px; }
+  .pill { font-size: 13px; padding: 2px 10px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); }
+  .pill.you { background: var(--warning-soft); color: var(--warning); font-weight: 600; }
+  .pill.check { background: var(--success-soft); color: var(--success); font-weight: 600; }
+  .steps { counter-reset: s; list-style: none; padding: 0; }
+  .steps li { counter-increment: s; position: relative; padding-left: 34px; margin: 10px 0; }
+  .steps li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--primary); color: #fff; font-size: 13px; font-weight: 700; display: grid; place-items: center; }
+  code, .cmd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 14px; }
+  .cmd { display: block; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+    white-space: pre-wrap; word-break: break-word; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 13px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  .scroll { overflow-x: auto; }
+  .note { border-left: 4px solid var(--primary); background: var(--primary-soft); color: var(--ink); border-radius: 10px; padding: 12px 14px; }
+  footer { margin-top: 48px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="tag">Azonation · Work plan</span>
+  <h1>From today's app to the new Azonation</h1>
+  <p>What I will do, in what order, how each session works, and what I need from you.</p>
+</header>
+
+<h2>The big picture</h2>
+<div class="grid three">
+  <div class="card"><h3>1 · Prepare</h3><p class="muted small">List every current feature, then create the two new projects and their foundation.</p></div>
+  <div class="card"><h3>2 · Move</h3><p class="muted small">Move every feature module by module into the new projects, improved where it helps, with nothing left behind.</p></div>
+  <div class="card"><h3>3 · Grow</h3><p class="muted small">Switch over, build the marketing site, then add the new modules one by one.</p></div>
+</div>
+
+<h2>The phases</h2>
+
+<div class="card phase">
+  <div class="num">1</div>
+  <div>
+    <h3>Feature inventory: the "nothing missed" checklist</h3>
+    <div class="meta"><span class="pill">≈ 1 session</span><span class="pill">Opus</span><span class="pill check">You review the list</span></div>
+    <p>I read the current apps and write down every page, server route, permission, scheduled job, email and setting, grouped by the module it will belong to.</p>
+    <p class="muted small">Result: <code>FEATURE-INVENTORY.md</code>. Every item is ticked only when it works in the new app.</p>
+  </div>
+</div>
+
+<div class="card phase">
+  <div class="num">2</div>
+  <div>
+    <h3>Create the new projects</h3>
+    <div class="meta"><span class="pill">1–2 sessions</span><span class="pill">Opus</span></div>
+    <ul>
+      <li><b>azonation-api</b>: latest Laravel and PHP, one folder per module, Sanctum login, roles and permissions, tests, starting data (countries, plans…).</li>
+      <li><b>azonation-app</b>: latest Vue, Vite and Tailwind 4, one folder per module, the Azonation Calm components carried over, 10 languages including right-to-left.</li>
+      <li>Rules files (<code>CLAUDE.md</code>), the roadmap, connected to your new GitHub repos.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card phase">
+  <div class="num">3</div>
+  <div>
+    <h3>Foundation</h3>
+    <div class="meta"><span class="pill">2–3 sessions</span><span class="pill">Opus</span><span class="pill you">Needs your login keys</span><span class="pill check">You try signing in</span></div>
+    <ul>
+      <li>Sign-in and sign-up: email, Google, Microsoft and Apple.</li>
+      <li>Organisations, plus the "current organisation" security that keeps each organisation's data private.</li>
+      <li>Module switches: Super Admin → Modules (for everyone) and for each organisation, with an audit log.</li>
+      <li>Super Admin basics.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card phase">
+  <div class="num">4</div>
+  <div>
+    <h3>Move the core parts</h3>
+    <div class="meta"><span class="pill">≈ 10–14 sessions</span><span class="pill">Sonnet for most · Opus for Billing</span><span class="pill you">Prices needed for Billing</span><span class="pill check">You test each part on your phone</span></div>
+    <p>One part at a time: Membership → Committees → Meetings → Documents → Notifications → <b>Billing</b> (new band pricing and member limits) → Support → Member area (with My family) → Reports.</p>
+  </div>
+</div>
+
+<div class="card phase">
+  <div class="num">5</div>
+  <div>
+    <h3>Move the existing modules</h3>
+    <div class="meta"><span class="pill">≈ 5–7 sessions</span><span class="pill">Sonnet</span><span class="pill check">You test each module</span></div>
+    <p>Finance, Events (with family headcount), Projects, Assets and Planning.</p>
+  </div>
+</div>
+
+<div class="card phase">
+  <div class="num">6</div>
+  <div>
+    <h3>Switch over</h3>
+    <div class="meta"><span class="pill">1–2 sessions</span><span class="pill">Opus</span><span class="pill check">Your final approval</span></div>
+    <p>Full test as an organisation, a member and Super Admin, with every inventory item ticked. Then the new projects replace the old ones, and the old repos are archived.</p>
+  </div>
+</div>
+
+<div class="card phase">
+  <div class="num">7</div>
+  <div>
+    <h3>Marketing site: azonation-site</h3>
+    <div class="meta"><span class="pill">2–3 sessions</span><span class="pill">Sonnet</span><span class="pill check">You review the wording</span></div>
+    <p>Landing page, features, solutions by organisation type, pricing, help, blog and legal pages, in 10 languages and built for Google.</p>
+  </div>
+</div>
+
+<div class="card phase">
+  <div class="num">8</div>
+  <div>
+    <h3>New modules, one at a time</h3>
+    <div class="meta"><span class="pill">1–3 sessions each</span><span class="pill">Sonnet · Opus for Voting and Collections</span></div>
+    <p>Web (org-name.azonation.org) → Voting → Directory → email to members and Newsletters → paperless core additions → phone app (PWA) → Forms, Certificates and e-signatures → Secretarial automation → Collections (after the legal check) → Ideas board → Community → Shop → Secretarial human service.</p>
+  </div>
+</div>
+
+<p class="muted small" style="margin-top:14px">Rough total to reach today's features in the new projects: <b>about 25–35 sessions</b>. Session counts are estimates and depend on how much each part is improved.</p>
+
+<h2>How every session works</h2>
+<div class="card">
+  <ol class="steps">
+    <li><b>Start:</b> you open a new session in the project folder and paste the start message below.</li>
+    <li><b>Read:</b> I read <code>CLAUDE.md</code>, the roadmap and the latest handoff note, so there's no need to explain anything again.</li>
+    <li><b>One task:</b> I work on the next step only (for example "move Meetings"), using the old code as the reference.</li>
+    <li><b>Check:</b> before finishing, I build, run the tests and try it in the browser in light and dark mode, on a phone-sized screen and in more than one language.</li>
+    <li><b>Save:</b> I tick the inventory items, update the roadmap and write a short handoff note, then commit and push to GitHub.</li>
+    <li><b>Report:</b> I tell you in plain words what's done, what to test and what I need from you.</li>
+  </ol>
+  <p class="small" style="margin-top:14px"><b>Start message for every new session:</b></p>
+  <span class="cmd">Read CLAUDE.md, docs/ROADMAP.md and the newest note in docs/handoff/, then continue.</span>
+</div>
+
+<h2>Every module is "done" only when…</h2>
+<div class="card scroll">
+  <table>
+    <tr><th>Check</th><th>What it means</th></tr>
+    <tr><td>Features</td><td>Every inventory item for the module works, nothing missing</td></tr>
+    <tr><td>Security</td><td>Each organisation sees only its own data; permissions are checked on the server</td></tr>
+    <tr><td>Switch</td><td>The module can be switched off and on; data is kept</td></tr>
+    <tr><td>Languages</td><td>All 10 languages, right-to-left correct for Arabic and Urdu</td></tr>
+    <tr><td>Design</td><td>Azonation Calm, light and dark mode, works on a phone</td></tr>
+    <tr><td>Tests</td><td>Automatic tests pass; tested in the browser</td></tr>
+    <tr><td>Saved</td><td>Inventory ticked, roadmap and handoff updated, pushed to GitHub</td></tr>
+  </table>
+</div>
+
+<h2>What I need from you, and when</h2>
+<div class="card scroll">
+  <table>
+    <tr><th>When</th><th>What</th></tr>
+    <tr><td>Phase 1</td><td>Look through the feature list and tell me if anything is missing</td></tr>
+    <tr><td>Phase 3</td><td>Create the sign-in apps and put their keys in the project's <code>.env</code> file yourself. I'll guide you step by step and never need to see the secret keys.
+      <ul class="small"><li>Google Cloud Console (you already have this for Google sign-in)</li><li>Microsoft Entra (free)</li><li>Apple Developer: Sign in with Apple, verify azonation.com</li></ul></td></tr>
+    <tr><td>Phase 4 (Billing)</td><td>The real monthly price of each package for Bangladesh and the UK (placeholders until then)</td></tr>
+    <tr><td>Phases 4–5</td><td>A quick test on your phone after each part</td></tr>
+    <tr><td>Before launch</td><td>Native speakers to review the key screens in each language; a solicitor and accountant check before Collections (payments)</td></tr>
+    <tr><td>Before launch</td><td>DNS settings for azonation.com, .org and .net. I'll give you the exact records.</td></tr>
+  </table>
+</div>
+
+<h2>Already decided</h2>
+<div class="grid two">
+  <div class="card small">
+    <ul>
+      <li>Modular monolith: one Laravel API and one Vue app, split into modules</li>
+      <li>Old repos frozen; move module by module, nothing missed</li>
+      <li>Sanctum session login; JWT or OAuth added later if needed</li>
+      <li>Sign-in: email, Google, Microsoft, Apple</li>
+      <li>10 languages from the start, including right-to-left</li>
+    </ul>
+  </div>
+  <div class="card small">
+    <ul>
+      <li>Band pricing: monthly price per package per region, with member limits</li>
+      <li>Azonation never holds organisations' money</li>
+      <li>azonation.com (site, app, api) · azonation.org (organisation sites) · azonation.net (files, mail)</li>
+      <li>Community kept small, with no social feed</li>
+      <li>No stored procedures</li>
+    </ul>
+  </div>
+</div>
+
+<div class="note" style="margin-top:24px">
+  <b>Tip to keep costs down:</b> keep one task per session, and use Sonnet for module moves once the first one sets the pattern. Opus is worth it for the foundation, Billing, security and anything unclear.
+</div>
+
+<footer>Full details: <code>docs/ROADMAP.md</code> · Plan written 1 October 2026</footer>
+</div>
+</body>
+</html>

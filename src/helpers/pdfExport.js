@@ -1,7 +1,6 @@
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
 import dayjs from "dayjs";
 import { authStore } from "../store/authStore";
+import { cellValue } from "./exportValue";
 
 const auth = authStore;
 
@@ -118,6 +117,12 @@ const savePdfCrossBrowser = async (doc, fileName = "export.pdf") => {
 
 /* ----------------------- Main Export ----------------------- */
 export async function pdfExport({ headers, rows, title, fileName }) {
+  // Loaded on demand so the PDF library is only downloaded when someone exports
+  const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+    import("jspdf"),
+    import("jspdf-autotable"),
+  ]);
+
   // 1) Try to load logo
   let logoBase64 = null;
   try {
@@ -153,7 +158,7 @@ export async function pdfExport({ headers, rows, title, fileName }) {
   // Table data
   const header = headers.map((h) => h.text);
   const body = rows.map((r) =>
-    header.map((h) => r[headers.find((hdr) => hdr.text === h).value] || "")
+    headers.map((hdr) => String(cellValue(r, hdr)))
   );
 
   // Watermark

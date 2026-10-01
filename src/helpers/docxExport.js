@@ -1,25 +1,20 @@
-import {
-  Document,
-  Packer,
-  Paragraph,
-  TextRun,
-  Table,
-  TableRow,
-  TableCell,
-  AlignmentType,
-  WidthType,
-  BorderStyle,
-  Header,
-  Footer,
-} from "docx";
-import { saveAs } from "file-saver";
 import dayjs from "dayjs";
 import { authStore } from "../store/authStore";
+import { cellValue } from "./exportValue";
 
 const auth = authStore;
 
 /* ----------------------- Main Export ----------------------- */
 export async function docxExport({ headers, rows, title, fileName }) {
+  // Loaded on demand so the Word library is only downloaded when someone exports
+  const [
+    {
+      Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+      AlignmentType, WidthType, BorderStyle, Header, Footer,
+    },
+    { saveAs },
+  ] = await Promise.all([import("docx"), import("file-saver")]);
+
   const orgName = auth.user?.org_name || "Organization";
   // const generatedDate = dayjs().format("YYYY-MM-DD");
   const generatedDate = dayjs().format("DD MMM YYYY");
@@ -62,7 +57,7 @@ export async function docxExport({ headers, rows, title, fileName }) {
   /* ---------- Table Body ---------- */
   const tableRows = rows.map((r) => {
     const cells = headers.map((h) => {
-      const textValue = r[h.value] != null ? String(r[h.value]) : "";
+      const textValue = String(cellValue(r, h));
       return new TableCell({
         width: { size: 100 / headers.length, type: WidthType.PERCENTAGE },
         children: [

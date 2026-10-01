@@ -1,88 +1,41 @@
+<!-- Step 1 of 3 of resetting a password: ask for the email and send a 6-digit code -->
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { authStore } from '../../store/authStore'
-// import axios from "axios"; // Uncomment if not globally injected
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { authStore } from "@/store/authStore";
+import AuthCard from "@/components/auth/AuthCard.vue";
+import { apiError } from "@/components/auth/authErrors";
 
-const auth = authStore
-const email = ref("")
-const message = ref("")
-const error = ref("")
-const router = useRouter()
+const router = useRouter();
+const { t } = useI18n();
 
-const submitForgotPassword = async () => {
-    message.value = ""
-    error.value = ""
+const email = ref(sessionStorage.getItem("reset_email") || "");
+const sending = ref(false);
+const error = ref("");
 
-    // try {
-    const response = await authStore.fetchProtectedApi("/api/forgot-password", { email: email.value }, 'POST')
-    message.value = response.data.message || "Code sent to your email."
-
-    // Save email to localStorage to use in verify page
-    localStorage.setItem('reset_email', email.value)
-
-    // Navigate to Verify Code page
-    router.push('/verify-code')
-    // } catch (err) {
-    //     error.value = err.response?.data?.message || "An error occurred. Please try again."
-    // }
+async function send() {
+  if (sending.value) return;
+  sending.value = true;
+  error.value = "";
+  const res = await authStore.fetchPublicApi("/api/forgot-password", { email: email.value.trim() }, "POST");
+  sending.value = false;
+  if (res?.status === true) {
+    sessionStorage.setItem("reset_email", email.value.trim());
+    sessionStorage.removeItem("reset_token");
+    router.push({ name: "verify-code" });
+  } else {
+    error.value = apiError(res, t);
+  }
 }
 </script>
 
 <template>
-    <header class="fixed top-0 left-0 w-full bg-white z-50 shadow-sm">
-        <div class="container mx-auto flex justify-between items-center py-4 px-6">
-            <div>
-                <img src="../../assets/Logo/Azonation.png" alt="Azonation" class="w-40">
-            </div>
-            <div class="hidden md:flex">
-                <router-link to="/login"
-                    class="text-sm border border-black px-4 py-2 rounded-full font-medium hover:bg-black hover:text-white">
-                    Log In
-                </router-link>
-            </div>
-        </div>
-    </header>
-
-    <main class="flex items-center justify-center pt-24 bg-gray-50">
-        <div class="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
-            <h2 class="text-2xl font-bold text-center mb-6">Forgot Password</h2>
-            <form @submit.prevent="submitForgotPassword" class="space-y-5">
-                <div>
-                    <label class="block my-3 text-sm font-semibold text-gray-700">Email Address</label>
-                    <input type="email" v-model="email" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                        placeholder="Enter your email" />
-                </div>
-
-                <button type="submit"
-                    class="w-full py-2 px-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition duration-300">
-                    Send Code
-                </button>
-
-                <div v-if="message" class="text-green-600 text-center text-sm">{{ message }}</div>
-                <div v-if="error" class="text-red-600 text-center text-sm">{{ error }}</div>
-            </form>
-        </div>
-    </main>
-
-    <!-- <footer class="bg-white border-t mt-12 py-6">
-        <div class="container mx-auto text-center space-y-3 text-sm text-gray-600">
-            <p>
-                By signing in, you agree to our 
-                <router-link to="/terms" class="text-blue-600 hover:text-blue-500">Terms of Service</router-link> 
-                and 
-                <router-link to="/privacy" class="text-blue-600 hover:text-blue-500">Privacy Policy</router-link>.
-            </p>
-            <p>
-                Need help? 
-                <router-link to="/help" class="text-blue-600 hover:text-blue-500">Contact us</router-link>.
-            </p>
-            <p>
-                Azonation is a product of 
-                <router-link to="/terms" class="text-gray-600 hover:text-blue-500">Azon Group Ltd</router-link><br>
-                © 2025 Azonation. All rights reserved.
-            </p>
-        </div>
-    </footer> -->
+  <AuthCard :title="t('authPages.forgotTitle')" :description="t('authPages.forgotText')">
+    <form class="flex flex-col gap-5" @submit.prevent="send">
+      <AzInput v-model="email" type="email" :label="t('auth.email')" autocomplete="email" inputmode="email" placeholder="you@example.com" :error="error" required autofocus />
+      <AzButton type="submit" block :loading="sending" :loading-text="t('authPages.sending')">{{ t('authPages.sendCode') }}</AzButton>
+      <AzButton variant="quiet" block :to="{ name: 'login' }">{{ t('authPages.backToLogin') }}</AzButton>
+    </form>
+  </AuthCard>
 </template>

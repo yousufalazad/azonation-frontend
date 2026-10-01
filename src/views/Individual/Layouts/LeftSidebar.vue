@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import {
   Home as HomeIcon,
@@ -8,142 +8,115 @@ import {
   Calendar as CalendarIcon,
   ClipboardList as ClipboardListIcon,
   Folder as FolderIcon,
-  FileText as FileTextIcon,
+  Package as PackageIcon,
   CheckCircle as CheckCircleIcon,
+  Heart as HeartIcon,
   UserCircle as UserCircleIcon,
-  Settings as SettingsIcon,
-  BarChart as BarChartIcon,
-} from 'lucide-vue-next'
-
-const openSections = ref([]);
-const route = useRoute();
-const isActiveRoute = (name) => route.name === name;
+  ChevronDown as ChevronDownIcon,
+  LifeBuoy as LifeBuoyIcon,
+  Building2 as Building2Icon,
+} from 'lucide-vue-next';
 import { authStore } from '../../../store/authStore';
+import { isActingForOrg, currentOrgName } from '@/router/orgAccess';
+
 const auth = authStore;
+const route = useRoute();
 
 const props = defineProps({
   isSidebarExpanded: Boolean,
 });
 
+const emit = defineEmits(['close-mobile-menu']);
 
+// `label` is an i18n key. These are the member's own pages, open to every member.
+const links = [
+  { label: 'nav.home', routeName: 'individual-dashboard-index', icon: HomeIcon },
+  { label: 'nav.organisations', routeName: 'connected-organisations', icon: UsersIcon },
+  { label: 'nav.committees', routeName: 'individual-committees', icon: BriefcaseIcon },
+  { label: 'nav.meetings', routeName: 'individual-meetings', icon: CalendarIcon },
+  { label: 'nav.events', routeName: 'individual-events', icon: ClipboardListIcon },
+  { label: 'nav.projects', routeName: 'individual-projects', icon: FolderIcon },
+  { label: 'nav.assets', routeName: 'individual-assets', icon: PackageIcon },
+  { label: 'nav.attendances', routeName: 'individual-attendances', icon: CheckCircleIcon },
+  { label: 'nav.myFamily', routeName: 'individual-family', icon: HeartIcon },
+  { label: 'nav.support', routeName: 'individual-support', icon: LifeBuoyIcon },
+];
 
-const toggleSection = (section) => {
-  if (openSections.value.includes(section)) {
-    openSections.value = openSections.value.filter(s => s !== section);
-  } else {
-    openSections.value.push(section);
-  }
+const profileLinks = [
+  { label: 'nav.myProfile', routeName: 'individual-profile' },
+  { label: 'nav.security', routeName: 'individual-security' },
+  { label: 'nav.notifications', routeName: 'individual-notifications' },
+  { label: 'accountNav.settings', routeName: 'individual-settings' },
+];
+
+// Members with a role in the current organisation can manage it from the organisation dashboard
+const canManage = computed(() => isActingForOrg());
+const manageName = computed(() => currentOrgName());
+
+const visibleLinks = computed(() => links.filter((l) => !l.permission || auth.hasPermission(l.permission)));
+const isActive = (name) => route.name === name;
+const profileActive = computed(() => profileLinks.some((l) => isActive(l.routeName)));
+
+const profileOpen = ref(false);
+watch(profileActive, (active) => { if (active) profileOpen.value = true; }, { immediate: true });
+
+const handleLinkClick = () => {
+  if (window.innerWidth < 1024) emit('close-mobile-menu');
 };
 
-const isSectionOpen = (section) => openSections.value.includes(section);
-const isActive = (path) => route.path === path;
+const itemClass = (active) => [
+  'flex min-h-[44px] w-full items-center gap-3 rounded-control px-3 text-[15px] transition-colors whitespace-nowrap',
+  active ? 'bg-primary-soft font-semibold text-primary-soft-ink' : 'text-ink-2 hover:bg-surface-2 hover:text-ink',
+];
 </script>
 
 <template>
-  <nav class="h-full overflow-y-auto p-4 space-y-2 bg-white shadow">
-    <!-- Static Links -->
-    <template v-for="link in [
-      { name: 'Home', routeName: 'individual-dashboard-index', icon: HomeIcon },
-      { name: 'Organisations', routeName: 'connected-organisations', icon: UsersIcon },
-      { permission: 'committee.read', name: 'Committees', routeName: 'individual-committees', icon: BriefcaseIcon },
-      { permission: 'meeting.read', name: 'Meetings',  routeName: 'individual-meetings', icon: CalendarIcon },
-      { permission: 'event.read', name: 'Events', routeName: 'individual-events', icon: ClipboardListIcon },
-      { permission: 'project.read', name: 'Projects', routeName: 'individual-projects', icon: FolderIcon },
-      { permission: 'asset.read', name: 'Assets', routeName: 'individual-assets', icon: FileTextIcon },
-      { permission: 'attendance.read', name: 'Attendances', routeName: 'individual-attendances', icon: CheckCircleIcon },
-      // { permission: 'settings.read', name: 'Settings', routeName: 'individual-settings', icon: SettingsIcon }
-    ]" :key="link.routeName">
-      <router-link v-if="!link.permission || auth.hasPermission(link.permission)" :to="{ name: link.routeName }" :class="[
-        'flex items-center gap-3 px-4 py-2 rounded-md transition-all duration-200 whitespace-nowrap',
-        isActiveRoute(link.routeName) ? 'bg-gray-200 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100'
-      ]" :title="!props.isSidebarExpanded ? link.name : ''">
+  <nav class="h-full overflow-y-auto overscroll-y-contain p-3" :aria-label="$t('common.menu')">
+    <router-link v-if="canManage" :to="{ name: 'org-dashboard-index' }" @click="handleLinkClick"
+      :title="!props.isSidebarExpanded ? $t('nav.manageOrg', { name: manageName }) : undefined"
+      class="mb-3 flex min-h-[44px] items-center gap-3 rounded-control border border-primary/30 bg-primary-soft px-3 text-[15px] font-semibold text-primary-soft-ink hover:border-primary">
+      <Building2Icon class="h-5 w-5 shrink-0" aria-hidden="true" />
+      <span v-if="props.isSidebarExpanded" class="truncate">{{ $t('nav.manageOrg', { name: manageName }) }}</span>
+    </router-link>
+    <ul class="flex flex-col gap-1">
+      <li v-for="link in visibleLinks" :key="link.routeName">
+        <router-link :to="{ name: link.routeName }" :class="itemClass(isActive(link.routeName))"
+          :aria-current="isActive(link.routeName) ? 'page' : undefined"
+          :title="!props.isSidebarExpanded ? $t(link.label) : undefined" @click="handleLinkClick">
+          <component :is="link.icon" class="h-5 w-5 shrink-0" aria-hidden="true" />
+          <span v-if="props.isSidebarExpanded" class="truncate">{{ $t(link.label) }}</span>
+        </router-link>
+      </li>
 
-      
-        <component :is="link.icon" class="h-5 w-5" />
-        <span v-if="props.isSidebarExpanded">{{ link.name }}</span>
-      </router-link>
-    </template>
-
-
-    <!-- Expandable: Profile -->
-    <div>
-      <button @click="toggleSection('profile')"
-        class="w-full text-left px-4 py-2 flex items-center gap-3 rounded-md text-gray-700 hover:bg-gray-100 transition"
-        :title="!props.isSidebarExpanded ? 'Profile' : ''">
-        <UserCircleIcon class="h-5 w-5" />
-        <span v-if="props.isSidebarExpanded">Profile</span>
-        <svg class="ml-auto h-4 w-4 transition-transform" :class="{ 'rotate-180': isSectionOpen('profile') }"
-          fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-        </svg>
-      </button>
-      
-      
-      <transition name="fade-slide">
-        <div v-if="isSectionOpen('profile') && props.isSidebarExpanded" class="ml-7 space-y-1">
-
-          <router-link :to="{ name: 'individual-profile' }" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
-            My Profile
-          </router-link>
-
-          <router-link :to="{ name: 'individual-security' }" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
-            Security
-          </router-link>
-          
-          <router-link :to="{ name: 'individual-notifications' }" class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">
-            Notifications
-          </router-link>
-
-        </div>
-      </transition>
-    </div>
-
-    <!-- Expandable: Reports -->
-    <!-- <div>
-      <button @click="toggleSection('reports')"
-        class="w-full text-left px-4 py-2 flex items-center gap-3 rounded-md text-gray-700 hover:bg-gray-100 transition"
-        :title="!props.isSidebarExpanded ? 'Reports' : ''">
-        <BarChartIcon class="h-5 w-5" />
-        <span v-if="props.isSidebarExpanded">Reports</span>
-        <svg class="ml-auto h-4 w-4 transition-transform" :class="{ 'rotate-180': isSectionOpen('reports') }"
-          fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-        </svg>
-      </button>
-      <transition name="fade-slide">
-        <div v-if="isSectionOpen('reports') && props.isSidebarExpanded" class="ml-7 space-y-1">
-          <router-link to="/org-dashboard/org-report"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Income</router-link>
-          <router-link to="/org-dashboard/org-expense-report"
-            class="block px-2 py-1 hover:bg-gray-100 rounded text-gray-600">Expense</router-link>
-        </div>
-      </transition>
-    </div> -->
+      <!-- Profile section -->
+      <li>
+        <button type="button" :class="itemClass(profileActive && !(profileOpen && props.isSidebarExpanded))"
+          :aria-expanded="profileOpen && props.isSidebarExpanded"
+          :title="!props.isSidebarExpanded ? $t('nav.profile') : undefined" @click="profileOpen = !profileOpen">
+          <UserCircleIcon class="h-5 w-5 shrink-0" aria-hidden="true" />
+          <span v-if="props.isSidebarExpanded" class="truncate">{{ $t('nav.profile') }}</span>
+          <ChevronDownIcon v-if="props.isSidebarExpanded" class="ml-auto h-4 w-4 shrink-0 transition-transform"
+            :class="{ 'rotate-180': profileOpen }" aria-hidden="true" />
+        </button>
+        <ul v-show="profileOpen && props.isSidebarExpanded" class="ml-5 mt-1 flex flex-col gap-0.5 border-l border-line pl-3">
+          <li v-for="link in profileLinks" :key="link.routeName">
+            <router-link :to="{ name: link.routeName }" @click="handleLinkClick"
+              :aria-current="isActive(link.routeName) ? 'page' : undefined"
+              class="flex min-h-[40px] items-center rounded-control px-3 text-[14px] transition-colors"
+              :class="isActive(link.routeName) ? 'bg-primary-soft font-semibold text-primary-soft-ink' : 'text-ink-muted hover:bg-surface-2 hover:text-ink'">
+              {{ $t(link.label) }}
+            </router-link>
+          </li>
+        </ul>
+      </li>
+    </ul>
   </nav>
 </template>
 
 <style scoped>
-nav::-webkit-scrollbar {
-  width: 4px;
-}
-
-nav::-webkit-scrollbar-thumb {
-  background-color: darkgray;
-  border-radius: 10px;
-}
-
-nav::-webkit-scrollbar-track {
-  background: lightgray;
-}
-
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: all 0.3s ease;
-}
-
-.fade-slide-enter-from,
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-5px);
+nav {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--az-line-strong)) transparent;
 }
 </style>
