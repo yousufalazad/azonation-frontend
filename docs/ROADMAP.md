@@ -1,5 +1,8 @@
 # Azonation roadmap
 
+> **Moved on 2026-10-01.** The live roadmap is `azonation-app/docs/ROADMAP.md`
+> (`D:/xampp/htdocs/Azonation/azonation-app`). This copy is kept for history and is no longer updated.
+
 The single source of truth for decisions and the build order. Update the status and the
 decision log as work lands.
 

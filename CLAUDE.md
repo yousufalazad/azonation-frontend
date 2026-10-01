@@ -5,15 +5,18 @@
 > features (roadmap §2 parity rule). Fix something here only if it blocks the move.
 
 Vue 3 (script setup) + Vite + Tailwind + vue-router + vue-i18n. Backend is the sibling repo
-`../azonation-backend` (Laravel). **Read `docs/ROADMAP.md` first** (decisions, modules,
-pricing, build order) and the newest note in `docs/handoff/`.
+`../azonation-backend` (Laravel).
+
+**The roadmap, feature inventory and handoff notes moved to `../../azonation-app/docs/`
+on 2026-10-01.** Read `../../azonation-app/docs/ROADMAP.md` first, then the newest note in
+`../../azonation-app/docs/handoff/`. The copies in this repo's `docs/` are no longer updated.
+Start new sessions in `D:/xampp/htdocs/Azonation/azonation-app`.
 
 ## Starting and ending a session
 
-- Start: read `docs/ROADMAP.md`, then the latest `docs/handoff/*.md`, then continue the
-  step marked `doing` (or the next `todo`).
-- End: add a handoff note (`docs/handoff/YYYY-MM-DD-<topic>.md`, template in
-  `docs/handoff/README.md`) and update the step status in the roadmap. Commit both.
+- Start: read `../../azonation-app/docs/ROADMAP.md`, then the latest note in
+  `../../azonation-app/docs/handoff/`, then continue the step marked `doing` (or the next `todo`).
+- End: add the handoff note and update the roadmap **in `azonation-app/docs`**, not here.
 - One task per session keeps it fast and cheap.
 
 ## Run and check
